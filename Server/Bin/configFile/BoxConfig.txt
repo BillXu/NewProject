@@ -1,0 +1,8 @@
+BoxID	LastTime	RewardCoin	RewardDiamoned	NextBoxID
+0	120	300		1
+1	300	800		2
+2	600	1500		3
+3	1800	2500		4
+4	3600	3500		5
+5	7200	5000		6
+6	14400	8000		6

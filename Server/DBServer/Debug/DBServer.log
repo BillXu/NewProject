@@ -1,0 +1,78 @@
+﻿生成启动时间为 2014/3/17 12:01:46。
+     1>项目“E:\GitHub\TaxPoker\Server\DBServer\DBServer.vcxproj”在节点 2 上(build 个目标)。
+     1>C:\Program Files\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(299,5): warning MSB8004: Output 目录未以斜杠结尾。此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
+     1>InitializeBuildStatus:
+         正在创建“Debug\DBServer.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I./src/include /I./src/include/atomic /I./src/include/mysys /I../../Common/pthreadLib /I../../Common /I../../Common/NetLib /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\Common\ServerConfig.cpp src\DBApp.cpp src\DBManager.cpp src\DataBaseThread.cpp src\main.cpp
+         DataBaseThread.cpp
+     1>e:\github\taxpoker\server\dbserver\src\include\my_global.h(825): warning C4996: 'strtok': This function or variable may be unsafe. Consider using strtok_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\string.h(197) : 参见“strtok”的声明
+         正在生成代码...
+         正在编译...
+         ServerConfig.cpp
+     1>e:\github\taxpoker\common\configreader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         正在生成代码...
+         正在编译...
+         main.cpp
+     1>e:\github\taxpoker\common\configreader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         DBManager.cpp
+     1>e:\github\taxpoker\common\configreader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+     1>e:\github\taxpoker\server\dbserver\src\include\config-win.h(24): warning C4005: “_WIN32_WINNT”: 宏重定义
+                 c:\program files\microsoft sdks\windows\v7.0a\include\sdkddkver.h(197) : 参见“_WIN32_WINNT”的前一个定义
+     1>e:\github\taxpoker\server\dbserver\src\include\my_global.h(825): warning C4996: 'strtok': This function or variable may be unsafe. Consider using strtok_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\string.h(197) : 参见“strtok”的声明
+     1>e:\github\taxpoker\server\dbserver\src\dbmanager.cpp(752): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\time.inl(112) : 参见“localtime”的声明
+     1>e:\github\taxpoker\server\dbserver\src\dbmanager.cpp(753): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\time.inl(112) : 参见“localtime”的声明
+     1>e:\github\taxpoker\server\dbserver\src\dbmanager.cpp(853): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\time.inl(112) : 参见“localtime”的声明
+     1>e:\github\taxpoker\server\dbserver\src\dbmanager.cpp(854): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\time.inl(112) : 参见“localtime”的声明
+     1>e:\github\taxpoker\server\dbserver\src\dbmanager.cpp(892): warning C4018: “<”: 有符号/无符号不匹配
+     1>e:\github\taxpoker\server\dbserver\src\dbmanager.cpp(916): warning C4018: “<”: 有符号/无符号不匹配
+     1>e:\github\taxpoker\server\dbserver\src\dbmanager.cpp(1209): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\time.inl(112) : 参见“localtime”的声明
+     1>e:\github\taxpoker\server\dbserver\src\dbmanager.cpp(1210): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\time.inl(112) : 参见“localtime”的声明
+         DBApp.cpp
+     1>e:\github\taxpoker\common\configreader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+     1>e:\github\taxpoker\server\dbserver\src\include\config-win.h(24): warning C4005: “_WIN32_WINNT”: 宏重定义
+                 c:\program files\microsoft sdks\windows\v7.0a\include\sdkddkver.h(197) : 参见“_WIN32_WINNT”的前一个定义
+     1>e:\github\taxpoker\server\dbserver\src\include\my_global.h(825): warning C4996: 'strtok': This function or variable may be unsafe. Consider using strtok_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 c:\program files\microsoft visual studio 10.0\vc\include\string.h(197) : 参见“strtok”的声明
+         正在生成代码...
+       ManifestResourceCompile:
+         所有输出均为最新。
+       Link:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"../../ServerBin\DBServer.exe" /INCREMENTAL /NOLOGO /LIBPATH:../../Lib RakNetDLL.lib libmysql.lib pthreadVC2.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\DBServer.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"E:\GitHub\TaxPoker\ServerBin\DBServer.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"../../ServerBin\DBServer.lib" /MACHINE:X86 Debug\DBServer.exe.embed.manifest.res
+         Debug\ConfigReader.obj
+         Debug\IConfigFile.obj
+         Debug\LogManager.obj
+         Debug\mutex.obj
+         Debug\Sem.obj
+         Debug\ServerConfig.obj
+         Debug\ServerNetwork.obj
+         Debug\ThreadMod.obj
+         Debug\Utility.obj
+         Debug\DataBaseThread.obj
+         Debug\DBApp.obj
+         Debug\DBManager.obj
+         Debug\DBRequest.obj
+         Debug\main.obj
+         Debug\MySqlData.obj
+       Manifest:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\DBServer.exe.embed.manifest" /manifest Debug\DBServer.exe.intermediate.manifest
+         所有输出均为最新。
+       LinkEmbedManifest:
+         所有输出均为最新。
+         DBServer.vcxproj -> E:\GitHub\TaxPoker\Server\DBServer\../../ServerBin\DBServer.exe
+       FinalizeBuildStatus:
+         正在删除文件“Debug\DBServer.unsuccessfulbuild”。
+         正在对“Debug\DBServer.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“E:\GitHub\TaxPoker\Server\DBServer\DBServer.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:06.33

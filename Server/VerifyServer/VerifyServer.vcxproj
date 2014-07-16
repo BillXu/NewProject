@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5D591419-420C-46EA-B153-DD5A426FA989}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>VerifyServer</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>../../ServerBin</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../ServerRelease</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./src/;../../Common;../DBServer/src;../../Common/pthreadLib;../../Common/NetLib;../DBServer/src/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libmysql.lib;pthreadVC2.lib;libcurl_imp.lib;RakNetDLL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../Lib</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./src/;../../Common;../DBServer/src;../../Common/pthreadLib;../../Common/NetLib;../DBServer/src/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libmysql.lib;pthreadVC2.lib;libcurl_imp.lib;RakNetDLL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../Lib</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Common\ConfigReader.cpp" />
+    <ClCompile Include="..\..\Common\IConfigFile.cpp" />
+    <ClCompile Include="..\..\Common\LogManager.cpp" />
+    <ClCompile Include="..\..\Common\mutex.cpp" />
+    <ClCompile Include="..\..\Common\Sem.cpp" />
+    <ClCompile Include="..\..\Common\ServerConfig.cpp" />
+    <ClCompile Include="..\..\Common\ServerNetwork.cpp" />
+    <ClCompile Include="..\..\Common\ThreadMod.cpp" />
+    <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\DBServer\src\DataBaseThread.cpp" />
+    <ClCompile Include="..\DBServer\src\DBRequest.cpp" />
+    <ClCompile Include="..\DBServer\src\MySqlData.cpp" />
+    <ClCompile Include="src\AppleVerifyManager.cpp" />
+    <ClCompile Include="src\DBVerifyManager.cpp" />
+    <ClCompile Include="src\lib_json\json_reader.cpp" />
+    <ClCompile Include="src\lib_json\json_value.cpp" />
+    <ClCompile Include="src\lib_json\json_writer.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\VerifyApp.cpp" />
+    <ClCompile Include="src\VerifyRequest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Common\ConfigReader.h" />
+    <ClInclude Include="..\..\Common\IConfigFile.h" />
+    <ClInclude Include="..\..\Common\LogManager.h" />
+    <ClInclude Include="..\..\Common\MessageIdentifer.h" />
+    <ClInclude Include="..\..\Common\mutex.h" />
+    <ClInclude Include="..\..\Common\Sem.h" />
+    <ClInclude Include="..\..\Common\ServerConfig.h" />
+    <ClInclude Include="..\..\Common\ServerMessageDefine.h" />
+    <ClInclude Include="..\..\Common\ServerNetwork.h" />
+    <ClInclude Include="..\..\Common\ThreadMod.h" />
+    <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\DBServer\src\DataBaseThread.h" />
+    <ClInclude Include="..\DBServer\src\DBRequest.h" />
+    <ClInclude Include="..\DBServer\src\DBRequestFlags.h" />
+    <ClInclude Include="..\DBServer\src\MySqlData.h" />
+    <ClInclude Include="src\AppleVerifyManager.h" />
+    <ClInclude Include="src\DBVerifyManager.h" />
+    <ClInclude Include="src\json\autolink.h" />
+    <ClInclude Include="src\json\config.h" />
+    <ClInclude Include="src\json\features.h" />
+    <ClInclude Include="src\json\forwards.h" />
+    <ClInclude Include="src\json\json.h" />
+    <ClInclude Include="src\json\reader.h" />
+    <ClInclude Include="src\json\value.h" />
+    <ClInclude Include="src\json\writer.h" />
+    <ClInclude Include="src\lib_json\json_batchallocator.h" />
+    <ClInclude Include="src\VerifyApp.h" />
+    <ClInclude Include="src\VerifyRequest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\lib_json\json_internalarray.inl" />
+    <None Include="src\lib_json\json_internalmap.inl" />
+    <None Include="src\lib_json\json_valueiterator.inl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

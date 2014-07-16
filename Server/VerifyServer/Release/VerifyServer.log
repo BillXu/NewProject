@@ -1,0 +1,45 @@
+﻿生成启动时间为 2013/12/23 10:31:17。
+     1>项目“E:\GitHub\Poker\Our__Poker\Server\VerifyServer\VerifyServer.vcxproj”在节点 3 上(build 个目标)。
+     1>C:\Program Files\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(299,5): warning MSB8004: Output 目录未以斜杠结尾。此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
+     1>InitializeBuildStatus:
+         正在创建“Release\VerifyServer.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I./src/ /I../../Common /I../DBServer/src /I../../Common/pthreadLib /I../../Common/NetLib /I../DBServer/src/include /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt src\VerifyApp.cpp
+         VerifyApp.cpp
+     1>e:\github\poker\our__poker\common\ConfigReader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+     1>src\VerifyApp.cpp(131): warning C4305: “=”: 从“int”到“unsigned char”截断
+     1>src\VerifyApp.cpp(131): warning C4309: “=”: 截断常量值
+       Link:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"../../ServerRelease\VerifyServer.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:../../Lib libmysql.lib pthreadVC2.lib libcurl_imp.lib RakNetDLL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\VerifyServer.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"E:\GitHub\Poker\Our__Poker\ServerRelease\VerifyServer.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"../../ServerRelease\VerifyServer.lib" /MACHINE:X86 Release\ConfigReader.obj
+         Release\IConfigFile.obj
+         Release\LogManager.obj
+         Release\mutex.obj
+         Release\Sem.obj
+         Release\ServerConfig.obj
+         Release\ServerNetwork.obj
+         Release\ThreadMod.obj
+         Release\Utility.obj
+         Release\DataBaseThread.obj
+         Release\DBRequest.obj
+         Release\MySqlData.obj
+         Release\AppleVerifyManager.obj
+         Release\DBVerifyManager.obj
+         Release\json_reader.obj
+         Release\json_value.obj
+         Release\json_writer.obj
+         Release\main.obj
+         Release\VerifyApp.obj
+         Release\VerifyRequest.obj
+         正在生成代码
+         已完成代码的生成
+         VerifyServer.vcxproj -> E:\GitHub\Poker\Our__Poker\Server\VerifyServer\../../ServerRelease\VerifyServer.exe
+       Manifest:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"../../ServerRelease\VerifyServer.exe;#1" /manifest Release\VerifyServer.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         正在删除文件“Release\VerifyServer.unsuccessfulbuild”。
+         正在对“Release\VerifyServer.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“E:\GitHub\Poker\Our__Poker\Server\VerifyServer\VerifyServer.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:08.75

@@ -1,0 +1,44 @@
+﻿生成启动时间为 2014/3/12 19:18:05。
+     1>项目“E:\GitHub\TaxPoker\Server\GateServer\GateServer.vcxproj”在节点 2 上(build 个目标)。
+     1>C:\Program Files\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(299,5): warning MSB8004: Output 目录未以斜杠结尾。此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
+     1>InitializeBuildStatus:
+         正在创建“Release\GateServer.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../../Common /I../../Common/NetLib /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\Common\ServerConfig.cpp src\ClientManager.cpp src\GateClient.cpp src\GateServer.cpp src\main.cpp
+         ServerConfig.cpp
+     1>e:\github\taxpoker\common\ConfigReader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         ClientManager.cpp
+     1>e:\github\taxpoker\common\ConfigReader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         GateClient.cpp
+     1>e:\github\taxpoker\common\ConfigReader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         GateServer.cpp
+     1>e:\github\taxpoker\common\ConfigReader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         main.cpp
+     1>e:\github\taxpoker\common\ConfigReader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+     1>src\main.cpp(16): warning C4996: 'scanf': This function or variable may be unsafe. Consider using scanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\stdio.h(304) : 参见“scanf”的声明
+       Link:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"../../ServerRelease\GateServer.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:../../Lib RakNetDLL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\GateServer.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"E:\GitHub\TaxPoker\ServerRelease\GateServer.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"../../ServerRelease\GateServer.lib" /MACHINE:X86 Release\ConfigReader.obj
+         Release\IConfigFile.obj
+         Release\LogManager.obj
+         Release\ServerConfig.obj
+         Release\ServerNetwork.obj
+         Release\Timer.obj
+         Release\Utility.obj
+         Release\ClientManager.obj
+         Release\GateClient.obj
+         Release\GateServer.obj
+         Release\main.obj
+         正在生成代码
+         已完成代码的生成
+         GateServer.vcxproj -> E:\GitHub\TaxPoker\Server\GateServer\../../ServerRelease\GateServer.exe
+       Manifest:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"../../ServerRelease\GateServer.exe;#1" /manifest Release\GateServer.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         正在删除文件“Release\GateServer.unsuccessfulbuild”。
+         正在对“Release\GateServer.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“E:\GitHub\TaxPoker\Server\GateServer\GateServer.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:04.95

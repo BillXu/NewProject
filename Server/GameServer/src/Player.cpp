@@ -1,0 +1,645 @@
+#include "Player.h"
+#include "ServerMessageDefine.h"
+#include "LogManager.h"
+#include "PlayerManager.h"
+#include "GameServerApp.h"
+#include "PlayerBaseData.h"
+#include "RoomPeer.h"
+#include "RoomManager.h"
+#include "RoomPeerPaiJiu.h"
+#include "TaxasPokerPeer.h"
+#include "Brocaster.h"
+#include "PlayerFriend.h"
+#include "PlayerMail.h"
+#include "RoomTexasPoker.h"
+#include "PlayerItem.h"
+#include "PlayerMission.h"
+#include "Timer.h"
+#include "SlotMachine.h"
+#include "PlayerShop.h"
+#include "PlayerOnlineBox.h"
+#include "ServerMessageDefine.h"
+#include "RobotManager.h"
+#include "BaccaratPeer.h"
+#include "TaxasPokerMessage.h"
+#define TIME_SAVE 60*20
+CPlayer::CPlayer( )
+{
+	m_nUserUID = 0 ;
+	m_bDisconnected = false ;
+	m_eSate = ePlayerState_Free ;
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		 m_vAllComponents[i] = NULL;
+	}
+}
+
+CPlayer::~CPlayer()
+{
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+			delete p ;
+		m_vAllComponents[i] = NULL ;
+	}
+
+	if ( m_pTimerSave )
+	{
+		CGameServerApp::SharedGameServerApp()->GetTimerMgr()->RemoveTimer(m_pTimerSave) ;
+		m_pTimerSave = NULL ;
+	}
+}
+
+void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
+{
+	m_bDisconnected = false ;
+	m_nSessionID = nSessionID ;
+	m_nUserUID = nUserUID ;
+	m_eSate = ePlayerState_Free ;
+	m_pTimerSave = NULL ;
+	/// new components ;here ;
+	m_vAllComponents[ePlayerComponent_BaseData] = new CPlayerBaseData(this) ;
+	//m_vAllComponents[ePlayerComponent_RoomPeer] = new CRoomPeer(this) ;
+	//m_vAllComponents[ePlayerComponent_RoomPeerPaiJiu] = new CRoomPeerPaiJiu(this);
+	m_vAllComponents[ePlayerComponent_RoomPeerTaxasPoker] = new CTaxasPokerPeer(this);
+	m_vAllComponents[ePlayerComponent_Friend] = new CPlayerFriend(this);
+	m_vAllComponents[ePlayerComponent_Mail] = new CPlayerMailComponent(this);
+	m_vAllComponents[ePlayerComponent_PlayerItemMgr] = new CPlayerItemComponent(this);
+	m_vAllComponents[ePlayerComponent_PlayerMission] = new CPlayerMission(this);
+	m_vAllComponents[ePlayerComponent_PlayerShop] = new CPlayerShop(this);
+	//m_vAllComponents[ePlayerComponent_BaccaratPeer] = new CBaccaratPeer(this);
+
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			p->Init();
+		}
+	}
+
+	if ( m_pTimerSave == NULL )
+	{
+		m_pTimerSave = CGameServerApp::SharedGameServerApp()->GetTimerMgr()->AddTimer(this,cc_selector_timer(CPlayer::OnTimerSave)) ;
+		m_pTimerSave->SetDelayTime( TIME_SAVE * 0.5 ) ;
+		m_pTimerSave->SetInterval(TIME_SAVE) ;
+		m_pTimerSave->Start();
+	}
+}
+
+void CPlayer::Reset(unsigned int nUserUID, unsigned int nSessionID )
+{
+	m_bDisconnected = false ;
+	m_nSessionID = nSessionID ;
+	m_nUserUID = nUserUID ;
+	m_eSate = ePlayerState_Free ;
+	// inform components;
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			p->Reset();
+		}
+	}
+
+	if ( m_pTimerSave )
+	{
+		m_pTimerSave->Reset();
+		m_pTimerSave->Start();
+	}
+}
+
+void CPlayer::OnMessage(stMsg* pMsg )
+{
+	switch ( pMsg->usMsgType )
+	{
+	case MSG_REQUEST_ROOM_LIST:
+		{
+			stMsgRequestRoomList* pRetMsg = (stMsgRequestRoomList*)pMsg ;
+			CRoomManager* pRoomManager = CGameServerApp::SharedGameServerApp()->GetRoomMgr();
+			pRoomManager->SendRoomListToPlayer(this,pRetMsg->cRoomType,pRetMsg->cRoomLevel) ;
+		}
+		return ;
+	case MSG_PLAYER_CREATE_PRIVATE_ROOM:
+		{
+			//stMsgPlayerCreatePrivateRoomRet msgBack ;
+			//msgBack.nRet = 0 ;
+			//msgBack.nPassword = 0;
+			//msgBack.nRoomID = 0 ;
+			//if ( GetState() != ePlayerState_Free )
+			//{
+			//	msgBack.nRet = 1 ;
+			//	SendMsgToClient((char*)&msgBack,sizeof(msgBack) ) ;
+			//	return ;
+			//}
+
+			//stMsgPlayerCreatePrivateRoom* pMsgRet = (stMsgPlayerCreatePrivateRoom*)pMsg;
+			//
+			//if ( (pMsgRet->bDiamond && GetBaseData()->GetAllDiamoned() < pMsgRet->nOwnMoneyNeedToEnter) || (pMsgRet->bDiamond == false && GetBaseData()->GetAllCoin() < pMsgRet->nOwnMoneyNeedToEnter) )
+			//{
+			//	msgBack.nRet = 3 ;
+			//	SendMsgToClient((char*)&msgBack,sizeof(msgBack) ) ;
+			//	return ;
+			//}
+
+			//if ( pMsgRet->nBigBinld > pMsgRet->nOwnMoneyNeedToEnter )
+			//{
+			//	msgBack.nRet = 4 ;
+			//	SendMsgToClient((char*)&msgBack,sizeof(msgBack) ) ;
+			//	return ;
+			//}
+
+			//CLogMgr::SharedLogMgr()->ErrorLog("do you have create private room card ? " ) ;
+			//CPlayerItemComponent* pItemMgr = (CPlayerItemComponent*)GetComponent(ePlayerComponent_PlayerItemMgr);	
+			//if ( !pItemMgr->OnUserItem(ITEM_ID_CREATE_ROOM) )
+			//{
+			//	msgBack.nRet = 2 ;
+			//	SendMsgToClient((char*)&msgBack,sizeof(msgBack) ) ;
+			//	return ;
+			//}
+
+			//CRoomBase* pBase = CGameServerApp::SharedGameServerApp()->GetRoomMgr()->CreateRoom(eRoom_TexasPoker_Private,eRoomLevel_Junior) ;
+			//if ( !pBase )
+			//{
+			//	CLogMgr::SharedLogMgr()->ErrorLog("create room failed") ;
+			//	msgBack.nRet = 5 ;
+			//	SendMsgToClient((char*)&msgBack,sizeof(msgBack) ) ;
+			//	pItemMgr->AddItemByID(ITEM_ID_CREATE_ROOM);
+			//	return ;
+			//}
+			//pBase->SetRoomName(pMsgRet->cRoomName); 
+			//pBase->SetIsDiamonedRoom(pMsgRet->bDiamond) ;
+			//pBase->SetPassword(pMsgRet->nPassword) ;
+			//pBase->SetAntesCoin(pMsgRet->nOwnMoneyNeedToEnter) ;
+			//((CRoomTexasPoker*)pBase)->SetBigBlindBet(pMsgRet->nBigBinld) ;
+			//msgBack.nPassword = pMsgRet->nPassword ;
+			//msgBack.nRoomID = pBase->GetRoomID() ;
+			//SendMsgToClient((char*)&msgBack,sizeof(msgBack) ) ;
+
+			//// after crate success , you default enter the room you create ;
+			//CRoomPeer* peer = (CTaxasPokerPeer*)GetComponent(ePlayerComponent_RoomPeerTaxasPoker) ;
+			//pBase->AddPeer(peer) ;
+			//peer->SetRoom(pBase) ;
+			//m_eSate = ePlayerState_InRoom ;
+			//pBase->SendCurRoomInfoToPlayer(peer) ;
+		}
+		return ;
+	case MSG_ROOM_ENTER:
+	case MSG_TP_TYPE_ENTER:
+		{
+			stMsgRoomEnter* msgEnter = (stMsgRoomEnter*)pMsg ;
+			stMsgRoomEnter msgEnterTmep ;
+			if ( pMsg->usMsgType == MSG_TP_TYPE_ENTER )
+			{
+				stMsgTaxasPokerTypeEnter* pTypeEnter = (stMsgTaxasPokerTypeEnter*)pMsg;
+				CRoomBase* pBase = CGameServerApp::SharedGameServerApp()->GetRoomMgr()->GetProperRoomToJoin(pTypeEnter->cSpeedType,pTypeEnter->cSeatType,pTypeEnter->nBigBlind);
+				msgEnterTmep.nPassword = 0 ;
+				msgEnterTmep.nRoomID = pBase->GetRoomID();
+				msgEnterTmep.nRoomLevel = pBase->GetRoomLevel();
+				msgEnterTmep.nRoomType = pBase->GetRoomType();
+				msgEnter = &msgEnterTmep ;
+			}
+
+			CRoomPeer* peer = NULL ;
+			switch ( msgEnter->nRoomType )
+			{
+			//case eRoom_Gold:
+			//	{
+			//		//peer = GetComponent(ePlayerComponent_RoomPeer) ;
+			//		CLogMgr::SharedLogMgr()->ErrorLog("eRoom_Gold room  construction ") ;
+			//		return ;
+			//	}
+			//	break;
+			//case eRoom_PaiJiu:
+			//	{
+			//		peer = (CRoomPeerPaiJiu*)GetComponent(ePlayerComponent_RoomPeerPaiJiu) ;
+			//	}
+			//	break; 
+			case eRoom_TexasPoker:
+			case eRoom_TexasPoker_Diamoned:
+			case eRoom_TexasPoker_Private:
+				{
+					peer = (CTaxasPokerPeer*)GetComponent(ePlayerComponent_RoomPeerTaxasPoker) ;
+				}
+				break;
+			//case eRoom_Baccarat:
+			//	{
+			//		peer = (CBaccaratPeer*)GetComponent(ePlayerComponent_BaccaratPeer) ;
+			//	}
+			//	break;
+			default:
+				{
+					CLogMgr::SharedLogMgr()->ErrorLog("request unknown room  type = %d ", msgEnter->nRoomType) ;
+				}
+				return ;
+			}
+
+			stMsgRoomEnterRet msgRet ;
+			CRoomBase* pRoom = peer->GetRoom() ;
+			switch ( GetState() )
+			{
+			case ePlayerState_WillLeavingRoom:
+				{
+					if ( pRoom && pRoom->GetRoomID() == msgEnter->nRoomID )
+					{
+						m_eSate = ePlayerState_InRoom ;
+						msgRet.nRet = 0 ;
+						pRoom->SendCurRoomInfoToPlayer(peer) ;
+					}
+					else
+					{
+						msgRet.nRet = 3 ; // waiting last game settlement ;
+					}
+				}
+				break;
+			case ePlayerState_Free:
+				{
+					pRoom = CGameServerApp::SharedGameServerApp()->GetRoomMgr()->GetRoom(msgEnter->nRoomType,msgEnter->nRoomLevel,msgEnter->nRoomID) ;
+					if ( pRoom == NULL )
+					{
+						msgRet.nRet = 4 ; 
+						break;
+					}
+					// check password 
+					if ( pRoom->GetPassword() != 0 && pRoom->GetPassword() != msgEnter->nPassword )
+					{
+						msgRet.nRet = 5 ;
+						break; 
+					}
+					unsigned char nRet = pRoom->CanJoin(this) ;
+					if ( nRet == 0 )
+					{
+						// sent cur room info to client ;
+						m_eSate = ePlayerState_InRoom ;
+						pRoom->AddPeer(peer) ;
+						peer->SetRoom(pRoom) ;
+						msgRet.nRet = 0 ;
+						pRoom->SendCurRoomInfoToPlayer(peer) ;
+					}
+					else
+					{
+						msgRet.nRet = nRet ;  // do not meet room condition
+						CLogMgr::SharedLogMgr()->SystemLog("room is NULL, can not enter !") ;
+					}
+				}
+				break;
+			case ePlayerState_InRoom:
+				{
+					msgRet.nRet = 3 ;   // aready in room ;
+				}
+			default:
+				{
+					msgRet.nRet = 6 ;  // unknown error ;
+				}
+				break;
+			}
+			SendMsgToClient((char*)&msgRet,sizeof(msgRet)) ;
+		}
+		return ;
+	default:
+		break; 
+	}
+
+	if ( ProcessPublicPlayerMsg(pMsg) )
+	{
+		return ; 
+	}
+
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			if ( p->OnMessage(pMsg) )
+			{
+				return ;
+			}
+		}
+	}
+
+	CLogMgr::SharedLogMgr()->SystemLog("Unprocessed msg id = %d, my session id = %d",pMsg->usMsgType,GetSessionID()) ;
+}
+
+void CPlayer::OnPlayerDisconnect()
+{
+	// inform components;
+	m_bDisconnected = true ; 
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			p->OnPlayerDisconnect();
+		}
+	}
+
+	if ( m_pTimerSave )
+	{
+		m_pTimerSave->Stop();
+	}
+	PushTestAPNs();
+	CRobotManager::SharedRobotMgr()->OnPlayerDisconnected(this) ;
+}
+
+void CPlayer::PostPlayerEvent(stPlayerEvetArg* pEventArg )
+{
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			p->OnPlayerEvent(pEventArg);
+		}
+	}
+}
+
+void CPlayer::SendMsgToClient(const char* pBuffer, unsigned short nLen,bool bBrocat )
+{
+	if ( m_bDisconnected )
+	{
+		return ;
+	}
+	CGameServerApp::SharedGameServerApp()->SendMsgToGateServer(GetSessionID(),pBuffer,nLen,bBrocat) ;
+}
+
+void CPlayer::SendMsgToDBServer( const char* pBuffer, unsigned short nLen )
+{
+	CGameServerApp::SharedGameServerApp()->SendMsgToDBServer(pBuffer,nLen) ;
+}
+
+void CPlayer::OnAnotherClientLoginThisPeer(unsigned int nSessionID )
+{
+	// tell prelogin client to disconnect ;
+	stMsgPlayerOtherLogin msg ;
+	SendMsgToClient((char*)&msg,sizeof(msg)) ;
+
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			p->OnOtherWillLogined();
+		}
+	}
+	// bind new client ;
+	m_nSessionID = nSessionID ;
+	m_bDisconnected = false ;
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			p->OnOtherDoLogined();
+		}
+	}
+}
+
+bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg)
+{
+	switch ( pMsg->usMsgType )
+	{
+	case MSG_ROBOT_INFORM_IDLE:
+		{
+			CRobotManager::SharedRobotMgr()->AddIdleRobotPlayer(this) ;
+		}
+		break;
+	case MSG_ROBOT_ADD_MONEY:
+		{
+			stMsgRobotAddMoney* pAdd = (stMsgRobotAddMoney*)pMsg ;
+			GetBaseData()->ModifyMoney(pAdd->nWantCoin) ;
+			stMsgRobotAddMoneyRet msgBack ;
+			msgBack.cRet = 0 ;
+			msgBack.nFinalCoin = GetBaseData()->GetAllCoin();
+			SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+		}
+		break;
+	case MSG_REQUEST_RANK:
+		{
+			stMsgPlayerRequestRank* pMsgRet = (stMsgPlayerRequestRank*)pMsg ;
+			CGameServerApp::SharedGameServerApp()->GetGameRanker()->SendRankToPlayer(this,(eRankType)pMsgRet->nRankType,pMsgRet->nFromIdx,pMsgRet->nCount ) ;
+		}
+		break;
+	case MSG_REQUEST_RANK_PEER_DETAIL:
+		{
+			stMsgPlayerRequestRankPeerDetail* pRetMsg = (stMsgPlayerRequestRankPeerDetail*)pMsg ;
+			CGameServerApp::SharedGameServerApp()->GetGameRanker()->SendRankDetailToPlayer(this,pRetMsg->nRankPeerUID,(eRankType)pRetMsg->nRankType);
+		}
+		break;
+	case MSG_PLAYER_SAY_BROCAST:
+		{
+			stMsgPlayerSayBrocast* pMsgRet = (stMsgPlayerSayBrocast*)pMsg ;
+			CPlayerItemComponent* pItemMgr = (CPlayerItemComponent*)GetComponent(ePlayerComponent_PlayerItemMgr);	
+			stMsgPlayerSayBrocastRet msg ;
+			msg.nRet = 0 ;
+			if ( pItemMgr->OnUserItem(ITEM_ID_LA_BA) )
+			{
+				CGameServerApp::SharedGameServerApp()->GetBrocaster()->PostPlayerSayMsg(this,((char*)pMsg) + sizeof(stMsgPlayerSayBrocast),pMsgRet->nContentLen) ;
+			}
+			else
+			{
+				msg.nRet = 1 ;
+				CLogMgr::SharedLogMgr()->ErrorLog(" you have no la ba") ;
+			}
+			SendMsgToClient((char*)&msg,sizeof(msg)) ;
+		}
+		break;
+	case MSG_PLAYER_REPLAY_BE_INVITED:
+		{
+			//stMsgPlayerRecievedInviteReply toMsgInviter; // who invite me ;
+			stMsgPlayerReplayBeInvitedToJoinRoom* pMsgRet = (stMsgPlayerReplayBeInvitedToJoinRoom*)pMsg ;
+			//toMsgInviter.nRet = 0 ;
+			stMsgPlayerReplayBeInvitedToJoinRoomRet msgBack ;
+			if ( pMsgRet->nReplyResult == 1 ) // refused 
+			{
+				//toMsgInviter.nRet = 1 ;
+				msgBack.nRet = 0 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				break;
+			}
+			else  // i agreed ;
+			{
+				msgBack.nRet = 0 ;
+				CTaxasPokerPeer* pThisPeer = (CTaxasPokerPeer*)GetComponent(ePlayerComponent_RoomPeerTaxasPoker);
+				CRoomTexasPoker* pRoomToEnter = (CRoomTexasPoker*)CGameServerApp::SharedGameServerApp()->GetRoomMgr()->GetRoom(pMsgRet->nRoomType,pMsgRet->nRoomLevel,pMsgRet->nRoomID) ;
+				if ( !pRoomToEnter || pRoomToEnter->CanPeerSitDown(pThisPeer) == false )
+				{
+					//toMsgInviter.nRet = 4 ;
+					msgBack.nRet = 2 ;
+				}
+				else
+				{
+					// join room ;
+					pThisPeer->LeaveRoom();
+					if ( pRoomToEnter->AddBeInvitedPlayer(this,pMsgRet->nSitIdx) == false )
+					{
+						//toMsgInviter.nRet = 3 ;
+						msgBack.nRet = 3 ;
+					}
+				}
+
+				if ( msgBack.nRet != 0 )  // only failed , tell client , when success , directly enter room ;
+				{
+					SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				}
+			}
+			//CPlayer* pToInvid = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pMsgRet->nReplyToUserUID) ;
+			//if ( pToInvid && toMsgInviter.nRet != 0 ) // only failed situation ,tell inviter ;
+			//{
+			//	memcpy(toMsgInviter.nReplyerName,GetBaseData()->GetPlayerName(),MAX_LEN_CHARACTER_NAME);
+			//	pToInvid->SendMsgToClient((char*)&toMsgInviter,sizeof(toMsgInviter)) ;
+			//}
+			//else
+			//{
+			//	CLogMgr::SharedLogMgr()->PrintLog("the one who invite me had offline , his uid = %d",pMsgRet->nReplyToUserUID) ;
+			//}
+		}
+		break;
+	case MSG_PLAYER_FOLLOW_TO_ROOM:
+		{
+			stMsgPlayerFollowToRoom* pRetMsg = (stMsgPlayerFollowToRoom*)pMsg ;
+			CPlayer* pTargetPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pRetMsg->nTargetPlayerUID) ;
+			stMsgPlayerFollowToRoomRet msgBack ;
+			msgBack.nRet = 0 ;
+			if ( pTargetPlayer == NULL )
+			{
+				msgBack.nRet = 1 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				break ;
+			}
+
+			if ( ePlayerState_Free == pTargetPlayer->GetState() )
+			{
+				msgBack.nRet = 2 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				break ;
+			}
+
+			if ( ePlayerState_Free != GetState() )
+			{
+				msgBack.nRet = 4 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				break ;
+			}
+
+			CRoomBase* pStateRoom = pTargetPlayer->GetRoomCurStateIn() ;
+			if ( !pStateRoom )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("follow to a null room , but target player is not free , how , why ?") ;
+				msgBack.nRet = 2 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				break;
+			}
+
+			if ( pStateRoom->GetPassword() != 0 )
+			{
+				msgBack.nRet = 5 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack));
+				break; 
+			}
+
+			if ( pStateRoom->CanJoin(pTargetPlayer) != 0)
+			{
+				msgBack.nRet = 3 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				break;
+			}
+
+			// add to room 
+			stMsgRoomEnter msgToEnterRoom ;
+			msgToEnterRoom.nPassword = 0 ;
+			msgToEnterRoom.nRoomID = pStateRoom->GetRoomID();
+			msgToEnterRoom.nRoomLevel = pStateRoom->GetRoomLevel() ;
+			msgToEnterRoom.nRoomType = pStateRoom->GetRoomType() ;
+			OnMessage(&msgToEnterRoom);
+		}
+		break;
+	case MSG_PLAYER_SLOT_MACHINE:
+		{
+			stMsgPlayerSlotMachineRet msgBack ;
+			msgBack.nRet = 0 ;
+			stMsgPlayerSlotMachine* pRetMsg = (stMsgPlayerSlotMachine*)pMsg ;
+			if ( GetBaseData()->GetAllCoin() < pRetMsg->nBetCoin || GetBaseData()->GetAllDiamoned() < pRetMsg->nBetDiamoned )
+			{
+				msgBack.nRet = 1 ;
+			}
+			else
+			{
+				CSlotMachine* pMachine = (CSlotMachine*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_SlotMachine) ;
+				float fRate = 0 ;
+				pMachine->RandSlotMachine(pRetMsg->cLevel,msgBack.vCard,fRate) ;
+				int64_t nOffsetCoin = pRetMsg->nBetCoin * ( fRate - 1.0 );
+				int nOffsetDiamoned = pRetMsg->nBetDiamoned * ( fRate - 1.0 );
+				nOffsetDiamoned = abs(nOffsetDiamoned) ;
+				nOffsetCoin = abs(nOffsetCoin) ;
+				int nOffset = fRate > 1 ? 1 : -1 ;
+				GetBaseData()->ModifyMoney(nOffsetCoin * nOffset);
+				GetBaseData()->ModifyMoney(nOffsetDiamoned * nOffset,true);				
+				msgBack.nFinalAllCoin = GetBaseData()->GetAllCoin();
+				msgBack.nFinalDiamoned = GetBaseData()->GetAllDiamoned() ;
+				msgBack.nTakeInCoin = GetBaseData()->GetTakeInMoney() ;
+				msgBack.nTakeInDiamoned = GetBaseData()->GetTakeInMoney(true) ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+			}
+		}
+		break;
+	default:
+		return false ;
+	}
+	return true ;
+}
+
+CRoomBase* CPlayer::GetRoomCurStateIn()
+{
+	CRoomPeer* peer = (CRoomPeer*)GetComponent(ePlayerComponent_RoomPeerTaxasPoker) ;
+	if ( peer->GetRoom() )
+	{
+		return peer->GetRoom() ;
+	}
+
+	peer = (CRoomPeer*)GetComponent(ePlayerComponent_RoomPeerPaiJiu) ;
+	if ( peer->GetRoom() )
+	{
+		return peer->GetRoom() ;
+	}
+	return NULL ;
+}
+
+void CPlayer::OnTimerSave(float fTimeElaps,unsigned int nTimerID )
+{
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			p->TimerSave();
+		}
+	}
+}
+
+void CPlayer::PushTestAPNs()
+{
+#ifdef NDEBUG
+	return ;
+#endif
+	//if ( GetBaseData()->bPlayerEnableAPNs == false )
+	//{
+	//	CLogMgr::SharedLogMgr()->ErrorLog("you not enable apns ") ;
+	//	return ;
+	//}
+	//char* pString = "\"you disconnected \"" ;
+	//stMsgToAPNSServer msg ;
+	//msg.nAlertLen = strlen(pString) ;
+	//msg.nBadge = 1 ;
+	//msg.nSoundLen = 0 ;
+	//memcpy(msg.pDeveiceToken,GetBaseData()->vAPNSToken,32);
+	//char* pBuffer = new char[sizeof(msg) + msg.nAlertLen ] ;
+	//unsigned short nOffset = 0 ;
+	//memcpy(pBuffer,&msg,sizeof(msg));
+	//nOffset += sizeof(msg);
+	//memcpy(pBuffer + nOffset , pString ,msg.nAlertLen);
+	//nOffset += msg.nAlertLen ;
+	//CGameServerApp::SharedGameServerApp()->SendMsgToAPNsServer(pBuffer,nOffset);
+	//delete[] pBuffer ;
+}

@@ -1,0 +1,52 @@
+﻿生成启动时间为 2014/3/17 12:28:08。
+     1>项目“E:\GitHub\TaxPoker\Server\LoginServer\LoginServer.vcxproj”在节点 2 上(build 个目标)。
+     1>C:\Program Files\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(299,5): warning MSB8004: Output 目录未以斜杠结尾。此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
+     1>InitializeBuildStatus:
+         正在创建“Debug\LoginServer.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I../../Common/NetLib /I../../Common /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\Common\LogManager.cpp ..\..\Common\NetWorkManager.cpp ..\..\Common\ServerConfig.cpp ..\..\Common\Timer.cpp src\LoginApp.cpp src\LoginPeerMgr.cpp src\main.cpp
+         main.cpp
+     1>e:\github\taxpoker\common\configreader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         LoginPeerMgr.cpp
+     1>e:\github\taxpoker\common\configreader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         LoginApp.cpp
+     1>e:\github\taxpoker\common\configreader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         ServerConfig.cpp
+     1>e:\github\taxpoker\common\configreader.h : warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+         NetWorkManager.cpp
+     1>e:\github\taxpoker\common\networkmanager.cpp(203): warning C4800: “uint32_t”: 将值强制为布尔值“true”或“false”(性能警告)
+     1>e:\github\taxpoker\common\networkmanager.cpp(210): warning C4800: “uint32_t”: 将值强制为布尔值“true”或“false”(性能警告)
+         正在生成代码...
+         正在编译...
+         Timer.cpp
+         LogManager.cpp
+         正在生成代码...
+       ManifestResourceCompile:
+         所有输出均为最新。
+       Link:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"../../ServerBin\LoginServer.exe" /INCREMENTAL /NOLOGO /LIBPATH:../../Lib RakNetDLL.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\LoginServer.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"E:\GitHub\TaxPoker\ServerBin\LoginServer.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"../../ServerBin\LoginServer.lib" /MACHINE:X86 Debug\LoginServer.exe.embed.manifest.res
+         Debug\ConfigReader.obj
+         Debug\IConfigFile.obj
+         Debug\LogManager.obj
+         Debug\NetWorkManager.obj
+         Debug\ServerConfig.obj
+         Debug\Timer.obj
+         Debug\Utility.obj
+         Debug\LoginApp.obj
+         Debug\LoginPeer.obj
+         Debug\LoginPeerMgr.obj
+         Debug\main.obj
+       Manifest:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\LoginServer.exe.embed.manifest" /manifest Debug\LoginServer.exe.intermediate.manifest
+         所有输出均为最新。
+       LinkEmbedManifest:
+         所有输出均为最新。
+         LoginServer.vcxproj -> E:\GitHub\TaxPoker\Server\LoginServer\../../ServerBin\LoginServer.exe
+       FinalizeBuildStatus:
+         正在删除文件“Debug\LoginServer.unsuccessfulbuild”。
+         正在对“Debug\LoginServer.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“E:\GitHub\TaxPoker\Server\LoginServer\LoginServer.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:06.93
