@@ -4,6 +4,10 @@
     <LocalDebuggerCommand>
     </LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerWorkingDirectory>../ServerBin</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>../Server/Bin/ServerBin</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerWorkingDirectory>../Server/Bin/ServerRelease</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
