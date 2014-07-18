@@ -8,6 +8,9 @@
     <Filter Include="Common">
       <UniqueIdentifier>{c4a2b7ea-cdb1-48e4-8d64-6f2b9459bd99}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SvrCommon">
+      <UniqueIdentifier>{fd9d5f2a-2b34-47c0-b1a3-291741d87331}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\CommonDefine.h">
@@ -22,22 +25,7 @@
     <ClInclude Include="..\..\Common\Utility.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\mutex.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\Sem.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ThreadMod.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ServerNetwork.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\MessageIdentifer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\MessageDefine.h">
@@ -64,11 +52,26 @@
     <ClInclude Include="src\MySqlData.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\ServerConfig.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\IConfigFile.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\mutex.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\Sem.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerConfig.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerNetwork.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ThreadMod.h">
+      <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -84,15 +87,6 @@
     <ClCompile Include="..\..\Common\Utility.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\mutex.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\Sem.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\ThreadMod.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="src\DataBaseThread.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -102,20 +96,29 @@
     <ClCompile Include="src\MySqlData.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ServerNetwork.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="src\DBManager.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\DBApp.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ServerConfig.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Common\IConfigFile.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\mutex.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\Sem.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ThreadMod.cpp">
+      <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

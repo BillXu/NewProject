@@ -22,18 +22,12 @@
     <Filter Include="AppleVerify\Json">
       <UniqueIdentifier>{b7d5447d-5f98-4e1d-9059-01c9b6aca892}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SvrCommon">
+      <UniqueIdentifier>{0b3392f9-9336-4591-a5f9-40f5eff04d47}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\LogManager.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\Sem.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\ServerNetwork.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\ThreadMod.cpp">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\DBServer\src\DataBaseThread.cpp">
@@ -47,9 +41,6 @@
     </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>App</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\mutex.cpp">
-      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="src\VerifyRequest.cpp">
       <Filter>App</Filter>
@@ -72,9 +63,6 @@
     <ClCompile Include="src\VerifyApp.cpp">
       <Filter>App</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ServerConfig.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Common\ConfigReader.cpp">
       <Filter>common</Filter>
     </ClCompile>
@@ -84,24 +72,27 @@
     <ClCompile Include="..\..\Common\Utility.cpp">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="..\ServerCommon\mutex.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\Sem.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ThreadMod.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\LogManager.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\MessageIdentifer.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\Sem.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ServerNetwork.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ThreadMod.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\DBServer\src\DataBaseThread.h">
@@ -115,9 +106,6 @@
     </ClInclude>
     <ClInclude Include="..\DBServer\src\MySqlData.h">
       <Filter>DBVerify</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\mutex.h">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="src\VerifyRequest.h">
       <Filter>App</Filter>
@@ -158,9 +146,6 @@
     <ClInclude Include="src\VerifyApp.h">
       <Filter>App</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\ServerConfig.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\ConfigReader.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -169,6 +154,24 @@
     </ClInclude>
     <ClInclude Include="..\..\Common\Utility.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\mutex.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\Sem.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerConfig.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerNetwork.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ThreadMod.h">
+      <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

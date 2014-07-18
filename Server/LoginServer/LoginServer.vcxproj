@@ -18,10 +18,10 @@
     <ClInclude Include="..\..\Common\MessageDefine.h" />
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\..\Common\NetWorkManager.h" />
-    <ClInclude Include="..\..\Common\ServerConfig.h" />
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h" />
-    <ClInclude Include="..\..\Common\Timer.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
+    <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\LoginApp.h" />
     <ClInclude Include="src\LoginPeer.h" />
     <ClInclude Include="src\LoginPeerMgr.h" />
@@ -32,9 +32,9 @@
     <ClCompile Include="..\..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\..\Common\LogManager.cpp" />
     <ClCompile Include="..\..\Common\NetWorkManager.cpp" />
-    <ClCompile Include="..\..\Common\ServerConfig.cpp" />
-    <ClCompile Include="..\..\Common\Timer.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\LoginApp.cpp" />
     <ClCompile Include="src\LoginPeer.cpp" />
     <ClCompile Include="src\LoginPeerMgr.cpp" />
@@ -84,7 +84,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../Common/NetLib;../../Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Common/NetLib;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,7 +102,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../Common/NetLib;../../Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Common/NetLib;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

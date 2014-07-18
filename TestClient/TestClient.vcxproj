@@ -54,7 +54,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../Common;../Common/NetLib;../Common/pthreadLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Common;../Common/NetLib;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -72,7 +72,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../Common;../Common/NetLib;../Common/pthreadLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Common;../Common/NetLib;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -89,12 +89,12 @@
     <ClCompile Include="..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\Common\LogManager.cpp" />
-    <ClCompile Include="..\Common\mutex.cpp" />
     <ClCompile Include="..\Common\NetWorkManager.cpp" />
-    <ClCompile Include="..\Common\Sem.cpp" />
     <ClCompile Include="..\Common\TaxasPokerPeerCard.cpp" />
-    <ClCompile Include="..\Common\ThreadMod.cpp" />
     <ClCompile Include="..\Common\Utility.cpp" />
+    <ClCompile Include="..\Server\ServerCommon\mutex.cpp" />
+    <ClCompile Include="..\Server\ServerCommon\Sem.cpp" />
+    <ClCompile Include="..\Server\ServerCommon\ThreadMod.cpp" />
     <ClCompile Include="src\Client.cpp" />
     <ClCompile Include="src\IScene.cpp" />
     <ClCompile Include="src\LoginScene.cpp" />
@@ -118,13 +118,13 @@
     <ClInclude Include="..\Common\LogManager.h" />
     <ClInclude Include="..\Common\MessageDefine.h" />
     <ClInclude Include="..\Common\MessageIdentifer.h" />
-    <ClInclude Include="..\Common\mutex.h" />
     <ClInclude Include="..\Common\NetWorkManager.h" />
-    <ClInclude Include="..\Common\Sem.h" />
     <ClInclude Include="..\Common\TaxasPokerMessage.h" />
     <ClInclude Include="..\Common\TaxasPokerPeerCard.h" />
-    <ClInclude Include="..\Common\ThreadMod.h" />
     <ClInclude Include="..\Common\Utility.h" />
+    <ClInclude Include="..\Server\ServerCommon\mutex.h" />
+    <ClInclude Include="..\Server\ServerCommon\Sem.h" />
+    <ClInclude Include="..\Server\ServerCommon\ThreadMod.h" />
     <ClInclude Include="src\Client.h" />
     <ClInclude Include="src\IScene.h" />
     <ClInclude Include="src\LoginScene.h" />

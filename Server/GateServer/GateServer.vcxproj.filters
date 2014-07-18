@@ -11,6 +11,9 @@
     <Filter Include="Common">
       <UniqueIdentifier>{f26cfe53-59d1-471b-b5a5-9d3c3648078b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="SvrCommon">
+      <UniqueIdentifier>{aeb70d7d-6961-4979-97ee-a8af404199fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\CommonDefine.h">
@@ -28,16 +31,7 @@
     <ClInclude Include="..\..\Common\MessageIdentifer.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ServerNetwork.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\Utility.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\Timer.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="src\GateClient.h">
@@ -52,11 +46,20 @@
     <ClInclude Include="src\main.h">
       <Filter>head</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\ServerConfig.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\IConfigFile.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerConfig.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerNetwork.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\Timer.h">
+      <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -66,13 +69,7 @@
     <ClCompile Include="..\..\Common\LogManager.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ServerNetwork.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Common\Utility.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\Timer.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="src\GateClient.cpp">
@@ -87,11 +84,17 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ServerConfig.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Common\IConfigFile.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\Timer.cpp">
+      <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

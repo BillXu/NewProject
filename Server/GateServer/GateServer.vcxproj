@@ -56,7 +56,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -74,7 +74,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -92,11 +92,11 @@
     <ClInclude Include="..\..\Common\LogManager.h" />
     <ClInclude Include="..\..\Common\MessageDefine.h" />
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
-    <ClInclude Include="..\..\Common\ServerConfig.h" />
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h" />
-    <ClInclude Include="..\..\Common\ServerNetwork.h" />
-    <ClInclude Include="..\..\Common\Timer.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
+    <ClInclude Include="..\ServerCommon\ServerNetwork.h" />
+    <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\ClientManager.h" />
     <ClInclude Include="src\GateClient.h" />
     <ClInclude Include="src\GateServer.h" />
@@ -106,10 +106,10 @@
     <ClCompile Include="..\..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\..\Common\LogManager.cpp" />
-    <ClCompile Include="..\..\Common\ServerConfig.cpp" />
-    <ClCompile Include="..\..\Common\ServerNetwork.cpp" />
-    <ClCompile Include="..\..\Common\Timer.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp" />
+    <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\ClientManager.cpp" />
     <ClCompile Include="src\GateClient.cpp" />
     <ClCompile Include="src\GateServer.cpp" />

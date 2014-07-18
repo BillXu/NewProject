@@ -13,14 +13,11 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="SvrCommon">
+      <UniqueIdentifier>{ad486e5a-a3c9-4d6a-9cd8-b3aa5c0bc38b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\ThreadMod.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\ServerNetwork.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -39,33 +36,30 @@
     <ClCompile Include="..\..\Common\IConfigFile.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ServerConfig.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Common\LogManager.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\mutex.cpp">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Common\Utility.cpp">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="..\ServerCommon\mutex.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ThreadMod.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\ThreadMod.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\MessageDefine.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\MessageIdentifer.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ServerNetwork.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="src\PushNotificationThread.h">
@@ -83,20 +77,29 @@
     <ClInclude Include="..\..\Common\IConfigFile.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\ServerConfig.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\CommonDefine.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\LogManager.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\mutex.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\Utility.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\mutex.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ThreadMod.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerConfig.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerNetwork.h">
+      <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

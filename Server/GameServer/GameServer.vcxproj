@@ -54,7 +54,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;GAME_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -72,7 +72,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;GAME_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,13 +100,13 @@
     <ClInclude Include="..\..\Common\NetWorkManager.h" />
     <ClInclude Include="..\..\Common\PeerCard.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
-    <ClInclude Include="..\..\Common\ServerConfig.h" />
     <ClInclude Include="..\..\Common\ServerMessageDefine.h" />
     <ClInclude Include="..\..\Common\ShopConfg.h" />
     <ClInclude Include="..\..\Common\TaxasPokerMessage.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
-    <ClInclude Include="..\..\Common\Timer.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
+    <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\Brocaster.h" />
     <ClInclude Include="src\EventCenter.h" />
     <ClInclude Include="src\Events.h" />
@@ -147,11 +147,11 @@
     <ClCompile Include="..\..\Common\NetWorkManager.cpp" />
     <ClCompile Include="..\..\Common\PeerCard.cpp" />
     <ClCompile Include="..\..\Common\RoomConfig.cpp" />
-    <ClCompile Include="..\..\Common\ServerConfig.cpp" />
     <ClCompile Include="..\..\Common\ShopConfg.cpp" />
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp" />
-    <ClCompile Include="..\..\Common\Timer.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\Brocaster.cpp" />
     <ClCompile Include="src\EventCenter.cpp" />
     <ClCompile Include="src\GameRank.cpp" />

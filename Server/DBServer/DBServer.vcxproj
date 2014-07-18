@@ -54,7 +54,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./src/include;./src/include/atomic;./src/include/mysys;../../Common/pthreadLib;../../Common;../../Common/NetLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./src/include;./src/include/atomic;./src/include/mysys;../ServerCommon/pthreadLib;../../Common;../ServerCommon;../../Common/NetLib;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -72,7 +72,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./src/include;./src/include/atomic;./src/include/mysys;../../Common/pthreadLib;../../Common;../../Common/NetLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./src/include;./src/include/atomic;./src/include/mysys;../ServerCommon/pthreadLib;../../Common;../ServerCommon;../../Common/NetLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,13 +90,13 @@
     <ClInclude Include="..\..\Common\LogManager.h" />
     <ClInclude Include="..\..\Common\MessageDefine.h" />
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
-    <ClInclude Include="..\..\Common\mutex.h" />
-    <ClInclude Include="..\..\Common\Sem.h" />
-    <ClInclude Include="..\..\Common\ServerConfig.h" />
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h" />
-    <ClInclude Include="..\..\Common\ServerNetwork.h" />
-    <ClInclude Include="..\..\Common\ThreadMod.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\mutex.h" />
+    <ClInclude Include="..\ServerCommon\Sem.h" />
+    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
+    <ClInclude Include="..\ServerCommon\ServerNetwork.h" />
+    <ClInclude Include="..\ServerCommon\ThreadMod.h" />
     <ClInclude Include="src\DataBaseThread.h" />
     <ClInclude Include="src\DBApp.h" />
     <ClInclude Include="src\DBManager.h" />
@@ -109,12 +109,12 @@
     <ClCompile Include="..\..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\..\Common\LogManager.cpp" />
-    <ClCompile Include="..\..\Common\mutex.cpp" />
-    <ClCompile Include="..\..\Common\Sem.cpp" />
-    <ClCompile Include="..\..\Common\ServerConfig.cpp" />
-    <ClCompile Include="..\..\Common\ServerNetwork.cpp" />
-    <ClCompile Include="..\..\Common\ThreadMod.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\mutex.cpp" />
+    <ClCompile Include="..\ServerCommon\Sem.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp" />
+    <ClCompile Include="..\ServerCommon\ThreadMod.cpp" />
     <ClCompile Include="src\DataBaseThread.cpp" />
     <ClCompile Include="src\DBApp.cpp" />
     <ClCompile Include="src\DBManager.cpp" />
