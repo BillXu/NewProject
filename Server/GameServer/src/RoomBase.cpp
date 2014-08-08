@@ -35,7 +35,7 @@ void CRoomBase::Init( unsigned int nRoomID , unsigned char nMaxSeat )
 	m_nRoomID = nRoomID ;
 	m_nRoomLevel = 0 ;
 	m_nMaxSeat = nMaxSeat ;
-	m_eRoomState = eRoomState_WaitPeerToJoin ;
+	m_eRoomState = eRoomState_Golden_WaitPeerToJoin ;
 	m_vRoomPeer = new CRoomPeer*[nMaxSeat];
 	m_nMaxTakeIn = 10000;
 	SetWaitOperateTime(13);

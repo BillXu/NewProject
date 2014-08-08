@@ -166,6 +166,11 @@ void CPoker::InitBaccarat()
 	RestAllPoker() ;
 }
 
+void CPoker::InitGolden()
+{
+	CLogMgr::SharedLogMgr()->ErrorLog("Implement this method please ");
+}
+
 unsigned char CPoker::GetCardWithCompositeNum()
 {
 	if ( m_nCardCount <= m_nCurIdx )

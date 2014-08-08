@@ -2,165 +2,174 @@
 #pragma pack(push)
 #pragma pack(1)
 #include "MessageDefine.h"
-struct stRoomPeerBrifInfo
-{
-	unsigned  int nSessionID ;
-	unsigned char nIdx ; // index in the room ;
-    unsigned char ePeerState ; // peer state ;  eRoomPeerState
-	char pName[MAX_LEN_CHARACTER_NAME] ;
-	unsigned char nTitle ;
-	unsigned int nCoin ;
-	unsigned int nBetCoin ;
-	char nDefaulPhotoID ;     
-	unsigned int nUserDefinePhotoID ;
-};
+#include "CommonData.h"
 
-struct stMsgRoomCurInfo
-	:public stMsg 
-{
-	 stMsgRoomCurInfo(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROOM_CURRENT_INFO ; }
-public:
-     char nSelfIdx ; // server roomidx ;
-    
-     unsigned int nRoomID ;  // used it to get curRoomInfo ;
-	 int nSingleBetCoin;
-	 int nTotalBetCoin; 
-	 unsigned short nRound ;
-	 unsigned char eRoomSate ;  // eRoomState 
-	 unsigned char nPlayerCount ;
-	 stRoomPeerBrifInfo* pInfos ;
-};
-
-struct stMsgRoomPlayerEnter
+struct stMsgGoldenRoomEnter
 	:public stMsg
 {
-public:
-	stMsgRoomPlayerEnter(){cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_PLAYER_ENTER ; }
-	stRoomPeerBrifInfo nEnterPlayerInfo ;
+	stMsgGoldenRoomEnter(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_ENTER ; }
+	stGoldenPeerData tPeerEnterPeerData ;
 };
 
-struct stMsgRoomReady
+struct stMsgGoldenRoomInfo
 	:public stMsg
 {
-public:
-	stMsgRoomReady(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROOM_READY ; }
+	stMsgGoldenRoomInfo(){cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_INFO ; }
+	stRoomGoldenDataOnly tData ;
+	unsigned char nSelfIdx ;
+	unsigned char nPeerCnt ;
+	stGoldenPeerData* pPeers ;
 };
 
-struct stMsgRoomRet
-	:public stMsg 
-{
-	stMsgRoomRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_RET ; }
-	unsigned char nRet ; // 0 means success , 1 room state not fitable , 2 add money should greate than crrent ; 3 , unlegal pk target ;
-};
-
-struct stMsgRoomPlayerReady
+struct stMsgGoldenRoomPlayerReady
 	:public stMsg
 {
-	stMsgRoomPlayerReady(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_PLAYER_READY  ; }
-	unsigned nReadyPlayerSessionID ; 
+	stMsgGoldenRoomPlayerReady(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_READY ; }
 };
 
-struct stMsgDistributeCard
-:public stMsg
+struct stMsgGoldenRoomPlayerReadyRet
+	:public stMsg
 {
-    stMsgDistributeCard(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_DISTRIBUTE_CARD ; }
-	char nCurMainIdx ;
-} ;
-
-struct stMsgRoomWaitPlayerAction
-:public stMsg
-{
-    stMsgRoomWaitPlayerAction(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_WAIT_PLAYER_ACTION ; }
-    unsigned int nSessionID ;
-    unsigned short nRound ;
+	stMsgGoldenRoomPlayerReadyRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_READY ; }
+	unsigned char nRet ; // 0 success , 1 room state not fit , 2 coin too few ;
 };
 
-struct stMsgRoomFollow
-:public stMsg
+struct stMsgGoldenRoomReady
+	:public stMsgGoldenRoomPlayerReady
 {
-    stMsgRoomFollow(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROOM_FOLLOW ; }
-} ;
-
-struct stMsgRoomPlayerFollow
-:public stMsg
-{
-    stMsgRoomPlayerFollow(){cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_PLAYER_FOLLOW ;}
-    unsigned int nSessionID ;
-} ;
-
-struct stMsgRoomAdd
-:public stMsg
-{
-    stMsgRoomAdd(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROOM_ADD ; }
-    int nAddMoney ; //  0 means double ;
+	stMsgGoldenRoomReady(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_READY ; }
+	unsigned char nReadyPlayerIdx ;
 };
 
-
-struct stMsgRoomPlayerAdd
-:public stMsg
+struct stMsgGoldenRoomDistributy
+	:public stMsg
 {
-    stMsgRoomPlayerAdd(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_PLAYER_ADD ;}
-    unsigned int nSessionID ;
-    int nNewSingle ;
-    int nBetCoin ;
+	stMsgGoldenRoomDistributy(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_DISTRIBUTY ; }
+	unsigned char cBankIdx ;
 };
 
-struct stMsgRoomLook
-:public stMsg
+struct stMsgGoldenRoomInformAct
+	:public stMsg
 {
-    stMsgRoomLook(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROOM_LOOK ; }
-} ;
-
-struct stMsgRoomPlayerLook
-:public stMsg
-{
-    stMsgRoomPlayerLook(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_PLAYER_LOOK ; }
-    unsigned int nSessionID ;
-	char vCard[3] ;
+	stMsgGoldenRoomInformAct(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_INFORM_ACT ;}
+	unsigned char nActIdx ;
+	unsigned short nRound ;
+	uint64_t nCurMaxBet ;
+	uint64_t nTotalBetCoin ;
 };
 
-struct stMsgRoomPK
-:public stMsg
+struct stMsgGoldenRoomPlayerLook
+	:public stMsg
 {
-    stMsgRoomPK(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROOM_PK ; }
-    unsigned int nPKWithSessionID ;
+	stMsgGoldenRoomPlayerLook(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_LOOK ; }
 };
 
-struct stMsgRoomPlayerPK
-:public stMsg
+struct stMsgGoldenRoomPlayerLookRet
+	:public stMsg
 {
-    stMsgRoomPlayerPK(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_PLAYER_PK ; }
-    unsigned int nPKInvokeSessionID ;
-    unsigned int nPKWithSessionID ;
-    int nConsumCoin ;// pk will comsum Invoker's coin ;
-    bool bWin ;
+	stMsgGoldenRoomPlayerLookRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_LOOK; }
+	unsigned char vCard[GOLDEN_PEER_CARD] ;
 };
 
-struct stMsgRoomGiveUp
-:public stMsg
+struct stMsgGoldenRoomLook
+	:public stMsgGoldenRoomPlayerLookRet
 {
-    stMsgRoomGiveUp(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROOM_GIVEUP ; }
+	stMsgGoldenRoomLook(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_LOOK; }
+	unsigned char cLookPlayerIdx ;
 };
 
-struct stMsgRoomPlayerGiveUp
-:public stMsg
+struct stMsgGoldenRoomPlayerGiveUp
+	:public stMsg
 {
-    stMsgRoomPlayerGiveUp(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_PLAYER_GIVEUP ; }
-    char nIdx ;
-} ;
-
-struct stResultData
-{
-    char idx ;
-    char vCard[3] ;
-    int nResultCoin ; // 0 < loss , > 0 win ;
+	stMsgGoldenRoomPlayerGiveUp(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_GIVEUP ; }
 };
 
-struct stMsgRoomResult
-:public stMsg
+struct stMsgGoldenRoomPlayerGiveUpRet
+	:public stMsg
 {
-    stMsgRoomResult(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_RESULT ;}
-    char nCount ;
-    stResultData* pResultData ;
+	stMsgGoldenRoomPlayerGiveUpRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_GIVEUP ; }
+	unsigned char nRet ; // 0 success , 1 room state error , 2 self state error ;
 };
+
+struct stMsgGoldenRoomGiveUp
+	:public stMsg
+{
+	stMsgGoldenRoomGiveUp(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_GIVEUP ; }
+	unsigned char nGiveUpIdx ;
+};
+
+struct stMsgGoldenRoomPlayerFollow
+	:public stMsg
+{
+	stMsgGoldenRoomPlayerFollow(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_FOLLOW ; }
+	uint64_t nFollowCoin ;
+};
+
+struct stMsgGoldenRoomPlayerFollowRet
+	:public stMsg
+{
+	stMsgGoldenRoomPlayerFollowRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_FOLLOW ; }
+	unsigned char nRet ; // 0 success , 1 not your turn, 2  coin not enough 
+};
+
+struct stMsgGoldenRoomFollow
+	:public stMsgGoldenRoomPlayerFollow
+{
+	stMsgGoldenRoomFollow(){ ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_FOLLOW ; }
+	unsigned char nFollowIdx ;
+};
+
+struct stMsgGoldenRoomPlayerAdd 
+	:public stMsg
+{
+	stMsgGoldenRoomPlayerAdd(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_ADD ; }
+	uint64_t nAddCoin ;
+};
+
+struct stMsgGoldenRoomPlayerAddRet
+	:public stMsg
+{
+	stMsgGoldenRoomPlayerAddRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_ADD ; }
+	unsigned char nRet ; // 0 success , 1 money is not enough , 2 not your turn ;
+};
+
+struct stMsgGoldenRoomAdd
+	:public stMsgGoldenRoomPlayerAdd
+{
+	stMsgGoldenRoomAdd(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_ADD ; }
+	unsigned char nActIdx ;
+};
+
+struct stMsgGoldenRoomPlayerPK
+	:public stMsg
+{
+	stMsgGoldenRoomPlayerPK(){ cSysIdentifer = ID_MSG_C2GAME ;usMsgType = MSG_GOLDEN_ROOM_PLAYER_PK ; }
+	unsigned char nPkTargetIdx ;
+};
+
+struct stMsgGoldenRoomPlayerPKRet
+	:public stMsg
+{
+	stMsgGoldenRoomPlayerPKRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_PK ; }
+	unsigned char cRet ; // 0 success , 1 not youre turn , 2 target not invalid ;
+};
+
+struct stMsgGoldenRoomPK
+	:public stMsg
+{
+	stMsgGoldenRoomPK(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_PK ; }
+	unsigned char nActPlayerIdx ;
+	unsigned char nTargetIdx ;
+	bool bWin ; 
+};
+
+struct stMsgGoldenRoomResult
+	:public stMsg
+{
+	stMsgGoldenRoomResult(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_RESULT ; }
+	unsigned char cWinnerIdx ;
+	uint64_t nWinCoin ;
+	unsigned char vCard[GOLDEN_PEER_CARD] ;
+};
+
 #pragma pack(pop)

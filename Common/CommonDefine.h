@@ -10,6 +10,7 @@
 #define MAX_LEN_ROOM_NAME 25
 #define RESEVER_GAME_SERVER_PLAYERS 100 
 #define PEER_CARD_COUNT 3
+#define GOLDEN_PEER_CARD 3
 #define MAX_ROOM_PEER 5
 #define MAX_TAXAS_HOLD_CARD 5
 
@@ -36,12 +37,13 @@ enum eRoomType
 enum eRoomState
 {
 	eRoomState_None,
-	eRoomState_WaitPeerToJoin,
-	eRoomState_WaitPeerToGetReady,
-	eRoomState_DistributeCard,
-	eRoomState_WaitPeerAction,
-	eRoomState_PKing,
-	eRoomState_ShowingResult,
+	// state for golden 
+	eRoomState_Golden_WaitPeerToJoin = eRoomState_None,
+	eRoomState_Golden_WaitPeerReady,
+	eRoomState_Golden_DistributeCard,
+	eRoomState_Golden_WaitPeerAction,
+	eRoomState_Golden_PKing,
+	eRoomState_Golden_ShowingResult,
 	// state for pai_jiu
 	eRoomState_PJ_WaitBanker,
 	eRoomState_PJWaitNewBankerChoseShuffle,
@@ -53,7 +55,7 @@ enum eRoomState
 	eRoomState_PJ_Settlement, // jie suan ;
 	eRoomState_PJ_BankerSelectGoOn,
 	// state for texas poker
-	eRoomState_TP_WaitJoin,
+	eRoomState_TP_WaitJoin = eRoomState_None,
 	eRoomState_TP_Player_Distr,
 	eRoomState_TP_Distr_Public,
 	eRoomState_TP_Wait_Bet,
@@ -75,6 +77,13 @@ enum eRoomState
 #define TIME_ROOM_WAIT_PEER_ACTION 30
 #define TIME_ROOM_PK_DURATION 5
 #define TIME_ROOM_SHOW_RESULT 5
+
+// Golden room time 
+#define TIME_GOLDEN_ROOM_WAIT_READY 10
+#define TIME_GOLDEN_ROOM_DISTRIBUTY 3
+#define TIME_GOLDEN_ROOM_WAIT_ACT 10
+#define TIME_GOLDEN_ROOM_PK 4
+#define TIME_GOLDEN_ROOM_RESULT 5
 
 enum eDBAct
 {
@@ -102,11 +111,14 @@ enum eRoomSeat
 enum eRoomPeerState
 {
 	eRoomPeer_None,
-	eRoomPeer_Ready ,
-    eRoomPeer_Look,
-	eRoomPeer_Unlook,
-	//eRoomPeer_GiveUp = 0 ,
-	eRoomPeer_Failed,
+	// peer state for golden peer 
+	eRoomPeer_Golden_Playing = 1 ,
+	eRoomPeer_Golden_WaitNextPlay = 1 << 1 ,
+	eRoomPeer_Golden_WaitToReady = 1 << 2 ,
+	eRoomPeer_Golden_Ready  = (1 << 3) | eRoomPeer_Golden_Playing  ,
+    eRoomPeer_Golden_Look = (1 << 4) | eRoomPeer_Golden_Playing ,
+	eRoomPeer_Golden_GiveUp = 1 << 5,
+	eRoomPeer_Golden_PK_Failed = 1 << 6 ,
 
 	// peer state for taxas poker peer
 	eRoomPeer_SitDown = 1,

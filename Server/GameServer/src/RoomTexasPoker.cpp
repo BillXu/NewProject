@@ -417,7 +417,7 @@ bool CRoomTexasPoker::OnPeerMsg(CRoomPeer* pPeer, stMsg* pmsg )
 					msgPlayerSitDown.tPlayerInfo.nSessionID = pTPPeer->GetSessionID() ;
 					memset(msgPlayerSitDown.tPlayerInfo.vCards,0,sizeof(msgPlayerSitDown.tPlayerInfo.vCards));
 					SendMsgRoomPeers(&msgPlayerSitDown,sizeof(msgPlayerSitDown)) ;
-					if ( GetRoomState() == eRoomState_WaitPeerToJoin && GetRoomPeerCount() >= 2 )
+					if ( GetRoomState() == eRoomState_TP_WaitJoin && GetRoomPeerCount() >= 2 )
 					{
 						GoToState(eRoomState_TP_Player_Distr) ;
 					}

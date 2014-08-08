@@ -1,6 +1,6 @@
 #include "GateClient.h"
 #include "GateServer.h"
-#define TIME_WAIT_FOR_RECONNECTE 3
+#define TIME_WAIT_FOR_RECONNECTE 60
 stGateClient::stGateClient()
 {
 	nSessionId = 0 ;

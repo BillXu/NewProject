@@ -46,6 +46,7 @@ public:
 	unsigned int GetRechargeTimes(){ return m_stBaseData.nRechargeTimes ;}
 	CPlayerOnlineBox* GetOnlineBox(){ return m_pOnlineBox ; }
 	static bool EventFunc(void* pUserData,stEventArg* pArg);
+	stServerBaseData* GetData(){ return &m_stBaseData ;}
 public:
 	friend class CPlayerOnlineBox ;
 protected:

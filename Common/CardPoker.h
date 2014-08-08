@@ -36,6 +36,7 @@ public:
 	void InitPaiJiu() ;
 	void InitTaxasPoker();
 	void InitBaccarat();
+	void InitGolden();
 	unsigned char GetCardWithCompositeNum();
 	unsigned short GetLeftCard(){ return m_nCardCount - m_nCurIdx; }
 	unsigned short GetAllCard(){ return m_nCardCount;  }
