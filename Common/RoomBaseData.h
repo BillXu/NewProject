@@ -17,6 +17,8 @@ public:
 	stPeerBaseData* GetPeerDataBySessionID(unsigned int nSessionID );
 	stPeerBaseData* GetPeerDataByIdx(unsigned char cIdx );
 	stPeerBaseData* GetPeerDataByUserUID(unsigned int nUserUID);
+	char GetRoomIdxBySessionID(unsigned int nSessionID );
+	unsigned int GetSessionIDByIdx(unsigned char nIdx);
 protected:
 	void ClearAllPeers();
 public:

@@ -68,7 +68,7 @@ struct stMsgGoldenRoomPlayerLookRet
 	:public stMsg
 {
 	stMsgGoldenRoomPlayerLookRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_PLAYER_LOOK; }
-	unsigned char vCard[GOLDEN_PEER_CARD] ;
+	unsigned char nRet ; // 0 success , other value error ;
 };
 
 struct stMsgGoldenRoomLook
@@ -76,6 +76,7 @@ struct stMsgGoldenRoomLook
 {
 	stMsgGoldenRoomLook(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_LOOK; }
 	unsigned char cLookPlayerIdx ;
+	unsigned char vCard[GOLDEN_PEER_CARD];
 };
 
 struct stMsgGoldenRoomPlayerGiveUp

@@ -62,6 +62,7 @@ unsigned char CGoldenRoomData::GetNextActIdx()
 
 		// update cur act idx ;
 		GetDataOnly()->cCurActIdx = pPeer->cRoomIdx ;
+		GetDataOnly()->fTimeTick = 0 ;
 		return pPeer->cRoomIdx ;
 	}
 	return -1 ;
@@ -162,5 +163,186 @@ void CGoldenRoomData::DistributeCard()
 			pPeer->vHoldCard[iC] = tPoker.GetCardWithCompositeNum();
 		}
 	}
+}
+
+unsigned char CGoldenRoomData::OnPlayerReady(unsigned int nSessionID) // 0 success , 1 not your turn ,2 state error 
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataBySessionID(nSessionID);
+	if ( !pData)
+	{
+		return 3 ;
+	}
+
+	if ( GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerReady || IS_STATE(pData->nPeerState,eRoomPeer_Golden_WaitToReady) == false)
+	{
+		return 2 ;
+	}
+
+	pData->nPeerState = eRoomPeer_Golden_Ready ;
+	return 0 ;
+}
+
+unsigned char CGoldenRoomData::OnPlayerLook(unsigned int nSessionID)  // 0 success , 1 not your turn ,2 state error
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataBySessionID(nSessionID);
+	if ( !pData)
+	{
+		return 3 ;
+	}
+
+	if ( GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerAction || IS_STATE(pData->nPeerState,eRoomPeer_Golden_Look) || IS_STATE(pData->nPeerState,eRoomPeer_Golden_Playing) == false)
+	{
+		return 2 ;
+	}
+
+	pData->nPeerState = eRoomPeer_Golden_Look ;
+
+	if ( GetDataOnly()->cCurActIdx == pData->cRoomIdx )
+	{
+		GetDataOnly()->fTimeTick = 0 ;
+	}
+
+	return 0 ;
+}
+
+unsigned char CGoldenRoomData::OnPlayerGiveUp(unsigned int nSessionID )  // 0 success , 1 not your turn ,2 state error
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataBySessionID(nSessionID);
+	if ( !pData)
+	{
+		return 3 ;
+	}
+
+	if ( GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerAction || IS_STATE(pData->nPeerState,eRoomPeer_Golden_GiveUp) || IS_STATE(pData->nPeerState,eRoomPeer_Golden_Playing) == false)
+	{
+		return 2 ;
+	}
+
+	pData->nPeerState = eRoomPeer_Golden_GiveUp ;
+	return 0 ;
+}
+
+unsigned char CGoldenRoomData::OnPlayerFollow(unsigned int nSessionID,uint64_t& nFinalFollowCoin) // 0 , means error , other is real finaly follow coin, as princeble needed ;
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataBySessionID(nSessionID);
+	if ( !pData)
+	{
+		return 3 ;
+	}
+
+	if ( GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerAction || IS_STATE(pData->nPeerState,eRoomPeer_Golden_Playing) == false)
+	{
+		return 2 ;
+	}
+
+	if ( GetDataOnly()->cCurActIdx != pData->cRoomIdx )
+	{
+		return 1 ;
+	}
+
+	nFinalFollowCoin = GetDataOnly()->nCurMaxBet * ( IS_STATE(pData->nPeerState,eRoomPeer_Golden_Look) ? 2 : 1 ) ;
+
+	if ( pData->nCurCoin < nFinalFollowCoin )
+	{
+		nFinalFollowCoin = 0 ;
+		return 4 ;
+	}
+
+	pData->nCurCoin -= nFinalFollowCoin ;
+	pData->nBetCoin += nFinalFollowCoin ;
+	GetDataOnly()->nAllBetCoin += nFinalFollowCoin ;
+	return 0 ;
+}
+
+unsigned char CGoldenRoomData::OnPlayerAdd(unsigned int nSessionId,uint64_t nAddCoin, uint64_t& nFinalBetCoin ) // when this player looked card then nFinal coin adn add coin is not equal ;
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataBySessionID(nSessionId);
+	if ( !pData)
+	{
+		return 3 ;
+	}
+
+	if ( GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerAction || IS_STATE(pData->nPeerState,eRoomPeer_Golden_Playing) == false)
+	{
+		return 2 ;
+	}
+
+	if ( GetDataOnly()->cCurActIdx != pData->cRoomIdx )
+	{
+		return 1 ;
+	}
+
+	if ( nAddCoin <= GetDataOnly()->nCurMaxBet )
+	{
+		return 5 ;
+	}
+
+	nFinalBetCoin = nAddCoin * ( IS_STATE(pData->nPeerState,eRoomPeer_Golden_Look) ? 2 : 1 ) ;
+
+	if ( pData->nCurCoin < nFinalBetCoin )
+	{
+		nFinalBetCoin = 0 ;
+		return 4 ;
+	}
+
+	pData->nCurCoin -= nFinalBetCoin ;
+	pData->nBetCoin += nFinalBetCoin ;
+	GetDataOnly()->nAllBetCoin += nFinalBetCoin ;
+
+	GetDataOnly()->nCurMaxBet = nAddCoin ;
+	return 0 ;
+}
+
+unsigned char CGoldenRoomData::OnPlayerPK(unsigned char idx , unsigned char cTargetIdx , bool& bWin )  // 0 success , 1 not your turn ,2 state error 
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataByIdx(idx);
+	if ( !pData)
+	{
+		return 3 ;
+	}
+
+	if ( GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerAction || IS_STATE(pData->nPeerState,eRoomPeer_Golden_Playing) == false)
+	{
+		return 2 ;
+	}
+
+	if ( GetDataOnly()->cCurActIdx != pData->cRoomIdx )
+	{
+		return 1 ;
+	}
+
+	stGoldenPeerData* pTargetData = (stGoldenPeerData*)GetPeerDataByIdx(cTargetIdx);
+	if ( !pData )
+	{
+		return 4 ;
+	}
+
+	if (  IS_STATE(pTargetData->nPeerState,eRoomPeer_Golden_Playing) == false)
+	{
+		return 5 ;
+	}
+
+	m_tPeerCard.SetPeerCardByNumber(pData->vHoldCard[0],pData->vHoldCard[1],pData->vHoldCard[2]);
+	m_tPeerCardTarget.SetPeerCardByNumber(pTargetData->vHoldCard[0],pTargetData->vHoldCard[1],pTargetData->vHoldCard[2]);
+	bWin = m_tPeerCard.PKPeerCard(&m_tPeerCardTarget) ;
+	if ( bWin )
+	{
+		pTargetData->nPeerState = eRoomPeer_Golden_PK_Failed;
+	}
+	else
+	{
+		pData->nPeerState = eRoomPeer_Golden_PK_Failed;
+	}
+
+	uint64_t nPKCoin = GetDataOnly()->nCurMaxBet * ( IS_STATE(pData->nPeerState,eRoomPeer_Golden_Look) ? 2 : 1 ) ;
+	if ( pData->nCurCoin < nPKCoin )
+	{
+		nPKCoin = pData->nCurCoin ;
+	}
+
+	pData->nCurCoin -= nPKCoin ;
+	pData->nBetCoin += nPKCoin ;
+	GetDataOnly()->nAllBetCoin += nPKCoin ;
+	return 0 ;
 }
 

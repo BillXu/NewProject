@@ -110,6 +110,27 @@ unsigned char CRoomBaseData::GetPlayingSeatCnt()
 	return m_pData->cMaxPlayingPeers - GetEmptySeatCnt() ;
 }
 
+char CRoomBaseData::GetRoomIdxBySessionID(unsigned int nSessionID )
+{
+	stPeerBaseData* pData = GetPeerDataBySessionID(nSessionID) ;
+	if ( !pData )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("this peer may not in this room session id = %d",nSessionID) ;
+		return -1 ;
+	}
+	return pData->nSessionID ;
+}
+
+unsigned int CRoomBaseData::GetSessionIDByIdx(unsigned char nIdx)
+{
+	stPeerBaseData* pData = GetPeerDataByIdx(nIdx) ;
+	if ( !pData )
+	{
+		return 0 ;
+	}
+	return pData->nSessionID ;
+}
+
 void CRoomBaseData::ClearAllPeers()
 {
 	for ( unsigned char idx = 0 ; idx < m_pData->cMaxPlayingPeers ; ++idx )

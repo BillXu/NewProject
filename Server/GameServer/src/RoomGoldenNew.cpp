@@ -145,7 +145,7 @@ void CRoomGoldenNew::Update(float fTimeElpas, unsigned int nTimerID )
 			
 			if ( !GameOverCheckAndProcess() )
 			{
-				GoToState(eRoomState_Golden_WaitPeerAction);
+				NextPlayerAct();
 			}
 		}
 		break;
@@ -213,7 +213,130 @@ bool CRoomGoldenNew::OnMessage(CPlayer*pSender, stMsg* pmsg)
 	{
 		return true ;
 	}
-	return false ;
+
+	switch (pmsg->usMsgType )
+	{
+	case MSG_GOLDEN_ROOM_PLAYER_READY:
+		{
+			stMsgGoldenRoomPlayerReadyRet msgBack ;
+			msgBack.nRet = GetRoomData()->OnPlayerReady(pSender->GetSessionID());
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgGoldenRoomReady msgAll ;
+				msgAll.nReadyPlayerIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID());
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
+			}
+		}
+		break;
+	case MSG_GOLDEN_ROOM_PLAYER_LOOK:
+		{
+			stMsgGoldenRoomPlayerLookRet msgBack ;
+			msgBack.nRet = GetRoomData()->OnPlayerLook(pSender->GetSessionID());
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+
+			if (msgBack.nRet == 0 )
+			{
+				stMsgGoldenRoomLook msgAll ;
+				msgAll.cLookPlayerIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID());
+				stGoldenPeerData* peer = (stGoldenPeerData*)GetRoomData()->GetPeerDataBySessionID(pSender->GetSessionID()) ;
+				memcpy(msgAll.vCard,peer->vHoldCard,sizeof(msgAll.vCard));
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
+
+				if ( GetRoomData()->GetDataOnly()->cCurActIdx == GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) )
+				{
+					GetRoomData()->GetDataOnly()->fTimeTick = 0 ;
+				}
+			}
+		}
+		break;
+	case MSG_GOLDEN_ROOM_PLAYER_GIVEUP:
+		{
+			stMsgGoldenRoomPlayerGiveUpRet msgBack ;
+			msgBack.nRet = GetRoomData()->OnPlayerGiveUp(pSender->GetSessionID());
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgGoldenRoomGiveUp msgAll ;
+				msgAll.nGiveUpIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) ;
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
+
+				if ( GameOverCheckAndProcess() == false )
+				{
+					if ( GetRoomData()->GetDataOnly()->cCurActIdx == GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) )
+					{
+						NextPlayerAct();
+					}
+				}
+			}
+		}
+		break;
+	case MSG_GOLDEN_ROOM_PLAYER_FOLLOW:
+		{
+			uint64_t nFinalCoin = 0;
+
+			stMsgGoldenRoomPlayerFollowRet msgBack ;
+			msgBack.nRet = GetRoomData()->OnPlayerFollow(pSender->GetSessionID(),nFinalCoin) ;
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+
+			if ( 0 == msgBack.nRet )
+			{
+				stMsgGoldenRoomFollow msgAll ;
+				msgAll.nFollowIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) ;
+				msgAll.nFollowCoin = nFinalCoin ;
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
+
+				NextPlayerAct();
+			}
+		}
+		break;
+	case MSG_GOLDEN_ROOM_PLAYER_ADD:
+		{
+			stMsgGoldenRoomPlayerAdd* pRet = (stMsgGoldenRoomPlayerAdd*)pmsg ;
+
+			uint64_t nFinalCoin = 0 ;
+			stMsgGoldenRoomPlayerAddRet msgBack ;
+			msgBack.nRet = GetRoomData()->OnPlayerAdd(pSender->GetSessionID(),pRet->nAddCoin,nFinalCoin) ;
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgGoldenRoomAdd msgAll ;
+				msgAll.nActIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) ;
+				msgAll.nAddCoin = pRet->nAddCoin;
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
+
+				NextPlayerAct();
+			}
+		}
+		break;
+	case MSG_GOLDEN_ROOM_PLAYER_PK:
+		{
+			stMsgGoldenRoomPlayerPK* pRet = (stMsgGoldenRoomPlayerPK*)pmsg ;
+			bool bwin = false;
+
+			stMsgGoldenRoomPlayerPKRet msgBack ;
+			msgBack.cRet = GetRoomData()->OnPlayerPK(GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()),pRet->nPkTargetIdx,bwin) ;
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+
+			if ( msgBack.cRet == 0 )
+			{
+				stMsgGoldenRoomPK msgAll ;
+				msgAll.nActPlayerIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) ;
+				msgAll.nTargetIdx = pRet->nPkTargetIdx ;
+				msgAll.bWin = bwin ;
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
+
+				GoToState(eRoomState_Golden_PKing) ;
+			}
+		}
+		break;
+	default:
+		return false ;
+	}
+	return true ;
 }
 
 bool CRoomGoldenNew::GameOverCheckAndProcess()
