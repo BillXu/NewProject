@@ -181,10 +181,22 @@ void CRoomGoldenNew::GoToState(unsigned char cTargetState)
 		break;
 	case eRoomState_Golden_DistributeCard:
 		{
-			GetRoomData()->DistributeCard();
+			unsigned char cCount = GetRoomData()->DistributeCard();
 			stMsgGoldenRoomDistributy msg ;
+			msg.nCnt = cCount ;
 			msg.cBankIdx = ((stRoomGoldenDataOnly*)GetRoomDataOnly())->cBankerIdx ;
-			SendMsgBySessionID(&msg,sizeof(msg),0) ;
+			unsigned short nSize = sizeof(msg) + msg.nCnt * sizeof(stGoldenHoldPeerCard);
+			char* pBuffer = new char[nSize];
+			memset(pBuffer,0,nSize);
+			memcpy(pBuffer,&msg,sizeof(msg));
+			bool bDistributeOk = GetRoomData()->MovePeerHoldCardToBuffer(pBuffer+sizeof(msg),nSize - sizeof(msg)) ;
+			if ( !bDistributeOk )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("terrible error , send distribute card error") ;
+			}
+			SendMsgBySessionID((stMsg*)pBuffer,nSize,0) ;
+			delete[] pBuffer ;
+			pBuffer = NULL ;
 		}
 		break;
 	case eRoomState_Golden_WaitPeerAction:

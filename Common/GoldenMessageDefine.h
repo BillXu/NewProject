@@ -46,6 +46,8 @@ struct stMsgGoldenRoomDistributy
 {
 	stMsgGoldenRoomDistributy(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_DISTRIBUTY ; }
 	unsigned char cBankIdx ;
+	unsigned char nCnt ;
+	stGoldenHoldPeerCard* peerCards ;
 };
 
 struct stMsgGoldenRoomInformAct

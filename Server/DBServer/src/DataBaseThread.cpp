@@ -12,6 +12,8 @@ bool CDataBaseThread::InitDataBase( const char* pIP,unsigned pPort , const char*
 	// connect to data base ;
 	// init my_sql ;
 	m_pMySql = mysql_init(NULL);
+	char bReconnect = 1 ;
+	mysql_options(m_pMySql,MYSQL_OPT_RECONNECT,&bReconnect);
 	if ( !mysql_real_connect(m_pMySql,pIP,pUserName,pPassword,pDBName,pPort,NULL,CLIENT_MULTI_STATEMENTS) )
 	{
 		fprintf(stderr, "Failed to connect to database: Error: %s\\n",  mysql_error(m_pMySql));
@@ -20,9 +22,14 @@ bool CDataBaseThread::InitDataBase( const char* pIP,unsigned pPort , const char*
 		m_pMySql = NULL ;
 		return false ;
 	}
+
+	if (!mysql_set_character_set(m_pMySql, "utf8"))
+	{
+		printf("New client character set: %s\n",
+			mysql_character_set_name(m_pMySql));
+	}
+
 	m_bRunning = true ;
-	char bReconnect = 1 ;
-	mysql_options(m_pMySql,MYSQL_OPT_RECONNECT,&bReconnect);
 	//mysql_set_server_option( m_pMySql, MYSQL_OPTION_MULTI_STATEMENTS_ON ); s
 	m_tNextMysqlPingTime = time(NULL) + MYSQL_PING_TIME;
 	return true ;
@@ -49,7 +56,17 @@ void CDataBaseThread::__run()
 
 		if ( time(NULL) >= m_tNextMysqlPingTime )
 		{
+			unsigned long id = mysql_thread_id(m_pMySql);
 			mysql_ping(m_pMySql);
+			if ( id != mysql_thread_id(m_pMySql) )
+			{
+				// reconnected ;
+				if (!mysql_set_character_set(m_pMySql, "utf8"))
+				{
+					printf("Reconnect !!! New client character set: %s\n",
+						mysql_character_set_name(m_pMySql));
+				}
+			}
 			m_tNextMysqlPingTime = time(NULL) + MYSQL_PING_TIME;
 		}
 	}

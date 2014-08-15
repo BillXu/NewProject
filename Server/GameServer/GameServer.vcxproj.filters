@@ -14,14 +14,8 @@
     <Filter Include="src\Room\GoldenPokerRoom">
       <UniqueIdentifier>{7aea3a20-f007-438a-960d-b2117d2e8c91}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Room\Base">
-      <UniqueIdentifier>{522a3b72-34fe-4bc3-b066-3894591e441b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\App">
       <UniqueIdentifier>{cf27c37a-8c66-497b-bb54-dce03e04adc8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Room\TexasPoker">
-      <UniqueIdentifier>{054dbf27-2762-46c0-97ba-89f0948be107}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Config">
       <UniqueIdentifier>{7216439b-75de-4289-97e5-9dca000537d6}</UniqueIdentifier>
@@ -49,6 +43,12 @@
     </Filter>
     <Filter Include="Common\Card">
       <UniqueIdentifier>{721f0a8c-4c1f-4158-b62a-260af1d9daba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Room\TexasPoker">
+      <UniqueIdentifier>{054dbf27-2762-46c0-97ba-89f0948be107}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Room\Base">
+      <UniqueIdentifier>{522a3b72-34fe-4bc3-b066-3894591e441b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

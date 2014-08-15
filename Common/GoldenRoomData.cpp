@@ -1,4 +1,6 @@
 #include "GoldenRoomData.h"
+#include "CommonData.h"
+#include "LogManager.h"
 #include <iostream>
 #define  IS_STATE( SRC,CEK) (((SRC)&(CEK)) == CEK )
 void CGoldenRoomData::Init()
@@ -150,8 +152,9 @@ char CGoldenRoomData::GameOverCheckAndProcess()  // return > 0 means game over r
 	return pWinner->cRoomIdx ;
 }
 
-void CGoldenRoomData::DistributeCard()
+unsigned char CGoldenRoomData::DistributeCard()
 {
+	unsigned char nPlayingPeerCunt = 0 ;
 	for ( int iC = 0 ; iC < GOLDEN_PEER_CARD ; ++iC )
 	{
 		unsigned char nMax = GetDataOnly()->cMaxPlayingPeers ;
@@ -161,8 +164,13 @@ void CGoldenRoomData::DistributeCard()
 			if ( pPeer == NULL || IS_STATE(pPeer->nPeerState,eRoomPeer_Golden_Playing) == false )
 				continue;
 			pPeer->vHoldCard[iC] = tPoker.GetCardWithCompositeNum();
+			if ( iC == 0 )
+			{
+				++nPlayingPeerCunt ;
+			}
 		}
 	}
+	return nPlayingPeerCunt ;
 }
 
 unsigned char CGoldenRoomData::OnPlayerReady(unsigned int nSessionID) // 0 success , 1 not your turn ,2 state error 
@@ -344,5 +352,48 @@ unsigned char CGoldenRoomData::OnPlayerPK(unsigned char idx , unsigned char cTar
 	pData->nBetCoin += nPKCoin ;
 	GetDataOnly()->nAllBetCoin += nPKCoin ;
 	return 0 ;
+}
+
+bool CGoldenRoomData::MovePeerHoldCardToBuffer(char* pBuffer,unsigned short nSize )
+{
+	unsigned char nMax = GetDataOnly()->cMaxPlayingPeers ;
+	stGoldenHoldPeerCard vCard ;
+
+	for ( int i = 0 ; i < nMax ; ++i )
+	{
+		stGoldenPeerData* pPeer = (stGoldenPeerData*)m_vPeerDatas[i];
+		if ( pPeer == NULL || IS_STATE(pPeer->nPeerState,eRoomPeer_Golden_Playing) == false )
+			continue;
+		if ( nSize < sizeof(vCard) )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("move peer hold Card to Buffer error, buffer is too small") ;
+			return false ;
+		}
+		vCard.nIdx = pPeer->cRoomIdx ;
+		memcpy(vCard.vCard,pPeer->vHoldCard,sizeof(vCard.vCard));
+		memcpy(pBuffer,&vCard,sizeof(vCard));
+		pBuffer += sizeof(vCard);
+		nSize -= sizeof(vCard);
+	}
+	return true ;
+}
+
+unsigned char CGoldenRoomData::GetPeerHoldCardFromBuffer(char* pBuffer,unsigned char nPeerCnt)
+{
+	stGoldenHoldPeerCard* pCards = (stGoldenHoldPeerCard*)pBuffer ;
+	unsigned char nRealCnt = 0 ;
+	while(nPeerCnt--)
+	{
+		stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataByIdx(pCards->nIdx) ;
+		if ( pData == NULL )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("hold card from buffer error , peer with idx = %d , is NULL",pCards->nIdx) ;
+			continue;
+		}
+		memcpy(pData->vHoldCard,pCards->vCard,sizeof(pData->vHoldCard));
+		++pCards ;
+		++nRealCnt ;
+	}
+	return nRealCnt ;
 }
 

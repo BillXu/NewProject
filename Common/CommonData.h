@@ -43,4 +43,11 @@ struct stRoomGoldenDataOnly
 	unsigned int nMiniBet ; 
 	uint64_t nCurMaxBet ; 
 };
+
+struct stGoldenHoldPeerCard
+{
+	unsigned char nIdx ;
+	unsigned char vCard[GOLDEN_PEER_CARD];
+};
+
 #pragma pack(pop)
