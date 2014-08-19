@@ -78,7 +78,6 @@ struct stMsgGoldenRoomLook
 {
 	stMsgGoldenRoomLook(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_LOOK; }
 	unsigned char cLookPlayerIdx ;
-	unsigned char vCard[GOLDEN_PEER_CARD];
 };
 
 struct stMsgGoldenRoomPlayerGiveUp
@@ -172,7 +171,6 @@ struct stMsgGoldenRoomResult
 	stMsgGoldenRoomResult(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_GOLDEN_ROOM_RESULT ; }
 	unsigned char cWinnerIdx ;
 	uint64_t nWinCoin ;
-	unsigned char vCard[GOLDEN_PEER_CARD] ;
 };
 
 #pragma pack(pop)

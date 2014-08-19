@@ -253,7 +253,6 @@ bool CRoomGoldenNew::OnMessage(CPlayer*pSender, stMsg* pmsg)
 				stMsgGoldenRoomLook msgAll ;
 				msgAll.cLookPlayerIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID());
 				stGoldenPeerData* peer = (stGoldenPeerData*)GetRoomData()->GetPeerDataBySessionID(pSender->GetSessionID()) ;
-				memcpy(msgAll.vCard,peer->vHoldCard,sizeof(msgAll.vCard));
 				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
 
 				if ( GetRoomData()->GetDataOnly()->cCurActIdx == GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) )
@@ -363,7 +362,6 @@ bool CRoomGoldenNew::GameOverCheckAndProcess()
 	msgResult.cWinnerIdx = nWinerIdx ;
 	msgResult.nWinCoin = ((stRoomGoldenDataOnly*)GetRoomDataOnly())->nAllBetCoin ;
 	stGoldenPeerData* pdata = (stGoldenPeerData*)GetRoomData()->GetPeerDataByIdx(nWinerIdx) ;
-	memcpy(msgResult.vCard,pdata->vHoldCard,sizeof(msgResult.vCard));
 	SendMsgBySessionID(&msgResult,sizeof(msgResult),0) ;
 
 	GoToState(eRoomState_Golden_ShowingResult) ;
