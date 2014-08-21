@@ -14,11 +14,13 @@ public:
 	void RemovePeer(unsigned int nSessionID );
 	unsigned char GetEmptySeatCnt();
 	unsigned char GetPlayingSeatCnt();
+	unsigned char GetMaxSeat();
 	stPeerBaseData* GetPeerDataBySessionID(unsigned int nSessionID );
 	stPeerBaseData* GetPeerDataByIdx(unsigned char cIdx );
 	stPeerBaseData* GetPeerDataByUserUID(unsigned int nUserUID);
 	char GetRoomIdxBySessionID(unsigned int nSessionID );
 	unsigned int GetSessionIDByIdx(unsigned char nIdx);
+	virtual void SetRoomState(unsigned short nRoomState );
 protected:
 	void ClearAllPeers();
 public:

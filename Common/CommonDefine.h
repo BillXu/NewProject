@@ -17,8 +17,10 @@
 #define COIN_CONDITION_TO_GET_CHARITY 1000
 #define TIME_GET_CHARITY_ELAPS 60*60*2   // 2 HOURE
 #define COIN_FOR_CHARITY 20000
+#define GOLDEN_ROOM_COIN_LEVEL_CNT 4
+#define GOLDEN_PK_ROUND 2
 
-#ifdef POKER_CLIENT
+#ifndef GAME_SERVER
 #define PIEXL_TO_POINT(px) (px)/CC_CONTENT_SCALE_FACTOR()
 #define FOINT_NAME "Helvetica"
 #endif
@@ -84,6 +86,8 @@ enum eRoomState
 #define TIME_GOLDEN_ROOM_WAIT_ACT 10
 #define TIME_GOLDEN_ROOM_PK 4
 #define TIME_GOLDEN_ROOM_RESULT 5
+
+static unsigned char s_vChangeCardDimonedNeed[GOLDEN_PEER_CARD] = {0,4,8} ;
 
 enum eDBAct
 {

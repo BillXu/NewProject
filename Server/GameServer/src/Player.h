@@ -3,7 +3,7 @@
 #include "Timer.h"
 class CPlayerBaseData ;
 struct stMsg ;
-class CRoomBase ;
+class CRoomBaseNew ;
 class CPlayer
 	:public CTimerDelegate
 {
@@ -32,7 +32,7 @@ public:
 	void SetState(ePlayerState eSate ){ m_eSate = eSate ; }
 	void OnAnotherClientLoginThisPeer(unsigned int nSessionID );
 	void PostPlayerEvent(stPlayerEvetArg* pEventArg );
-	CRoomBase* GetRoomCurStateIn();
+	CRoomBaseNew* GetRoomCurStateIn();
 	void OnTimerSave(float fTimeElaps,unsigned int nTimerID );
 protected:
 	bool ProcessPublicPlayerMsg(stMsg* pMsg);
@@ -44,4 +44,5 @@ protected:
 	ePlayerState m_eSate ;
 	CTimer* m_pTimerSave ;
 	bool m_bDisconnected ;
+	CRoomBaseNew* m_pCurRoom ;
 }; 

@@ -22,6 +22,7 @@
 #include "RobotManager.h"
 #include "BaccaratPeer.h"
 #include "TaxasPokerMessage.h"
+#include "RoomBaseNew.h"
 #define TIME_SAVE 60*20
 CPlayer::CPlayer( )
 {
@@ -187,115 +188,41 @@ void CPlayer::OnMessage(stMsg* pMsg )
 		}
 		return ;
 	case MSG_ROOM_ENTER:
-	case MSG_TP_TYPE_ENTER:
 		{
-			stMsgRoomEnter* msgEnter = (stMsgRoomEnter*)pMsg ;
-			stMsgRoomEnter msgEnterTmep ;
-			if ( pMsg->usMsgType == MSG_TP_TYPE_ENTER )
+			stMsgRoomEnterRet msgRet ;
+			msgRet.nRet = 0 ;
+			if ( m_eSate == ePlayerState_InRoom )
 			{
-				stMsgTaxasPokerTypeEnter* pTypeEnter = (stMsgTaxasPokerTypeEnter*)pMsg;
-				CRoomBase* pBase = CGameServerApp::SharedGameServerApp()->GetRoomMgr()->GetProperRoomToJoin(pTypeEnter->cSpeedType,pTypeEnter->cSeatType,pTypeEnter->nBigBlind);
-				msgEnterTmep.nPassword = 0 ;
-				msgEnterTmep.nRoomID = pBase->GetRoomID();
-				msgEnterTmep.nRoomLevel = pBase->GetRoomLevel();
-				msgEnterTmep.nRoomType = pBase->GetRoomType();
-				msgEnter = &msgEnterTmep ;
-			}
-
-			CRoomPeer* peer = NULL ;
-			switch ( msgEnter->nRoomType )
-			{
-			//case eRoom_Gold:
-			//	{
-			//		//peer = GetComponent(ePlayerComponent_RoomPeer) ;
-			//		CLogMgr::SharedLogMgr()->ErrorLog("eRoom_Gold room  construction ") ;
-			//		return ;
-			//	}
-			//	break;
-			//case eRoom_PaiJiu:
-			//	{
-			//		peer = (CRoomPeerPaiJiu*)GetComponent(ePlayerComponent_RoomPeerPaiJiu) ;
-			//	}
-			//	break; 
-			case eRoom_TexasPoker:
-			case eRoom_TexasPoker_Diamoned:
-			case eRoom_TexasPoker_Private:
-				{
-					peer = (CTaxasPokerPeer*)GetComponent(ePlayerComponent_RoomPeerTaxasPoker) ;
-				}
-				break;
-			//case eRoom_Baccarat:
-			//	{
-			//		peer = (CBaccaratPeer*)GetComponent(ePlayerComponent_BaccaratPeer) ;
-			//	}
-			//	break;
-			default:
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("request unknown room  type = %d ", msgEnter->nRoomType) ;
-				}
+				msgRet.nRet = 3 ;   // aready in room ;
+				SendMsgToClient((char*)&msgRet,sizeof(msgRet)) ;
 				return ;
 			}
 
-			stMsgRoomEnterRet msgRet ;
-			CRoomBase* pRoom = peer->GetRoom() ;
-			switch ( GetState() )
+			stMsgRoomEnter* msgEnter = (stMsgRoomEnter*)pMsg ;
+			CRoomBaseNew* pRoom = CGameServerApp::SharedGameServerApp()->GetRoomMgr()->GetRoom(msgEnter->nRoomType,msgEnter->nRoomLevel,msgEnter->nRoomID) ; 
+			if ( pRoom == NULL )
 			{
-			case ePlayerState_WillLeavingRoom:
-				{
-					if ( pRoom && pRoom->GetRoomID() == msgEnter->nRoomID )
-					{
-						m_eSate = ePlayerState_InRoom ;
-						msgRet.nRet = 0 ;
-						pRoom->SendCurRoomInfoToPlayer(peer) ;
-					}
-					else
-					{
-						msgRet.nRet = 3 ; // waiting last game settlement ;
-					}
-				}
-				break;
-			case ePlayerState_Free:
-				{
-					pRoom = CGameServerApp::SharedGameServerApp()->GetRoomMgr()->GetRoom(msgEnter->nRoomType,msgEnter->nRoomLevel,msgEnter->nRoomID) ;
-					if ( pRoom == NULL )
-					{
-						msgRet.nRet = 4 ; 
-						break;
-					}
-					// check password 
-					if ( pRoom->GetPassword() != 0 && pRoom->GetPassword() != msgEnter->nPassword )
-					{
-						msgRet.nRet = 5 ;
-						break; 
-					}
-					unsigned char nRet = pRoom->CanJoin(this) ;
-					if ( nRet == 0 )
-					{
-						// sent cur room info to client ;
-						m_eSate = ePlayerState_InRoom ;
-						pRoom->AddPeer(peer) ;
-						peer->SetRoom(pRoom) ;
-						msgRet.nRet = 0 ;
-						pRoom->SendCurRoomInfoToPlayer(peer) ;
-					}
-					else
-					{
-						msgRet.nRet = nRet ;  // do not meet room condition
-						CLogMgr::SharedLogMgr()->SystemLog("room is NULL, can not enter !") ;
-					}
-				}
-				break;
-			case ePlayerState_InRoom:
-				{
-					msgRet.nRet = 3 ;   // aready in room ;
-				}
-			default:
-				{
-					msgRet.nRet = 6 ;  // unknown error ;
-				}
-				break;
+				pRoom = CGameServerApp::SharedGameServerApp()->GetRoomMgr()->CreateRoom(msgEnter->nRoomType,msgEnter->nRoomLevel);
+			}
+
+			if ( pRoom == NULL )
+			{
+				msgRet.nRet = 6 ;   // room is NULL;
+				SendMsgToClient((char*)&msgRet,sizeof(msgRet)) ;
+				return ;
+			}
+
+			unsigned char nRet = pRoom->CheckCanJoinThisRoom(this);
+			if ( nRet != 0 )
+			{
+				msgRet.nRet = 5 ;   // room is NULL;
+				SendMsgToClient((char*)&msgRet,sizeof(msgRet)) ;
+				return ;
 			}
 			SendMsgToClient((char*)&msgRet,sizeof(msgRet)) ;
+			pRoom->Enter(this);
+			m_pCurRoom = pRoom ;
+			m_eSate = ePlayerState_InRoom ;
 		}
 		return ;
 	default:
@@ -523,7 +450,7 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg)
 				break ;
 			}
 
-			CRoomBase* pStateRoom = pTargetPlayer->GetRoomCurStateIn() ;
+			CRoomBaseNew* pStateRoom = pTargetPlayer->GetRoomCurStateIn() ;
 			if ( !pStateRoom )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("follow to a null room , but target player is not free , how , why ?") ;
@@ -532,14 +459,8 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg)
 				break;
 			}
 
-			if ( pStateRoom->GetPassword() != 0 )
-			{
-				msgBack.nRet = 5 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack));
-				break; 
-			}
 
-			if ( pStateRoom->CanJoin(pTargetPlayer) != 0)
+			if ( pStateRoom->CheckCanJoinThisRoom(pTargetPlayer) != 0)
 			{
 				msgBack.nRet = 3 ;
 				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
@@ -590,18 +511,11 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg)
 	return true ;
 }
 
-CRoomBase* CPlayer::GetRoomCurStateIn()
+CRoomBaseNew* CPlayer::GetRoomCurStateIn()
 {
-	CRoomPeer* peer = (CRoomPeer*)GetComponent(ePlayerComponent_RoomPeerTaxasPoker) ;
-	if ( peer->GetRoom() )
+	if ( m_eSate == ePlayerState_InRoom )
 	{
-		return peer->GetRoom() ;
-	}
-
-	peer = (CRoomPeer*)GetComponent(ePlayerComponent_RoomPeerPaiJiu) ;
-	if ( peer->GetRoom() )
-	{
-		return peer->GetRoom() ;
+		return m_pCurRoom ;
 	}
 	return NULL ;
 }

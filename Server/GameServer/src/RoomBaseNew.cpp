@@ -4,9 +4,12 @@
 #include "RoomBaseData.h"
 #include "LogManager.h"
 #include "GameServerApp.h"
+#include <assert.h>
+#include "RoomConfig.h"
+#include "RoomManager.h"
 CRoomBaseNew::CRoomBaseNew()
 {
-
+	m_pRoomData = NULL ;
 }
 
 CRoomBaseNew::~CRoomBaseNew()
@@ -19,12 +22,21 @@ CRoomBaseNew::~CRoomBaseNew()
 	m_vAllPeers.clear() ;
 }
 
-bool CRoomBaseNew::Init()
+bool CRoomBaseNew::Init(stBaseRoomConfig* pConfig)
 {
-	m_pRoomData = NULL ;
+	assert(m_pRoomData == NULL&& "error m_pRoomData can not be NULL") ;
+	stRoomBaseDataOnly*pBase = GetRoomDataOnly();
+	pBase->cGameType = pConfig->nRoomType ;
+	pBase->nRoomLevel = pConfig->nRoomLevel ;
+	pBase->cMaxPlayingPeers = pConfig->nMaxSeat;
+	pBase->nRoomID = ++CRoomManager::s_RoomID ;
+	pBase->cMiniCoinNeedToEnter = pConfig->nMinNeedToEnter ;
+	pBase->fOperateTime = pConfig->nWaitOperateTime ;
+
 	m_vAllPeers.clear() ;
 	SetTimerManager(CGameServerApp::SharedGameServerApp()->GetTimerMgr());
 	SetEnableUpdate(true) ;
+	
 	return true ;
 }
 
@@ -58,6 +70,11 @@ unsigned int CRoomBaseNew::GetRoomID()
 unsigned char CRoomBaseNew::GetRoomType()
 {
 	return GetRoomDataOnly()->cGameType ;
+}
+
+unsigned char CRoomBaseNew::GetRoomLevel()
+{
+	return GetRoomDataOnly()->nRoomLevel ;
 }
 
 void CRoomBaseNew::Update(float fTimeElpas, unsigned int nTimerID )
@@ -132,6 +149,21 @@ unsigned char CRoomBaseNew::CheckCanJoinThisRoom(CPlayer* pPlayer) // 0 means ok
 void CRoomBaseNew::SendRoomInfoToPlayer(CPlayer* pPlayer)
 {
 
+}
+
+unsigned int CRoomBaseNew::GetAntesCoin()
+{
+	return GetRoomDataOnly()->cMiniCoinNeedToEnter ;
+}
+
+unsigned short CRoomBaseNew::GetEmptySeatCount()
+{
+	return GetData()->GetEmptySeatCnt();
+}
+
+unsigned short CRoomBaseNew::GetMaxSeat()
+{
+	return GetData()->GetMaxSeat();
 }
 
 stRoomBaseDataOnly* CRoomBaseNew::GetRoomDataOnly()

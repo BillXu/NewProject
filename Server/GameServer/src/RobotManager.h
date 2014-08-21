@@ -1,7 +1,7 @@
 #pragma once
 #include <list>
 class CPlayer ;
-class CRoomBase;
+class CRoomBaseNew;
 class CRobotManager
 {
 public:
@@ -20,7 +20,7 @@ public:
 	static CRobotManager* SharedRobotMgr();
 	void AddIdleRobotPlayer(CPlayer* pPlayer );   // when robot login ;
 	void OnPlayerDisconnected(CPlayer* pPlayer );   // when infom idle robot container logout ;
-	void RequestRobotToJoin(CRoomBase* pRoom);
+	void RequestRobotToJoin(CRoomBaseNew* pRoom);
 protected:
 	void OrderRobotToRoom();
 protected:

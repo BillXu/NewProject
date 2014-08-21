@@ -618,7 +618,7 @@ void CRoomTexasPoker::GoToState(eRoomState eTargetSate )
 		{
 			CLogMgr::SharedLogMgr()->PrintLog("Enter wait player join state") ;
 
-			CRobotManager::SharedRobotMgr()->RequestRobotToJoin(this) ;
+			//CRobotManager::SharedRobotMgr()->RequestRobotToJoin(this) ;
 		}
 		break;
 	case eRoomState_TP_Player_Distr:

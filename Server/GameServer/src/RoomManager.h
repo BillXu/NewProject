@@ -3,15 +3,18 @@
 #include <map>
 #include "RoomGolden.h"
 #include "RoomPaiJiu.h"
+#include "RoomGoldenNew.h"
+class CRoomBaseNew ;
 class CGameRooms
 {
 public:
- 	  typedef std::map<int,CRoomBase*> MAP_ROOM;
+ 	  typedef std::map<int,CRoomBaseNew*> MAP_ROOM;
+	  //typedef std::map<int,CRoomBaseNew*> MAP_ROOM_NEW;
 public:
 	CGameRooms();
 	~CGameRooms();
-	void AddRoom(CRoomBase* pRoom, eRoomLevel eLevel );
-	CRoomBase* GetRoomByID(unsigned int nRoomID, eRoomLevel eLevel );
+	void AddRoom(CRoomBaseNew* pRoom, eRoomLevel eLevel );
+	CRoomBaseNew* GetRoomByID(unsigned int nRoomID, eRoomLevel eLevel );
 	int GetRoomCount( eRoomLevel eLevel ) ;
 	int GetAllRoomCount();
 protected:
@@ -20,6 +23,7 @@ protected:
 	void RemoveEmptyRoom(MAP_ROOM& vRooms, unsigned short nLeftEmpty ) ;
 protected:
 	MAP_ROOM m_vRooms[eRoomLevel_Max] ;
+	//MAP_ROOM_NEW m_vRoomsNew[eRoomLevel_Max] ;
 };
 
 class CPlayer ;
@@ -27,25 +31,28 @@ struct stBaseRoomConfig;
 class CRoomManager
 {
 public:
-	typedef std::vector<CRoomBase*> VEC_ROOM;
+	typedef std::vector<CRoomBaseNew*> VEC_ROOM;
+	//typedef std::vector<CRoomBaseNew*> VEC_ROOM_NEW;
 	typedef std::map<unsigned int, VEC_ROOM>  MAP_BLIND_ROOMS;
 	struct stSpeedRoom
 	{
 		MAP_BLIND_ROOMS vSeatRooms[eSeatCount_Max];
-		void AddRoom(CRoomBase*pRoom);
+		void AddRoom(CRoomBaseNew*pRoom);
 	};
 public:
 	CRoomManager();
 	~CRoomManager();
 	void Init();
-	CRoomBase* GetRoom(char cRoomType , char cRoomLevel, unsigned int nRoomID);
-	CRoomBase* CreateRoom( unsigned int nRoomID );
-	CRoomBase* CreateRoom(stBaseRoomConfig* pConfig );
+	CRoomBaseNew* GetRoom(char cRoomType , char cRoomLevel, unsigned int nRoomID);
+	CRoomBaseNew* CreateRoom( unsigned int nRoomID );
+	CRoomBaseNew* CreateRoom(stBaseRoomConfig* pConfig );
+	CRoomBaseNew* CreateRoom(char cRoomType , char cRoomLevel);
 	void SendRoomListToPlayer( CPlayer* pTargetPlayer , unsigned char eType, unsigned char cRoomLevel );
-	void AddRoomToType(CRoomBase* pRoomBase);
-	CRoomBase* GetProperRoomToJoin(unsigned char cSpeed , unsigned char cSeatType, unsigned int nBlindBet , unsigned int nExptedRoomID = 0 );
-protected:
+	void AddRoomToType(CRoomBaseNew* pRoomBase);
+	CRoomBaseNew* GetProperRoomToJoin(unsigned char cSpeed , unsigned char cSeatType, unsigned int nBlindBet , unsigned int nExptedRoomID = 0 );
+
 	static unsigned int s_RoomID ;
+protected:
 	CGameRooms m_vGames[eRoom_Max] ;
 	stSpeedRoom m_vSpeedRooms[eSpeed_Max];
 };

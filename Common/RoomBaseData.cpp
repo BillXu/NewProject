@@ -110,6 +110,11 @@ unsigned char CRoomBaseData::GetPlayingSeatCnt()
 	return m_pData->cMaxPlayingPeers - GetEmptySeatCnt() ;
 }
 
+unsigned char CRoomBaseData::GetMaxSeat()
+{
+	return m_pData->cMaxPlayingPeers ;
+}
+
 char CRoomBaseData::GetRoomIdxBySessionID(unsigned int nSessionID )
 {
 	stPeerBaseData* pData = GetPeerDataBySessionID(nSessionID) ;
@@ -129,6 +134,12 @@ unsigned int CRoomBaseData::GetSessionIDByIdx(unsigned char nIdx)
 		return 0 ;
 	}
 	return pData->nSessionID ;
+}
+
+void CRoomBaseData::SetRoomState(unsigned short nRoomState )
+{
+	m_pData->cCurRoomState = nRoomState ;
+	m_pData->fTimeTick = 0 ;
 }
 
 void CRoomBaseData::ClearAllPeers()

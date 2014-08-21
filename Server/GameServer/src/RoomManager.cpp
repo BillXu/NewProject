@@ -9,6 +9,8 @@
 #include "RobotManager.h"
 #include "BaccaratRoom.h"
 #include "RoomConfig.h"
+#include "RoomBaseData.h"
+#include "RoomBaseNew.h"
 CGameRooms::CGameRooms()
 {
 	for ( int i = eRoomLevel_None ; i < eRoomLevel_Max; ++ i )
@@ -32,7 +34,7 @@ CGameRooms::~CGameRooms()
 	}
 }
 
-void CGameRooms::AddRoom(CRoomBase* pRoom, eRoomLevel eLevel )
+void CGameRooms::AddRoom(CRoomBaseNew* pRoom, eRoomLevel eLevel )
 {
 	if ( pRoom == NULL )
 	{
@@ -64,7 +66,7 @@ void CGameRooms::RemoveEmptyRoom(MAP_ROOM& vRooms, unsigned short nLeftEmpty )
 	MAP_ROOM vWillRemove ;
 	for ( ; iter != vRooms.end(); ++iter )
 	{
-		if ( iter->second->GetEmptySeatCount() == iter->second->GetMaxSeat() )
+		if ( iter->second->GetData()->GetEmptySeatCnt() == iter->second->GetData()->GetMaxSeat() )
 		{
 			if ( nLeftEmpty == 0 )
 			{
@@ -99,7 +101,7 @@ void CGameRooms::RemoveEmptyRoom(MAP_ROOM& vRooms, unsigned short nLeftEmpty )
 	vWillRemove.clear() ;
 }
 
-CRoomBase* CGameRooms::GetRoomByID(unsigned int nRoomID, eRoomLevel eLevel )
+CRoomBaseNew* CGameRooms::GetRoomByID(unsigned int nRoomID, eRoomLevel eLevel )
 {
 	if ( eLevel < eRoomLevel_None || eLevel >= eRoomLevel_Max )
 	{
@@ -132,7 +134,7 @@ CRoomBase* CGameRooms::GetRoomByID(unsigned int nRoomID, eRoomLevel eLevel )
 				continue;
 			}
 
-			if ( iter->second->GetEmptySeatCount() > 0 && iter->second->GetEmptySeatCount() != iter->second->GetMaxSeat() && iter->second->GetPassword() == 0  ) // don't put player in a room, juset have himself ; 
+			if ( iter->second->GetData()->GetEmptySeatCnt() > 0 && iter->second->GetData()->GetEmptySeatCnt() != iter->second->GetData()->GetMaxSeat() ) // don't put player in a room, juset have himself ; 
 			{
 				return iter->second ;
 			}
@@ -142,7 +144,7 @@ CRoomBase* CGameRooms::GetRoomByID(unsigned int nRoomID, eRoomLevel eLevel )
 		iter = m_vRooms[eLevel].begin() ;
 		for ( ; iter != m_vRooms[eLevel].end() ; ++iter )
 		{
-			if ( iter->second->GetEmptySeatCount() > 0 && iter->second->GetPassword() == 0 )
+			if ( iter->second->GetData()->GetEmptySeatCnt() > 0 )
 			{
 				return iter->second ;
 			}
@@ -235,14 +237,14 @@ void CRoomManager::Init()
 	}
 }
 
-CRoomBase* CRoomManager::GetRoom(char cRoomType , char cRoomLevel, unsigned int nRoomID )
+CRoomBaseNew* CRoomManager::GetRoom(char cRoomType , char cRoomLevel, unsigned int nRoomID )
 { 
 	if ( cRoomType <= eRoom_None || cRoomType >= eRoom_Max )
 		return NULL ;
 	return m_vGames[cRoomType].GetRoomByID(nRoomID,(eRoomLevel)cRoomLevel) ;
 }
 
-CRoomBase* CRoomManager::CreateRoom(unsigned int nRoomID)
+CRoomBaseNew* CRoomManager::CreateRoom(unsigned int nRoomID)
 {
 	CRoomConfigMgr* pRoomConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room) ;
 	stBaseRoomConfig* pRoomConfig = pRoomConfigMgr->GetRoomConfig(nRoomID) ;
@@ -255,7 +257,7 @@ CRoomBase* CRoomManager::CreateRoom(unsigned int nRoomID)
 	return CreateRoom(pRoomConfig);
 }
 
-CRoomBase* CRoomManager::CreateRoom(stBaseRoomConfig* pRoomConfig )
+CRoomBaseNew* CRoomManager::CreateRoom(stBaseRoomConfig* pRoomConfig )
 {
 	if ( pRoomConfig == NULL )
 	{
@@ -263,7 +265,7 @@ CRoomBase* CRoomManager::CreateRoom(stBaseRoomConfig* pRoomConfig )
 		return NULL ;
 	}
 
-	CRoomBase* pRoom = NULL ;
+	CRoomBaseNew* pRoom = NULL ;
 	unsigned char roomType = pRoomConfig->nRoomType ;
 	switch ( roomType )
 	{
@@ -290,12 +292,18 @@ CRoomBase* CRoomManager::CreateRoom(stBaseRoomConfig* pRoomConfig )
 	case eRoom_TexasPoker_Diamoned:
 	case eRoom_TexasPoker:
 		{
-			stTaxasRoomConfig* pTPConifg = (stTaxasRoomConfig*)pRoomConfig ;
-			pRoom = new CRoomTexasPoker ;
-			pRoom->Init( ++s_RoomID,pTPConifg->nMaxSeat ) ;
-			pRoom->SetAntesCoin(pTPConifg->nMinNeedToEnter) ;
-			pRoom->SetMaxTakeInCoin(pTPConifg->nMaxTakeInCoin);
-			((CRoomTexasPoker*)pRoom)->SetBigBlindBet(pTPConifg->nBigBlind);
+// 			stTaxasRoomConfig* pTPConifg = (stTaxasRoomConfig*)pRoomConfig ;
+// 			pRoom = new CRoomTexasPoker ;
+// 			pRoom->Init( ++s_RoomID,pTPConifg->nMaxSeat ) ;
+// 			pRoom->SetAntesCoin(pTPConifg->nMinNeedToEnter) ;
+// 			pRoom->SetMaxTakeInCoin(pTPConifg->nMaxTakeInCoin);
+// 			((CRoomTexasPoker*)pRoom)->SetBigBlindBet(pTPConifg->nBigBlind);
+		}
+		break;
+	case eRoom_Gold:
+		{
+			pRoom = new CRoomGoldenNew ;
+			pRoom->Init(pRoomConfig);
 		}
 		break;
 	default:
@@ -308,100 +316,111 @@ CRoomBase* CRoomManager::CreateRoom(stBaseRoomConfig* pRoomConfig )
 	if ( pRoom != NULL )
 	{
 		m_vGames[roomType].AddRoom(pRoom,(eRoomLevel)pRoomConfig->nRoomLevel ) ;
-		pRoom->SetRoomType((eRoomType)roomType) ;
-		pRoom->SetRoomLevel((eRoomLevel)pRoomConfig->nRoomLevel) ;
-		pRoom->SetIsDiamonedRoom( eRoom_TexasPoker_Diamoned == roomType ) ;
 		CRobotManager::SharedRobotMgr()->RequestRobotToJoin(pRoom) ;
 	}
-	AddRoomToType(pRoom);
+	//AddRoomToType(pRoom);
 	return pRoom ;
 }
 
-void CRoomManager::SendRoomListToPlayer( CPlayer* pTargetPlayer , unsigned char eType, unsigned char cRoomLevel )
+CRoomBaseNew* CRoomManager::CreateRoom(char cRoomType , char cRoomLevel)
 {
-	stMsgRequestRoomListRet msgBack ;
-	msgBack.cRoomType = eType ;
-	msgBack.cRoomLevel = cRoomLevel;
-	if ( eType <= eRoom_None || eType >= eRoom_Max )
+	CRoomConfigMgr* pRoomConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room) ;
+	stBaseRoomConfig* pRoomConfig = pRoomConfigMgr->GetRoomConfig(cRoomType,cRoomLevel) ;
+	if ( !pRoomConfig)
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Quest unknown roomType type = %d, playerName = %s",eType,pTargetPlayer->GetBaseData()->GetPlayerName() ) ;
-		msgBack.nRoomCount = 0 ;
-		pTargetPlayer->SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-		return ;
+		CLogMgr::SharedLogMgr()->ErrorLog( "can not get room config room level = %d",cRoomLevel ) ;
+		return NULL ;
 	}
-	
-	CGameRooms& pGameRoom = m_vGames[eType] ;
-	msgBack.nRoomCount = pGameRoom.GetRoomCount((eRoomLevel)cRoomLevel) ;
-	int nOffset = 0 ;
-	char* pBuffer = NULL ;
-	if ( eType == eRoom_TexasPoker_Private )
-	{
-		msgBack.nRoomCount = 0 ;
-		pTargetPlayer->SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-		CLogMgr::SharedLogMgr()->ErrorLog("no private room this game, playerName = %s",pTargetPlayer->GetBaseData()->GetPlayerName() ) ;
-		return ;
-		//pBuffer = new char[ sizeof(msgBack) + sizeof(stPrivateRoomListItem) * msgBack.nRoomCount ] ;
-		//memcpy(pBuffer,&msgBack, sizeof(msgBack));
-		//nOffset += sizeof(msgBack);
 
-		//stPrivateRoomListItem item ;
-		//for ( int i = eRoom_None ; i < eRoomLevel_Max ; ++i )
-		//{
-		//	CGameRooms::MAP_ROOM& vMap = pGameRoom.m_vRooms[i] ;
-		//	CGameRooms::MAP_ROOM::iterator iter = vMap.begin();
-		//	for ( ; iter !=vMap.end(); ++iter )
-		//	{
-		//		item.cRoomLevel = i ;
-		//		item.nCurrentCount = iter->second->GetRoomPeerCount() ;
-		//		item.nMaxCount = iter->second->GetMaxSeat() ;
-		//		item.nRoomID = iter->first ;
-		//		// new add 
-		//		item.nBigBlind = ((CRoomTexasPoker*)iter->second)->GetBigBlindBet();
-		//		item.nMinCoinToTake = (iter->second)->GetAntesCoin();
-		//		item.nMaxCoinToTake = (iter->second)->GetMaxTakeInCoin();
-		//		item.nWaitOperateTime = iter->second->GetWaitOperateTime();
-		//		item.bDiamoned = iter->second->IsDiamonedRoom() ;
-		//		item.bPassword = iter->second->GetPassword() > 0 ;
-		//		memset(item.cRoomName,0, sizeof(item.cRoomName)) ;
-		//		sprintf(item.cRoomName,"%s",iter->second->GetRoomName().c_str());
-		//		memcpy(pBuffer + nOffset , &item, sizeof(item));
-		//		nOffset += sizeof(item);
-		//	}
-		//}
-	}
-	else
-	{
-		pBuffer = new char[ sizeof(msgBack) + sizeof(stRoomListItem) * msgBack.nRoomCount ] ;
-		memcpy(pBuffer,&msgBack, sizeof(msgBack));
-		nOffset += sizeof(msgBack);
-
-		stRoomListItem item ;
-		CGameRooms::MAP_ROOM& vMap = pGameRoom.m_vRooms[cRoomLevel] ;
-		CGameRooms::MAP_ROOM::iterator iter = vMap.begin();
-		for ( ; iter !=vMap.end(); ++iter )
-		{
-			item.cRoomLevel = cRoomLevel ;
-			item.nCurrentCount = iter->second->GetRoomPeerCount() ;
-			item.nMaxCount = iter->second->GetMaxSeat() ;
-			item.nRoomID = iter->first ;
-			item.nWaitOperateTime = iter->second->GetWaitOperateTime();
-			item.nBigBlind = ((CRoomTexasPoker*)iter->second)->GetBigBlindBet();
-
-			item.nMinCoinToTake = (iter->second)->GetAntesCoin();
-			item.nMaxCoinToTake = (iter->second)->GetMaxTakeInCoin();
-			memcpy(pBuffer + nOffset , &item, sizeof(item));
-			nOffset += sizeof(item);
-		}
-	}
-	pTargetPlayer->SendMsgToClient(pBuffer,nOffset) ;
-	if ( pBuffer != NULL )
-	{
-		delete[] pBuffer ;
-		pBuffer = NULL ;
-	}
+	return CreateRoom(pRoomConfig);
 }
 
-void CRoomManager::stSpeedRoom::AddRoom(CRoomBase*pRoomBase)
+
+void CRoomManager::SendRoomListToPlayer( CPlayer* pTargetPlayer , unsigned char eType, unsigned char cRoomLevel )
+{
+// 	stMsgRequestRoomListRet msgBack ;
+// 	msgBack.cRoomType = eType ;
+// 	msgBack.cRoomLevel = cRoomLevel;
+// 	if ( eType <= eRoom_None || eType >= eRoom_Max )
+// 	{
+// 		CLogMgr::SharedLogMgr()->ErrorLog("Quest unknown roomType type = %d, playerName = %s",eType,pTargetPlayer->GetBaseData()->GetPlayerName() ) ;
+// 		msgBack.nRoomCount = 0 ;
+// 		pTargetPlayer->SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+// 		return ;
+// 	}
+// 	
+// 	CGameRooms& pGameRoom = m_vGames[eType] ;
+// 	msgBack.nRoomCount = pGameRoom.GetRoomCount((eRoomLevel)cRoomLevel) ;
+// 	int nOffset = 0 ;
+// 	char* pBuffer = NULL ;
+// 	if ( eType == eRoom_TexasPoker_Private )
+// 	{
+// 		msgBack.nRoomCount = 0 ;
+// 		pTargetPlayer->SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+// 		CLogMgr::SharedLogMgr()->ErrorLog("no private room this game, playerName = %s",pTargetPlayer->GetBaseData()->GetPlayerName() ) ;
+// 		return ;
+// 		//pBuffer = new char[ sizeof(msgBack) + sizeof(stPrivateRoomListItem) * msgBack.nRoomCount ] ;
+// 		//memcpy(pBuffer,&msgBack, sizeof(msgBack));
+// 		//nOffset += sizeof(msgBack);
+// 
+// 		//stPrivateRoomListItem item ;
+// 		//for ( int i = eRoom_None ; i < eRoomLevel_Max ; ++i )
+// 		//{
+// 		//	CGameRooms::MAP_ROOM& vMap = pGameRoom.m_vRooms[i] ;
+// 		//	CGameRooms::MAP_ROOM::iterator iter = vMap.begin();
+// 		//	for ( ; iter !=vMap.end(); ++iter )
+// 		//	{
+// 		//		item.cRoomLevel = i ;
+// 		//		item.nCurrentCount = iter->second->GetRoomPeerCount() ;
+// 		//		item.nMaxCount = iter->second->GetMaxSeat() ;
+// 		//		item.nRoomID = iter->first ;
+// 		//		// new add 
+// 		//		item.nBigBlind = ((CRoomTexasPoker*)iter->second)->GetBigBlindBet();
+// 		//		item.nMinCoinToTake = (iter->second)->GetAntesCoin();
+// 		//		item.nMaxCoinToTake = (iter->second)->GetMaxTakeInCoin();
+// 		//		item.nWaitOperateTime = iter->second->GetWaitOperateTime();
+// 		//		item.bDiamoned = iter->second->IsDiamonedRoom() ;
+// 		//		item.bPassword = iter->second->GetPassword() > 0 ;
+// 		//		memset(item.cRoomName,0, sizeof(item.cRoomName)) ;
+// 		//		sprintf(item.cRoomName,"%s",iter->second->GetRoomName().c_str());
+// 		//		memcpy(pBuffer + nOffset , &item, sizeof(item));
+// 		//		nOffset += sizeof(item);
+// 		//	}
+// 		//}
+// 	}
+// 	else
+// 	{
+// 		pBuffer = new char[ sizeof(msgBack) + sizeof(stRoomListItem) * msgBack.nRoomCount ] ;
+// 		memcpy(pBuffer,&msgBack, sizeof(msgBack));
+// 		nOffset += sizeof(msgBack);
+// 
+// 		stRoomListItem item ;
+// 		CGameRooms::MAP_ROOM& vMap = pGameRoom.m_vRooms[cRoomLevel] ;
+// 		CGameRooms::MAP_ROOM::iterator iter = vMap.begin();
+// 		for ( ; iter !=vMap.end(); ++iter )
+// 		{
+// 			item.cRoomLevel = cRoomLevel ;
+// 			item.nCurrentCount = iter->second->GetRoomPeerCount() ;
+// 			item.nMaxCount = iter->second->GetMaxSeat() ;
+// 			item.nRoomID = iter->first ;
+// 			item.nWaitOperateTime = iter->second->GetWaitOperateTime();
+// 			item.nBigBlind = ((CRoomTexasPoker*)iter->second)->GetBigBlindBet();
+// 
+// 			item.nMinCoinToTake = (iter->second)->GetAntesCoin();
+// 			item.nMaxCoinToTake = (iter->second)->GetMaxTakeInCoin();
+// 			memcpy(pBuffer + nOffset , &item, sizeof(item));
+// 			nOffset += sizeof(item);
+// 		}
+// 	}
+// 	pTargetPlayer->SendMsgToClient(pBuffer,nOffset) ;
+// 	if ( pBuffer != NULL )
+// 	{
+// 		delete[] pBuffer ;
+// 		pBuffer = NULL ;
+// 	}
+}
+
+void CRoomManager::stSpeedRoom::AddRoom(CRoomBaseNew*pRoomBase)
 {
 	CRoomTexasPoker* pRoom = dynamic_cast<CRoomTexasPoker*>(pRoomBase);
 	if ( pRoom == NULL )
@@ -432,7 +451,7 @@ void CRoomManager::stSpeedRoom::AddRoom(CRoomBase*pRoomBase)
 	}
 }
 
-void CRoomManager::AddRoomToType(CRoomBase* pRoomBase)
+void CRoomManager::AddRoomToType(CRoomBaseNew* pRoomBase)
 {
 	CRoomTexasPoker* pRoom = dynamic_cast<CRoomTexasPoker*>(pRoomBase);
 	if ( pRoom == NULL )
@@ -450,7 +469,7 @@ void CRoomManager::AddRoomToType(CRoomBase* pRoomBase)
 	}
 }
 
-CRoomBase* CRoomManager::GetProperRoomToJoin(unsigned char cSpeed , unsigned char cSeatType, unsigned int nBlindBet , unsigned int nExptedRoomID  )
+CRoomBaseNew* CRoomManager::GetProperRoomToJoin(unsigned char cSpeed , unsigned char cSeatType, unsigned int nBlindBet , unsigned int nExptedRoomID  )
 {
 	if ( cSpeed < 0 || cSpeed >= eSpeed_Max )
 	{

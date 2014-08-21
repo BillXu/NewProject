@@ -48,6 +48,24 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 			pRoomConfig = pConfig ;
 		}
 		break;
+	case eRoom_Gold:
+		{
+			stGoldenRoomConfig* pConfig = new stGoldenRoomConfig ;
+			pConfig->bCanDoublePK = refReaderRow["CanDoublePK"]->IntValue();
+			pConfig->nChangeCardRound = refReaderRow["ChangeCardRound"]->IntValue();
+			pConfig->nMiniBet = refReaderRow["MiniBet"]->IntValue();
+			pConfig->nTitleNeedToEnter = refReaderRow["TitleNeedToEnter"]->IntValue();
+#ifndef GAME_SERVER
+			char pBuffer[256] = {0};
+			for ( int i = 0 ; i < GOLDEN_ROOM_COIN_LEVEL_CNT ; ++i )
+			{
+				memset(pBuffer,0,sizeof(pBuffer));
+				sprintf(pBuffer,"CoinLevel%d",i);
+				pConfig->vCoinLevels[i] = refReaderRow[pBuffer]->IntValue();
+			}
+#endif
+			pRoomConfig = pConfig ;
+		}
 	//case eRoom_Baccarat:
 	//case eRoom_PaiJiu:
 	//	{
@@ -78,6 +96,20 @@ stBaseRoomConfig* CRoomConfigMgr::GetRoomConfig(unsigned int nRoomID )
 	{
 		stBaseRoomConfig* pRoom = *iter ;
 		if ( nRoomID == pRoom->nRoomID )
+		{
+			return pRoom ;
+		}
+	}
+	return NULL ;
+}
+
+stBaseRoomConfig* CRoomConfigMgr::GetRoomConfig( char cRoomType , char cRoomLevel )
+{
+	LIST_ROOM_CONFIG::iterator iter = m_vAllConfig.begin();
+	for ( ; iter != m_vAllConfig.end() ; ++iter )
+	{
+		stBaseRoomConfig* pRoom = *iter ;
+		if ( cRoomType == pRoom->nRoomType && cRoomLevel == pRoom->nRoomLevel )
 		{
 			return pRoom ;
 		}
@@ -137,4 +169,17 @@ stTaxasRoomConfig* CRoomConfigMgr::GetConfig( eSpeed speed , eRoomSeat eSeatCn ,
 		return NULL ;
 	}
 	return vConfigs[nIdx] ;
+}
+
+stGoldenRoomConfig* CRoomConfigMgr::GetGoldenConfig(unsigned short cLevel )
+{
+	LIST_ROOM_CONFIG::iterator iter = m_vAllConfig.begin() ;
+	for ( ; iter != m_vAllConfig.end() ; ++iter )
+	{
+		if ( (*iter)->nRoomType == eRoom_Gold && (*iter)->nRoomLevel == cLevel )
+		{
+			return (stGoldenRoomConfig*)(*iter);
+		}
+	}
+	return NULL ;
 }

@@ -4,10 +4,19 @@
 #include "PlayerBaseData.h"
 #include "GoldenMessageDefine.h"
 #include "LogManager.h"
-bool CRoomGoldenNew::Init()
+#include "RoomConfig.h"
+bool CRoomGoldenNew::Init(stBaseRoomConfig* pConfig)
 {
 	m_pRoomData = new CGoldenRoomData ;
 	m_pRoomData->Init();
+	CRoomBaseNew::Init(pConfig);
+
+	stRoomGoldenDataOnly* pTemp = (stRoomGoldenDataOnly*)m_pRoomData->m_pData ;
+	stGoldenRoomConfig* pGC = (stGoldenRoomConfig*)pConfig ;
+	pTemp->nMiniBet = pGC->nMiniBet ; 
+	pTemp->bCanDoublePK = pGC->bCanDoublePK ;
+	pTemp->nChangeCardRound = pGC->nChangeCardRound ;
+	pTemp->nTitleNeedToEnter = pGC->nTitleNeedToEnter ;
 	return true ;
 }
 
@@ -21,6 +30,7 @@ void CRoomGoldenNew::Enter(CPlayer* pEnter )
 	memcpy(pPeer->cName,pEnter->GetBaseData()->GetData()->cName,sizeof(pPeer->cName));
 	pPeer->cVipLevel = pEnter->GetBaseData()->GetData()->nVipLevel ;
 	pPeer->nBetCoin = 0 ;
+	pPeer->nDiamond = pEnter->GetBaseData()->GetAllDiamoned();
 	pPeer->nCurCoin = pEnter->GetBaseData()->GetAllCoin() ;
 	pEnter->GetBaseData()->GetData()->nCoin = 0 ;  // all coin take in to this room ;
 	pPeer->nPeerState = eRoomPeer_Golden_WaitNextPlay ;
@@ -53,6 +63,22 @@ void CRoomGoldenNew::Leave(CPlayer* pLeaver)
 {
 	CRoomBaseNew::Leave(pLeaver);
 	// do something here ;
+	stPeerBaseData* pData = GetRoomData()->GetPeerDataBySessionID(pLeaver->GetSessionID());
+	if ( pData )
+	{
+		if ( pData->nPeerState == eRoomPeer_Golden_Playing )  // if playing , just give up 
+		{
+			stMsgGoldenRoomPlayerGiveUp msgGiveUp ;
+			OnMessage(pLeaver,&msgGiveUp);
+		}
+
+		// tel other the event ;
+		stMsgGoldenRoomLeave msgLeave ;
+		msgLeave.cLeaveIdx = pData->cRoomIdx ;
+		SendMsgBySessionID(&msgLeave,sizeof(msgLeave)) ;
+		GetRoomData()->RemovePeer(pLeaver->GetSessionID());
+	}
+
 }
 
 unsigned char CRoomGoldenNew::CheckCanJoinThisRoom(CPlayer* pPlayer) // 0 means ok , other value means failed ;
@@ -165,8 +191,11 @@ void CRoomGoldenNew::Update(float fTimeElpas, unsigned int nTimerID )
 void CRoomGoldenNew::GoToState(unsigned char cTargetState)
 {
 	unsigned char nPreSate = GetRoomDataOnly()->cCurRoomState ;
-	GetRoomDataOnly()->cCurRoomState  = cTargetState ;
-	GetRoomDataOnly()->fTimeTick = 0 ;
+	GetRoomData()->SetRoomState(cTargetState) ;
+
+	stMsgGoldenRoomState msgState ;
+	msgState.cState = cTargetState ;
+	SendMsgBySessionID(&msgState,sizeof(msgState));
 	switch ( GetRoomDataOnly()->cCurRoomState )
 	{
 	case eRoomState_Golden_WaitPeerToJoin:
@@ -184,7 +213,6 @@ void CRoomGoldenNew::GoToState(unsigned char cTargetState)
 			unsigned char cCount = GetRoomData()->DistributeCard();
 			stMsgGoldenRoomDistributy msg ;
 			msg.nCnt = cCount ;
-			msg.cBankIdx = ((stRoomGoldenDataOnly*)GetRoomDataOnly())->cBankerIdx ;
 			unsigned short nSize = sizeof(msg) + msg.nCnt * sizeof(stGoldenHoldPeerCard);
 			char* pBuffer = new char[nSize];
 			memset(pBuffer,0,nSize);
@@ -212,6 +240,14 @@ void CRoomGoldenNew::GoToState(unsigned char cTargetState)
 	case eRoomState_Golden_ShowingResult:
 		{
 			// do nothing  caculate was done in GameOverCheckAndProcess function ;
+			if ( m_pRoomData->GetPlayingSeatCnt() >= 2 )
+			{
+				GoToState(eRoomState_Golden_WaitPeerReady);
+			}
+			else
+			{
+				GoToState(eRoomState_Golden_WaitPeerToJoin);
+			}
 		}
 		break;
 	default:
@@ -371,7 +407,7 @@ bool CRoomGoldenNew::GameOverCheckAndProcess()
 void CRoomGoldenNew::NextPlayerAct()
 {
 	stRoomGoldenDataOnly* pData = (stRoomGoldenDataOnly*)GetRoomDataOnly();
-	char nIdx = GetRoomData()->GetNextActIdx();
+	char nIdx = GetRoomData()->OnUpateActPlayerIdx();
 	if ( nIdx < 0 )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("why next act peer is less 0 , game over ? ") ;
@@ -379,10 +415,10 @@ void CRoomGoldenNew::NextPlayerAct()
 		return ;
 	}
 	stMsgGoldenRoomInformAct msg ;
-	msg.nActIdx = nIdx ;
-	msg.nCurMaxBet = pData->nCurMaxBet ;
-	msg.nRound = pData->nRound ;
-	msg.nTotalBetCoin = pData->nAllBetCoin ;
+// 	msg.nActIdx = nIdx ;
+// 	msg.nCurMaxBet = pData->nCurMaxBet ;
+// 	msg.nRound = pData->nRound ;
+// 	msg.nTotalBetCoin = pData->nAllBetCoin ;
 	SendMsgBySessionID(&msg,sizeof(msg)) ;
 }
 

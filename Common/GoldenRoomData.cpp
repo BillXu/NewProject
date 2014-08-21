@@ -37,7 +37,7 @@ unsigned char CGoldenRoomData::GetReadyPeerCnt()
 	return nCnt ;
 }
 
-unsigned char CGoldenRoomData::GetNextActIdx()
+unsigned char CGoldenRoomData::OnUpateActPlayerIdx()
 {
 	if ( GetDataOnly()->cCurActIdx < 0 )
 		return GetDataOnly()->cBankerIdx ;
@@ -95,7 +95,7 @@ void CGoldenRoomData::OnStartGame()
 	// update all peer state 
 	for ( int i = 0 ; i < nMax ; ++i )
 	{
-		stPeerBaseData* pPeer = m_vPeerDatas[i];
+		stGoldenPeerData* pPeer = (stGoldenPeerData*)m_vPeerDatas[i];
 		if ( pPeer == NULL )
 			continue;
 		if ( IS_STATE(pPeer->nPeerState,eRoomPeer_Golden_Ready) )
@@ -106,6 +106,15 @@ void CGoldenRoomData::OnStartGame()
 		{
 			pPeer->nPeerState = eRoomPeer_Golden_WaitNextPlay ;
 		}
+
+		// reset some member var
+		memset(pPeer->vHoldCard,0,sizeof(pPeer->vHoldCard));
+		memset(pPeer->vShowedCardIdx,-1,sizeof(pPeer->vShowedCardIdx));
+		pPeer->nBetCoin = 0 ;
+		pPeer->nShowedCardCnt = 0 ;
+		pPeer->nChangeCardTimes = 0 ;
+		pPeer->nChangeCardUsedDiamond = 0 ;
+		pPeer->nPKTimes = 1 ;
 	}
 }
 
@@ -124,7 +133,13 @@ void CGoldenRoomData::OnEndGame()
 		if ( pPeer == NULL )
 			continue;
 		pPeer->nPeerState = eRoomPeer_Golden_WaitToReady ;
+		memset(pPeer->vHoldCard,0,sizeof(pPeer->vHoldCard));
+		memset(pPeer->vShowedCardIdx,-1,sizeof(pPeer->vShowedCardIdx));
 		pPeer->nBetCoin = 0 ;
+		pPeer->nShowedCardCnt = 0 ;
+		pPeer->nChangeCardTimes = 0 ;
+		pPeer->nChangeCardUsedDiamond = 0 ;
+		pPeer->nPKTimes = 1 ;
 	}
 }
 
@@ -181,7 +196,7 @@ unsigned char CGoldenRoomData::OnPlayerReady(unsigned int nSessionID) // 0 succe
 		return 3 ;
 	}
 
-	if ( GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerReady || IS_STATE(pData->nPeerState,eRoomPeer_Golden_WaitToReady) == false)
+	if (( GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerReady &&  GetDataOnly()->cCurRoomState != eRoomState_Golden_WaitPeerToJoin ) || IS_STATE(pData->nPeerState,eRoomPeer_Golden_WaitToReady) == false)
 	{
 		return 2 ;
 	}
@@ -303,6 +318,11 @@ unsigned char CGoldenRoomData::OnPlayerAdd(unsigned int nSessionId,uint64_t nAdd
 
 unsigned char CGoldenRoomData::OnPlayerPK(unsigned char idx , unsigned char cTargetIdx , bool& bWin )  // 0 success , 1 not your turn ,2 state error 
 {
+	if ( GetDataOnly()->nRound < GOLDEN_PK_ROUND )
+	{
+		return 6 ;
+	}
+
 	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataByIdx(idx);
 	if ( !pData)
 	{
@@ -351,6 +371,113 @@ unsigned char CGoldenRoomData::OnPlayerPK(unsigned char idx , unsigned char cTar
 	pData->nCurCoin -= nPKCoin ;
 	pData->nBetCoin += nPKCoin ;
 	GetDataOnly()->nAllBetCoin += nPKCoin ;
+	return 0 ;
+}
+
+unsigned char CGoldenRoomData::OnPlayerShowCard(unsigned int nSessionID , unsigned char nCardIdx )
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataBySessionID(nSessionID);
+	if ( !pData )
+	{
+		return 10 ;
+	}
+
+	if ( IS_STATE(pData->nPeerState,eRoomPeer_Golden_Playing) == false )
+	{
+		return 1 ;   // state error ;
+	}
+
+	if ( pData->nShowedCardCnt >= GOLDEN_PEER_CARD - 1  )
+	{
+		return 2 ;   // show card cunt up limit ;
+	}
+
+	if ( nCardIdx >= GOLDEN_PEER_CARD )
+	{
+		return 4 ;  // error idx ;
+	}
+
+	for ( int i = 0 ; i < pData->nShowedCardCnt ; ++i )
+	{
+		if ( pData->vShowedCardIdx[i] == nCardIdx )
+		{
+			return 3 ; // already show 
+		}
+	}
+
+	// show card 
+	pData->vShowedCardIdx[pData->nShowedCardCnt++] = nCardIdx ;
+	return 0 ;
+}
+
+unsigned char CGoldenRoomData::OnPlayerChangeCard(unsigned int nSessionID , unsigned char nCardIdx , unsigned char& cNewCardNum)
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataBySessionID(nSessionID);
+	if ( !pData )
+	{
+		return 10 ;
+	}
+
+	if ( IS_STATE(pData->nPeerState,eRoomPeer_Golden_Playing) == false )
+	{
+		return 1 ;   // state error ;
+	}
+
+	if ( nCardIdx >= GOLDEN_PEER_CARD )
+	{
+		return 2 ;   // error idx ;
+	}
+
+	if ( pData->nChangeCardTimes >= GOLDEN_PEER_CARD )
+	{
+		return 3 ;   // can not change too many card 
+	}
+
+	if ( pData->nDiamond < s_vChangeCardDimonedNeed[pData->nChangeCardTimes] )
+	{
+		return 4 ;   // diamond not engough ;
+	}
+
+	if ( GetDataOnly()->nRound < GetDataOnly()->nChangeCardRound )
+	{
+		return 5 ; // please wait more round ;
+	}
+
+	pData->nDiamond -= s_vChangeCardDimonedNeed[pData->nChangeCardTimes] ;
+	pData->nChangeCardUsedDiamond += s_vChangeCardDimonedNeed[pData->nChangeCardTimes] ;
+	++pData->nChangeCardTimes;
+#ifdef GAME_SERVER
+	cNewCardNum = tPoker.GetCardWithCompositeNum();
+#endif
+	pData->vHoldCard[nCardIdx] = cNewCardNum;
+
+	if ( pData->cRoomIdx == GetDataOnly()->cCurActIdx )
+	{
+		GetDataOnly()->fTimeTick = 0 ;
+	}
+	return 0 ;
+}
+
+unsigned char CGoldenRoomData::OnPlayerPKTimes(unsigned int nSessionID , unsigned char nNewPKTimes )
+{
+	stGoldenPeerData* pData = (stGoldenPeerData*)GetPeerDataBySessionID(nSessionID);
+	if ( !pData )
+	{
+		return 10 ;
+	}
+
+	if ( IS_STATE(pData->nPeerState,eRoomPeer_Golden_Playing) == false )
+	{
+		return 1 ;   // state error ;
+	}
+
+	if ( pData->nPKTimes >= nNewPKTimes )
+	{
+		return 2 ; // must big than current ;
+	}
+
+	CLogMgr::SharedLogMgr()->ErrorLog("Must check PK Times card") ;
+	pData->nPKTimes = nNewPKTimes ;
 	return 0 ;
 }
 

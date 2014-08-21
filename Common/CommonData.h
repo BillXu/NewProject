@@ -6,6 +6,7 @@ struct stPeerBaseData
 {
 	unsigned int nSessionID ;
 	uint64_t nCurCoin ;
+	unsigned int nDiamond;
 	unsigned char cRoomIdx ;
 	unsigned int nUserUID ;
 	char cName[MAX_LEN_CHARACTER_NAME] ;
@@ -19,10 +20,12 @@ struct stRoomBaseDataOnly
 {
 	unsigned int nRoomID ;
 	unsigned char cGameType ; // eRoomType ;
+	unsigned short nRoomLevel ;
 	unsigned char cCurRoomState ; // eeRoomState ;
+	unsigned char fOperateTime ;  // by second , wait player act ;
 	float fTimeTick ;     // by second 
-	uint64_t cMiniCoinNeedToEnter; 
 	unsigned char cMaxPlayingPeers ; // not include  standup peers , in some game ;
+	unsigned int cMiniCoinNeedToEnter; 
 };
 
 // golden 
@@ -30,7 +33,12 @@ struct stGoldenPeerData
 	:public stPeerBaseData
 {
 	uint64_t nBetCoin ;
+	unsigned char nShowedCardCnt ;
+	unsigned char vShowedCardIdx[GOLDEN_PEER_CARD] ;
 	unsigned char vHoldCard[GOLDEN_PEER_CARD];
+	unsigned short nChangeCardUsedDiamond ; 
+	unsigned char nChangeCardTimes ; 
+	unsigned short nPKTimes;     // fan bei ka shi yong
 };
 
 struct stRoomGoldenDataOnly
@@ -42,6 +50,9 @@ struct stRoomGoldenDataOnly
 	unsigned char nRound ;   // begin with 0 ;
 	unsigned int nMiniBet ; 
 	uint64_t nCurMaxBet ; 
+	unsigned short nTitleNeedToEnter ;
+	unsigned char nChangeCardRound; 
+	bool bCanDoublePK ;
 };
 
 struct stGoldenHoldPeerCard

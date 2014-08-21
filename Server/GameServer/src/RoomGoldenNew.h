@@ -6,7 +6,7 @@ class CRoomGoldenNew
 	:public CRoomBaseNew
 {
 public:
-	virtual bool Init();
+	virtual bool Init(stBaseRoomConfig* pConfig);
 	virtual void Enter(CPlayer* pEnter );
 	virtual void Leave(CPlayer* pLeaver);
 	virtual unsigned char CheckCanJoinThisRoom(CPlayer* pPlayer); // 0 means ok , other value means failed ;
