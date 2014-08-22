@@ -47,6 +47,7 @@ public:
 	CPlayerOnlineBox* GetOnlineBox(){ return m_pOnlineBox ; }
 	static bool EventFunc(void* pUserData,stEventArg* pArg);
 	stServerBaseData* GetData(){ return &m_stBaseData ;}
+	unsigned char GetTitleLevel();
 public:
 	friend class CPlayerOnlineBox ;
 protected:

@@ -83,9 +83,19 @@ void CRoomGoldenNew::Leave(CPlayer* pLeaver)
 
 unsigned char CRoomGoldenNew::CheckCanJoinThisRoom(CPlayer* pPlayer) // 0 means ok , other value means failed ;
 {
-	if ( m_pRoomData->GetEmptySeatCnt() > 0 )
-		return 0 ;
-	return  1;
+	if ( m_pRoomData->GetEmptySeatCnt() <= 0 )
+		return 1 ;
+	if ( GetRoomData()->GetDataOnly()->cMiniCoinNeedToEnter > pPlayer->GetBaseData()->GetAllCoin() )
+	{
+		return 2 ;
+	}
+
+	if ( GetRoomData()->GetDataOnly()->nTitleNeedToEnter > pPlayer->GetBaseData()->GetTitleLevel() )
+	{
+		return 3 ;
+	}
+
+	return  0;
 }
 
 void CRoomGoldenNew::SendRoomInfoToPlayer(CPlayer* pPlayer)
@@ -377,6 +387,56 @@ bool CRoomGoldenNew::OnMessage(CPlayer*pSender, stMsg* pmsg)
 				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
 
 				GoToState(eRoomState_Golden_PKing) ;
+			}
+		}
+		break;
+	case MSG_GOLDEN_ROOM_PLAYER_SHOW_CARD:
+		{
+			stMsgGoldenRoomPlayerShowCard* pReal = (stMsgGoldenRoomPlayerShowCard*)pmsg ;
+			stMsgGoldenRoomPlayerShowCardRet msgBack ;
+			msgBack.nRet = GetRoomData()->OnPlayerShowCard(pSender->GetSessionID(),pReal->nCardIdx) ;
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+			
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgGoldenRoomShowCard msgAll ;
+				msgAll.nPlayerIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) ;
+				msgAll.nCardIdx = pReal->nCardIdx ;
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
+			}
+		}
+		break;
+	case MSG_GOLDEN_ROOM_PLAYER_CHANGE_CARD:
+		{
+			stMsgGoldenRoomPlayerChangeCard* pReal = (stMsgGoldenRoomPlayerChangeCard*)pmsg;
+			stMsgGoldenRoomPlayerChangeCardRet msgBack ;
+			unsigned char nNewCard = 0 ;
+			msgBack.nRet = GetRoomData()->OnPlayerChangeCard(pSender->GetSessionID(),pReal->nCardIdx,nNewCard);
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgGoldenRoomChangeCard msgAll ;
+				msgAll.cPlayerIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) ;
+				msgAll.nCardIdx = pReal->nCardIdx ;
+				msgAll.nNewCardNum = nNewCard ;
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
+			}
+		}
+		break;
+	case MSG_GOLDEN_ROOM_PLAYER_PK_TIMES:
+		{
+			stMsgGoldenRoomPlayerPKTimes* pReal = (stMsgGoldenRoomPlayerPKTimes*)pmsg ;
+			stMsgGoldenRoomPlayerPKTimesRet msgBack ;
+			msgBack.nRet = GetRoomData()->OnPlayerPKTimes(pSender->GetSessionID(),pReal->nTimes) ;
+			SendMsgBySessionID(&msgBack,sizeof(msgBack),pSender->GetSessionID(),false) ;
+			
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgGoldenRoomPKTimes msgAll ;
+				msgAll.nPlayerIdx = GetRoomData()->GetRoomIdxBySessionID(pSender->GetSessionID()) ;
+				msgAll.nTimes = pReal->nTimes ;
+				SendMsgBySessionID(&msgAll,sizeof(msgAll)) ;
 			}
 		}
 		break;
