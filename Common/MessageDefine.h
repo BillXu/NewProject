@@ -560,7 +560,7 @@ struct stMsgRoomRequestPeerDetail
 	:public stMsg
 {
 	stMsgRoomRequestPeerDetail(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROOM_REQUEST_PEER_DETAIL ; }
-	char nPeerIdxInRoom ;
+	unsigned int nPeerSessionID ;
 };
 
 struct stMsgRoomRequestPeerDetailRet
@@ -568,7 +568,7 @@ struct stMsgRoomRequestPeerDetailRet
 {
 	stMsgRoomRequestPeerDetailRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_ROOM_REQUEST_PEER_DETAIL ; }
 	unsigned char nRet ; // 0 sucess , 1 peer not exsit ;
-	char nPeerIdxInRoom ;
+	unsigned int nPeerSessionID ; ;
 	stPlayerDetailData stDetailInfo ;
 };
 
@@ -584,7 +584,6 @@ struct stMsgKickPeerRet
 {
 	stMsgKickPeerRet(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_ROOM_KICK_PEER ;}
 	unsigned char nRet ;   // 0 success , 1 target not exsit ,2, kick card not enghout , 3 vip higher than you can not kick , 4 target can not be self;
-	unsigned char nIdxBeKicked ; 
 };
 
 struct stMsgKickOtherPeerKickPeer

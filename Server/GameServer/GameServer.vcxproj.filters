@@ -214,6 +214,9 @@
     <ClInclude Include="src\RoomGoldenNew.h">
       <Filter>src\Room\GoldenPokerRoom</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\TitleLevelConfig.h">
+      <Filter>Common\Config</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\RoomGolden.cpp">
@@ -350,6 +353,9 @@
     </ClCompile>
     <ClCompile Include="src\RoomGoldenNew.cpp">
       <Filter>src\Room\GoldenPokerRoom</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\TitleLevelConfig.cpp">
+      <Filter>Common\Config</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

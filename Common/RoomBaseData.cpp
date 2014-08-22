@@ -20,6 +20,15 @@ CRoomBaseData::~CRoomBaseData()
 void CRoomBaseData::Init()
 {
 	m_pData = NULL ;
+	m_vSessionIDs.clear();
+}
+
+void CRoomBaseData::OnEndGame()
+{
+	if ( m_vSessionIDs.empty() )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why not precess this kicked player ") ;
+	}
 }
 
 void CRoomBaseData::AddPeer(stPeerBaseData* peerData)
@@ -56,6 +65,16 @@ void CRoomBaseData::RemovePeer(unsigned int nSessionID )
 			delete m_vPeerDatas[idx] ;
 			m_vPeerDatas[idx] = NULL ;
 			break; 
+		}
+	}
+
+	VEC_KICKED_SESSIONID::iterator iter = m_vSessionIDs.begin();
+	for ( ; iter != m_vSessionIDs.end(); ++iter )
+	{
+		if ( (*iter) == nSessionID )
+		{
+			m_vSessionIDs.erase(iter) ;
+			break;
 		}
 	}
 }
@@ -140,6 +159,81 @@ void CRoomBaseData::SetRoomState(unsigned short nRoomState )
 {
 	m_pData->cCurRoomState = nRoomState ;
 	m_pData->fTimeTick = 0 ;
+}
+
+unsigned char CRoomBaseData::OnPlayerKick(unsigned int nSessionID,unsigned char nTargetIdx,bool* bRightKicked )
+{
+	stPeerBaseData* pData = GetPeerDataBySessionID(nSessionID);
+	if ( !pData )   
+	{
+		// you are not sit 
+		return 2 ; 
+	}
+
+	stPeerBaseData* pTargetData = GetPeerDataByIdx(nTargetIdx) ;
+	if ( !pData )
+	{
+		return 3 ;  // target not sit 
+	}
+
+	if ( pData == pTargetData )
+	{
+		return 4 ; // can not kick self 
+	}
+
+	bool bRightNow = CheckCanPlayerBeKickedRightNow(nTargetIdx) ;
+	if (bRightKicked)
+	{
+		*bRightKicked = bRightNow  ;
+	}
+
+	if (bRightKicked )
+	{
+		RemovePeer(pTargetData->nSessionID) ;
+	}
+	else
+	{
+		m_vSessionIDs.push_back(pTargetData->nSessionID) ;
+	}
+}
+
+bool CRoomBaseData::CheckCanPlayerBeKickedRightNow(unsigned char nTargetIdx )
+{
+	return false ;
+}
+
+bool CRoomBaseData::DoBeKickedPlayer(unsigned int nSessionID )
+{
+	VEC_KICKED_SESSIONID::iterator iter = m_vSessionIDs.begin() ;
+	bool bKick = false ;
+	for ( ; iter != m_vSessionIDs.end() ; ++iter )
+	{
+		if ( *iter == nSessionID )
+		{
+			m_vSessionIDs.erase(iter) ;
+			bKick = true ;
+			break; ;
+		}
+	}
+
+	if ( !bKick )
+	{
+		return false ;
+	}
+
+	stPeerBaseData* pData = GetPeerDataBySessionID(nSessionID);
+	if ( !pData )   
+	{
+		false ;
+	}
+
+	bool bRightNow = CheckCanPlayerBeKickedRightNow(pData->cRoomIdx) ;
+	if ( bRightNow == false )
+	{
+		return false ;
+	}
+	RemovePeer(nSessionID) ;
+	return true ;
 }
 
 void CRoomBaseData::ClearAllPeers()

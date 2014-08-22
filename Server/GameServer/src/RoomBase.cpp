@@ -198,7 +198,6 @@ bool CRoomBase::OnPeerMsg(CRoomPeer* pPeer, stMsg* pmsg )
 		{
 			stMsgKickPeerRet msgBack ;
 			stMsgKickPeer* pRealMsg = (stMsgKickPeer*)pmsg ;
-			msgBack.nIdxBeKicked = pRealMsg->nIdxToBeKick;
 			msgBack.nRet = 0 ;
 			if ( pRealMsg->nIdxToBeKick == pPeer->GetPeerIdxInRoom() )
 			{
@@ -248,22 +247,22 @@ bool CRoomBase::OnPeerMsg(CRoomPeer* pPeer, stMsg* pmsg )
 		break;
 	case MSG_ROOM_REQUEST_PEER_DETAIL:
 		{
-			stMsgRoomRequestPeerDetailRet msgBack ;
-			stMsgRoomRequestPeerDetail* pMsgRet = (stMsgRoomRequestPeerDetail*)pmsg ;
-			msgBack.nPeerIdxInRoom = pMsgRet->nPeerIdxInRoom ;
-			CRoomPeer* pFindPeer = NULL ;
-			if ( pMsgRet->nPeerIdxInRoom >= GetMaxSeat() || m_vRoomPeer[pMsgRet->nPeerIdxInRoom] == NULL )
-			{
-				msgBack.nRet = 1 ;
-			}
-			else
-			{
-				pFindPeer = m_vRoomPeer[pMsgRet->nPeerIdxInRoom];
-				msgBack.nRet = 0 ;
-				CPlayerBaseData* pBaseData = pFindPeer->GetPlayerBaseData() ;
-				pBaseData->GetPlayerDetailData(&msgBack.stDetailInfo) ;
-			}
-			pPeer->SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+// 			stMsgRoomRequestPeerDetailRet msgBack ;
+// 			stMsgRoomRequestPeerDetail* pMsgRet = (stMsgRoomRequestPeerDetail*)pmsg ;
+// 			msgBack.nPeerIdxInRoom = pMsgRet->nPeerIdxInRoom ;
+// 			CRoomPeer* pFindPeer = NULL ;
+// 			if ( pMsgRet->nPeerIdxInRoom >= GetMaxSeat() || m_vRoomPeer[pMsgRet->nPeerIdxInRoom] == NULL )
+// 			{
+// 				msgBack.nRet = 1 ;
+// 			}
+// 			else
+// 			{
+// 				pFindPeer = m_vRoomPeer[pMsgRet->nPeerIdxInRoom];
+// 				msgBack.nRet = 0 ;
+// 				CPlayerBaseData* pBaseData = pFindPeer->GetPlayerBaseData() ;
+// 				pBaseData->GetPlayerDetailData(&msgBack.stDetailInfo) ;
+// 			}
+// 			pPeer->SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
 		}
 		break;
 	case MSG_PlAYER_INVITED_FRIEND_TO_JOIN_ROOM:

@@ -120,6 +120,8 @@ void CGoldenRoomData::OnStartGame()
 
 void CGoldenRoomData::OnEndGame()
 {
+	CRoomBaseData::OnEndGame();
+
 	GetDataOnly()->cCurActIdx = -1 ;
 	GetDataOnly()->nAllBetCoin = 0 ;
 	GetDataOnly()->nCurMaxBet = GetDataOnly()->nMiniBet ;

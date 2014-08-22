@@ -1,6 +1,8 @@
 #pragma once
 class IConfigFile ;
 class CContiuneLoginConfigMgr ;
+class CTitleLevelConfig;
+
 class CConfigManager
 {
 public:
@@ -15,6 +17,7 @@ public:
 		eConfig_SlotMachine,
 		eConfig_Box,
 		eConfig_Room,
+		eConfig_TitleLevel,
 		eConfig_Max,
 	};
 public:
@@ -23,6 +26,7 @@ public:
 	void LoadAllConfigFile( const char* pConfigRootPath );
 	IConfigFile* GetConfig( eConfigType eConfig );
 	CContiuneLoginConfigMgr* GetContinueLoginConfig(){ return (CContiuneLoginConfigMgr*)GetConfig(eConfig_ContinueLogin) ; }
+	CTitleLevelConfig* GetTitleLevelConfig(){ return (CTitleLevelConfig*)GetConfig(eConfig_TitleLevel) ; }
 protected:
 	IConfigFile* m_vConfigs[eConfig_Max] ;
 };

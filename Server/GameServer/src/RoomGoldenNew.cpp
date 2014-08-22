@@ -178,7 +178,7 @@ void CRoomGoldenNew::Update(float fTimeElpas, unsigned int nTimerID )
 		{
 			if ( GetRoomDataOnly()->fTimeTick < TIME_GOLDEN_ROOM_PK )
 				return ;
-			
+			CheckDelayedKickedPlayer();
 			if ( !GameOverCheckAndProcess() )
 			{
 				NextPlayerAct();
@@ -189,8 +189,17 @@ void CRoomGoldenNew::Update(float fTimeElpas, unsigned int nTimerID )
 		{
 			if ( GetRoomDataOnly()->fTimeTick < TIME_GOLDEN_ROOM_RESULT )
 				return ;
+			CheckDelayedKickedPlayer();
+
 			((CGoldenRoomData*)m_pRoomData)->OnEndGame();
-			GoToState(eRoomState_Golden_WaitPeerToJoin);
+			if ( m_pRoomData->GetPlayingSeatCnt() >= 2 )
+			{
+				GoToState(eRoomState_Golden_WaitPeerReady);
+			}
+			else
+			{
+				GoToState(eRoomState_Golden_WaitPeerToJoin);
+			}
 		}
 		break;
 	default:
@@ -250,14 +259,7 @@ void CRoomGoldenNew::GoToState(unsigned char cTargetState)
 	case eRoomState_Golden_ShowingResult:
 		{
 			// do nothing  caculate was done in GameOverCheckAndProcess function ;
-			if ( m_pRoomData->GetPlayingSeatCnt() >= 2 )
-			{
-				GoToState(eRoomState_Golden_WaitPeerReady);
-			}
-			else
-			{
-				GoToState(eRoomState_Golden_WaitPeerToJoin);
-			}
+
 		}
 		break;
 	default:
@@ -328,6 +330,7 @@ bool CRoomGoldenNew::OnMessage(CPlayer*pSender, stMsg* pmsg)
 					}
 				}
 			}
+			CheckDelayedKickedPlayer();
 		}
 		break;
 	case MSG_GOLDEN_ROOM_PLAYER_FOLLOW:

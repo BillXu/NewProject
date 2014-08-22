@@ -34,8 +34,11 @@ public:
 	unsigned int GetAntesCoin();
 	unsigned short GetEmptySeatCount();
 	unsigned short GetMaxSeat();
+	void CheckDelayedKickedPlayer();
 /*protected:*/
 	stRoomBaseDataOnly* GetRoomDataOnly();
+protected:
+	void RemovePlayerBySessionID(unsigned int nSessionId);
 protected:
 	MAP_SESSION_PLAYER m_vAllPeers; // both playing and seeing ;
 	CRoomBaseData* m_pRoomData ;

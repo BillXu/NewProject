@@ -505,6 +505,23 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg)
 			}
 		}
 		break;
+	case MSG_ROOM_REQUEST_PEER_DETAIL:
+		{
+			stMsgRoomRequestPeerDetailRet msgBack ;
+			stMsgRoomRequestPeerDetail* pMsgRet = (stMsgRoomRequestPeerDetail*)pMsg ;
+			msgBack.nPeerSessionID = pMsgRet->nPeerSessionID ;
+			CPlayer* pDetailPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(pMsgRet->nPeerSessionID) ;
+			if ( pDetailPlayer == NULL )
+			{
+				msgBack.nRet = 1 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			pDetailPlayer->GetBaseData()->GetPlayerDetailData(&msgBack.stDetailInfo);
+			SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+		}
+		break;
 	default:
 		return false ;
 	}
@@ -530,6 +547,11 @@ void CPlayer::OnTimerSave(float fTimeElaps,unsigned int nTimerID )
 			p->TimerSave();
 		}
 	}
+}
+
+void CPlayer::SetCurRoom(CRoomBaseNew* pRoom)
+{
+	m_pCurRoom = pRoom ;
 }
 
 void CPlayer::PushTestAPNs()

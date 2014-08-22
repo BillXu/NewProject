@@ -34,6 +34,7 @@ public:
 	void PostPlayerEvent(stPlayerEvetArg* pEventArg );
 	CRoomBaseNew* GetRoomCurStateIn();
 	void OnTimerSave(float fTimeElaps,unsigned int nTimerID );
+	void SetCurRoom(CRoomBaseNew* pRoom);
 protected:
 	bool ProcessPublicPlayerMsg(stMsg* pMsg);
 	void PushTestAPNs();

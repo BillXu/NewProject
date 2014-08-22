@@ -107,6 +107,7 @@
     <ClInclude Include="..\..\Common\ShopConfg.h" />
     <ClInclude Include="..\..\Common\TaxasPokerMessage.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
+    <ClInclude Include="..\..\Common\TitleLevelConfig.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
@@ -156,6 +157,7 @@
     <ClCompile Include="..\..\Common\RoomConfig.cpp" />
     <ClCompile Include="..\..\Common\ShopConfg.cpp" />
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp" />
+    <ClCompile Include="..\..\Common\TitleLevelConfig.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />

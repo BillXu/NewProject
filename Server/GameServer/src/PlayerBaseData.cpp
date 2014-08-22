@@ -13,6 +13,7 @@
 #include "PlayerManager.h"
 #include "EventCenter.h"
 #include "InformConfig.h"
+#include "TitleLevelConfig.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
 CPlayerBaseData::CPlayerBaseData(CPlayer* player )
@@ -566,4 +567,9 @@ void CPlayerBaseData::OnNewDay(stEventArg* pArg)
 	m_stBaseData.nTodayPlayTimes = 0 ;
 	m_stBaseData.nYesterdayWinCoin = m_stBaseData.nTodayWinCoin ;
 	m_stBaseData.nTodayWinCoin = 0 ;
+}
+
+unsigned char CPlayerBaseData::GetTitleLevel()
+{
+	return CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetTitleLevelConfig()->GetTitleLevel(GetAllDiamoned()) ;
 }
