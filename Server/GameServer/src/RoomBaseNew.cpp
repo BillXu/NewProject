@@ -51,6 +51,7 @@ void CRoomBaseNew::Enter(CPlayer* pEnter )
 		m_vAllPeers.erase(iter) ;
 	}
 	m_vAllPeers.insert(MAP_SESSION_PLAYER::value_type(pEnter->GetSessionID(),pEnter));
+	pEnter->SetCurRoom(this);
 }
 
 void CRoomBaseNew::Leave(CPlayer* pLeaver)
@@ -291,14 +292,12 @@ void CRoomBaseNew::CheckDelayedKickedPlayer()
 {
 	if ( m_pRoomData->m_vSessionIDs.empty() )
 		return ;
-	CRoomBaseData::VEC_KICKED_SESSIONID vTemp (m_pRoomData->m_vSessionIDs.begin(),m_pRoomData->m_vSessionIDs.end());
-	CRoomBaseData::VEC_KICKED_SESSIONID::iterator iter = vTemp.begin() ;
-	for ( ; iter != vTemp.end() ; ++iter )
+	std::vector<unsigned int> vKickedSessions ;
+	GetData()->OnCheckDelayKickPlayers(vKickedSessions);
+ 
+	for ( unsigned int i = 0 ; i < vKickedSessions.size(); ++i )
 	{
-		if ( m_pRoomData->DoBeKickedPlayer(*iter))
-		{
-			RemovePlayerBySessionID(*iter);
-		}
+		RemovePlayerBySessionID(vKickedSessions[i]);
 	}
 }
 

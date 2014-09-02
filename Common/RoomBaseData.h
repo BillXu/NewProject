@@ -10,9 +10,9 @@ public:
 	virtual ~CRoomBaseData();
 	virtual void Init();
 
-	virtual void OnStartGame() = 0 ;
+	virtual void OnStartGame() ;
 	virtual void OnEndGame() ;
-	void AddPeer(stPeerBaseData* peerData); // must new outside
+	unsigned char AddPeer(stPeerBaseData* peerData,unsigned char nRoomIdx = 0); // must new outside , return final room idx ;
 	void RemovePeer(unsigned int nSessionID );
 	unsigned char GetEmptySeatCnt();
 	unsigned char GetPlayingSeatCnt();
@@ -24,9 +24,12 @@ public:
 	unsigned int GetSessionIDByIdx(unsigned char nIdx);
 	virtual void SetRoomState(unsigned short nRoomState );
 	unsigned char OnPlayerKick(unsigned int nSessionID,unsigned char nTargetIdx,bool* bRightKicked );
+	unsigned char OnCheckDelayKickPlayers(std::vector<unsigned int>& vKickedPlayer );  // vKickedPlayer contain sessionId in server side , vKickedPlayer contain roomIdx  in client side ;
 
-	virtual bool CheckCanPlayerBeKickedRightNow(unsigned char nTargetIdx );
+	virtual bool CheckCanPlayerBeKickedRightNow(unsigned char nTargetIdx ) = 0;
 	bool DoBeKickedPlayer(unsigned int nSessionID );
+	unsigned short GetKickSessionIDsToBuffer(const char* pBuffer );
+	unsigned char GetKickPlayerCnt(){ return m_vSessionIDs.size() ;}
 protected:
 	void ClearAllPeers();
 public:

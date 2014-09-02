@@ -552,6 +552,7 @@ void CPlayer::OnTimerSave(float fTimeElaps,unsigned int nTimerID )
 void CPlayer::SetCurRoom(CRoomBaseNew* pRoom)
 {
 	m_pCurRoom = pRoom ;
+	m_eSate = m_pCurRoom == NULL ? ePlayerState_Free : ePlayerState_InRoom ;
 }
 
 void CPlayer::PushTestAPNs()

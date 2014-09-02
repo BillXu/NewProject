@@ -61,9 +61,6 @@
     <ClInclude Include="..\..\Common\MessageIdentifer.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\GoldenMessageDefine.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -217,6 +214,18 @@
     <ClInclude Include="..\..\Common\TitleLevelConfig.h">
       <Filter>Common\Config</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\TaxasRoomData.h">
+      <Filter>Common\RoomData</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RoomTaxasNew.h">
+      <Filter>src\Room\TexasPoker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\TaxasMessageDefine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\RoomGolden.cpp">
@@ -356,6 +365,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Common\TitleLevelConfig.cpp">
       <Filter>Common\Config</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\TaxasRoomData.cpp">
+      <Filter>Common\RoomData</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RoomTaxasNew.cpp">
+      <Filter>src\Room\TexasPoker</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

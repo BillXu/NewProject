@@ -6,6 +6,7 @@ struct stMsg ;
 class CRoomBaseData;
 struct stRoomBaseDataOnly ;
 struct stBaseRoomConfig ;
+#define  SESSION_ID_TO_IDX( ID ) (GetData()->GetRoomIdxBySessionID( (ID) ))
 
 class CRoomBaseNew
 	:public CTimerDelegate

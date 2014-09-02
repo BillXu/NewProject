@@ -61,4 +61,35 @@ struct stGoldenHoldPeerCard
 	unsigned char vCard[GOLDEN_PEER_CARD];
 };
 
+// taxpoker peer 
+struct stTaxasPeerData
+	:public stPeerBaseData
+{
+	unsigned char eCurAct ;  // eRoomPeerAction
+	uint64_t nAllBetCoin ;
+	uint64_t nWinCoinFromPools ; // include the nAllBetCoin
+	uint64_t nBetCoinThisRound ;
+	unsigned char vHoldCard[TAXAS_PEER_CARD];
+};
+
+struct stTaxasRoomDataSimple
+	:public stRoomBaseDataOnly
+{
+	char cBankerIdx ;
+	unsigned char cLittleBlindIdx ;
+	unsigned char cBigBlindIdx ;
+	char cCurWaitPlayerActionIdx ;
+
+	uint64_t  nCurMainBetPool ;
+	uint64_t  nMostBetCoinThisRound;
+
+	unsigned char vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
+	unsigned char ePrePeerAction ; 
+	unsigned char nBetRound ; //valid value , 0,1 , 2 , 3 ,4 
+
+	unsigned int nBigBlindBet ;
+	uint64_t nMaxTakeIn ;
+	float fCurStateTime;  // cur state will last seconds ;
+};
+
 #pragma pack(pop)

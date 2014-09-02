@@ -526,3 +526,9 @@ unsigned char CGoldenRoomData::GetPeerHoldCardFromBuffer(char* pBuffer,unsigned 
 	return nRealCnt ;
 }
 
+bool CGoldenRoomData::CheckCanPlayerBeKickedRightNow(unsigned char nTargetIdx )
+{
+	CLogMgr::SharedLogMgr()->ErrorLog("please processed here") ;
+	return true ;
+}
+

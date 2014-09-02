@@ -25,6 +25,7 @@ public:
 	unsigned char OnPlayerPKTimes(unsigned int nSessionID , unsigned char nNewPKTimes );
 	bool MovePeerHoldCardToBuffer(char* pBuffer,unsigned short nSize );
 	unsigned char GetPeerHoldCardFromBuffer(char* pBuffer,unsigned char nPeerCnt);
+	virtual bool CheckCanPlayerBeKickedRightNow(unsigned char nTargetIdx );
 protected:
 	CPoker tPoker ;
 	CPeerCard m_tPeerCard;

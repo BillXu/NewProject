@@ -103,13 +103,15 @@
     <ClInclude Include="..\..\Common\PeerCard.h" />
     <ClInclude Include="..\..\Common\RoomBaseData.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
-    <ClInclude Include="..\..\Common\ServerMessageDefine.h" />
     <ClInclude Include="..\..\Common\ShopConfg.h" />
+    <ClInclude Include="..\..\Common\TaxasMessageDefine.h" />
     <ClInclude Include="..\..\Common\TaxasPokerMessage.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
+    <ClInclude Include="..\..\Common\TaxasRoomData.h" />
     <ClInclude Include="..\..\Common\TitleLevelConfig.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\Brocaster.h" />
     <ClInclude Include="src\EventCenter.h" />
@@ -136,6 +138,7 @@
     <ClInclude Include="src\RoomGoldenNew.h" />
     <ClInclude Include="src\RoomManager.h" />
     <ClInclude Include="src\RoomPeer.h" />
+    <ClInclude Include="src\RoomTaxasNew.h" />
     <ClInclude Include="src\RoomTexasPoker.h" />
     <ClInclude Include="src\SlotMachine.h" />
     <ClInclude Include="src\TaxasPokerPeer.h" />
@@ -157,6 +160,7 @@
     <ClCompile Include="..\..\Common\RoomConfig.cpp" />
     <ClCompile Include="..\..\Common\ShopConfg.cpp" />
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp" />
+    <ClCompile Include="..\..\Common\TaxasRoomData.cpp" />
     <ClCompile Include="..\..\Common\TitleLevelConfig.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
@@ -184,6 +188,7 @@
     <ClCompile Include="src\RoomGoldenNew.cpp" />
     <ClCompile Include="src\RoomManager.cpp" />
     <ClCompile Include="src\RoomPeer.cpp" />
+    <ClCompile Include="src\RoomTaxasNew.cpp" />
     <ClCompile Include="src\RoomTexasPoker.cpp" />
     <ClCompile Include="src\SlotMachine.cpp" />
     <ClCompile Include="src\TaxasPokerPeer.cpp" />
