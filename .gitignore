@@ -29,6 +29,12 @@ TestClient/Debug/
 .buildpath
 
 ######
+## add by bill
+#####
+*.png
+*.jpg
+*.jpeg
+######
 ## svn ignore
 #####
 .svn/
