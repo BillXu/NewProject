@@ -28,7 +28,11 @@ TestClient/Debug/
 # PDT-specific
 .buildpath
 
-
+######
+## svn ignore
+#####
+.svn/
+.svn
 #################
 ## Visual Studio
 #################
