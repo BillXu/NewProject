@@ -20,14 +20,13 @@ public:
 	~CTaxasRoomData(){ClearVicePool();}
 	virtual void Init();
 	void InitDataFromMsg(stMsg*pmsg);  
-	virtual void OnStartGame() ;
+	virtual void OnStartGame(stMsg*pmsg = NULL) ;
 	virtual void OnEndGame() ;
 	virtual bool CheckCanPlayerBeKickedRightNow(unsigned char nTargetIdx );
 	float GetCurStateTime();
 	stTaxasRoomDataSimple* GetSimpleData();
 	bool CheckThisRoundEnd();
 	unsigned char OnDistributeCard();   /// return cur Bet Round ;
-	void OnRecievedCardInfos(stMsg*pmsg);
 	unsigned char OnEndThisRound();
 	char OnWaitNextPlayerAct();  // return cur wait player idx , other value means error ;
 	char OnPlayerStandup(unsigned char nIdx );  // return 0 means ok , other error ;
@@ -48,9 +47,10 @@ public:
 	uint64_t GetPlayerMustMinAddCoin( unsigned char nPlayerIdx );
 	uint64_t GetPlayerCanMaxAddCoin( unsigned char nPlayerIdx );
 	uint64_t GetCanMaxBetCoinThisRound();
-protected:
-	unsigned char GetFirstPlayerIdxWithState(unsigned char nIdxBegin, unsigned int nState ); // seach from nIdxBegin;
 	unsigned char GetPlayerCntWithState( unsigned int nState );
+protected:
+	void OnRecievedCardInfos(stMsg*pmsg);
+	unsigned char GetFirstPlayerIdxWithState(unsigned char nIdxBegin, unsigned int nState ); // seach from nIdxBegin;
 	void ClearVicePool();
 	void CaculateVicePoolWinnerIdxs(stVicePool* pPool );
 	bool GetTaxasCardForPlayer(CTaxasPokerPeerCard& pCard,stTaxasPeerData* pPeerData);

@@ -70,7 +70,7 @@ void CTaxasRoomData::InitDataFromMsg(stMsg*pmsg)
 	}
 }
 
-void CTaxasRoomData::OnStartGame()
+void CTaxasRoomData::OnStartGame(stMsg*pmsg)
 {
 	CRoomBaseData::OnStartGame();
 	ClearVicePool();
@@ -105,15 +105,12 @@ void CTaxasRoomData::OnStartGame()
 		}
 		memset(pPeerData->vHoldCard,0,sizeof(pPeerData->vHoldCard)) ;
 	}
-
-	// rest card 
-	tPoker.RestAllPoker();
 	// decide banker
 	pRoomData->cBankerIdx = GetFirstPlayerIdxWithState( ++pRoomData->cBankerIdx,eRoomPeer_StayThisRound );
 
 	// decide little idx 
-	pRoomData->cLittleBlindIdx = GetFirstPlayerIdxWithState(++pRoomData->cBankerIdx,eRoomPeer_StayThisRound);
-	pRoomData->cBigBlindIdx = GetFirstPlayerIdxWithState(++pRoomData->cLittleBlindIdx,eRoomPeer_StayThisRound);
+	pRoomData->cLittleBlindIdx = GetFirstPlayerIdxWithState( 1 + pRoomData->cBankerIdx,eRoomPeer_StayThisRound);
+	pRoomData->cBigBlindIdx = GetFirstPlayerIdxWithState( 1 + pRoomData->cLittleBlindIdx,eRoomPeer_StayThisRound);
 
 	// first bet ;
 	((stTaxasPeerData*)m_vPeerDatas[pRoomData->cLittleBlindIdx])->nBetCoinThisRound = pRoomData->nBigBlindBet * 0.5 ;
@@ -122,6 +119,36 @@ void CTaxasRoomData::OnStartGame()
 	((stTaxasPeerData*)m_vPeerDatas[pRoomData->cBigBlindIdx])->nBetCoinThisRound = pRoomData->nBigBlindBet ;
 	((stTaxasPeerData*)m_vPeerDatas[pRoomData->cBigBlindIdx])->nCurCoin -= pRoomData->nBigBlindBet ;
 	pRoomData->nMostBetCoinThisRound = pRoomData->nBigBlindBet;
+	
+	// prepare card ;
+#ifdef GAME_SERVER
+	// rest card 
+	tPoker.RestAllPoker();
+	if ( GetSimpleData()->nBetRound == 1 )
+	{
+		// peer hold card
+		for ( int iHoldeCard = 0 ; iHoldeCard < TAXAS_PEER_CARD ; ++iHoldeCard )
+		{
+			for ( int iPeerIdx = 0 ; iPeerIdx < m_pData->cMaxPlayingPeers ; ++iPeerIdx )
+			{
+				stTaxasPeerData* pPeer = (stTaxasPeerData*)m_vPeerDatas[iPeerIdx];
+				if ( pPeer == NULL || (pPeer->nPeerState & eRoomPeer_CanAct) != eRoomPeer_CanAct )
+				{
+					continue;
+				}
+				pPeer->vHoldCard[iHoldeCard] = tPoker.GetCardWithCompositeNum();
+			}
+		}
+
+		// public card ;
+		for ( int iPublicIdx = 0 ; iPublicIdx < TAXAS_PUBLIC_CARD ; ++iPublicIdx )
+		{
+			GetSimpleData()->vPublicCardNums[iPublicIdx] = tPoker.GetCardWithCompositeNum() ;
+		}
+	}
+#else
+	OnRecievedCardInfos(pmsg);
+#endif
 
 }
 
@@ -209,7 +236,12 @@ stTaxasRoomDataSimple* CTaxasRoomData::GetSimpleData()
 
 bool CTaxasRoomData::CheckThisRoundEnd()
 {
-	if ( GetPlayerCntWithState(eRoomPeer_WaitCaculate) < 2  )
+	if ( GetSimpleData()->cCurRoomState != eRoomState_TP_Wait_Bet )
+	{
+		return false ;
+	}
+
+	if ( GetPlayerCntWithState(eRoomPeer_WaitCaculate) <= 2  )
 		return true ;
 	bool bOnlyOneAct = GetPlayerCntWithState(eRoomPeer_CanAct) <= 1;
 
@@ -238,30 +270,6 @@ bool CTaxasRoomData::CheckThisRoundEnd()
 unsigned char CTaxasRoomData::OnDistributeCard()   /// return cur Bet Round ;
 {
 	++GetSimpleData()->nBetRound ;
-#ifdef GAME_SERVER
-	if ( GetSimpleData()->nBetRound == 1 )
-	{
-		// peer hold card
-		for ( int iHoldeCard = 0 ; iHoldeCard < TAXAS_PEER_CARD ; ++iHoldeCard )
-		{
-			for ( int iPeerIdx = 0 ; iPeerIdx < m_pData->cMaxPlayingPeers ; ++iPeerIdx )
-			{
-				stTaxasPeerData* pPeer = (stTaxasPeerData*)m_vPeerDatas[iPeerIdx];
-				if ( pPeer == NULL || (pPeer->nPeerState & eRoomPeer_CanAct) != eRoomPeer_CanAct )
-				{
-					continue;
-				}
-				pPeer->vHoldCard[iHoldeCard] = tPoker.GetCardWithCompositeNum();
-			}
-		}
-
-		// public card ;
-		for ( int iPublicIdx = 0 ; iPublicIdx < TAXAS_PUBLIC_CARD ; ++iPublicIdx )
-		{
-			GetSimpleData()->vPublicCardNums[iPublicIdx] = tPoker.GetCardWithCompositeNum() ;
-		}
-	}
-#endif
 	return GetSimpleData()->nBetRound ;	
 }
 
@@ -553,15 +561,15 @@ unsigned short CTaxasRoomData::GetAllPeersHoldCardToBuffer(const char* pBuffer )
 
 void CTaxasRoomData::OnRecievedCardInfos(stMsg*pmsg)
 {
-	if (pmsg->usMsgType != MSG_TAXAS_ROOM_CARDS )
+	if (pmsg->usMsgType != MSG_TAXAS_ROOM_GAME_START )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("msg id = %d should not be process here",pmsg->usMsgType);
 		return ;
 	}
 
-	stMsgTaxasRoomCards* pCardInfo = (stMsgTaxasRoomCards*)pmsg ;
+	stMsgTaxasRoomGameStart* pCardInfo = (stMsgTaxasRoomGameStart*)pmsg ;
 	memcpy(GetSimpleData()->vPublicCardNums,pCardInfo->vPublicCard,sizeof(pCardInfo->vPublicCard)) ;
-	stTaxasHoldCardItems* pItem = (stTaxasHoldCardItems*)(((char*)pmsg)+sizeof(stMsgTaxasRoomCards));
+	stTaxasHoldCardItems* pItem = (stTaxasHoldCardItems*)(((char*)pmsg)+sizeof(stMsgTaxasRoomGameStart));
 	while ( pCardInfo->nPeerCnt-- )
 	{
 		stTaxasPeerData* pData = (stTaxasPeerData*)GetPeerDataByIdx(pItem->cPlayerIdx) ;

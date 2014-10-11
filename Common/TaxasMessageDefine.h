@@ -80,10 +80,10 @@ struct stTaxasHoldCardItems
 	unsigned char vCards[TAXAS_PEER_CARD] ;
 };
 
-struct stMsgTaxasRoomCards
+struct stMsgTaxasRoomGameStart
 	:public stMsg
 {
-	stMsgTaxasRoomCards(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_TAXAS_ROOM_CARDS ; }
+	stMsgTaxasRoomGameStart(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_TAXAS_ROOM_GAME_START ; }
 	unsigned char vPublicCard[TAXAS_PUBLIC_CARD];
 	unsigned char nPeerCnt ;
 	stTaxasHoldCardItems* pHoldItems ;

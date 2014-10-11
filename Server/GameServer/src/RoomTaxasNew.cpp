@@ -55,6 +55,25 @@ void CRoomTaxasNew::Update(float fTimeElpas, unsigned int nTimerID )
 			if ( GetRoomData()->GetPlayingSeatCnt() > 2 )
 			{
 				GetRoomData()->OnStartGame();
+				// send inform start game  msg ;
+				stMsgTaxasRoomGameStart cardMsg ;
+				cardMsg.nPeerCnt = ((CTaxasRoomData*)GetData())->GetPlayerCntWithState(eRoomPeer_CanAct) ;
+				memcpy(cardMsg.vPublicCard,GetRoomData()->GetSimpleData()->vPublicCardNums,sizeof(cardMsg.vPublicCard));
+				unsigned short nMaxSize = sizeof(cardMsg) + cardMsg.nPeerCnt * sizeof(stTaxasHoldCardItems) ;
+
+				char* pBuffer = new char[nMaxSize] ;
+				memset(pBuffer,0,nMaxSize) ;
+
+				unsigned short nContentSize = 0 ;
+				memcpy(pBuffer,&cardMsg,sizeof(cardMsg));
+				nContentSize += sizeof(cardMsg);
+
+				nContentSize += GetRoomData()->GetAllPeersHoldCardToBuffer(pBuffer + nContentSize) ;
+				assert(nContentSize == nMaxSize && "why the size not equal?" );
+				SendMsgBySessionID((stMsg*)&pBuffer,nContentSize);
+				delete[] pBuffer ;
+
+				// change state 
 				GotoState(eRoomState_TP_Player_Distr);
 			}
 		}
@@ -139,6 +158,11 @@ void CRoomTaxasNew::GotoState(unsigned char TargetState)
 	unsigned char nPreState = GetData()->m_pData->cCurRoomState ;
 	GetData()->SetRoomState(TargetState);
 	GetData()->m_pData->fTimeTick = 0 ;
+	
+	stMsgTaxasRoomNewState msg ;
+	msg.cNewState = TargetState ;
+	SendMsgBySessionID(&msg,sizeof(msg));
+
 	switch ( GetData()->m_pData->cCurRoomState )
 	{
 	case eRoomState_TP_WaitJoin:
@@ -150,28 +174,11 @@ void CRoomTaxasNew::GotoState(unsigned char TargetState)
 		{
 			if ( GetRoomData()->OnDistributeCard() != 1 )
 				break;
-			// send distribute msg ;
-			stMsgTaxasRoomCards cardMsg ;
-			cardMsg.nPeerCnt = GetData()->GetPlayingSeatCnt() ;
-			memcpy(cardMsg.vPublicCard,GetRoomData()->GetSimpleData()->vPublicCardNums,sizeof(cardMsg.vPublicCard));
-			unsigned short nMaxSize = sizeof(cardMsg) + cardMsg.nPeerCnt * sizeof(stTaxasHoldCardItems) ;
-			
-			char* pBuffer = new char[nMaxSize] ;
-			memset(pBuffer,0,nMaxSize) ;
-			
-			unsigned short nContentSize = 0 ;
-			memcpy(pBuffer,&cardMsg,sizeof(cardMsg));
-			nContentSize += sizeof(cardMsg);
-
-			nContentSize += GetRoomData()->GetAllPeersHoldCardToBuffer(pBuffer + nContentSize) ;
-			assert(nContentSize == nMaxSize && "why the size not equal?" );
-			SendMsgBySessionID((stMsg*)&pBuffer,nContentSize);
-			delete[] pBuffer ;
 		}
 		break;
 	case eRoomState_TP_Wait_Bet:
 		{
-			GetRoomData()->OnWaitNextPlayerAct();
+			NextPlayerAct();
 		}
 		break;
 	case eRoomState_TP_Caculate_Round:
@@ -188,10 +195,6 @@ void CRoomTaxasNew::GotoState(unsigned char TargetState)
 		CLogMgr::SharedLogMgr()->ErrorLog("GotoState Unknown taxas room state = %d",GetData()->m_pData->cCurRoomState );
 		return ;
 	}
-
-	stMsgTaxasRoomNewState msg ;
-	msg.cNewState = TargetState ;
-	SendMsgBySessionID(&msg,sizeof(msg));
 }
 
 bool CRoomTaxasNew::OnMessage(CPlayer*pSender, stMsg* pmsg)

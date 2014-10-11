@@ -23,7 +23,7 @@ void CRoomBaseData::Init()
 	m_vSessionIDs.clear();
 }
 
-void CRoomBaseData::OnStartGame()
+void CRoomBaseData::OnStartGame(stMsg*pmsg)
 {
 
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "CommonData.h"
 #include <vector>
+struct stMsg ;
 class CRoomBaseData
 {
 public:
@@ -10,7 +11,7 @@ public:
 	virtual ~CRoomBaseData();
 	virtual void Init();
 
-	virtual void OnStartGame() ;
+	virtual void OnStartGame(stMsg*pmsg = NULL ) ;
 	virtual void OnEndGame() ;
 	unsigned char AddPeer(stPeerBaseData* peerData,unsigned char nRoomIdx = 0); // must new outside , return final room idx ;
 	void RemovePeer(unsigned int nSessionID );
