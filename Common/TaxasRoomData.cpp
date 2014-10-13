@@ -586,7 +586,7 @@ void CTaxasRoomData::OnRecievedCardInfos(stMsg*pmsg)
 
 unsigned char CTaxasRoomData::OnPlayerFollow(unsigned char nIdx )
 {
-	if ( nIdx == GetSimpleData()->cCurWaitPlayerActionIdx )
+	if ( nIdx != GetSimpleData()->cCurWaitPlayerActionIdx )
 	{
 		return  1 ;
 	}
@@ -617,7 +617,7 @@ unsigned char CTaxasRoomData::OnPlayerFollow(unsigned char nIdx )
 
 unsigned char CTaxasRoomData::OnPlayerAdd(unsigned char nIdx,uint64_t nAddCoin )
 {
-	if ( nIdx == GetSimpleData()->cCurWaitPlayerActionIdx )
+	if ( nIdx != GetSimpleData()->cCurWaitPlayerActionIdx )
 	{
 		return  1 ;
 	}
@@ -663,7 +663,7 @@ unsigned char CTaxasRoomData::OnPlayerAdd(unsigned char nIdx,uint64_t nAddCoin )
 
 unsigned char CTaxasRoomData::OnPlayerPass(unsigned char nIdx )
 {
-	if ( nIdx == GetSimpleData()->cCurWaitPlayerActionIdx )
+	if ( nIdx != GetSimpleData()->cCurWaitPlayerActionIdx )
 	{
 		return  1 ;
 	}
@@ -704,7 +704,7 @@ unsigned char CTaxasRoomData::OnPlayerGiveUp( unsigned char nIdx )
 
 unsigned char CTaxasRoomData::OnPlayerAllIn(unsigned char nIdx)
 {
-	if ( nIdx == GetSimpleData()->cCurWaitPlayerActionIdx )
+	if ( nIdx != GetSimpleData()->cCurWaitPlayerActionIdx )
 	{
 		return  1 ;
 	}
