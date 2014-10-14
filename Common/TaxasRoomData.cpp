@@ -453,10 +453,16 @@ char CTaxasRoomData::OnCaculateGameResult()
 		uint64_t nWinPerWiner = (double)pPool->nCoinInPool / (float)pPool->vWinnerIdxs.size();
 		for ( unsigned int iWinIdx = 0 ; iWinIdx < pPool->vWinnerIdxs.size(); ++iWinIdx )
 		{
-			stTaxasPeerData* pData = (stTaxasPeerData*)m_vPeerDatas[iWinIdx] ;
+			if ( pPool->vWinnerIdxs[iWinIdx] >= GetSimpleData()->cMaxPlayingPeers )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("why invalid idx = %d",pPool->vWinnerIdxs[iWinIdx]);
+				continue;
+			}
+
+			stTaxasPeerData* pData = (stTaxasPeerData*)m_vPeerDatas[pPool->vWinnerIdxs[iWinIdx]] ;
 			if ( !pData )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("why this winner is NULL , idx = %d",iWinIdx ) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("why this winner is NULL , idx = %d",pPool->vWinnerIdxs[iWinIdx] ) ;
 			}
 			pData->nWinCoinFromPools += nWinPerWiner ;
 		}
