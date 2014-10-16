@@ -654,7 +654,7 @@ unsigned char CTaxasRoomData::OnPlayerAdd(unsigned char nIdx,uint64_t nAddCoin )
 		return 6 ;
 	}
 
-	if ( (pData->nBetCoinThisRound + nAddCoin) % GetSimpleData()->nBigBlindBet == 0 )
+	if ( (pData->nBetCoinThisRound + nAddCoin) % GetSimpleData()->nBigBlindBet != 0 )
 	{
 		return 7 ;              // add coin result must times BigBlindBet ;
 	}
