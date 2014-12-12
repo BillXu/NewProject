@@ -2,7 +2,7 @@
 #define __HELLOWORLD_SCENE_H__
 
 #include "cocos2d.h"
-
+class CChipGroup ;
 class HelloWorld : public cocos2d::Layer
 {
 public:
@@ -17,6 +17,8 @@ public:
     
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);
+    
+    CChipGroup* m_pChipGroup ;
 };
 
 #endif // __HELLOWORLD_SCENE_H__

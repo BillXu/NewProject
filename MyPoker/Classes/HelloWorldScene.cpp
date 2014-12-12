@@ -1,5 +1,5 @@
 #include "HelloWorldScene.h"
-
+#include "ChipGroup.h"
 USING_NS_CC;
 
 Scene* HelloWorld::createScene()
@@ -68,16 +68,39 @@ bool HelloWorld::init()
 
     // position the sprite on the center of the screen
     sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
+    sprite->setScale(2);
 
     // add the sprite as a child to this layer
     this->addChild(sprite, 0);
-    
+    m_pChipGroup = nullptr ;
     return true;
 }
 
 
 void HelloWorld::menuCloseCallback(Ref* pSender)
 {
+    if ( m_pChipGroup )
+    {
+        m_pChipGroup->removeFromParent();
+        m_pChipGroup = nullptr ;
+    }
+    m_pChipGroup = CChipGroup::CreateGroup();
+    addChild(m_pChipGroup);
+    m_pChipGroup->setPosition(Point(330,330));
+    //m_pChipGroup->SetDestPosition(Point(568,320));
+    //m_pChipGroup->SetDestPosition(Point::ZERO);
+    //m_pChipGroup->SetDestPosition(Point(130,130));
+    m_pChipGroup->SetGroupCoin(10,true);
+    static std::function<void(CChipGroup*p)> f = [](CChipGroup*p){
+        CCLOG("finish");
+        p->SetFinishCallBack(nullptr);
+        //p->SetDestPosition(Point(130,130));
+        p->SetGroupCoin(5);
+        p->Start(CChipGroup::eChipMoveType::eChipMove_Origin2Group, 0);
+    } ;
+    m_pChipGroup->SetFinishCallBack(f);
+    m_pChipGroup->Start(CChipGroup::eChipMoveType::eChipMove_Origin2None, 0);
+    return ;
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
 	MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");
     return;

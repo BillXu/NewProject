@@ -25,7 +25,7 @@
 	<key>javascriptMainCCB</key>
 	<string></string>
 	<key>needRepublish</key>
-	<true/>
+	<false/>
 	<key>onlyPublishCCBs</key>
 	<true/>
 	<key>publishDirectory</key>
@@ -73,6 +73,10 @@
 		<dict>
 			<key>path</key>
 			<string>../image</string>
+		</dict>
+		<dict>
+			<key>path</key>
+			<string>../ccb</string>
 		</dict>
 	</array>
 	<key>versionStr</key>

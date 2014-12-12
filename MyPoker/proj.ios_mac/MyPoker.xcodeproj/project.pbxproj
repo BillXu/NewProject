@@ -176,6 +176,9 @@
 		9ACBB65919EF65960031D8F1 /* TaxasRoomData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBB5E319EF65960031D8F1 /* TaxasRoomData.cpp */; };
 		9ACBB65A19EF65960031D8F1 /* TitleLevelConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBB5E519EF65960031D8F1 /* TitleLevelConfig.cpp */; };
 		9ACBB65B19EF65960031D8F1 /* Utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBB5E719EF65960031D8F1 /* Utility.cpp */; };
+		9AD666201A3056EB002B3350 /* ChipGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9AD6661E1A3056EB002B3350 /* ChipGroup.cpp */; };
+		9AD666271A36FECA002B3350 /* 0.png in Resources */ = {isa = PBXBuildFile; fileRef = 9AD666251A36FECA002B3350 /* 0.png */; };
+		9AD666281A36FECA002B3350 /* 1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9AD666261A36FECA002B3350 /* 1.png */; };
 		BF171245129291EC00B8313A /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF170DB012928DE900B8313A /* OpenGLES.framework */; };
 		BF1712471292920000B8313A /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BF170DB412928DE900B8313A /* libz.dylib */; };
 		BF1C47F01293687400B63C5D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF1C47EA1293683800B63C5D /* QuartzCore.framework */; };
@@ -666,6 +669,10 @@
 		9ACBB5E619EF65960031D8F1 /* TitleLevelConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TitleLevelConfig.h; sourceTree = "<group>"; };
 		9ACBB5E719EF65960031D8F1 /* Utility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utility.cpp; sourceTree = "<group>"; };
 		9ACBB5E819EF65960031D8F1 /* Utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utility.h; sourceTree = "<group>"; };
+		9AD6661E1A3056EB002B3350 /* ChipGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ChipGroup.cpp; path = ../Classes/ChipGroup.cpp; sourceTree = "<group>"; };
+		9AD6661F1A3056EB002B3350 /* ChipGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ChipGroup.h; path = ../Classes/ChipGroup.h; sourceTree = "<group>"; };
+		9AD666251A36FECA002B3350 /* 0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 0.png; sourceTree = "<group>"; };
+		9AD666261A36FECA002B3350 /* 1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1.png; sourceTree = "<group>"; };
 		BF170DB012928DE900B8313A /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		BF170DB412928DE900B8313A /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		BF1C47EA1293683800B63C5D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
@@ -746,6 +753,8 @@
 				1AFAF8B416D35DE700DB1158 /* AppDelegate.h */,
 				1AFAF8B516D35DE700DB1158 /* HelloWorldScene.cpp */,
 				1AFAF8B616D35DE700DB1158 /* HelloWorldScene.h */,
+				9AD6661E1A3056EB002B3350 /* ChipGroup.cpp */,
+				9AD6661F1A3056EB002B3350 /* ChipGroup.h */,
 			);
 			name = Classes;
 			path = ../classes;
@@ -862,6 +871,8 @@
 		78C7DDAA14EBA5050085D0C2 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				9AD666251A36FECA002B3350 /* 0.png */,
+				9AD666261A36FECA002B3350 /* 1.png */,
 				1AFAF8B916D35E4900DB1158 /* CloseNormal.png */,
 				1AFAF8BA16D35E4900DB1158 /* CloseSelected.png */,
 				1AFAF8BB16D35E4900DB1158 /* HelloWorld.png */,
@@ -1347,6 +1358,7 @@
 				50EF629917ECD46A001EB2F8 /* Icon-100.png in Resources */,
 				1AFAF8BC16D35E4900DB1158 /* CloseNormal.png in Resources */,
 				5087E78317EB970100C73F5D /* Icon-152.png in Resources */,
+				9AD666281A36FECA002B3350 /* 1.png in Resources */,
 				5087E77D17EB970100C73F5D /* Default-568h@2x.png in Resources */,
 				5087E78517EB970100C73F5D /* Icon-72.png in Resources */,
 				1AFAF8BD16D35E4900DB1158 /* CloseSelected.png in Resources */,
@@ -1357,6 +1369,7 @@
 				50EF629617ECD46A001EB2F8 /* Icon-40.png in Resources */,
 				5087E78217EB970100C73F5D /* Icon-144.png in Resources */,
 				50EF629817ECD46A001EB2F8 /* Icon-80.png in Resources */,
+				9AD666271A36FECA002B3350 /* 0.png in Resources */,
 				5087E78417EB970100C73F5D /* Icon-57.png in Resources */,
 				5087E77E17EB970100C73F5D /* Default.png in Resources */,
 				50EF629717ECD46A001EB2F8 /* Icon-58.png in Resources */,
@@ -1444,6 +1457,7 @@
 				9ACBB63219EF65960031D8F1 /* RakWString.cpp in Sources */,
 				9ACBB62C19EF65960031D8F1 /* RakNetTransport2.cpp in Sources */,
 				9ACBB62A19EF65960031D8F1 /* RakNetSocket.cpp in Sources */,
+				9AD666201A3056EB002B3350 /* ChipGroup.cpp in Sources */,
 				9ACBB62E19EF65960031D8F1 /* RakPeer.cpp in Sources */,
 				9ACBB61019EF65960031D8F1 /* GetTime.cpp in Sources */,
 				9ACBB62719EF65960031D8F1 /* Rackspace.cpp in Sources */,
