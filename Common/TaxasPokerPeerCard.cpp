@@ -638,7 +638,7 @@ void CTaxasPokerPeerCard::CheckShunZi(VEC_CARD& AllCard , bool bSpecailA, VEC_CA
 						continue;
 					}
 
-					vResultChardOut.push_back(m_vAllCard[j]) ;
+					vResultChardOut.push_back(AllCard[j]) ;
 					if ( vResultChardOut.size() == 5 )
 					{
 						return;

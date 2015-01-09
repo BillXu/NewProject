@@ -132,6 +132,7 @@ bool CDataBaseThread::ProcessRequest()
 					{
 						printf("mysql_store_result Error Info , Operate UID = %d : %s \n", pRequest->nRequestUID, mysql_error(m_pMySql));
 						//pResult->nAffectRow = 0 ;
+						mysql_free_result(msqlResult);
 						continue;
 					}
 					pResult->nAffectRow += (unsigned int)mysql_num_rows(msqlResult);

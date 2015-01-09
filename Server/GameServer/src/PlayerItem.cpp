@@ -208,7 +208,7 @@ void CPlayerItemComponent::AddItemByID(unsigned short nItemID , unsigned int nCo
 	// if right now open gift ?
 	CItemConfigManager* pConfigMgr  = (CItemConfigManager*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Item) ;
 	stItemConfig* pConfig = pConfigMgr->GetItemConfigByItemID(nItemID) ;
-	if ( pConfig->eType == eItem_Gift )
+	if ( pConfig && pConfig->eType == eItem_Gift )
 	{
 		stItemGift* pGift = (stItemGift*)pConfig ;
 		if ( pGift->bOpenRightNow )
