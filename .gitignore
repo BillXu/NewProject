@@ -338,3 +338,11 @@ pip-log.txt
 +
 +# CTags
 +tags
+
+MyPoker/cocos2d/external/win32-specific/icon/include/iconv.h
+
+MyPoker/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll
+
+MyPoker/cocos2d/external/win32-specific/icon/prebuilt/libiconv.lib
+
+MyPoker/proj.ios_mac/MyPoker.xcodeproj/project.xcworkspace/xcuserdata/BillSky.xcuserdatad/UserInterfaceState.xcuserstate
