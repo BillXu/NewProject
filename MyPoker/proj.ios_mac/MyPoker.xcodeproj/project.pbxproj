@@ -62,6 +62,12 @@
 		50EF629917ECD46A001EB2F8 /* Icon-100.png in Resources */ = {isa = PBXBuildFile; fileRef = 50EF629517ECD46A001EB2F8 /* Icon-100.png */; };
 		50EF62A217ECD613001EB2F8 /* Icon-29.png in Resources */ = {isa = PBXBuildFile; fileRef = 50EF62A017ECD613001EB2F8 /* Icon-29.png */; };
 		50EF62A317ECD613001EB2F8 /* Icon-50.png in Resources */ = {isa = PBXBuildFile; fileRef = 50EF62A117ECD613001EB2F8 /* Icon-50.png */; };
+		9A2AE11D1A67A53D00D4EBDA /* VoicerManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A2AE11B1A67A53D00D4EBDA /* VoicerManager.cpp */; };
+		9A2AE1201A67AF6200D4EBDA /* VoicerMnager_ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9A2AE11E1A67AF6200D4EBDA /* VoicerMnager_ios.mm */; };
+		9A2AE12F1A67BC3700D4EBDA /* amrFileCodec.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9A2AE1231A67BC3700D4EBDA /* amrFileCodec.mm */; };
+		9A2AE1301A67BC3700D4EBDA /* wav.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9A2AE1251A67BC3700D4EBDA /* wav.mm */; };
+		9A2AE1311A67BC3700D4EBDA /* libopencore-amrnb.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A2AE1271A67BC3700D4EBDA /* libopencore-amrnb.a */; };
+		9A2AE1321A67BC3800D4EBDA /* libopencore-amrwb.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A2AE1281A67BC3700D4EBDA /* libopencore-amrwb.a */; };
 		9ACBB5E919EF65960031D8F1 /* BaseData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBB4C219EF65950031D8F1 /* BaseData.cpp */; };
 		9ACBB5EA19EF65960031D8F1 /* BoxConfig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBB4C419EF65950031D8F1 /* BoxConfig.cpp */; };
 		9ACBB5EB19EF65960031D8F1 /* CardPoker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9ACBB4C619EF65950031D8F1 /* CardPoker.cpp */; };
@@ -377,6 +383,20 @@
 		50EF629517ECD46A001EB2F8 /* Icon-100.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-100.png"; sourceTree = "<group>"; };
 		50EF62A017ECD613001EB2F8 /* Icon-29.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-29.png"; sourceTree = "<group>"; };
 		50EF62A117ECD613001EB2F8 /* Icon-50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-50.png"; sourceTree = "<group>"; };
+		9A2AE11B1A67A53D00D4EBDA /* VoicerManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VoicerManager.cpp; path = Common/VoicerManager.cpp; sourceTree = "<group>"; };
+		9A2AE11C1A67A53D00D4EBDA /* VoicerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VoicerManager.h; path = Common/VoicerManager.h; sourceTree = "<group>"; };
+		9A2AE11E1A67AF6200D4EBDA /* VoicerMnager_ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = VoicerMnager_ios.mm; path = ios/VoicerMnager_ios.mm; sourceTree = "<group>"; };
+		9A2AE11F1A67AF6200D4EBDA /* VoicerMnager_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VoicerMnager_ios.h; path = ios/VoicerMnager_ios.h; sourceTree = "<group>"; };
+		9A2AE1221A67BC3700D4EBDA /* amrFileCodec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = amrFileCodec.h; sourceTree = "<group>"; };
+		9A2AE1231A67BC3700D4EBDA /* amrFileCodec.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = amrFileCodec.mm; sourceTree = "<group>"; };
+		9A2AE1241A67BC3700D4EBDA /* wav.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wav.h; sourceTree = "<group>"; };
+		9A2AE1251A67BC3700D4EBDA /* wav.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = wav.mm; sourceTree = "<group>"; };
+		9A2AE1271A67BC3700D4EBDA /* libopencore-amrnb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libopencore-amrnb.a"; sourceTree = "<group>"; };
+		9A2AE1281A67BC3700D4EBDA /* libopencore-amrwb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libopencore-amrwb.a"; sourceTree = "<group>"; };
+		9A2AE12A1A67BC3700D4EBDA /* interf_dec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = interf_dec.h; sourceTree = "<group>"; };
+		9A2AE12B1A67BC3700D4EBDA /* interf_enc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = interf_enc.h; sourceTree = "<group>"; };
+		9A2AE12D1A67BC3700D4EBDA /* dec_if.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dec_if.h; sourceTree = "<group>"; };
+		9A2AE12E1A67BC3700D4EBDA /* if_rom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = if_rom.h; sourceTree = "<group>"; };
 		9ACBB4C119EF65950031D8F1 /* BaccaratMessageDefine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaccaratMessageDefine.h; sourceTree = "<group>"; };
 		9ACBB4C219EF65950031D8F1 /* BaseData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseData.cpp; sourceTree = "<group>"; };
 		9ACBB4C319EF65950031D8F1 /* BaseData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseData.h; sourceTree = "<group>"; };
@@ -688,6 +708,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1AC6FB2E180E99EB004C840B /* libbox2d iOS.a in Frameworks */,
+				9A2AE1311A67BC3700D4EBDA /* libopencore-amrnb.a in Frameworks */,
 				1AC6FB2F180E99EB004C840B /* libchipmunk iOS.a in Frameworks */,
 				1AC6FB30180E99EB004C840B /* libcocos2dx iOS.a in Frameworks */,
 				1AC6FB31180E99EB004C840B /* libcocos2dx-extensions iOS.a in Frameworks */,
@@ -695,6 +716,7 @@
 				D6B0611B1803AB670077942B /* CoreMotion.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
+				9A2AE1321A67BC3800D4EBDA /* libopencore-amrwb.a in Frameworks */,
 				288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */,
 				BF171245129291EC00B8313A /* OpenGLES.framework in Frameworks */,
 				BF1712471292920000B8313A /* libz.dylib in Frameworks */,
@@ -793,6 +815,8 @@
 				9ACBB4C019EF65950031D8F1 /* Common */,
 				15AA9C4015B7EC450033D6C2 /* Classes */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				9A2AE11A1A67A4CB00D4EBDA /* Voicer */,
+				9A2AE04D1A6620BD00D4EBDA /* SoundTalk */,
 				080E96DDFE201D6D7F000001 /* ios */,
 				503AE10617EB990700D1A890 /* mac */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
@@ -879,6 +903,74 @@
 			);
 			name = Resources;
 			path = ../Resources;
+			sourceTree = "<group>";
+		};
+		9A2AE04D1A6620BD00D4EBDA /* SoundTalk */ = {
+			isa = PBXGroup;
+			children = (
+				9A2AE0501A6620F400D4EBDA /* Libs */,
+			);
+			name = SoundTalk;
+			sourceTree = "<group>";
+		};
+		9A2AE0501A6620F400D4EBDA /* Libs */ = {
+			isa = PBXGroup;
+			children = (
+				9A2AE1211A67BC3700D4EBDA /* amrwapper */,
+				9A2AE1261A67BC3700D4EBDA /* lib */,
+				9A2AE1291A67BC3700D4EBDA /* opencore-amrnb */,
+				9A2AE12C1A67BC3700D4EBDA /* opencore-amrwb */,
+			);
+			path = Libs;
+			sourceTree = "<group>";
+		};
+		9A2AE11A1A67A4CB00D4EBDA /* Voicer */ = {
+			isa = PBXGroup;
+			children = (
+				9A2AE11B1A67A53D00D4EBDA /* VoicerManager.cpp */,
+				9A2AE11C1A67A53D00D4EBDA /* VoicerManager.h */,
+				9A2AE11E1A67AF6200D4EBDA /* VoicerMnager_ios.mm */,
+				9A2AE11F1A67AF6200D4EBDA /* VoicerMnager_ios.h */,
+			);
+			name = Voicer;
+			sourceTree = "<group>";
+		};
+		9A2AE1211A67BC3700D4EBDA /* amrwapper */ = {
+			isa = PBXGroup;
+			children = (
+				9A2AE1221A67BC3700D4EBDA /* amrFileCodec.h */,
+				9A2AE1231A67BC3700D4EBDA /* amrFileCodec.mm */,
+				9A2AE1241A67BC3700D4EBDA /* wav.h */,
+				9A2AE1251A67BC3700D4EBDA /* wav.mm */,
+			);
+			path = amrwapper;
+			sourceTree = "<group>";
+		};
+		9A2AE1261A67BC3700D4EBDA /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				9A2AE1271A67BC3700D4EBDA /* libopencore-amrnb.a */,
+				9A2AE1281A67BC3700D4EBDA /* libopencore-amrwb.a */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
+		9A2AE1291A67BC3700D4EBDA /* opencore-amrnb */ = {
+			isa = PBXGroup;
+			children = (
+				9A2AE12A1A67BC3700D4EBDA /* interf_dec.h */,
+				9A2AE12B1A67BC3700D4EBDA /* interf_enc.h */,
+			);
+			path = "opencore-amrnb";
+			sourceTree = "<group>";
+		};
+		9A2AE12C1A67BC3700D4EBDA /* opencore-amrwb */ = {
+			isa = PBXGroup;
+			children = (
+				9A2AE12D1A67BC3700D4EBDA /* dec_if.h */,
+				9A2AE12E1A67BC3700D4EBDA /* if_rom.h */,
+			);
+			path = "opencore-amrwb";
 			sourceTree = "<group>";
 		};
 		9ACBB4C019EF65950031D8F1 /* Common */ = {
@@ -1244,7 +1336,7 @@
 				LastUpgradeCheck = 0500;
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
-						DevelopmentTeam = MDDB52YB8L;
+						DevelopmentTeam = 9JT3Y38T24;
 					};
 				};
 			};
@@ -1409,6 +1501,7 @@
 				9ACBB64719EF65960031D8F1 /* ThreadsafePacketLogger.cpp in Sources */,
 				9ACBB64D19EF65960031D8F1 /* VariableDeltaSerializer.cpp in Sources */,
 				9ACBB63819EF65960031D8F1 /* Router2.cpp in Sources */,
+				9A2AE12F1A67BC3700D4EBDA /* amrFileCodec.mm in Sources */,
 				9ACBB63F19EF65960031D8F1 /* SocketLayer.cpp in Sources */,
 				9ACBB61419EF65960031D8F1 /* IncrementalReadInterface.cpp in Sources */,
 				9ACBB62019EF65960031D8F1 /* NetworkIDObject.cpp in Sources */,
@@ -1443,6 +1536,7 @@
 				9ACBB64919EF65960031D8F1 /* UDPForwarder.cpp in Sources */,
 				9ACBB60519EF65960031D8F1 /* DynDNS.cpp in Sources */,
 				9ACBB61C19EF65960031D8F1 /* NatTypeDetectionClient.cpp in Sources */,
+				9A2AE11D1A67A53D00D4EBDA /* VoicerManager.cpp in Sources */,
 				503AE10117EB989F00D1A890 /* main.m in Sources */,
 				9ACBB65919EF65960031D8F1 /* TaxasRoomData.cpp in Sources */,
 				9ACBB64419EF65960031D8F1 /* TCPInterface.cpp in Sources */,
@@ -1503,6 +1597,7 @@
 				9ACBB61F19EF65960031D8F1 /* NetworkIDManager.cpp in Sources */,
 				9ACBB65819EF65960031D8F1 /* TaxasPokerPeerCard.cpp in Sources */,
 				9ACBB60619EF65960031D8F1 /* EmailSender.cpp in Sources */,
+				9A2AE1201A67AF6200D4EBDA /* VoicerMnager_ios.mm in Sources */,
 				9ACBB60319EF65960031D8F1 /* DS_HuffmanEncodingTree.cpp in Sources */,
 				9ACBB63419EF65960031D8F1 /* rdlmalloc.cpp in Sources */,
 				9ACBB60E19EF65960031D8F1 /* Getche.cpp in Sources */,
@@ -1514,6 +1609,7 @@
 				9ACBB62819EF65960031D8F1 /* RakMemoryOverride.cpp in Sources */,
 				9ACBB60819EF65960031D8F1 /* EpochTimeToString.cpp in Sources */,
 				9ACBB60219EF65960031D8F1 /* DS_ByteQueue.cpp in Sources */,
+				9A2AE1301A67BC3700D4EBDA /* wav.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1608,7 +1704,7 @@
 				);
 				INFOPLIST_FILE = ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libs/lib";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";
@@ -1639,7 +1735,7 @@
 				);
 				INFOPLIST_FILE = ios/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
-				LIBRARY_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Libs/lib";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "";

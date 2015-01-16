@@ -173,7 +173,6 @@ CCard* CPaiJiuPeerCard::GetBiggerCard()
 
 unsigned short CPaiJiuPeerCard::GetSingleCardWeight(CCard* pacd )
 {
-	unsigned short nWeith = 0 ;
 	unsigned char nFaceNum = pacd->GetCardFaceNum() ;
 	CCard::eCardType type = pacd->GetType() ;
 	if ( IS_CARD_RED(12) )

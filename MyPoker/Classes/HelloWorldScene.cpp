@@ -16,7 +16,8 @@ Scene* HelloWorld::createScene()
     // return the scene
     return scene;
 }
-
+LabelTTF* pLable = NULL ;
+Sprite* pMetering = NULL ;
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
@@ -54,17 +55,18 @@ bool HelloWorld::init()
     // add a label shows "Hello World"
     // create and initialize a label
     
-    auto label = LabelTTF::create("Hello World", "Arial", 24);
+    pLable = LabelTTF::create("Hello World", "Arial", 24);
     
     // position the label on the center of the screen
-    label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - label->getContentSize().height));
+    pLable->setPosition(Vec2(origin.x + visibleSize.width/2,
+                            origin.y + visibleSize.height - pLable->getContentSize().height));
 
     // add the label as a child to this layer
-    this->addChild(label, 1);
+    this->addChild(pLable, 1);
 
     // add "HelloWorld" splash screen"
     auto sprite = Sprite::create("HelloWorld.png");
+    pMetering = Sprite::create("0.png");
 
     // position the sprite on the center of the screen
     sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
@@ -72,13 +74,46 @@ bool HelloWorld::init()
 
     // add the sprite as a child to this layer
     this->addChild(sprite, 0);
+    addChild(pMetering);
+    pMetering->setPosition(sprite->getPosition());
+    pMetering->setAnchorPoint(Point(0.5,0));
     m_pChipGroup = nullptr ;
     return true;
+}
+
+void HelloWorld::OnFinishRecord(const char* pFileName, bool bInterupted )
+{
+    printf("start play %s\n",pFileName ) ;
+    CVoicerManager::GetInstance()->PlayVoice(pFileName) ;
+    pLable->setString("playing sound") ;
 }
 
 
 void HelloWorld::menuCloseCallback(Ref* pSender)
 {
+    static bool bRecording = false ;
+    if ( bRecording )
+    {
+        printf("stop recorder\n");
+        pLable->setString("stop recorder") ;
+        CVoicerManager::GetInstance()->StopRecord();
+        Director::getInstance()->getScheduler()->unschedule("soundMetering", this);
+    }
+    else
+    {
+        printf("开始录音\n");
+        pLable->setString("开始录音") ;
+        CVoicerManager::GetInstance()->SetDelegate(this) ;
+        std::string strPath = FileUtils::getInstance()->getWritablePath() ;
+        //strPath.append("helloVoice2.wav");
+        std::string strn = StringUtils::format("%u",(unsigned int)time(NULL));
+        strPath = strPath + strn ;
+        CVoicerManager::GetInstance()->StartRecord(strPath.c_str());
+        Director::getInstance()->getScheduler()->schedule([](float ft){ float f = CVoicerManager::GetInstance()->GetWavMertering() ; printf("sound wave %.4f\n",f) ; pMetering->setScaleY(f);}, this, 0.1, false, "soundMetering");
+    }
+    bRecording = !bRecording ;
+    return ;
+    
     if ( m_pChipGroup )
     {
         m_pChipGroup->removeFromParent();
