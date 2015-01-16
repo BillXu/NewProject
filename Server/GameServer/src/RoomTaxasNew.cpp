@@ -490,7 +490,7 @@ void CRoomTaxasNew::ProcessAutoTakeInAndAutoStandUp()
 		uint64_t nTakeIn = GetRoomData()->GetSimpleData()->nMaxTakeIn <= pPlayer->GetBaseData()->GetAllCoin() ? GetRoomData()->GetSimpleData()->nMaxTakeIn : pPlayer->GetBaseData()->GetAllCoin() ;
 		nTakeIn = nTakeIn - nTakeIn % GetRoomData()->GetSimpleData()->nBigBlindBet;   // must times big blindbet ;
 		pItem->nAutoTakeInCoin = nTakeIn >= GetRoomData()->GetSimpleData()->cMiniCoinNeedToEnter ? nTakeIn : 0 ;
-		GetRoomData()->OnPlayerAutoTakeIn(pItem->nIdx,nTakeIn);
+		GetRoomData()->OnPlayerAutoTakeIn(pItem->nIdx,pItem->nAutoTakeInCoin);
 		pPlayer->GetBaseData()->ModifyMoney(nTakeIn*-1);
 		
 		++pItem ;
