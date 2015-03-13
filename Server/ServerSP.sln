@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DBServer", "DBServer\DBServer.vcxproj", "{8EAD9B5E-CCFE-4137-91D8-69EC4871F11F}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GateServer", "GateServer\GateServer.vcxproj", "{190DB7F4-FC62-4B2C-B9E0-D7694213E156}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameServer", "GameServer\GameServer.vcxproj", "{61A7DB25-7A43-44E9-A75D-FDD674D0E138}"
 EndProject
@@ -16,6 +19,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PushNotificationServer", "PushNotificationServer\PushNotificationServer.vcxproj", "{1E1AA803-7D10-4D28-8188-0F054FEF568C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LogServer", "LogServer\LogServer.vcxproj", "{BD2F369E-6492-4061-A06D-5877E9DADBE2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NetworkUtility", "NetworkUtility\NetworkUtility.vcxproj", "{3BF0757D-C2EE-47D6-B251-D7B71C08D599}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CenterServer", "CenterServer\CenterServer.vcxproj", "{B48CE06E-A341-4E61-9468-EF821196794E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +65,14 @@ Global
 		{BD2F369E-6492-4061-A06D-5877E9DADBE2}.Debug|Win32.Build.0 = Debug|Win32
 		{BD2F369E-6492-4061-A06D-5877E9DADBE2}.Release|Win32.ActiveCfg = Release|Win32
 		{BD2F369E-6492-4061-A06D-5877E9DADBE2}.Release|Win32.Build.0 = Release|Win32
+		{3BF0757D-C2EE-47D6-B251-D7B71C08D599}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3BF0757D-C2EE-47D6-B251-D7B71C08D599}.Debug|Win32.Build.0 = Debug|Win32
+		{3BF0757D-C2EE-47D6-B251-D7B71C08D599}.Release|Win32.ActiveCfg = Release|Win32
+		{3BF0757D-C2EE-47D6-B251-D7B71C08D599}.Release|Win32.Build.0 = Release|Win32
+		{B48CE06E-A341-4E61-9468-EF821196794E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B48CE06E-A341-4E61-9468-EF821196794E}.Debug|Win32.Build.0 = Debug|Win32
+		{B48CE06E-A341-4E61-9468-EF821196794E}.Release|Win32.ActiveCfg = Release|Win32
+		{B48CE06E-A341-4E61-9468-EF821196794E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

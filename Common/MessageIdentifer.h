@@ -1,8 +1,21 @@
 #pragma once 
-#include "MessageIdentifiers.h"
 enum 
 {
-	ID_MSG_C2S = ID_USER_PACKET_ENUM + 1 , // client to game server 
+	ID_MSG_TO_NONE , // client to game server 
+	ID_MSG_TO_CLIENT,
+	ID_MSG_TO_GATE,
+	ID_MSG_TO_CENTER,
+	ID_MSG_TO_LOGIN,
+	ID_MSG_TO_VERIFY,
+	ID_MSG_TO_APNS,
+	ID_MSG_TO_LOG,
+	ID_MSG_TO_DATA,
+	ID_MSG_TO_TAXAS,
+	ID_MSG_TO_DB,
+	ID_MSG_TO_ALL_SERVER,
+
+	ID_MSG_C2S,
+	ID_MSG_CENTER2GATE,
 	ID_MSG_C2LOGIN,
 	ID_MSG_C2GATE,
 	ID_MSG_GATE2C,
@@ -20,11 +33,13 @@ enum
 	ID_MSG_FROM_VERIFY_SERVER,
 	ID_MSG_TO_APNS_SERVER,
 	ID_MSG_TO_GM2LOG,
+	ID_MSG_TRANSFER
 };
 
 enum eMsgType 
 {
 	MSG_NONE,
+	//--new define begin---
 	// the msg title used between servers 
 	MSG_SERVERS_USE,
 	MSG_VERIFY_GAME,  // verify that is game server ;
@@ -35,9 +50,12 @@ enum eMsgType
 	MSG_VERIFY_DB,  // verify that is DBserver ;
 	MSG_VERIFY_APNS, // apple push notification ;
 	MSG_VERIFY_LOG, // LOG sever 
+	MSG_VERIFY_TAXAS, // TAXAS POKER SERVER 
+	MSG_VERIFY_DATA, // VIERIFY DATA SERVER ;
 	MSG_TRANSER_DATA, // tranfer data between servers ;
 	MSG_DISCONNECT_SERVER, 
 	MSG_DISCONNECT_CLIENT,
+	MSG_CONNECT_NEW_CLIENT,
 	MSG_VERIFY_TANSACTION,
 	MSG_APNS_INFO,   // send push notification ;
 	MSG_PUSH_APNS_TOKEN,  // used for apns ; APPLE remote push notification ;
@@ -45,7 +63,9 @@ enum eMsgType
 	MSG_RECONNECT,   // client with gate 
 	MSG_SAVE_PLAYER_COIN, // send to DB ;
 	MSG_SAVE_DB_LOG, // save log inter log db ;
-
+	
+	MSG_GATESERVER_INFO,
+	///------new define end---
 	MSG_SERVER_AND_CLIENT_COMMON_BEGIN = 100,  // server and client common msg , beyond specail game 
 	// login 
 	MSG_PLAYER_REGISTER,     // register an account ;

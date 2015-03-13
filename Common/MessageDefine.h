@@ -11,9 +11,37 @@ struct stMsg
 	unsigned char cSysIdentifer ;
 	unsigned short usMsgType ;
 public:
-	stMsg():cSysIdentifer( ID_MSG_C2S  ),usMsgType(MSG_NONE){}
+	stMsg():cSysIdentifer( ID_MSG_TO_NONE  ),usMsgType(MSG_NONE){}
 };
 
+// client reconnect ;
+struct stMsgReconnect
+	:public stMsg
+{
+public:
+	stMsgReconnect(){cSysIdentifer = ID_MSG_TO_GATE ; usMsgType = MSG_RECONNECT ; }
+public:
+	unsigned int nSessionID ;
+};
+
+struct stMsgReconnectRet
+	:public stMsg
+{
+public:
+	stMsgReconnectRet(){cSysIdentifer = ID_MSG_TO_CLIENT ; usMsgType = MSG_RECONNECT ; }
+public:
+	char nRet; // 0 : success , 1 failed ;
+};
+
+struct stMsgServerDisconnect
+	:public stMsg
+{
+public:
+	stMsgServerDisconnect(){ cSysIdentifer = ID_MSG_TO_CLIENT; usMsgType = MSG_DISCONNECT_SERVER  ;}
+	unsigned char nServerType ; // eServerType ;
+};
+
+///--------------------ablove is new , below is old------
 // register an login ;
 struct stMsgRegister
 	:public stMsg
@@ -129,32 +157,9 @@ struct stMsgPushAPNSTokenRet
 	unsigned char nGetTokenRet ; // 0 success ; 1 use disabled notification ;
 };
 
-// client reconnect ;
-struct stMsgReconnect
-	:public stMsg
-{
-public:
-	stMsgReconnect(){cSysIdentifer = ID_MSG_C2GATE ; usMsgType = MSG_RECONNECT ; }
-public:
-	unsigned int nSessionID ;
-};
 
-struct stMsgReconnectRet
-	:public stMsg
-{
-public:
-	stMsgReconnectRet(){cSysIdentifer = ID_MSG_GATE2C ; usMsgType = MSG_RECONNECT ; }
-public:
-	char nRet; // 0 : success , 1 failed ;
-};
 
-struct stMsgServerDisconnect
-	:public stMsg
-{
-public:
-	stMsgServerDisconnect(){ cSysIdentifer = ID_MSG_GATE2C; usMsgType = MSG_DISCONNECT_SERVER  ;}
-	unsigned char nServerType ; // eServerType ;
-};
+
 
 struct stMsgPlayerEnterGame
 	:public stMsg

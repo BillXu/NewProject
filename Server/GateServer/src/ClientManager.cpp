@@ -6,11 +6,13 @@
 #include "ServerNetwork.h"
 #include "GateServer.h"
 #include "ServerMessageDefine.h"
-unsigned int CGateClientMgr::s_nSeesionIDProducer = 0 ;
+#include "ServerNetwork.h"
+#define TIME_WAIT_FOR_RECONNECTE 60
 CGateClientMgr::CGateClientMgr()
 {
-	m_vNetWorkIDGateClient.clear();
+	m_vNetWorkIDGateClientIdx.clear();
 	m_vSessionGateClient.clear() ;
+	m_vWaitToReconnect.clear();
 	m_vGateClientReserver.clear();
 	memset(m_pMsgBuffer,0,MAX_MSG_BUFFER_LEN) ;
 }
@@ -25,7 +27,7 @@ CGateClientMgr::~CGateClientMgr()
 	m_vSessionGateClient.clear() ;
 
 	// just clear ; object deleted in session Gate ;
-	m_vNetWorkIDGateClient.clear() ;
+	m_vNetWorkIDGateClientIdx.clear() ;
 
 	LIST_GATE_CLIENT::iterator iter = m_vGateClientReserver.begin() ;
 	for ( ; iter != m_vGateClientReserver.end(); ++iter )
@@ -33,39 +35,41 @@ CGateClientMgr::~CGateClientMgr()
 		delete *iter ;
 	}
 	m_vGateClientReserver.clear() ;
+
+	m_vWaitToReconnect.clear();
 }
 
-bool CGateClientMgr::OnMessage( RakNet::Packet* pData )
+bool CGateClientMgr::OnMessage( Packet* pData )
 {
 	// verify identify 
-	stMsg* pMsg = (stMsg*)pData->data ;
-	CHECK_MSG_SIZE(stMsg,pData->length);
+	stMsg* pMsg = (stMsg*)pData->_orgdata ;
+	CHECK_MSG_SIZE(stMsg,pData->_len);
 	if ( pMsg->cSysIdentifer == ID_MSG_VERIFY )
 	{
-		if ( MSG_VERIFY_GAME == pMsg->usMsgType )
-		{
-			m_nGameServerNetWorkID = pData->guid ;
-			CLogMgr::SharedLogMgr()->SystemLog("Game Server connected ip = %s",pData->systemAddress.ToString(true)) ;
-		}
-		else if ( MSG_VERIFY_LOGIN == pMsg->usMsgType )
-		{
-			m_nLoginServerNetWorkID = pData->guid ;
-			CLogMgr::SharedLogMgr()->SystemLog("Login Server connected ip = %s",pData->systemAddress.ToString(true)) ;
-		}
-		else if ( MSG_VERIFY_CLIENT == pMsg->usMsgType )
+		char* pIPInfo = CGateServer::SharedGateServer()->GetNetWorkForClients()->GetIPInfoByConnectID(pData->_connectID) ;
+		if ( MSG_VERIFY_CLIENT == pMsg->usMsgType )
 		{
 			stGateClient* pGateClient = GetReserverGateClient();
 			if ( !pGateClient )
 			{
 				pGateClient = new stGateClient ;
 			}
-			pGateClient->Reset(++s_nSeesionIDProducer,pData->guid) ;
+			
+			pGateClient->Reset(CGateServer::SharedGateServer()->GenerateSessionID(),pData->_connectID,pIPInfo) ;
 			AddClientGate(pGateClient);
-			CLogMgr::SharedLogMgr()->SystemLog("a Client connected ip = %s Session id = %d",pData->systemAddress.ToString(false),pGateClient->nSessionId) ;
+			CLogMgr::SharedLogMgr()->SystemLog("a Client connected ip = %s Session id = %d",pGateClient->strIPAddress.c_str(),pGateClient->nSessionId ) ;
 		}
 		else 
 		{
-			CLogMgr::SharedLogMgr()->SystemLog("Unknown identify from ip = %s",pData->systemAddress.ToString() ) ;
+			if ( pIPInfo )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("Unknown identify from ip = %s close connection " ,pIPInfo ) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("Unknown identify from ip = NULL close connection") ;
+			}
+			CGateServer::SharedGateServer()->GetNetWorkForClients()->ClosePeerConnection(pData->_connectID) ;
 		}
 		return true;
 	}
@@ -74,170 +78,178 @@ bool CGateClientMgr::OnMessage( RakNet::Packet* pData )
 	if ( MSG_RECONNECT == pMsg->usMsgType )
 	{
 		stMsgReconnect* pRet = (stMsgReconnect*)pMsg ;
-		CHECK_MSG_SIZE(stMsgReconnect,pData->length);
-		stGateClient* pGateClient = GetGateClientBySessionID(pRet->nSessionID) ;
-		if ( pGateClient )
+		CHECK_MSG_SIZE(stMsgReconnect,pData->_len);
+		MAP_SESSIONID_GATE_CLIENT::iterator iter = m_vWaitToReconnect.find(pRet->nSessionID);
+		bool bReconnectOk = iter != m_vWaitToReconnect.end() && iter->second != NULL ;
+		if ( bReconnectOk )
 		{
-			stGateClient* pNew = GetGateClientByNetWorkID(pData->guid);
+			// remove origin 
+			RemoveClientGate(iter->second);
+
+			// bind current Client to origin sesssion id ;
+			stGateClient* pNew = GetGateClientByNetWorkID(pData->_connectID);
 			if ( pNew )
 			{
-				RemoveClientGate(pNew) ;
+				 MAP_SESSIONID_GATE_CLIENT::iterator iterS = m_vSessionGateClient.find(pNew->nSessionId);
+				 if ( iterS == m_vSessionGateClient.end() )
+				 {
+					 CLogMgr::SharedLogMgr()->ErrorLog("why my session id = %d targe is null",pNew->nSessionId );
+				 }
+				 else
+				 {
+					 m_vSessionGateClient.erase(iterS);
+				 }
+				 pNew->nSessionId = pRet->nSessionID;
+				 m_vSessionGateClient[pNew->nSessionId] = pNew ;
 			}
-
-			MAP_NETWORKID_GATE_CLIENT::iterator iter = m_vNetWorkIDGateClient.find(pGateClient->nNetWorkID);
-			if ( iter != m_vNetWorkIDGateClient.end() )
-			{
-				m_vNetWorkIDGateClient.erase(iter) ;
-			}
-			else
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("why net peernet work id is NULL") ;
-			}
-			// update network id ;
-			pGateClient->SetNewWorkID(pData->guid) ;
-			m_vNetWorkIDGateClient[pGateClient->nNetWorkID] = pGateClient ;
 		}
+
 		stMsgReconnectRet msgback ;
-		msgback.nRet = (pGateClient == NULL ? 1 : 0 ) ;
+		msgback.nRet = (bReconnectOk ? 0 : 1 ) ;
 		// send msg to client ;
-		CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msgback,sizeof(msgback),pData->guid,false) ;
-		if ( pGateClient )
+		CGateServer::SharedGateServer()->SendMsgToClient((char*)&msgback,sizeof(msgback),pData->_connectID,false) ;
+		if ( bReconnectOk )
 		{
-			CLogMgr::SharedLogMgr()->SystemLog("MSG¡¡reconnected ! session id = %d",pGateClient->nSessionId);
+			CLogMgr::SharedLogMgr()->SystemLog("MSG¡¡reconnected ! session id = %d",pRet->nSessionID );
 		}
 		return true ;
 	}
 
-	// distribute msg 
-	if ( ID_MSG_C2LOGIN == pMsg->cSysIdentifer || ID_MSG_C2GAME == pMsg->cSysIdentifer ) // send to Login Server  // send to game server 
+	// transfer to center server 
+	stGateClient* pDstClient = GetGateClientByNetWorkID(pData->_connectID) ;
+	if ( pDstClient == NULL )
 	{
-		stGateClient* pDstClient = GetGateClientByNetWorkID(pData->guid) ;
-		if ( pDstClient == NULL )
-		{
-			CLogMgr::SharedLogMgr()->ErrorLog("can not send message to Server , client is NULL") ;
-			return true ;
-		}
+		CLogMgr::SharedLogMgr()->ErrorLog("can not send message to Center Server , client is NULL or not verified, so close the unknown connect") ;
+		CGateServer::SharedGateServer()->GetNetWorkForClients()->ClosePeerConnection(pData->_connectID) ;
+		return true ;
+	}
 
-		if ( CheckServerStateOk(pDstClient,ID_MSG_C2LOGIN == pMsg->cSysIdentifer ? eSvrType_Login: eSvrType_Game ) == false )
-		{
-			return true ;
-		}
+	if ( CheckServerStateOk(pDstClient) == false )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("center server is disconnected so can not send msg to it ");
+		return true ;
+	}
 
-		stMsgTransferData msgTransData ;
-		msgTransData.bBroadCast = false ;
-		msgTransData.nSessionID = pDstClient->nSessionId ;
-		int nLne = sizeof(msgTransData) ;
-		memcpy(m_pMsgBuffer,&msgTransData,nLne);
-		memcpy(m_pMsgBuffer + nLne , pData->data,pData->length );
-		nLne += pData->length ;
-		CGateServer::SharedGateServer()->GetNetWork()->SendMsg(m_pMsgBuffer,nLne,(ID_MSG_C2LOGIN == pMsg->cSysIdentifer?m_nLoginServerNetWorkID:m_nGameServerNetWorkID),false);
-	}
-	else if ( MSG_TRANSER_DATA == pMsg->usMsgType ) // Distribute to client ;
+	stMsgTransferData msgTransData ;
+	msgTransData.bBroadCast = false ;
+	msgTransData.nSessionID = pDstClient->nSessionId ;
+	int nLne = sizeof(msgTransData) ;
+	if ( nLne + pData->_len >= MAX_MSG_BUFFER_LEN )
 	{
-		CHECK_MSG_SIZE(stMsgTransferData,pData->length);
-		stMsgTransferData* pTransData = (stMsgTransferData*)pMsg ;
-		stGateClient* pDstClient = GetGateClientBySessionID(pTransData->nSessionID) ;
-		if ( pDstClient == NULL )
-		{
-			stMsgClientDisconnect msg ;
-			msg.nSeesionID = pTransData->nSessionID ;
-			CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msg,sizeof(msg),m_nGameServerNetWorkID,false) ;
-			CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msg,sizeof(msg),m_nLoginServerNetWorkID,false) ;
-			stMsg* pm = (stMsg*)((char*)pData->data + sizeof(stMsgTransferData) );
-			CLogMgr::SharedLogMgr()->ErrorLog("can not send message to client , client is NULL, so inform disconnected session id = %d, msg = %d",pTransData->nSessionID,pm->usMsgType) ;
-			return true ;
-		}
-		char* pSendData = (char*)pData->data ;
-		if ( pTransData->bBroadCast )
-		{
-			CGateServer::SharedGateServer()->GetNetWork()->SendMsg(pSendData + sizeof(stMsgTransferData),pData->length - sizeof(stMsgTransferData),m_nGameServerNetWorkID,pTransData->bBroadCast );
-		}
-		else
-		{
-			CGateServer::SharedGateServer()->GetNetWork()->SendMsg(pSendData + sizeof(stMsgTransferData),pData->length - sizeof(stMsgTransferData),pDstClient->nNetWorkID,pTransData->bBroadCast );
-		}
-		
+		stMsg* pmsg = (stMsg*)pData->_orgdata ;
+		CLogMgr::SharedLogMgr()->ErrorLog("msg from session id = %d , is too big , cannot send , msg id = %d ",pDstClient->nSessionId,pmsg->usMsgType) ;
+		return true ;
 	}
-	else
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Unknown Distribute Destination , %d ",pMsg->cSysIdentifer ) ;
-	}
+	memcpy(m_pMsgBuffer,&msgTransData,nLne);
+	memcpy(m_pMsgBuffer + nLne , pData->_orgdata,pData->_len );
+	nLne += pData->_len ;
+	CGateServer::SharedGateServer()->SendMsgToCenterServer(m_pMsgBuffer,nLne);
 	return true ;
 }
 
-void CGateClientMgr::OnNewPeerConnected(RakNet::RakNetGUID& nNewPeer, RakNet::Packet* pData )
+void CGateClientMgr::OnNewPeerConnected(CONNECT_ID nNewPeer, ConnectInfo* IpInfo)
 {
-	stMsg msg ;
-	msg.cSysIdentifer = ID_MSG_VERIFY ;
-	msg.usMsgType = MSG_VERIFY_GATE ;
-	// send msg to peer ;
-	CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msg,sizeof(msg),pData->guid,false) ;
+	if ( IpInfo )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("a peer connected ip = %s ,port = %d",IpInfo->strAddress,IpInfo->nPort ) ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("a peer connected ip = NULL" ) ;
+	}
+	
+	//stMsg msg ;
+	//msg.cSysIdentifer = ID_MSG_VERIFY ;
+	//msg.usMsgType = MSG_VERIFY_GATE ;
+	//// send msg to peer ;
+	//CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msg,sizeof(msg),pData->guid,false) ;
 }
 
-void CGateClientMgr::OnClientWaitReconnectTimeUp(stGateClient* pClient )
-{
-	RemoveClientGate(pClient);
-}
-
-void CGateClientMgr::OnPeerDisconnected(RakNet::RakNetGUID& nPeerDisconnected, RakNet::Packet* pData )
+void CGateClientMgr::OnPeerDisconnected(CONNECT_ID nPeerDisconnected, ConnectInfo* IpInfo  )
 {
 	// client disconnected ;
-	stGateClient* pDstClient = GetGateClientByNetWorkID(pData->guid) ;
+	stGateClient* pDstClient = GetGateClientByNetWorkID(nPeerDisconnected) ;
 	if ( pDstClient )
 	{
-		if ( pData->data[0] == ID_DISCONNECTION_NOTIFICATION )
+		if ( pDstClient->tTimeForRemove )
 		{
-			CLogMgr::SharedLogMgr()->SystemLog("client disconnect session id = %d ",pDstClient->nSessionId) ;
-			OnClientWaitReconnectTimeUp(pDstClient) ;
+			CLogMgr::SharedLogMgr()->ErrorLog("already wait to reconnected");
+			return ;
 		}
-		else
+
+		pDstClient->tTimeForRemove = time(NULL) + TIME_WAIT_FOR_RECONNECTE ;
+		m_vWaitToReconnect[pDstClient->nSessionId] = pDstClient;
+
+		if ( IpInfo )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("client lost ip = %s session id = %d ",pData->systemAddress.ToString(false),pDstClient->nSessionId) ;
-			pDstClient->StartWaitForReconnect() ;
+			CLogMgr::SharedLogMgr()->SystemLog("client disconnected ip = %s, port = %d, wait for reconnect",IpInfo->strAddress,IpInfo->nPort ) ;
 		}
-		
 		return ;
 	}
 
-	// game server disconnected 
-	if ( pData->guid == m_nGameServerNetWorkID )
+	if ( IpInfo )
 	{
-		m_nGameServerNetWorkID = RakNet::UNASSIGNED_RAKNET_GUID ;
-		CLogMgr::SharedLogMgr()->ErrorLog("game server disconnect ") ;
-		return ;
+		CLogMgr::SharedLogMgr()->ErrorLog("not verify peer disconnected ip = %s, port = %d",IpInfo->strAddress,IpInfo->nPort ) ;
 	}
-
-	// login server disconnect 
-	if ( pData->guid == m_nLoginServerNetWorkID )
-	{
-		m_nLoginServerNetWorkID = RakNet::UNASSIGNED_RAKNET_GUID ;
-		CLogMgr::SharedLogMgr()->ErrorLog("Login Server disconnected") ;
-		return ;
-	}
-
-	CLogMgr::SharedLogMgr()->SystemLog("not verify peer disconnected ip = %s",pData->systemAddress.ToString(true) ) ;
 }
 
 void CGateClientMgr::AddClientGate(stGateClient* pGateClient )
 {
-	m_vNetWorkIDGateClient[pGateClient->nNetWorkID] = pGateClient ;
+	if ( m_vNetWorkIDGateClientIdx.find(pGateClient->nNetWorkID) != m_vNetWorkIDGateClientIdx.end() )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why this pos already have data client") ;
+		m_vNetWorkIDGateClientIdx.erase(m_vNetWorkIDGateClientIdx.find(pGateClient->nNetWorkID));
+	}
+
+	if ( m_vSessionGateClient.find(pGateClient->nSessionId) != m_vSessionGateClient.end() )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why this pos session id = %d had client data",pGateClient->nSessionId) ;
+		m_vSessionGateClient.erase(m_vSessionGateClient.find(pGateClient->nSessionId));
+	}
+
+	m_vNetWorkIDGateClientIdx[pGateClient->nNetWorkID] = pGateClient ;
 	m_vSessionGateClient[pGateClient->nSessionId] = pGateClient ;
 }
 
 void CGateClientMgr::RemoveClientGate(stGateClient* pGateClient )
 {
 	if ( pGateClient == NULL )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why remove a null client ") ;
 		return ;
+	}
 
-	stMsgClientDisconnect msg ;
-	msg.nSeesionID = pGateClient->nSessionId ;
-	CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msg,sizeof(msg),m_nGameServerNetWorkID,false) ;
-	CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msg,sizeof(msg),m_nLoginServerNetWorkID,false) ;
+	MAP_NETWORKID_GATE_CLIENT::iterator iterN = m_vNetWorkIDGateClientIdx.find(pGateClient->nNetWorkID) ;
+	if ( iterN != m_vNetWorkIDGateClientIdx.end() )
+	{
+		m_vNetWorkIDGateClientIdx.erase(iterN) ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("can not find net work id = %d to remove",pGateClient->nNetWorkID ) ;
+	}
+	
+	MAP_SESSIONID_GATE_CLIENT::iterator iterS = m_vSessionGateClient.find(pGateClient->nSessionId );
+	if ( iterS != m_vSessionGateClient.end() )
+	{
+		m_vSessionGateClient.erase(iterS) ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("can not find session id = %d to remove",pGateClient->nSessionId ) ;
+	}
 
-	m_vNetWorkIDGateClient.erase(m_vNetWorkIDGateClient.find(pGateClient->nNetWorkID)) ;
-	m_vSessionGateClient.erase(m_vSessionGateClient.find(pGateClient->nSessionId)) ;
-	RakNet::RakNetGUID guid = RakNet::UNASSIGNED_RAKNET_GUID ;
-	pGateClient->Reset(0,guid) ;
+	iterS = m_vWaitToReconnect.find(pGateClient->nSessionId) ;
+	if ( iterS != m_vWaitToReconnect.end() )
+	{
+		m_vWaitToReconnect.erase(iterS) ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why can not find session id = %d to remove from vWaiReconecte",pGateClient->nSessionId) ;
+	}
+	
+	pGateClient->Reset(0,INVALID_CONNECT_ID,NULL) ;
 	m_vGateClientReserver.push_back(pGateClient) ;
 }
 
@@ -260,31 +272,75 @@ stGateClient* CGateClientMgr::GetGateClientBySessionID(unsigned int nSessionID)
 	return iter->second ;
 }
 
-stGateClient* CGateClientMgr::GetGateClientByNetWorkID(RakNet::RakNetGUID& nNetWorkID )
+void CGateClientMgr::UpdateReconectClientLife()
 {
-	MAP_NETWORKID_GATE_CLIENT::iterator iter = m_vNetWorkIDGateClient.find(nNetWorkID) ;
-	if ( iter != m_vNetWorkIDGateClient.end() )
+	if ( m_vWaitToReconnect.empty() )
+	{
+		return ;
+	}
+
+	time_t tNow = time(NULL) ;
+	LIST_GATE_CLIENT vWillRemove ;
+	MAP_SESSIONID_GATE_CLIENT::iterator iter = m_vWaitToReconnect.begin();
+	for ( ; iter != m_vWaitToReconnect.end(); ++iter )
+	{
+		if ( iter->second == NULL )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("why this null client wait reconnect");
+			continue;
+		}
+
+		if ( iter->second->tTimeForRemove == 0 )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("big error , timeForRemove can not be 0 ") ;
+		}
+
+		if ( iter->second->tTimeForRemove <= tNow )
+		{
+			vWillRemove.push_back(iter->second) ;
+		}
+	}
+
+	// do remove 
+	LIST_GATE_CLIENT::iterator iterRemove = vWillRemove.begin() ;
+	for ( ; iterRemove != vWillRemove.end(); ++iterRemove )
+	{
+		stGateClient* p = *iterRemove ;
+		if ( p == NULL )
+		{
+			continue;
+		}
+		// tell other server the peer disconnect
+		{
+			stMsgClientDisconnect msgdis ;
+			msgdis.nSeesionID = p->nSessionId ;
+			CGateServer::SharedGateServer()->SendMsgToCenterServer((char*)&msgdis,sizeof(msgdis));
+		}
+
+		// do remove 
+		CLogMgr::SharedLogMgr()->SystemLog("session id = %d , ip = %s , wait reconnect time out ,do exit game",p->nSessionId,p->strIPAddress.c_str()) ;
+		RemoveClientGate(p);
+	}
+	vWillRemove.clear();
+}
+
+stGateClient* CGateClientMgr::GetGateClientByNetWorkID(CONNECT_ID& nNetWorkID )
+{
+	MAP_NETWORKID_GATE_CLIENT::iterator iter = m_vNetWorkIDGateClientIdx.find(nNetWorkID) ;
+	if ( iter != m_vNetWorkIDGateClientIdx.end() )
 		return iter->second ;
 	return NULL ;
 }
 
-bool CGateClientMgr::CheckServerStateOk( stGateClient* pClient, eServerType eCheckType )
+bool CGateClientMgr::CheckServerStateOk( stGateClient* pClient)
 {
+	bool b = CGateServer::SharedGateServer()->IsCenterServerConnected() ;
+	if ( b )
+	{
+		return true ;
+	}
 	stMsgServerDisconnect msg ;
-	if ( (eCheckType == eSvrType_Login || eCheckType == eSvrType_Max ) && m_nLoginServerNetWorkID == RakNet::UNASSIGNED_RAKNET_GUID )  // login server disconnect ;
-	{
-		
-		msg.nServerType = eSvrType_Login ;
-		CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msg,sizeof(msg),pClient->nNetWorkID,false) ;
-		return false;
-	}
-	
-	if ( (eCheckType == eSvrType_Game || eCheckType == eSvrType_Max )  && RakNet::UNASSIGNED_RAKNET_GUID == m_nGameServerNetWorkID ) // game server disconnect 
-	{
-		msg.nServerType = eSvrType_Game ;
-		CGateServer::SharedGateServer()->GetNetWork()->SendMsg((char*)&msg,sizeof(msg),pClient->nNetWorkID,false) ;
-		return false ;
-	}
-
-	return true ;
+	msg.nServerType = eSvrType_Center ;
+	CGateServer::SharedGateServer()->SendMsgToClient((char*)&msg,sizeof(msg),pClient->nNetWorkID ) ;
+	return false ;
 }

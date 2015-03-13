@@ -7,6 +7,33 @@
 #define DBServer_PORT 5001
 // WARNNING:变长字符串，我们不包括终结符 \0 ;
 
+struct stMsgGateServerInfo
+	:public stMsg
+{
+	stMsgGateServerInfo(){ cSysIdentifer = ID_MSG_TO_GATE; usMsgType = MSG_GATESERVER_INFO;  }
+	bool	 bIsGateFull; // if gate is full can not set up , center svr say , can not set up more gate server , if want add more pls modify serverConfig.txt
+	uint16_t  uIdx ;
+	uint16_t  uMaxGateSvrCount ;
+};
+
+struct stMsgClientDisconnect
+	:public stMsg
+{
+public:
+	stMsgClientDisconnect(){ cSysIdentifer = ID_MSG_TO_GATE ;  usMsgType = MSG_DISCONNECT_CLIENT ; }
+	uint32_t nSeesionID ;
+	bool bIsForClientReconnect ; 
+};
+
+struct stMsgNewClientConnected
+	:public stMsg
+{
+	stMsgNewClientConnected(){ cSysIdentifer = ID_MSG_TO_GATE ; usMsgType = MSG_CONNECT_NEW_CLIENT; }
+	uint32_t nNewSessionID ;
+};
+
+//----above is new , below is ok---------
+
 //--------------------------------------------
 // message between DB and Gamesever ;
 struct stMsgGM2DB
@@ -411,27 +438,21 @@ struct stMsgGameServerGetMissionDataRet
 };
 
 // other game msg;
-struct stMsgClientDisconnect
-	:public stMsg
-{
-public:
-	stMsgClientDisconnect(){ usMsgType = MSG_DISCONNECT_CLIENT ; }
-	unsigned int nSeesionID ;
-};
+
 
 struct stMsgTransferData
 	:public stMsg
 {
 	stMsgTransferData()
 	{
-		cSysIdentifer = ID_MSG_GA2GM ;
+		cSysIdentifer = ID_MSG_TRANSFER ;
 		usMsgType = MSG_TRANSER_DATA;
 		bBroadCast = false ;
-		pData = 0 ;
+		nSessionID = 0 ;
 	}
-	unsigned int nSessionID ;
+	uint32_t nSessionID ;
 	bool bBroadCast ;
-	char* pData ;
+	char pData[0] ;
 };
 
 // other with Verify Server ;

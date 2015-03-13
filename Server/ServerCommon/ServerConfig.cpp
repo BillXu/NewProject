@@ -18,15 +18,31 @@ bool CSeverConfigMgr::OnPaser(CReaderRow& refReaderRow )
 		CLogMgr::SharedLogMgr()->ErrorLog("server config error , type error , type = %d",cSvrType) ;
 		return false;
 	}
-	m_vAllSvrConfig[cSvrType].nPort = refReaderRow["svrPort"]->IntValue();
-	m_vAllSvrConfig[cSvrType].nSvrType = cSvrType;
+
+	stServerConfig configItem ;
+	memset(&configItem,0,sizeof(configItem));
+	configItem.nPort = refReaderRow["svrPort"]->IntValue();
+	configItem.nSvrType = cSvrType;
 	if (strlen(refReaderRow["svrIP"]->StringValue().c_str()) >= 16 )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("too long ip address = %s",refReaderRow["svrIP"]->StringValue().c_str()) ;
 		return false ;
 	}
-	memcpy(m_vAllSvrConfig[cSvrType].strIPAddress,refReaderRow["svrIP"]->StringValue().c_str(),strlen(refReaderRow["svrIP"]->StringValue().c_str()));
-	memcpy(m_vAllSvrConfig[cSvrType].strAccount,refReaderRow["account"]->StringValue().c_str(),strlen(refReaderRow["account"]->StringValue().c_str()));
-	memcpy(m_vAllSvrConfig[cSvrType].strPassword,refReaderRow["password"]->StringValue().c_str(),strlen(refReaderRow["password"]->StringValue().c_str()));
+	memcpy(configItem.strIPAddress,refReaderRow["svrIP"]->StringValue().c_str(),strlen(refReaderRow["svrIP"]->StringValue().c_str()));
+	memcpy(configItem.strAccount,refReaderRow["account"]->StringValue().c_str(),strlen(refReaderRow["account"]->StringValue().c_str()));
+	memcpy(configItem.strPassword,refReaderRow["password"]->StringValue().c_str(),strlen(refReaderRow["password"]->StringValue().c_str()));
+	m_vAllSvrConfig[cSvrType].push_back(configItem);
 	return true ;
+}
+
+stServerConfig* CSeverConfigMgr::GetServerConfig(eServerType cSvrType, uint16_t nIdx )
+{
+	if ( cSvrType >= eSvrType_Max )
+		return NULL ;
+	VEC_SERVER_CONFIG& v = m_vAllSvrConfig[cSvrType];
+	if ( nIdx < v.size() )
+	{
+		return &v[nIdx] ;
+	}
+	return NULL ;
 }

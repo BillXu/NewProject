@@ -65,6 +65,8 @@ void RunFunc ( CGateServer* pApp )
 
 int main()
 {
+	//zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
+	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
 	CGateServer  theApp ;
 	theApp.Init() ;
 	CreateThred(&theApp);

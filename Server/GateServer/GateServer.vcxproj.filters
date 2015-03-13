@@ -55,10 +55,7 @@
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerNetwork.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\Timer.h">
+    <ClInclude Include="..\ServerCommon\ServerDefine.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
@@ -88,12 +85,6 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\Timer.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>

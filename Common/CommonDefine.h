@@ -26,6 +26,8 @@
 #define PIEXL_TO_POINT(px) (px)/CC_CONTENT_SCALE_FACTOR()
 #define FOINT_NAME "Helvetica"
 #endif
+
+#define MAX_IP_STRING_LEN 17
 enum eRoomType
 {
 	eRoom_None,
@@ -149,6 +151,9 @@ enum eServerType
 	eSvrType_APNS,
 	eSvrType_Log,
 	eSvrType_LogDataBase,
+	eSvrType_Center,
+	eSvrType_Data,
+	eSvrType_Taxas,
 	eSvrType_Max,
 };
 

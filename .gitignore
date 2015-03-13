@@ -1,3 +1,5 @@
+Server/Bin/
+Server/Bin/ServerBin/*.*
 #################
 ## Eclipse
 #################
@@ -264,7 +266,7 @@ pip-log.txt
 +
 +# Ignore files build by ndk and eclipse
 +libs/
-+bin/
++Bin/
 +obj/
 +gen/
 +assets/
@@ -346,3 +348,6 @@ MyPoker/cocos2d/external/win32-specific/icon/prebuilt/iconv.dll
 MyPoker/cocos2d/external/win32-specific/icon/prebuilt/libiconv.lib
 
 MyPoker/proj.ios_mac/MyPoker.xcodeproj/project.xcworkspace/xcuserdata/BillSky.xcuserdatad/UserInterfaceState.xcuserstate
+Server/Bin/ServerBin/TestClient.pdb
+*.pdb
+*.pdb

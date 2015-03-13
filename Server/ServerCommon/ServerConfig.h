@@ -1,6 +1,7 @@
 #pragma once
 #include "IConfigFile.h"
 #include "CommonDefine.h"
+#include <vector>
 struct stServerConfig
 {
 	unsigned char nSvrType ;
@@ -13,11 +14,15 @@ struct stServerConfig
 class CSeverConfigMgr
 	:public IConfigFile
 {
+public: 
+	typedef std::vector<stServerConfig> VEC_SERVER_CONFIG;
 public:
 	CSeverConfigMgr();
 	~CSeverConfigMgr();
 	virtual bool OnPaser(CReaderRow& refReaderRow ) ;
-	stServerConfig* GetServerConfig(eServerType cSvrType ){ return &m_vAllSvrConfig[cSvrType]; }
+	stServerConfig* GetServerConfig(eServerType cSvrType, uint16_t nIdx = 0 ) ;
+	stServerConfig* GetGateServerConfig(uint16_t nIdx ){ return GetServerConfig(eSvrType_Gate,nIdx) ;}
+	uint16_t GetServerConfigCnt( eServerType cSvrType ){ if (cSvrType >= eSvrType_Max ) return NULL ; return m_vAllSvrConfig[cSvrType].size();}
 protected:
-	stServerConfig m_vAllSvrConfig[eSvrType_Max] ;
+	VEC_SERVER_CONFIG m_vAllSvrConfig[eSvrType_Max] ;
 };
