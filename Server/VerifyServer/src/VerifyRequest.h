@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
-#include "RakNetTypes.h"
+#include "ServerNetwork.h"
+//#include "RakNetTypes.h"
 #define MAX_VERIFY_STR_LEN 1024*4
 enum eVerifiy_Result
 {
@@ -13,7 +14,7 @@ enum eVerifiy_Result
 };
 struct stVerifyRequest
 {
-	RakNet::RakNetGUID nFromNetID ;
+	CONNECT_ID nFromNetID ;
 	unsigned int nFromPlayerUserUID ;
 	unsigned int nBuyedForPlayerUserUID ;  
 	char pBufferVerifyID[MAX_VERIFY_STR_LEN] ;  // base64 from cliend , or tranfaction_id from apple server ;

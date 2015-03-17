@@ -8,10 +8,10 @@
 // WARNNING:变长字符串，我们不包括终结符 \0 ;
 struct stMsg
 {
-	unsigned char cSysIdentifer ;
+	unsigned char cSysIdentifer ;  // msg target eServerType
 	unsigned short usMsgType ;
 public:
-	stMsg():cSysIdentifer( ID_MSG_TO_NONE  ),usMsgType(MSG_NONE){}
+	stMsg():cSysIdentifer( eSvrType_Max  ),usMsgType(MSG_NONE){}
 };
 
 // client reconnect ;
@@ -19,7 +19,7 @@ struct stMsgReconnect
 	:public stMsg
 {
 public:
-	stMsgReconnect(){cSysIdentifer = ID_MSG_TO_GATE ; usMsgType = MSG_RECONNECT ; }
+	stMsgReconnect(){cSysIdentifer = ID_MSG_PORT_GATE ; usMsgType = MSG_RECONNECT ; }
 public:
 	unsigned int nSessionID ;
 };
@@ -28,7 +28,7 @@ struct stMsgReconnectRet
 	:public stMsg
 {
 public:
-	stMsgReconnectRet(){cSysIdentifer = ID_MSG_TO_CLIENT ; usMsgType = MSG_RECONNECT ; }
+	stMsgReconnectRet(){cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_RECONNECT ; }
 public:
 	char nRet; // 0 : success , 1 failed ;
 };
@@ -37,7 +37,7 @@ struct stMsgServerDisconnect
 	:public stMsg
 {
 public:
-	stMsgServerDisconnect(){ cSysIdentifer = ID_MSG_TO_CLIENT; usMsgType = MSG_DISCONNECT_SERVER  ;}
+	stMsgServerDisconnect(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_DISCONNECT_SERVER  ;}
 	unsigned char nServerType ; // eServerType ;
 };
 

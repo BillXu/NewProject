@@ -67,9 +67,6 @@
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerNetwork.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\ServerCommon\ThreadMod.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
@@ -112,9 +109,6 @@
       <Filter>SvrCommon</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ThreadMod.cpp">

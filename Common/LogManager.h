@@ -9,6 +9,7 @@
 #ifndef God_LogManager_h
 #define God_LogManager_h
 #include <stdio.h>
+#include <string>
 class CLogMgr
 {
 public:
@@ -28,14 +29,16 @@ public:
     void PrintLog( const char* sformate , ... );
     void ErrorLog( const char* sformate , ... );
 	void SystemLog(const char* sformate , ...);
-    void SetOutputFile( const char* pFile );
+    void SetOutputFile( const char* pFilePre );
     void CloseFile();
 protected:
     void Print( const char* sFormate , va_list va , eLogState eSate ) ;
+	void RefreshFileState();
 protected:
     bool bOutPutToFile ;
     bool bEnable ;
+	unsigned int nSerialNum; // for output file name ;
+	std::string strFilePre ; // for output file name ;
     FILE* pFile ;
 };
-#define Print_Log CLogMgr::SharedLogMgr()->PrintLog
 #endif

@@ -17,7 +17,7 @@ CDBVerifyManager::~CDBVerifyManager()
 void CDBVerifyManager::Init()
 {
 	m_pDBThead = new CDataBaseThread ;
-	m_pDBThead->InitDataBase("127.0.0.1",3306,"root","123456","gamedb");
+	m_pDBThead->InitDataBase("203.186.75.134",3306,"root","kf-idc","gamedbbj");
 	m_pDBThead->Start();
 }
 
@@ -28,7 +28,7 @@ void CDBVerifyManager::AddRequest(stVerifyRequest* pRequest )
 	stDBRequest* pDBRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest() ;
 	pDBRequest->eType = eRequestType_Add ;
 	pDBRequest->nRequestUID = 10 ;
-	pDBRequest->nSqlBufferLen = sprintf_s(pDBRequest->pSqlBuffer,"INSERT INTO `transNum` (`type`, `transId`) VALUES ('%d', '%s');",pRequest->nRequestType,pRequest->pBufferVerifyID) ;
+	pDBRequest->nSqlBufferLen = sprintf_s(pDBRequest->pSqlBuffer,"INSERT INTO `transnum` (`type`, `transId`) VALUES ('%d', '%s');",pRequest->nRequestType,pRequest->pBufferVerifyID) ;
 	pDBRequest->pUserData = pRequest ;
 	CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pDBRequest) ;
 	///-----
@@ -77,6 +77,6 @@ void CDBVerifyManager::OnDBResult(stDBResult*pResult)
 	}
 	else
 	{
-		printf("Error\n") ;
+		printf("pResult->nRequestUID = %d Error\n",pResult->nRequestUID) ;
 	}
 }

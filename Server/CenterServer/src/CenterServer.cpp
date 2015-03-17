@@ -158,6 +158,11 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			}
 
 			m_pNetwork->SendMsg((char*)&msg,sizeof(msg),pData->_connectID) ;
+
+			if ( msg.bIsGateFull )
+			{
+				m_pNetwork->ClosePeerConnection(pData->_connectID);
+			}
 		}
 		break;
 	case MSG_CONNECT_NEW_CLIENT:
@@ -194,7 +199,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 		{
 			stMsgTransferData* pTransfer = (stMsgTransferData*)pData->_orgdata ;
 			stMsg* pReal = (stMsg*)(pData->_orgdata + sizeof(stMsgTransferData)) ;
-			if ( pReal->cSysIdentifer == ID_MSG_TO_CLIENT )
+			if ( pReal->cSysIdentifer == ID_MSG_PORT_CLIENT || pReal->cSysIdentifer == ID_MSG_PORT_GATE )
 			{
 				stGateInfo* pInfo = GetOwerGateInfoBySessionID(pTransfer->nSessionID) ;
 				if ( pInfo && pInfo->IsGateWorking() )
@@ -217,19 +222,6 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				if ( eSvrType_Center == svr )
 				{
 					CLogMgr::SharedLogMgr()->ErrorLog("why msg = %d process here should process above ",pReal->usMsgType ) ;
-				}
-				else if ( eSvrType_Gate == svr )
-				{
-					stGateInfo* pInfo = GetOwerGateInfoBySessionID(pTransfer->nSessionID) ;
-					if ( pInfo && pInfo->IsGateWorking() )
-					{
-						m_pNetwork->SendMsg(pData->_orgdata,pData->_len,pInfo->nNetworkID ) ;
-						CLogMgr::SharedLogMgr()->PrintLog("send msg %d to gate session id = %d",pReal->usMsgType,pTransfer->nSessionID) ;
-					}
-					else
-					{
-						CLogMgr::SharedLogMgr()->ErrorLog("send msg = %d to gate but nSession id = %d have no gate ", pReal->usMsgType,pTransfer->nSessionID) ;
-					}
 				}
 				else if ( eSvrType_Max == svr )
 				{
@@ -333,6 +325,15 @@ void  CCenterServerApp::OnPeerDisconnected( CONNECT_ID nPeerDisconnected, Connec
 			return ;
 		}
 	}
+
+	if ( IpInfo )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog( "a unknown peer dis conntcted ip = %s port = %d",IpInfo->strAddress,IpInfo->nPort ) ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("a unknown peer disconnect ip = unknown") ;
+	}
 }
 
 const char* CCenterServerApp::GetServerDescByType(eServerType eType )
@@ -392,52 +393,52 @@ eServerType CCenterServerApp::GetServerTypeByMsgTarget(uint16_t nTarget)
 {
 	switch ( nTarget )
 	{
-	case ID_MSG_TO_CLIENT:
+	case ID_MSG_PORT_CLIENT:
 		{
 			return eSvrType_Max ;
 		}
 		break;
-	case ID_MSG_TO_DATA:
+	case ID_MSG_PORT_DATA:
 		{
 			return eSvrType_Data ;
 		}
 		break;
-	case ID_MSG_TO_GATE:
+	case ID_MSG_PORT_GATE:
 		{
 			return eSvrType_Gate;
 		}
 		break;
-	case ID_MSG_TO_VERIFY:
+	case ID_MSG_PORT_VERIFY:
 		{
 			return eSvrType_Verify ;
 		}
 		break;
-	case ID_MSG_TO_LOGIN:
+	case ID_MSG_PORT_LOGIN:
 		{
 			return eSvrType_Login ;
 		}
 		break;
-	case ID_MSG_TO_DB:
+	case ID_MSG_PORT_DB:
 		{
 			return eSvrType_DB ;
 		}
 		break;
-	case ID_MSG_TO_CENTER:
+	case ID_MSG_PORT_CENTER:
 		{
 			return eSvrType_Center ;
 		}
 		break;
-	case ID_MSG_TO_APNS:
+	case ID_MSG_PORT_APNS:
 		{
 			return eSvrType_APNS;
 		}
 		break;
-	case ID_MSG_TO_LOG:
+	case ID_MSG_PORT_LOG:
 		{
 			return eSvrType_Log;
 		}
 		break;
-	case ID_MSG_TO_TAXAS:
+	case ID_MSG_PORT_TAXAS:
 		{
 			return eSvrType_Taxas ;
 		}

@@ -25,6 +25,7 @@ public:
 	bool IsCenterServerConnected(){ return m_nCenterServerNetID != INVALID_CONNECT_ID ;}
 	uint32_t GenerateSessionID();
 protected:
+	void OnMsgFromOtherSrvToGate(stMsg* pmsg, uint16_t eSendPort );
 	void ConnectToCenterServer();
 protected:
 	static CGateServer* s_GateServer ;

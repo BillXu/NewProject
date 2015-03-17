@@ -1,10 +1,10 @@
 #pragma once
-#include "ServerNetwork.h"
+#include "NetWorkManager.h"
 #include "ServerConfig.h"
 class CDBManager ;
 class CDataBaseThread ;
 class CDBServerApp
-	:public CServerNetworkDelegate
+	:public CNetMessageDelegate
 {
 public:
 	CDBServerApp();
@@ -12,20 +12,23 @@ public:
 	void Init();
 	bool MainLoop();
 	// net delegate
-	virtual bool OnMessage( RakNet::Packet* pData );
-	virtual void OnNewPeerConnected(RakNet::RakNetGUID& nNewPeer, RakNet::Packet* pData );
-	virtual void OnPeerDisconnected(RakNet::RakNetGUID& nPeerDisconnected, RakNet::Packet* pData );
-	void SendMsg(const char* pBuffer, int nLen, RakNet::RakNetGUID& nTarget );
+	virtual bool OnMessage( Packet* pMsg );
+	virtual bool OnLostSever(Packet* pMsg);
+	virtual bool OnConnectStateChanged( eConnectState eSate, Packet* pMsg);
+	void SendMsg(const char* pBuffer, int nLen,uint32_t nSessionID = 0 );
 	bool IsRunning(){ return m_bRunning ;}
 	void Stop(){ m_bRunning = false ;}
 	void OnExit();
 	CDataBaseThread* GetDBThread(){ return m_pDBWorkThread ; }
 protected:
-	CServerNetwork* m_pNetWork ;
+	CNetWorkMgr* m_pNetWork ;
 	CDBManager* m_pDBManager ;
 	CDataBaseThread* m_pDBWorkThread ;
 	bool m_bRunning ;
+	CONNECT_ID m_nCenterSvrConnectID ;
 
 	// server config 
 	CSeverConfigMgr m_stSvrConfigMgr ;
+
+	char m_pSendBuffer[MAX_MSG_BUFFER_LEN] ;
 };

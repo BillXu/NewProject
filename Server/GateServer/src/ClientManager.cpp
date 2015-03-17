@@ -44,33 +44,18 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 	// verify identify 
 	stMsg* pMsg = (stMsg*)pData->_orgdata ;
 	CHECK_MSG_SIZE(stMsg,pData->_len);
-	if ( pMsg->cSysIdentifer == ID_MSG_VERIFY )
+	if ( MSG_VERIFY_CLIENT == pMsg->usMsgType )
 	{
 		char* pIPInfo = CGateServer::SharedGateServer()->GetNetWorkForClients()->GetIPInfoByConnectID(pData->_connectID) ;
-		if ( MSG_VERIFY_CLIENT == pMsg->usMsgType )
+		stGateClient* pGateClient = GetReserverGateClient();
+		if ( !pGateClient )
 		{
-			stGateClient* pGateClient = GetReserverGateClient();
-			if ( !pGateClient )
-			{
-				pGateClient = new stGateClient ;
-			}
-			
-			pGateClient->Reset(CGateServer::SharedGateServer()->GenerateSessionID(),pData->_connectID,pIPInfo) ;
-			AddClientGate(pGateClient);
-			CLogMgr::SharedLogMgr()->SystemLog("a Client connected ip = %s Session id = %d",pGateClient->strIPAddress.c_str(),pGateClient->nSessionId ) ;
+			pGateClient = new stGateClient ;
 		}
-		else 
-		{
-			if ( pIPInfo )
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("Unknown identify from ip = %s close connection " ,pIPInfo ) ;
-			}
-			else
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("Unknown identify from ip = NULL close connection") ;
-			}
-			CGateServer::SharedGateServer()->GetNetWorkForClients()->ClosePeerConnection(pData->_connectID) ;
-		}
+
+		pGateClient->Reset(CGateServer::SharedGateServer()->GenerateSessionID(),pData->_connectID,pIPInfo) ;
+		AddClientGate(pGateClient);
+		CLogMgr::SharedLogMgr()->SystemLog("a Client connected ip = %s Session id = %d",pGateClient->strIPAddress.c_str(),pGateClient->nSessionId ) ;
 		return true;
 	}
 
@@ -131,6 +116,7 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 	}
 
 	stMsgTransferData msgTransData ;
+	msgTransData.nSenderPort = ID_MSG_PORT_CLIENT ;
 	msgTransData.bBroadCast = false ;
 	msgTransData.nSessionID = pDstClient->nSessionId ;
 	int nLne = sizeof(msgTransData) ;
@@ -145,6 +131,25 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 	nLne += pData->_len ;
 	CGateServer::SharedGateServer()->SendMsgToCenterServer(m_pMsgBuffer,nLne);
 	return true ;
+}
+
+void CGateClientMgr::OnServerMsg( const char* pRealMsgData, uint16_t nDataLen,uint32_t uTargetSessionID )
+{
+	stGateClient* pClient = GetGateClientBySessionID(uTargetSessionID) ;
+	if ( NULL == pClient )
+	{
+		stMsg* pReal = (stMsg*)pRealMsgData ;
+		CLogMgr::SharedLogMgr()->ErrorLog("big error !!!! can not send msg to session id = %d , client is null , msg = %d",uTargetSessionID,pReal->usMsgType  ) ;
+		return  ;
+	}
+
+	if ( pClient->tTimeForRemove )
+	{
+		CLogMgr::SharedLogMgr()->SystemLog("client is waiting for reconnected") ;
+		return ;
+	}
+
+	CGateServer::SharedGateServer()->SendMsgToClient(pRealMsgData,nDataLen,pClient->nNetWorkID ) ;
 }
 
 void CGateClientMgr::OnNewPeerConnected(CONNECT_ID nNewPeer, ConnectInfo* IpInfo)

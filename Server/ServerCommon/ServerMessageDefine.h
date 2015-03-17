@@ -10,7 +10,7 @@
 struct stMsgGateServerInfo
 	:public stMsg
 {
-	stMsgGateServerInfo(){ cSysIdentifer = ID_MSG_TO_GATE; usMsgType = MSG_GATESERVER_INFO;  }
+	stMsgGateServerInfo(){ cSysIdentifer = ID_MSG_PORT_GATE; usMsgType = MSG_GATESERVER_INFO;  }
 	bool	 bIsGateFull; // if gate is full can not set up , center svr say , can not set up more gate server , if want add more pls modify serverConfig.txt
 	uint16_t  uIdx ;
 	uint16_t  uMaxGateSvrCount ;
@@ -20,7 +20,7 @@ struct stMsgClientDisconnect
 	:public stMsg
 {
 public:
-	stMsgClientDisconnect(){ cSysIdentifer = ID_MSG_TO_GATE ;  usMsgType = MSG_DISCONNECT_CLIENT ; }
+	stMsgClientDisconnect(){ cSysIdentifer = ID_MSG_PORT_CENTER ;  usMsgType = MSG_DISCONNECT_CLIENT ; }
 	uint32_t nSeesionID ;
 	bool bIsForClientReconnect ; 
 };
@@ -28,7 +28,7 @@ public:
 struct stMsgNewClientConnected
 	:public stMsg
 {
-	stMsgNewClientConnected(){ cSysIdentifer = ID_MSG_TO_GATE ; usMsgType = MSG_CONNECT_NEW_CLIENT; }
+	stMsgNewClientConnected(){ cSysIdentifer = ID_MSG_PORT_CENTER ; usMsgType = MSG_CONNECT_NEW_CLIENT; }
 	uint32_t nNewSessionID ;
 };
 
@@ -450,6 +450,7 @@ struct stMsgTransferData
 		bBroadCast = false ;
 		nSessionID = 0 ;
 	}
+	uint16_t nSenderPort ; // who send this msg ;  eMsgPort
 	uint32_t nSessionID ;
 	bool bBroadCast ;
 	char pData[0] ;

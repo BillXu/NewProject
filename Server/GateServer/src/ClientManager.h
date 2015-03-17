@@ -15,6 +15,7 @@ public:
 	CGateClientMgr();
 	~CGateClientMgr();
 	virtual bool OnMessage( Packet* pData ) ;
+	void OnServerMsg(const char* pRealMsgData, uint16_t nDataLen,uint32_t uTargetSessionID );
 	virtual void OnNewPeerConnected( CONNECT_ID nNewPeer, ConnectInfo* IpInfo);
 	virtual void OnPeerDisconnected( CONNECT_ID nPeerDisconnected, ConnectInfo* IpInfo );
 	stGateClient* GetGateClientBySessionID(uint32_t nSessionID);

@@ -17,9 +17,9 @@ public:
 	void FinishVerifyRequest(stVerifyRequest* pRequest);
 
 	//---
-	virtual bool OnMessage( RakNet::Packet* pData );
-	virtual void OnNewPeerConnected(RakNet::RakNetGUID& nNewPeer, RakNet::Packet* pData );
-	virtual void OnPeerDisconnected(RakNet::RakNetGUID& nPeerDisconnected, RakNet::Packet* pData );
+	virtual bool OnMessage( Packet* pData );
+	virtual void OnNewPeerConnected(CONNECT_ID nNewPeer, ConnectInfo* IpInfo );
+	virtual void OnPeerDisconnected(CONNECT_ID nPeerDisconnected, ConnectInfo* IpInfo );
 protected:
 	LIST_VERIFY_REQUEST m_vListRequest ;
 	CServerNetwork* m_pNetwork ;

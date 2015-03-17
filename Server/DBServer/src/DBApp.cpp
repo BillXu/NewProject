@@ -10,6 +10,7 @@ CDBServerApp::CDBServerApp()
 	m_pNetWork = NULL ;
 	m_pDBManager = NULL ;
 	m_pDBWorkThread = NULL ;
+	m_nCenterSvrConnectID = INVALID_CONNECT_ID ;
 }
 
 CDBServerApp::~CDBServerApp()
@@ -35,14 +36,30 @@ void CDBServerApp::Init()
 {
 	m_bRunning = true ;
 	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
+	stServerConfig* pCenter = m_stSvrConfigMgr.GetServerConfig(eSvrType_Center);
+	if ( pCenter == NULL )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null canont start DB server") ;
+		return ;
+	}
 	// setup net work
-	m_pNetWork = new CServerNetwork ;
-	m_pNetWork->StartupNetwork(m_stSvrConfigMgr.GetServerConfig(eSvrType_DB)->nPort,10,m_stSvrConfigMgr.GetServerConfig(eSvrType_DB)->strPassword) ;
-	m_pNetWork->AddDelegate(this);
+	m_pNetWork = new CNetWorkMgr ;
+	m_pNetWork->SetupNetwork(1);
+	m_pNetWork->ConnectToServer(pCenter->strIPAddress,pCenter->nPort,pCenter->strPassword);
+	m_pNetWork->AddMessageDelegate(this) ;
 
 	// set up data base thread 
-	m_pDBWorkThread = new CDataBaseThread ;
 	stServerConfig* pDatabase = m_stSvrConfigMgr.GetServerConfig(eSvrType_DataBase);
+	if ( pDatabase == NULL )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("data base config is null, cant not start server") ;
+		m_pNetWork->ShutDown();
+		delete m_pNetWork ;
+		m_pNetWork = NULL ;
+		return ;
+	}
+
+	m_pDBWorkThread = new CDataBaseThread ;
 	m_pDBWorkThread->InitDataBase(pDatabase->strIPAddress,pDatabase->nPort,pDatabase->strAccount,pDatabase->strPassword,"taxpokerdb");
 	m_pDBWorkThread->Start();
 
@@ -56,7 +73,7 @@ bool CDBServerApp::MainLoop()
 {
 	if ( m_pNetWork )
 	{
-		m_pNetWork->RecieveMsg() ;
+		m_pNetWork->ReciveMessage() ;
 	}
 
 	// process DB Result ;
@@ -74,39 +91,79 @@ bool CDBServerApp::MainLoop()
 }
 
 // net delegate
-bool CDBServerApp::OnMessage( RakNet::Packet* pData )
+bool CDBServerApp::OnMessage( Packet* pMsg )
 {
-	CHECK_MSG_SIZE(stMsg,pData->length) ;
-	stMsg* pmsg = (stMsg*)pData->data ;
+	CHECK_MSG_SIZE(stMsg,pMsg->_len) ;
+	stMsg* pmsg = (stMsg*)pMsg->_orgdata ;
 	if ( pmsg->cSysIdentifer == ID_MSG_VERIFY )
 	{
 		return true ;
 	}
 
+	stMsg* pRet = (stMsg*)pMsg->_orgdata ;
+	if ( pRet->usMsgType != MSG_TRANSER_DATA )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why msg type is not transfer data , type = %d",pRet->usMsgType ) ;
+		return true;
+	}
+
+	stMsgTransferData* pData = (stMsgTransferData*)pRet ;
 	if ( m_pDBManager )
 	{
-		m_pDBManager->OnMessage(pData) ;
+		stMsg* preal = (stMsg*)(pMsg->_orgdata + sizeof(stMsgTransferData));
+		m_pDBManager->OnMessage(preal,(eMsgPort)pData->nSenderPort,pData->nSessionID ) ;
 	}
 	return true ;
 }
 
-void CDBServerApp::OnNewPeerConnected(RakNet::RakNetGUID& nNewPeer, RakNet::Packet* pData )
+bool CDBServerApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 {
-	stMsg msg ;
-	msg.cSysIdentifer = ID_MSG_VERIFY ;
-	msg.usMsgType = MSG_VERIFY_DB ;
-	m_pNetWork->SendMsg((char*)&msg,sizeof(msg),nNewPeer,false) ;
-	CLogMgr::SharedLogMgr()->SystemLog("a peer connected IP = %s",pData->systemAddress.ToString(true));
+	if ( eConnect_Accepted == eSate )
+	{
+		stMsg msg ;
+		msg.cSysIdentifer = ID_MSG_PORT_CENTER ;
+		msg.usMsgType = MSG_VERIFY_DB ;
+		m_pNetWork->SendMsg((char*)&msg,sizeof(msg),pMsg->_connectID ) ;
+		m_nCenterSvrConnectID = pMsg->_connectID ;
+		CLogMgr::SharedLogMgr()->SystemLog("connected to Center Server") ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("connect center svr failed error code = %d",eSate ) ;
+	}
+	return true ;
 }
 
-void CDBServerApp::OnPeerDisconnected(RakNet::RakNetGUID& nPeerDisconnected, RakNet::Packet* pData )
+bool CDBServerApp::OnLostSever( Packet* pMsg )
 {
-	CLogMgr::SharedLogMgr()->SystemLog("a peer Disconnected IP = %s",pData->systemAddress.ToString(true));
+	CLogMgr::SharedLogMgr()->ErrorLog("center svr is lost") ;
+	m_nCenterSvrConnectID = INVALID_CONNECT_ID ;
+	return true ;
 }
 
-void CDBServerApp::SendMsg(const char* pBuffer, int nLen, RakNet::RakNetGUID& nTarget )
+void CDBServerApp::SendMsg(const char* pBuffer, int nBufferLen, uint32_t nSessionID )
 {
-	m_pNetWork->SendMsg(pBuffer,nLen,nTarget,false) ;
+	if ( m_nCenterSvrConnectID == INVALID_CONNECT_ID )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("center svr is discnnected") ;
+		return ;
+	}
+
+	stMsgTransferData msgTransData ;
+	msgTransData.nSenderPort = ID_MSG_PORT_DB ;
+	msgTransData.bBroadCast = false ;
+	msgTransData.nSessionID = nSessionID ;
+	int nLne = sizeof(msgTransData) ;
+	if ( nLne + nBufferLen >= MAX_MSG_BUFFER_LEN )
+	{
+		stMsg* pmsg = (stMsg*)pBuffer ;
+		CLogMgr::SharedLogMgr()->ErrorLog("msg send to session id = %d , is too big , cannot send , msg id = %d ",nSessionID,pmsg->usMsgType) ;
+		return ;
+	}
+	memcpy(m_pSendBuffer,&msgTransData,nLne);
+	memcpy(m_pSendBuffer + nLne , pBuffer,nBufferLen );
+	nLne += nBufferLen ;
+	m_pNetWork->SendMsg(m_pSendBuffer,nLne,m_nCenterSvrConnectID ) ;
 }
 
 void CDBServerApp::OnExit()

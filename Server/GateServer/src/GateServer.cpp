@@ -109,28 +109,17 @@ bool CGateServer::OnMessage( Packet* pPacket )
 	{
 		stMsgTransferData* pData = (stMsgTransferData*)pMsg;
 		stMsg* pReal = (stMsg*)(pPacket->_orgdata + sizeof(stMsgTransferData));
-
-		stGateClient* pClient = m_pGateManager->GetGateClientBySessionID(pData->nSessionID) ;
-		if ( NULL == pClient )
+		if ( pReal->cSysIdentifer == ID_MSG_PORT_CLIENT )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("big error !!!! can not send msg to session id = %d , client is null , msg = %d",pData->nSessionID,pReal->usMsgType  ) ;
-			return true ;
+			m_pGateManager->OnServerMsg((char*)pReal,pPacket->_len - sizeof(stMsgTransferData),pData->nSessionID ) ;
 		}
-
-		if ( pClient->tTimeForRemove )
+		else if ( ID_MSG_PORT_GATE == pReal->cSysIdentifer )
 		{
-			CLogMgr::SharedLogMgr()->SystemLog("client is waiting for reconnected") ;
-			return true;
-		}
-
-		
-		if ( pReal->cSysIdentifer == ID_MSG_TO_CLIENT )
-		{
-			SendMsgToClient(pPacket->_orgdata + sizeof(stMsgTransferData),pPacket->_len - sizeof(stMsgTransferData),pClient->nNetWorkID ) ;
+			OnMsgFromOtherSrvToGate(pReal,pData->nSenderPort);
 		}
 		else
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("msg = %d target is not client , why ? ",pReal->usMsgType ) ;
+			CLogMgr::SharedLogMgr()->ErrorLog("wrong msg send to gate, target port = %d, msgType = %d",pReal->cSysIdentifer, pReal->usMsgType ) ;
 		}
 	}
 	else if ( MSG_GATESERVER_INFO == pMsg->usMsgType )
@@ -161,6 +150,11 @@ bool CGateServer::OnMessage( Packet* pPacket )
 	return true ;
 }
 
+void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort )
+{
+
+}
+
 bool CGateServer::OnLostSever(Packet* pMsg)
 {
 	CLogMgr::SharedLogMgr()->ErrorLog("center server lost, we can not reconnect , please restart all gate svr ;");
@@ -176,7 +170,7 @@ bool CGateServer::OnConnectStateChanged( eConnectState eSate, Packet* pMsg )
 	{
 		m_nCenterServerNetID = pMsg->_connectID ;
 		stMsg msg ;
-		msg.cSysIdentifer = ID_MSG_VERIFY ;
+		msg.cSysIdentifer = eSvrType_Center ;
 		msg.usMsgType = MSG_VERIFY_GATE ;
 		SendMsgToCenterServer((char*)&msg,sizeof(msg)) ;
 		CLogMgr::SharedLogMgr()->SystemLog("connected center server");
