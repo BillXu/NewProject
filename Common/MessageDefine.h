@@ -41,16 +41,14 @@ public:
 	unsigned char nServerType ; // eServerType ;
 };
 
-///--------------------ablove is new , below is old------
 // register an login ;
 struct stMsgRegister
 	:public stMsg
 {
-	stMsgRegister(){cSysIdentifer = ID_MSG_C2LOGIN ; usMsgType = MSG_PLAYER_REGISTER ; }
+	stMsgRegister(){cSysIdentifer = ID_MSG_PORT_LOGIN ; usMsgType = MSG_PLAYER_REGISTER ; }
 	unsigned char cRegisterType ; // 0 表示游客登录，1表示正常注册 , 2 绑定账号 
 	char cAccount[MAX_LEN_ACCOUNT] ;
 	char cPassword[MAX_LEN_PASSWORD] ;
-	char cEmail[MAX_LEN_EMAIL] ;
 	unsigned char nChannel; // 渠道标示，0. appstore  1. pp 助手，2.  91商店 3. 360商店 4.winphone store
 };
 
@@ -59,7 +57,7 @@ struct stMsgRegisterRet
 {
 	stMsgRegisterRet()
 	{
-		cSysIdentifer = ID_MSG_LOGIN2C ;
+		cSysIdentifer = ID_MSG_PORT_CLIENT ;
 		usMsgType = MSG_PLAYER_REGISTER ;
 	}
 	char nRet ; // 0 success ;  1 . account have exsit ;
@@ -68,6 +66,26 @@ struct stMsgRegisterRet
 	char cPassword[MAX_LEN_PASSWORD] ;
 	unsigned int nUserID ;
 };
+
+struct stMsgCheckAccount
+	:public stMsg 
+{
+	stMsgCheckAccount(){ cSysIdentifer = ID_MSG_PORT_LOGIN ; usMsgType = MSG_PLAYER_CHECK_ACCOUNT ; }
+	char cAccount[MAX_LEN_ACCOUNT] ;
+	char cPassword[MAX_LEN_PASSWORD] ;
+};
+
+struct stMsgCheckAccountRet
+	:public stMsg 
+{
+	stMsgCheckAccountRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_CHECK_ACCOUNT ; }
+	unsigned char nRet ; // 0 ; success ; 1 account error , 2 password error, 3 state error  ;
+	unsigned int nUserID ;
+};
+
+///--------------------ablove is new , below is old------
+
+
 
 struct stMsgRebindAccount
 	:public stMsg
@@ -90,22 +108,7 @@ struct stMsgRebindAccountRet
 	char cEmail[MAX_LEN_EMAIL] ;
 };
 
-struct stMsgCheckAccount
-	:public stMsg 
-{
-	stMsgCheckAccount(){ cSysIdentifer = ID_MSG_C2LOGIN ; usMsgType = MSG_PLAYER_CHECK_ACCOUNT ; }
-	char cAccount[MAX_LEN_ACCOUNT] ;
-	char cPassword[MAX_LEN_PASSWORD] ;
-};
 
-struct stMsgCheckAccountRet
-	:public stMsg 
-{
-	stMsgCheckAccountRet(){ cSysIdentifer = ID_MSG_LOGIN2C; usMsgType = MSG_PLAYER_CHECK_ACCOUNT ; }
-	unsigned char nRet ; // 0 ; success ; 1 account error , 2 password error, 3 state error  ;
-	unsigned char cRegisterType ; // 0 表示游客登录，1表示正常注册 , 2 绑定账号 
-	unsigned int nUserID ;
-};
 
 struct stMsgModifyPassword
 	:public stMsg

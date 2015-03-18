@@ -1,13 +1,16 @@
 #include "LoginApp.h"
 #include "LogManager.h"
 #include "ServerMessageDefine.h"
-#include "LoginPeerMgr.h"
+#include "LoginDBManager.h"
+#include "DataBaseThread.h"
 CLoginApp::CLoginApp()
 {
 	m_pNetWork = NULL ;
-	m_pReconnctGate = NULL ;
-	m_pReconnectDB = NULL ;
-	m_pPeerMgr = NULL ;
+	m_nCenterSvrNetworkID = INVALID_CONNECT_ID ;
+	m_pDBThread = NULL ;
+	m_pDBMgr = NULL ;
+
+	memset(m_pSendBuffer,0,sizeof(m_pSendBuffer));
 }
 
 CLoginApp::~CLoginApp()
@@ -19,48 +22,66 @@ CLoginApp::~CLoginApp()
 		m_pNetWork = NULL ;
 	}
 
-	if ( m_pReconnectDB )
+	if ( m_pDBMgr )
 	{
-		m_pTimerMgr->RemoveTimer(m_pReconnectDB) ;
-		m_pReconnectDB = NULL ;
+		delete m_pDBMgr ;
+		m_pDBMgr = NULL ;
 	}
 
-	if ( m_pReconnctGate )
+	if ( m_pDBThread )
 	{
-		m_pTimerMgr->RemoveTimer(m_pReconnctGate) ;
-		m_pReconnctGate = NULL ;
-	}
-
-	if ( m_pPeerMgr )
-	{
-		delete m_pPeerMgr ;
-		m_pPeerMgr = NULL ;
+		m_pDBThread->StopWork();
+		delete m_pDBThread ;
+		m_pDBThread = NULL ;
 	}
 }
 
 void CLoginApp::Init()
 {
-	m_pTimerMgr = new CTimerManager ;
+	CLogMgr::SharedLogMgr()->SetOutputFile("LoginSvr");
+	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
+	
+
+	// start Db thread 
+	stServerConfig* pSvrConfigItem = m_stSvrConfigMgr.GetServerConfig(eSvrType_DataBase );
+	if ( pSvrConfigItem == NULL )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("Data base config is null , can not start login svr ") ;
+		return ;
+	}
+	m_pDBThread = new CDataBaseThread ;
+	bool bRet = m_pDBThread->InitDataBase(pSvrConfigItem->strIPAddress,pSvrConfigItem->nPort,pSvrConfigItem->strAccount,pSvrConfigItem->strPassword,"taxpokerdb");
+	if ( bRet )
+	{
+		m_pDBThread->Start() ;
+		CLogMgr::SharedLogMgr()->SystemLog("start db thread ok") ;
+	}
+	else
+	{	
+		delete m_pDBThread ;
+		m_pDBThread = NULL ;
+		CLogMgr::SharedLogMgr()->ErrorLog("start db thread errror ") ;
+		return ;
+	}
+
+	m_pDBMgr = new CDBManager;
+	m_pDBMgr->Init(this);
+
+	// connected to center ;
+	pSvrConfigItem = m_stSvrConfigMgr.GetServerConfig(eSvrType_Center );
+	if ( pSvrConfigItem == NULL )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null so can not start svr ") ;
+		delete m_pNetWork ;
+		m_pNetWork = NULL ;
+		return ;
+	}
 	m_pNetWork = new CNetWorkMgr ;
 	m_pNetWork->SetupNetwork(2);
 	m_pNetWork->AddMessageDelegate(this);
+	m_pNetWork->ConnectToServer(pSvrConfigItem->strIPAddress,pSvrConfigItem->nPort,pSvrConfigItem->strPassword) ;
+	CLogMgr::SharedLogMgr()->SystemLog("connectting to center svr...") ;
 
-	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
-	// connected to Gate ;
-	m_stGateServer.m_bConnected = false ;
-	m_stGateServer.m_strIPAddress = m_stSvrConfigMgr.GetServerConfig(eSvrType_Gate)->strIPAddress;
-	m_stGateServer.m_nPort = m_stSvrConfigMgr.GetServerConfig(eSvrType_Gate)->nPort;
-	m_pNetWork->ConnectToServer(m_stGateServer.m_strIPAddress.c_str(),m_stGateServer.m_nPort,m_stSvrConfigMgr.GetServerConfig(eSvrType_Gate)->strPassword) ;
-
-	// connected to DB ;
-	m_stDBServer.m_bConnected = false ;
-	m_stDBServer.m_strIPAddress = m_stSvrConfigMgr.GetServerConfig(eSvrType_DB)->strIPAddress;
-	m_stDBServer.m_nPort = m_stSvrConfigMgr.GetServerConfig(eSvrType_DB)->nPort;
-	m_pNetWork->ConnectToServer(m_stDBServer.m_strIPAddress.c_str(),m_stDBServer.m_nPort,m_stSvrConfigMgr.GetServerConfig(eSvrType_DB)->strPassword) ;
-
-	// Peer Mgr 
-	m_pPeerMgr = new CLoginPeerMgr(this);
-	CLogMgr::SharedLogMgr()->SystemLog("Start Login Server,Connecting to DB and Gate ");
 }
 
 void CLoginApp::MainLoop()
@@ -71,147 +92,86 @@ void CLoginApp::MainLoop()
 		{
 			m_pNetWork->ReciveMessage() ;
 		}
-		m_pTimerMgr->Update();
 		Sleep(1);
 	}
+	
+	if ( m_pDBThread )
+	{
+		m_pDBThread->StopWork();
+	}
 }
 
-bool CLoginApp::OnMessage( RakNet::Packet* pMsg )
+bool CLoginApp::OnMessage( Packet* pMsg )
 {
-	CHECK_MSG_SIZE(stMsg,pMsg->length) ;
-	stMsg* pmsg = (stMsg*)pMsg->data ;
-	if ( pmsg->cSysIdentifer == ID_MSG_VERIFY && MSG_VERIFY_GATE == pmsg->usMsgType )
+	CHECK_MSG_SIZE(stMsg,pMsg->_len) ;
+	stMsg* pmsg = (stMsg*)pMsg->_orgdata ;
+	if ( pmsg->cSysIdentifer == ID_MSG_VERIFY )
 	{
-		m_stGateServer.m_bConnected = true ;
-		m_stGateServer.m_nServerNetID = pMsg->guid ;
-		CLogMgr::SharedLogMgr()->SystemLog("Connected to GateServer!");
+		CLogMgr::SharedLogMgr()->SystemLog("no need recieve verify msg") ;
+		return true ;
 	}
-	else if ( pmsg->cSysIdentifer == ID_MSG_VERIFY && MSG_VERIFY_DB == pmsg->usMsgType )
+
+	stMsg* pRet = (stMsg*)pMsg->_orgdata ;
+	if ( pRet->usMsgType != MSG_TRANSER_DATA )
 	{
-		m_stDBServer.m_bConnected = true ;
-		m_stDBServer.m_nServerNetID = pMsg->guid ;
-		CLogMgr::SharedLogMgr()->SystemLog("Connected to DBServer!");
+		CLogMgr::SharedLogMgr()->ErrorLog("why msg type is not transfer data , type = %d",pRet->usMsgType ) ;
+		return true;
 	}
-	else
+
+	stMsgTransferData* pData = (stMsgTransferData*)pRet ;
+	if ( m_pDBMgr )
 	{
-		if ( m_pPeerMgr )
-		{
-			m_pPeerMgr->OnMessage(pMsg) ;
-		}
+		stMsg* preal = (stMsg*)(pMsg->_orgdata + sizeof(stMsgTransferData));
+		m_pDBMgr->OnMessage(preal,(eMsgPort)pData->nSenderPort,pData->nSessionID ) ;
 	}
 	return true ;
 }
 
-bool CLoginApp::OnLostSever(RakNet::Packet* pMsg)
+bool CLoginApp::OnLostSever(Packet* pMsg)
 {
-	if ( pMsg->guid == m_stDBServer.m_nServerNetID )
-	{
-		m_stDBServer.m_bConnected = false ;
-		CLogMgr::SharedLogMgr()->ErrorLog("DBServer Lost");
-		TryConnect(false);
-	}
-	else
-	{
-		m_stGateServer.m_bConnected = false ;
-		CLogMgr::SharedLogMgr()->ErrorLog("GateServer Lost");
-		TryConnect(true);
-	}
+	m_pNetWork->DisconnectServer(pMsg->_connectID);
+	m_nCenterSvrNetworkID = INVALID_CONNECT_ID ;
+	CLogMgr::SharedLogMgr()->ErrorLog("center svr lost ") ;
 	return true ;
 }
 
-bool CLoginApp::OnConnectStateChanged( eConnectState eSate, RakNet::Packet* pMsg)
+bool CLoginApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 {
 	if ( eSate == eConnect_Accepted )
 	{
 		stMsg cMsg ;
-		cMsg.cSysIdentifer = ID_MSG_VERIFY ;
+		cMsg.cSysIdentifer = ID_MSG_PORT_CENTER ;
 		cMsg.usMsgType = MSG_VERIFY_LOGIN ;
-		m_pNetWork->SendMsg((char*)&cMsg,sizeof(stMsg),pMsg->guid) ;
+		m_pNetWork->SendMsg((char*)&cMsg,sizeof(stMsg),pMsg->_connectID) ;
+		CLogMgr::SharedLogMgr()->SystemLog("Connected to Center Svr") ;
 		return true ;
 	}
-
-	// connected failed ; try again ;
-	const char* pIP = pMsg->systemAddress.ToString(false) ;
-	if ( strcmp(pIP,m_stGateServer.m_strIPAddress.c_str()) == 0 && m_stGateServer.m_nPort == pMsg->systemAddress.GetPort() )
-	{
-		// gate connected failed ;
-		TryConnect(true);
-	}
-	else
-	{
-		// db connected failed ;
-		TryConnect(false);
-	}
+	CLogMgr::SharedLogMgr()->ErrorLog("connect Center svr failed") ;
 	return true ;
 }
 
-bool CLoginApp::SendMsg( const char* pBuffer , unsigned int nLen , bool bGate )
+bool CLoginApp::SendMsg( const char* pBuffer , unsigned int nBufferLen, uint32_t nSessioniD  )
 {
-	if ( m_pNetWork == NULL )
-		return false ;
-	if ( bGate )
+	if ( m_pNetWork == NULL || m_nCenterSvrNetworkID == INVALID_CONNECT_ID  )
 	{
-		return SendMsgToGate(pBuffer,nLen) ;
-	}
-	else
-	{
-		return SendMsgToDB(pBuffer,nLen) ;
-	}
-}
-
-void CLoginApp::ReconnectDB(float fTimeElaps,unsigned int nTimerID )
-{
-	m_pReconnectDB->Stop();
-	CLogMgr::SharedLogMgr()->SystemLog("Try Connect to DBServer...");
-	m_pNetWork->ConnectToServer(m_stDBServer.m_strIPAddress.c_str(),m_stDBServer.m_nPort,m_stSvrConfigMgr.GetServerConfig(eSvrType_DB)->strPassword) ;
-}
-
-void CLoginApp::ReconnectGate(float fTimeElaps,unsigned int nTimerID )
-{
-	m_pReconnctGate->Stop() ;
-	CLogMgr::SharedLogMgr()->SystemLog("Try Connect to GateServer...");
-	m_pNetWork->ConnectToServer(m_stGateServer.m_strIPAddress.c_str(),m_stGateServer.m_nPort,m_stSvrConfigMgr.GetServerConfig(eSvrType_Gate)->strPassword) ;
-}
-
-bool CLoginApp::SendMsgToGate(const char* pBuffer , unsigned int nLen)
-{
-	if ( m_stGateServer.m_bConnected == false )
-	{
+		CLogMgr::SharedLogMgr()->ErrorLog("center svr is not connected can not send msg") ;
 		return false ;
 	}
-	m_pNetWork->SendMsg(pBuffer,nLen,m_stGateServer.m_nServerNetID) ;
+
+	stMsgTransferData msgTransData ;
+	msgTransData.nSenderPort = ID_MSG_PORT_LOGIN ;
+	msgTransData.bBroadCast = false ;
+	msgTransData.nSessionID = nSessioniD ;
+	int nLne = sizeof(msgTransData) ;
+	if ( nLne + nBufferLen >= MAX_MSG_BUFFER_LEN )
+	{
+		stMsg* pmsg = (stMsg*)pBuffer ;
+		CLogMgr::SharedLogMgr()->ErrorLog("msg send to session id = %d , is too big , cannot send , msg id = %d ",nSessioniD,pmsg->usMsgType) ;
+		return false;
+	}
+	memcpy(m_pSendBuffer,&msgTransData,nLne);
+	memcpy(m_pSendBuffer + nLne , pBuffer,nBufferLen );
+	nLne += nBufferLen ;
+	m_pNetWork->SendMsg(m_pSendBuffer,nLne,m_nCenterSvrNetworkID ) ;
 	return true ;
-}
-
-bool CLoginApp::SendMsgToDB(const char* pBuffer , unsigned int nLen)
-{
-	if ( m_stDBServer.m_bConnected == false )
-	{
-		return false ;
-	}
-	m_pNetWork->SendMsg(pBuffer,nLen,m_stDBServer.m_nServerNetID) ;
-	return true ;
-}
-
-void CLoginApp::TryConnect(bool bGate )
-{
-	if ( !bGate )
-	{
-		if ( m_pReconnectDB == NULL )
-		{
-			m_pReconnectDB = m_pTimerMgr->AddTimer(this,(CTimerDelegate::lpTimerSelector)&CLoginApp::ReconnectDB);
-			m_pReconnectDB->SetDelayTime(5);
-		}
-		m_pReconnectDB->Reset();
-		m_pReconnectDB->Start() ;
-		return ;
-	}
-
-	if ( m_pReconnctGate == NULL )
-	{
-		m_pReconnctGate = m_pTimerMgr->AddTimer(this,(CTimerDelegate::lpTimerSelector)&CLoginApp::ReconnectGate);
-		m_pReconnctGate->SetDelayTime(5);
-	}
-	m_pReconnctGate->Reset();
-	m_pReconnctGate->Start() ;
 }

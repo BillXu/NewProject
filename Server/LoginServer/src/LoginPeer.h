@@ -1,12 +1,12 @@
 #pragma once
-#include "RakNetTypes.h"
 class CLoginPeerMgr ;
+struct Packet;
 class CLoginPeer
 {
 public:
 	CLoginPeer(CLoginPeerMgr* pPeerMgr );
 	~CLoginPeer();
-	void OnMessage(RakNet::Packet* packet );
+	void OnMessage(Packet* packet );
 	void Reset(unsigned int nSessionID );
 	void SendMsgToDB(const char* pBuffer , unsigned int nLen );
 	void SendMsgToGate(const char* pBuffer , unsigned int nLen );

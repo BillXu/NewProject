@@ -12,7 +12,7 @@ public:
 public:
 	CLoginPeerMgr(CLoginApp* app );
 	~CLoginPeerMgr();
-	void OnMessage( RakNet::Packet* pMsg ) ;
+	void OnMessage( Packet* pMsg ) ;
 	CLoginPeer* GetPeerBySessionID(unsigned int nSessionID );
 	CLoginPeer* GetReserverPeer();
 	void OnGateMessage(stMsg* pmsg ,unsigned int nSessionID );

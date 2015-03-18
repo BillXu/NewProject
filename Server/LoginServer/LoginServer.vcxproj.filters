@@ -19,6 +19,9 @@
     <Filter Include="SvrCommon">
       <UniqueIdentifier>{1376aae5-b448-4b79-bf06-b924384233ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DBBase">
+      <UniqueIdentifier>{8cc40602-0ac5-4e75-88f1-e4c71d4d3261}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\Utility.h">
@@ -37,9 +40,6 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\MessageIdentifer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\NetWorkManager.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="src\main.h">
@@ -63,8 +63,32 @@
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\DBServer\src\DataBaseThread.h">
+      <Filter>DBBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DBServer\src\DBRequest.h">
+      <Filter>DBBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DBServer\src\DBRequestFlags.h">
+      <Filter>DBBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DBServer\src\MySqlData.h">
+      <Filter>DBBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\mutex.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ThreadMod.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\Sem.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
     <ClInclude Include="..\ServerCommon\Timer.h">
       <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LoginDBManager.h">
+      <Filter>head</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -75,9 +99,6 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Common\LogManager.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\NetWorkManager.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">
@@ -98,8 +119,29 @@
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
+    <ClCompile Include="..\DBServer\src\DataBaseThread.cpp">
+      <Filter>DBBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DBServer\src\DBRequest.cpp">
+      <Filter>DBBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DBServer\src\MySqlData.cpp">
+      <Filter>DBBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\mutex.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ThreadMod.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\Sem.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
     <ClCompile Include="..\ServerCommon\Timer.cpp">
       <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LoginDBManager.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

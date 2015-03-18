@@ -11,7 +11,7 @@ CLoginPeer::~CLoginPeer()
 	m_pPeerMgr = NULL ;
 }
 
-void CLoginPeer::OnMessage(RakNet::Packet* packet)
+void CLoginPeer::OnMessage(Packet* packet)
 {
 
 }

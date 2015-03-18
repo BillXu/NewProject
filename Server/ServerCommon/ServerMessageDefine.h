@@ -73,20 +73,6 @@ struct stMsgDB2GM
 //	
 //};
 
-struct stMsgLoginRegister
-	:public stMsgRegister
-{
-	stMsgLoginRegister(){ cSysIdentifer = ID_MSG_LOGIN2DB; usMsgType = MSG_PLAYER_REGISTER ; }
-	unsigned int nSessionID ;
-};
-
-struct stMsgLoginRegisterRet
-	:public stMsgRegisterRet 
-{
-	stMsgLoginRegisterRet(){ cSysIdentifer = ID_MSG_DB2LOGIN ; usMsgType = MSG_PLAYER_REGISTER ; }
-	unsigned int nSessionID ;
-};
-
 struct stMsgLoginBindAccount
 	:public stMsgRebindAccount
 {
@@ -98,22 +84,6 @@ struct stMsgLoginBindAccountRet
 	:public stMsgRebindAccountRet
 {
 	stMsgLoginBindAccountRet(){ cSysIdentifer = ID_MSG_DB2LOGIN ; usMsgType = MSG_PLAYER_BIND_ACCOUNT ; }
-	unsigned int nSessionID ;
-};
-
-struct stMsgLoginAccountCheck
-	:public stMsgCheckAccount
-{
-public:
-	stMsgLoginAccountCheck(){ cSysIdentifer = ID_MSG_LOGIN2DB ; usMsgType = MSG_PLAYER_CHECK_ACCOUNT ; }
-	unsigned int nSessionID ;
-};
-
-struct stMsgLoginAccountCheckRet
-	:public stMsgCheckAccountRet
-{
-public:
-	stMsgLoginAccountCheckRet(){ cSysIdentifer = ID_MSG_DB2LOGIN ; usMsgType = MSG_PLAYER_CHECK_ACCOUNT ; }
 	unsigned int nSessionID ;
 };
 
