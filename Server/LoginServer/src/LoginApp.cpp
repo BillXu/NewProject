@@ -3,6 +3,7 @@
 #include "ServerMessageDefine.h"
 #include "LoginDBManager.h"
 #include "DataBaseThread.h"
+#include "DBRequest.h"
 CLoginApp::CLoginApp()
 {
 	m_pNetWork = NULL ;
@@ -41,6 +42,9 @@ void CLoginApp::Init()
 	CLogMgr::SharedLogMgr()->SetOutputFile("LoginSvr");
 	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
 	
+	time_t tSeed = time(NULL);
+	srand(tSeed);
+
 
 	// start Db thread 
 	stServerConfig* pSvrConfigItem = m_stSvrConfigMgr.GetServerConfig(eSvrType_DataBase );
@@ -92,6 +96,19 @@ void CLoginApp::MainLoop()
 		{
 			m_pNetWork->ReciveMessage() ;
 		}
+
+		// process DB Result ;
+		CDBRequestQueue::VEC_DBRESULT vResultOut ;
+		CDBRequestQueue::SharedDBRequestQueue()->GetAllResult(vResultOut) ;
+		CDBRequestQueue::VEC_DBRESULT::iterator iter = vResultOut.begin() ;
+		for ( ; iter != vResultOut.end(); ++iter )
+		{
+			stDBResult* pRet = *iter ;
+			m_pDBMgr->OnDBResult(pRet) ;
+			delete pRet ;
+		}
+		vResultOut.clear();
+
 		Sleep(1);
 	}
 	
@@ -144,6 +161,7 @@ bool CLoginApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 		cMsg.usMsgType = MSG_VERIFY_LOGIN ;
 		m_pNetWork->SendMsg((char*)&cMsg,sizeof(stMsg),pMsg->_connectID) ;
 		CLogMgr::SharedLogMgr()->SystemLog("Connected to Center Svr") ;
+		m_nCenterSvrNetworkID = pMsg->_connectID;
 		return true ;
 	}
 	CLogMgr::SharedLogMgr()->ErrorLog("connect Center svr failed") ;

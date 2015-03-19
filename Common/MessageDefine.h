@@ -67,20 +67,19 @@ struct stMsgRegisterRet
 	unsigned int nUserID ;
 };
 
-struct stMsgCheckAccount
+struct stMsgLogin
 	:public stMsg 
 {
-	stMsgCheckAccount(){ cSysIdentifer = ID_MSG_PORT_LOGIN ; usMsgType = MSG_PLAYER_CHECK_ACCOUNT ; }
+	stMsgLogin(){ cSysIdentifer = ID_MSG_PORT_LOGIN ; usMsgType = MSG_PLAYER_LOGIN ; }
 	char cAccount[MAX_LEN_ACCOUNT] ;
 	char cPassword[MAX_LEN_PASSWORD] ;
 };
 
-struct stMsgCheckAccountRet
+struct stMsgLoginRet
 	:public stMsg 
 {
-	stMsgCheckAccountRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_CHECK_ACCOUNT ; }
+	stMsgLoginRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_LOGIN ; }
 	unsigned char nRet ; // 0 ; success ; 1 account error , 2 password error, 3 state error  ;
-	unsigned int nUserID ;
 };
 
 ///--------------------ablove is new , below is old------

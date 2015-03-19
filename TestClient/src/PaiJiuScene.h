@@ -1,7 +1,7 @@
 #pragma once 
 #include "IScene.h"
 #include "CommonDefine.h"
-class CClient;
+class CClientRobot;
 class CPaiJiuScene
 	:public IScene
 {
@@ -10,12 +10,13 @@ public:
 	{
 		eTargetAction_None,
 		eTargetAction_Bet,
+		eTargetAction_ApplyBanker,
 		eTargetAction_Max,
 	};
 public:
-	CPaiJiuScene(CClient* pClient);
+	CPaiJiuScene(CClientRobot* pClient);
 	virtual void OnEnterScene();
-	virtual bool OnMessage( RakNet::Packet* pPacket );
+	virtual bool OnMessage( Packet* pPacket );
 	virtual void OnUpdate(float fDeltaTime );
 protected:
 	void TryToBeBanker();
@@ -31,4 +32,5 @@ protected:
 	eTargetAction m_eTargetAction ;
 	float m_fTick ;
 	float m_fTargetTick[eTargetAction_Max] ;
+	bool m_bWillApplyBanker;
 };

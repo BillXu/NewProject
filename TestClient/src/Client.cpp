@@ -2,14 +2,14 @@
 #include "MessageDefine.h"
 #include "CommonDefine.h"
 #include "LoginScene.h"
-CClient::CClient()
+CClientRobot::CClientRobot()
 {
 	m_pPlayerData = new CPlayerData ;
 	m_pCurentScene = NULL ;
 	m_pLastScene = NULL ;
 }
 
-CClient::~CClient()
+CClientRobot::~CClientRobot()
 {
 	delete m_pPlayerData ;
 	if ( m_pCurentScene )
@@ -19,17 +19,17 @@ CClient::~CClient()
 	}
 }
 
-void CClient::Init()
+void CClientRobot::Init()
 {
 	m_pNetWork.SetupNetwork();
 	m_pCurentScene = new CLoginScene(this);
 	m_pCurentScene->OnEnterScene();
-	//m_pNetWork.ConnectToServer("127.0.0.1",50001,"123456") ;  // inner net ;
-	m_pNetWork.ConnectToServer("118.193.52.70",50008,"123456") ;  // Out net ;
+	m_pNetWork.ConnectToServer("127.0.0.1",50001,"123456") ;  // inner net ;-
+	//m_pNetWork.ConnectToServer("203.186.75.131",50003,"123456") ;  // Out net ;
 	m_pNetWork.AddMessageDelegate(m_pPlayerData) ;
 }
 
-void CClient::Run()
+void CClientRobot::Run()
 {
 	clock_t nTick = clock();
 	while ( 1  )
@@ -52,7 +52,7 @@ void CClient::Run()
 	m_pNetWork.ShutDown();
 }
 
-void CClient::ChangeScene(IScene* pTargetScene )
+void CClientRobot::ChangeScene(IScene* pTargetScene )
 {
 	if ( m_pCurentScene )
 	{
@@ -63,7 +63,7 @@ void CClient::ChangeScene(IScene* pTargetScene )
 	m_pCurentScene = pTargetScene ;
 }
 
-bool CClient::SetRobotAI(stRobotAI* pRobotAi )
+bool CClientRobot::SetRobotAI(stRobotAI* pRobotAi )
 {
 	if ( pRobotAi == NULL )
 	{

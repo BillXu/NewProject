@@ -3,9 +3,10 @@
 #include "LogManager.h"
 #include "PaiJiuMessageDefine.h"
 #include "PaiJiuScene.h"
-#include "Client.h"
+#include "ClientRobot.h"
 #include "TaxasPokerScene.h"
-CLoginScene::CLoginScene(CClient* pNetWork ):IScene(pNetWork)
+#include "BacScene.h"
+CLoginScene::CLoginScene(CClientRobot* pNetWork ):IScene(pNetWork)
 { 
 	m_eSceneType = eScene_Login ;
 }
@@ -13,7 +14,7 @@ CLoginScene::CLoginScene(CClient* pNetWork ):IScene(pNetWork)
 void CLoginScene::OnEnterScene()
 {
 	IScene::OnEnterScene();
-	InformIdle();
+	//InformIdle();
 }
 
 void CLoginScene::OnEixtScene()
@@ -21,24 +22,33 @@ void CLoginScene::OnEixtScene()
 	IScene::OnEixtScene();
 }
 
-bool CLoginScene::OnMessage( RakNet::Packet* pPacket )
+bool CLoginScene::OnMessage( Packet* pPacket )
 {
-	stMsg* pMsg = (stMsg*)pPacket->data ;
+	stMsg* pMsg = (stMsg*)pPacket->_orgdata ;
 	IScene::OnMessage(pPacket) ;
 	switch (pMsg->usMsgType)
 	{
-	case MSG_PLAYER_CHECK_ACCOUNT:
+	case MSG_PLAYER_REGISTER:
 		{
-			stMsgCheckAccountRet* pRetMsg = (stMsgCheckAccountRet*)pMsg;
+			stMsgRegisterRet* pRet = (stMsgRegisterRet*)pMsg ;
+			if ( pRet->nRet == 0 )
+			{
+				CLogMgr::SharedLogMgr()->SystemLog("register sucess accout = %s , password = %s,uid = %d",pRet->cAccount,pRet->cPassword ,pRet->nUserID ) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("register error code = %d",pRet->nRet );
+			}
+		}
+		break;
+	case MSG_PLAYER_LOGIN:
+		{
+			stMsgLoginRet* pRetMsg = (stMsgLoginRet*)pMsg;
 			 // 0 ; success ; 1 account error , 2 password error ;
 			const char* pString = NULL ;
 			if ( pRetMsg->nRet == 0 )
 			{
 				pString = "check Account Success !" ;
-				m_pClient->GetPlayerData()->nUserUID = pRetMsg->nUserID ;
-				stMsgPlayerEnterGame msgEnterGame ;
-				msgEnterGame.nUserUID = pRetMsg->nUserID ;
-				SendMsg(&msgEnterGame, sizeof(msgEnterGame)) ;
 			}
 			else if ( 1 == pRetMsg->nRet )
 			{
@@ -53,7 +63,7 @@ bool CLoginScene::OnMessage( RakNet::Packet* pPacket )
 				pString = "Check account Error : unknown Error !" ;
 			}
 
-			CLogMgr::SharedLogMgr()->SystemLog("Account:%s Password = %s, %s", m_pClient->GetPlayerData()->GetAccount(),m_pClient->GetPlayerData()->GetPassword(), pString ) ;
+			CLogMgr::SharedLogMgr()->SystemLog("%s ret = %d",pString,pRetMsg->nRet ) ;
 			return true ;
 		}
 		break;
@@ -66,6 +76,7 @@ bool CLoginScene::OnMessage( RakNet::Packet* pPacket )
 			msgEnterRoom.nRoomType = pOrder->nRoomType;
 			msgEnterRoom.nRoomLevel = pOrder->cLevel;
 			SendMsg(&msgEnterRoom, sizeof(msgEnterRoom) ) ;
+			printf("order robot to enter type = %d , room level = %d , room id = %d \n",pOrder->nRoomType,pOrder->cLevel,pOrder->nRoomID);
 		}
 		break;
 	case MSG_PLAYER_BASE_DATA:
@@ -197,7 +208,7 @@ bool CLoginScene::OnMessage( RakNet::Packet* pPacket )
 			//IScene*pScene = new CPaiJiuScene(m_pClient) ;
 			//m_pClient->ChangeScene(pScene) ;
 			//pScene->OnMessage(pPacket) ;
-			//return true ;
+			return true ;
 		}
 		break;
 	case MSG_TP_ROOM_CUR_INFO:
@@ -206,6 +217,14 @@ bool CLoginScene::OnMessage( RakNet::Packet* pPacket )
 			IScene*pScene = new CTaxasPokerScene(m_pClient) ;
 			m_pClient->ChangeScene(pScene) ;
 			pScene->OnMessage(pPacket) ;
+			return true ;
+		}
+		break;
+	case MSG_BC_ROOM_INFO:
+		{
+			//IScene*pScene = new CBacScene(m_pClient) ;
+			//m_pClient->ChangeScene(pScene) ;
+			//pScene->OnMessage(pPacket) ;
 			return true ;
 		}
 		break;
@@ -218,7 +237,9 @@ bool CLoginScene::OnMessage( RakNet::Packet* pPacket )
 		{
 			stMsgRobotAddMoneyRet* pRet = (stMsgRobotAddMoneyRet*)pMsg ;
 			m_pClient->GetPlayerData()->nMyCoin = pRet->nFinalCoin ;
-			printf("received add coin !") ;
+			printf("received add coin !\n") ;
+			stMsgRobotInformIdle msg ;
+			SendMsg((char*)&msg,sizeof(msg)) ;
 			return true;
 		}
 		break;
@@ -233,69 +254,46 @@ bool CLoginScene::OnMessage( RakNet::Packet* pPacket )
 
 void CLoginScene::Verifyed()
 {
-	stMsgCheckAccount msgCheck ;
-	memset(msgCheck.cAccount,0,sizeof(msgCheck.cAccount));
-	memset(msgCheck.cPassword,0,sizeof(msgCheck.cPassword));
-	sprintf_s(msgCheck.cAccount,"%s",m_pClient->GetPlayerData()->GetAccount());
-	sprintf_s(msgCheck.cPassword,"%s",m_pClient->GetPlayerData()->GetPassword());
-
-	SendMsg((char*)&msgCheck,sizeof(msgCheck)) ;
+	Register("hello name","23s","6",1);
+	Login("23s","6");
 }
 
 void CLoginScene::Login( const char* pAccound , const char* pPassword )
 {
-	//stMsgLogin msg ;
-	//msg.pAccount= NULL ;
-	//msg.pAccount = NULL ;
-	//msg.nAccountLen = strlen(pAccound);
-	//msg.nPaswordLen = strlen(pPassword);
-	//char* pbuffer = new char[msg.nPaswordLen + msg.nAccountLen + sizeof(msg)];
-	//memcpy(pbuffer,(void*)&msg,sizeof(msg));
-	//memcpy(pbuffer + sizeof(msg),pAccound,msg.nAccountLen) ;
-	//memcpy(pbuffer + msg.nAccountLen + sizeof(msg),pPassword, msg.nPaswordLen) ;
-	//m_pNetWork->SendMsg(pbuffer,msg.nAccountLen + sizeof(msg) + msg.nPaswordLen) ;
-	//delete [] pbuffer ;
+	stMsgLogin msg ;
+	memset(msg.cAccount,0,sizeof(msg.cAccount));
+	memset(msg.cPassword,0,sizeof(msg.cPassword));
+	sprintf_s(msg.cAccount,"%s",pAccound);
+	sprintf_s(msg.cPassword,"%s",pPassword) ;
+	SendMsg((char*)&msg,sizeof(msg)) ;
 }
 
 void CLoginScene::InformIdle()
 {
-	if ( m_pClient->GetPlayerData()->GetCoin(false) < 10000 )
+	if ( m_pClient->GetPlayerData()->GetCoin(false) < 200000 )
 	{
 		stMsgRobotAddMoney msg ;
-		msg.nWantCoin = 250000 ;
+		msg.nWantCoin = 5500000 ;
 		SendMsg((char*)&msg,sizeof(msg)) ;
 	}
-	stMsgRobotInformIdle msg ;
-	SendMsg((char*)&msg,sizeof(msg)) ;
+	else
+	{
+		stMsgRobotInformIdle msg ;
+		SendMsg((char*)&msg,sizeof(msg)) ;
+	}
 }
 
-//void CLoginScene::Register( const char* pName ,const char* pAccound , const char* pPassword , int nType )
-//{
-//	stMsgRegister msg ;
-//	msg.nAccountType = nType ;
-//	msg.nAccountLen = msg.nPaswordLen = msg.nCharacterNameLen = 0 ;
-//	msg.nCharacterNameLen = strlen(pName) ;
-//	if ( 0 != nType )
-//	{
-//		msg.nAccountLen = strlen(pAccound);
-//		msg.nPaswordLen = strlen(pPassword) ;
-//	}
-//
-//	unsigned short nLen = msg.nAccountLen + msg.nPaswordLen + msg.nCharacterNameLen + sizeof(msg
-//		);
-//	char* pbuffer = new char[nLen] ;
-//	unsigned nLenOffset = 0 ;
-//	memcpy(pbuffer + nLenOffset,&msg,sizeof(msg));
-//	nLenOffset = sizeof(msg);
-//	if ( 0 != msg.nAccountLen )
-//	{
-//		memcpy(pbuffer + nLenOffset, pAccound, msg.nAccountLen );
-//		nLenOffset += msg.nAccountLen ;
-//		memcpy(pbuffer + nLenOffset, pPassword, msg.nPaswordLen );
-//		nLenOffset += msg.nPaswordLen ;
-//	}
-//	memcpy(pbuffer + nLenOffset, pName, msg.nCharacterNameLen );
-//	nLenOffset += msg.nCharacterNameLen ;
-//	m_pNetWork->SendMsg(pbuffer,nLen) ;
-//	delete [] pbuffer ;
-//}
+void CLoginScene::Register( const char* pName ,const char* pAccound , const char* pPassword , int nType )
+{
+	stMsgRegister msg ;
+	msg.cRegisterType = nType ;
+	msg.nChannel = 0 ;
+	memset(msg.cAccount,0,sizeof(msg.cAccount)) ;
+	memset(msg.cPassword,0,sizeof(msg.cPassword)) ;
+	if ( nType != 0 )
+	{
+		sprintf_s(msg.cAccount,"%s",pAccound) ;
+		sprintf_s(msg.cPassword,"%s",pPassword) ;
+	}
+	m_pClient->GetNetWork()->SendMsg((char*)&msg,sizeof(msg)) ;
+}

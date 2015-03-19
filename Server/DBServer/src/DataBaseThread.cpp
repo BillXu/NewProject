@@ -128,13 +128,24 @@ bool CDataBaseThread::ProcessRequest()
 			case eRequestType_Select:
 				{
 					msqlResult = mysql_store_result(m_pMySql);
+
 					if ( msqlResult == NULL )
 					{
-						printf("mysql_store_result Error Info , Operate UID = %d : %s \n", pRequest->nRequestUID, mysql_error(m_pMySql));
+						mysql_free_result(msqlResult);
+						continue;
+					}
+
+					if ( pResult->nAffectRow == 1 )
+					{
+						if ( msqlResult != NULL )
+						{
+							printf("mysql_store_result Error Info , Operate UID = %d : %s why have more than one result type  result \n", pRequest->nRequestUID, mysql_error(m_pMySql));
+						}
 						//pResult->nAffectRow = 0 ;
 						mysql_free_result(msqlResult);
 						continue;
 					}
+
 					pResult->nAffectRow += (unsigned int)mysql_num_rows(msqlResult);
 					// process row ;
 					int nNumFiled = mysql_num_fields(msqlResult);

@@ -1,20 +1,24 @@
 #include "PlayerData.h"
 #include "MessageDefine.h"
 #include "LogManager.h"
-bool CPlayerData::OnMessage( RakNet::Packet* pMsg )
+bool CPlayerData::OnMessage( Packet* pMsg )
 {
-	stMsg* pmsg = (stMsg*)pMsg->data ;
+	stMsg* pmsg = (stMsg*)pMsg->_orgdata ;
 	if ( pmsg->usMsgType == MSG_PLAYER_BASE_DATA )
 	{
-		stMsgPlayerBaseData* pMsgBaseData = (stMsgPlayerBaseData*)pmsg ;
-		nMyCoin = pMsgBaseData->stBaseData.nCoin ;
-		nDiamoned = pMsgBaseData->stBaseData.nDiamoned ;
-		nSessionID = pMsgBaseData->nSessionID ;
-		strName = pMsgBaseData->stBaseData.cName ;
-		printf("Name = %s Received base data, coin = %I64d \n", strName.c_str(),nMyCoin ) ;
-		srand(nSessionID) ;
-		nTakeInCoin = 0 ;
-		nTakeInDiamoned = 0 ;
+		//stMsgPlayerBaseData* pMsgBaseData = (stMsgPlayerBaseData*)pmsg ;
+		//nMyCoin = pMsgBaseData->nCoin ;
+		//nDiamoned = pMsgBaseData->nDiamoned;
+		//nSessionID = pMsgBaseData->nSessionID ;
+		//char* pBuffer = new char[pMsgBaseData->nNameLen + 1 ] ;
+		//memset(pBuffer,0,pMsgBaseData->nNameLen + 1 ) ;
+		//memcpy(pBuffer,((char*)pMsgBaseData) + sizeof(stMsgPlayerBaseData),pMsgBaseData->nNameLen );
+		//strName = pBuffer ;
+		//delete [] pBuffer ;
+		//printf("Name = %s Received base data, coin = %I64d \n", strName.c_str(),nMyCoin ) ;
+		//srand(nSessionID) ;
+		//nTakeInCoin = 0 ;
+		//nTakeInDiamoned = 0 ;
 	}
 	return false ;
 }
@@ -33,7 +37,7 @@ void CPlayerData::OnWinCoin( int64_t nCoinOffset, bool bDiamoned  )
 
 int64_t CPlayerData::GetCoin(bool bDiamond )
 { 
-	return ( bDiamond ?nTakeInDiamoned: nTakeInCoin) ;
+	return ( bDiamond ?nTakeInDiamoned: nMyCoin) ;
 }
 void CPlayerData::TakeIn(uint64_t nCoin , bool bDimoned)
 {

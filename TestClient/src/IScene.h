@@ -1,6 +1,6 @@
 #pragma once
 #include "NetWorkManager.h"
-class CClient ;
+class CClientRobot ;
 enum eSceneType
 {
 	eScene_None,
@@ -17,22 +17,22 @@ class IScene
 	:public CNetMessageDelegate
 {
 public:
-	IScene( CClient* pClient ):m_eSceneType(eScene_None),m_pClient(pClient),m_bServerConnected(false),m_bRunning(false){}
+	IScene( CClientRobot* pClient ):m_eSceneType(eScene_None),m_pClient(pClient),m_bServerConnected(false),m_bRunning(false){}
 	virtual ~IScene(){}
 	virtual void OnEnterScene();
 	virtual void OnEixtScene();
-	virtual bool OnMessage( RakNet::Packet* pPacket ) ;
-	virtual bool OnLostSever(RakNet::Packet* pPacket );
+	virtual bool OnMessage( Packet* pPacket ) ;
+	virtual bool OnLostSever(Packet* pPacket );
 	virtual void OnUpdate(float fDeltaTime ){};
 	eSceneType GetSceneType(){return m_eSceneType ; }
-	virtual bool OnConnectStateChanged( eConnectState eSate, RakNet::Packet* pMsg);
+	virtual bool OnConnectStateChanged( eConnectState eSate, Packet* pMsg );
 	bool IsRunning(){ return m_bRunning ;}
 	void SendMsg(char* pBuffer , unsigned short nLen ) ;
 	void SendMsg(stMsg* pmsg , unsigned short nLen ){ SendMsg((char*)pmsg,nLen) ;}
 	virtual void Verifyed(){};
 protected:
 	eSceneType m_eSceneType ;
-	CClient* m_pClient ;
+	CClientRobot* m_pClient ;
 	bool m_bServerConnected ;
 	bool m_bRunning ;
 };

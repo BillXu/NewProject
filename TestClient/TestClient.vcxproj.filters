@@ -36,9 +36,6 @@
     <ClCompile Include="..\Common\LogManager.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\NetWorkManager.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Utility.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -55,9 +52,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\PlayerData.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PaiJiuScene.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\IConfigFile.cpp">
@@ -119,9 +113,6 @@
     <ClInclude Include="..\Common\MessageIdentifer.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\NetWorkManager.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Utility.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -138,9 +129,6 @@
       <Filter>head</Filter>
     </ClInclude>
     <ClInclude Include="src\PlayerData.h">
-      <Filter>head</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PaiJiuScene.h">
       <Filter>head</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\IConfigFile.h">

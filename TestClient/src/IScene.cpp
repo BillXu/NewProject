@@ -1,6 +1,7 @@
 #include "IScene.h"
 #include "MessageDefine.h"
-#include "Client.h"
+#include "ClientRobot.h"
+#include "LogManager.h"
 void IScene::OnEnterScene()
 {
 	if ( m_bRunning )return ;
@@ -14,9 +15,9 @@ void IScene::OnEixtScene()
 	m_pClient->GetNetWork()->RemoveMessageDelegate(this);
 }
 
-bool IScene::OnMessage( RakNet::Packet* pPacket )
+bool IScene::OnMessage( Packet* pPacket )
 {
-	stMsg* pMsg = (stMsg*)pPacket->data ;
+	stMsg* pMsg = (stMsg*)pPacket->_orgdata ;
 	switch(pMsg->cSysIdentifer)
 	{
 	case ID_MSG_VERIFY:
@@ -29,23 +30,24 @@ bool IScene::OnMessage( RakNet::Packet* pPacket )
 	return false ;
 }
 
-bool IScene::OnLostSever(RakNet::Packet* pPacket )
+bool IScene::OnLostSever(Packet* pPacket )
 {
 	m_bServerConnected = false ;
-	//CLogMgr::SharedLogMgr()->PrintLog("Server Disconnect , trying to connected ...!");
+	CLogMgr::SharedLogMgr()->PrintLog("Server Disconnect!");
 	// reconnected to Server ;
 	return false ;
 }
 
-bool IScene::OnConnectStateChanged( eConnectState eSate, RakNet::Packet* pMsg)
+bool IScene::OnConnectStateChanged( eConnectState eSate, Packet* pMsg )
 {
 	if ( eConnect_Accepted == eSate )
 	{
 		// send client verify ;
 		stMsg msg ;
-		msg.cSysIdentifer = ID_MSG_VERIFY ;
+		msg.cSysIdentifer = ID_MSG_PORT_GATE ;
 		msg.usMsgType = MSG_VERIFY_CLIENT ;
 		m_pClient->GetNetWork()->SendMsg((char*)&msg,sizeof(msg));
+		CLogMgr::SharedLogMgr()->SystemLog("connected to svr") ;
 		Verifyed();
 	}
 	return false ;

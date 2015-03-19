@@ -1,13 +1,13 @@
 #include "TaxasPokerScene.h"
 #include "TaxasPokerMessage.h"
-#include "Client.h"
+#include "ClientRobot.h"
 #include "PlayerData.h"
 #include "RobotAIConfig.h"
 #include "CardPoker.h"
 #include "LoginScene.h"
 #include "RobotConfig.h"
 #define TIME_ACTION_DELAY 7
-CTaxasPokerScene::CTaxasPokerScene(CClient* pClient)
+CTaxasPokerScene::CTaxasPokerScene(CClientRobot* pClient)
 	:IScene(pClient)
 { 
 	m_eSceneType = eScene_TaxasPoker ;
@@ -22,12 +22,11 @@ CTaxasPokerScene::CTaxasPokerScene(CClient* pClient)
 	m_bCanDoAction = 0 ;
 	m_fTimeTicket = 0 ;
 	m_bMustWin = false ;
-	m_bDiamoned = false ;
 }
 
-bool CTaxasPokerScene::OnMessage( RakNet::Packet* pPacket )
+bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 {
-	stMsg* pMsg = (stMsg*)pPacket->data ;
+	stMsg* pMsg = (stMsg*)pPacket->_orgdata ;
 	switch ( pMsg->usMsgType )
 	{
 	case MSG_TP_ROOM_CUR_INFO:
@@ -37,9 +36,8 @@ bool CTaxasPokerScene::OnMessage( RakNet::Packet* pPacket )
 			m_nBigBlindCoin = pRoomInfo->nBigBlindBetCoin ;
 			m_nMinTakeIn = pRoomInfo->nMinTakeIn ;
 			m_nMaxTakeIn = pRoomInfo->nMaxTakeIn ;
-			//m_bDiamoned = pRoomInfo->bIsDiamonedRoom ;
+			 
 			char* pBuffer = (char*)pMsg ;
-			pBuffer += sizeof(stVicePool)* pRoomInfo->nViceBetPoolCnt ;
 			pBuffer += sizeof(stMsgTaxasPokerRoomInfo);
 			stTPRoomPeerBrifInfo* pInfo = (stTPRoomPeerBrifInfo*)pBuffer ;
 			while ( pRoomInfo->nCurPlayerCount-- )
@@ -77,10 +75,6 @@ bool CTaxasPokerScene::OnMessage( RakNet::Packet* pPacket )
 					memcpy(m_myPrivateCard,pPeerCard->vCardNum,sizeof(pPeerCard->vCardNum));
 					m_pMyPeerCard.AddCardByCompsiteNum(pPeerCard->vCardNum[0]);
 					m_pMyPeerCard.AddCardByCompsiteNum(pPeerCard->vCardNum[1]);
-					for ( int i = 0 ; i < 5 ; ++i )
-					{
-						m_pMyPeerCard.AddCardByCompsiteNum(pDis->vPublicCard[i]);
-					}
 					break;
 				}
 				++pPeerCard ;
@@ -104,14 +98,14 @@ bool CTaxasPokerScene::OnMessage( RakNet::Packet* pPacket )
 		break;
 	case MSG_TP_PUBLIC_DISTRIBUTE:
 		{
-			//stMsgTaxasPokerDistribute* pDisr = (stMsgTaxasPokerDistribute*)pMsg ;
-			//unsigned char* pBuffer = (unsigned char*)pMsg ;
-			//pBuffer += sizeof(stMsgTaxasPokerDistribute);
-			//while ( pDisr->nCardCnt-- )
-			//{
-			//	m_pMyPeerCard.AddCardByCompsiteNum(*pBuffer);
-			//	++pBuffer ;
-			//}
+			stMsgTaxasPokerDistribute* pDisr = (stMsgTaxasPokerDistribute*)pMsg ;
+			unsigned char* pBuffer = (unsigned char*)pMsg ;
+			pBuffer += sizeof(stMsgTaxasPokerDistribute);
+// 			while ( pDisr->nCardCnt-- )
+// 			{
+// 				m_pMyPeerCard.AddCardByCompsiteNum(*pBuffer);
+// 				++pBuffer ;
+// 			}
 		}
 		break;
 	case MSG_TP_PEER_ACTION_RET:
@@ -230,25 +224,18 @@ bool CTaxasPokerScene::OnMessage( RakNet::Packet* pPacket )
 		break;
 	case MSG_TP_GAME_RESULT:
 		{
-			stMsgTaxasPokerGameRessult* pAct = (stMsgTaxasPokerGameRessult*)pMsg;
-			unsigned char* pBuffer = (unsigned char*)pMsg ;
-			pBuffer += sizeof(stMsgTaxasPokerGameRessult);
-			while ( pAct->nResultPoolCount-- )
-			{
-				stPoolResultInfo* pInfo = (stPoolResultInfo*)pBuffer ;
-				unsigned char* pIdx = (unsigned char*)((char*)pInfo + sizeof(stPoolResultInfo));
-				while ( pInfo->nWinnerCnt-- )
-				{
-					if ( *pIdx == m_nMyIdx )
-					{
-						m_pClient->GetPlayerData()->OnWinCoin(pInfo->nPerPeerWinCoin,m_bDiamoned);
-					}
-					pIdx++ ;
-					pIdx+= sizeof(unsigned int);
-				}
-				pBuffer = pIdx ;
-			}
-			GameEnd();
+			//stMsgTaxasPokerGameRessult* pAct = (stMsgTaxasPokerGameRessult*)pMsg;
+			//unsigned char* pBuffer = (unsigned char*)pMsg ;
+			//pBuffer += sizeof(stMsgTaxasPokerGameRessult);
+			//while ( pAct->nWinnerCnt-- )
+			//{
+			//	if ( *pBuffer == m_nMyIdx )
+			//	{
+			//		m_pClient->GetPlayerData()->OnWinCoin(pAct->nWinCoins,m_bDiamoned);
+			//		break;
+			//	}
+			//	++pBuffer ;
+			//}
 		}
 		break;
 	case MSG_TP_GAME_RESULT_FINAL:
@@ -273,7 +260,7 @@ bool CTaxasPokerScene::OnMessage( RakNet::Packet* pPacket )
 			//	}
 			//	++pPeer ;
 			//}
-			GameEnd();
+			//GameEnd();
 		}
 		break;
 	case MSG_ROBOT_APPLY_TO_LEAVE:

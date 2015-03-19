@@ -1,12 +1,13 @@
 #pragma once
 #include "IScene.h"
 #include "TaxasPokerPeerCard.h"
+#include "CommonDefine.h"
 class CTaxasPokerScene
 	:public IScene
 {
 public:
-	CTaxasPokerScene(CClient* pClient);
-	virtual bool OnMessage( RakNet::Packet* pPacket ) ;
+	CTaxasPokerScene(CClientRobot* pClient);
+	virtual bool OnMessage( Packet* pPacket ) ;
 	virtual void OnUpdate(float fDeltaTime ) ;
 	void RoundEnd();
 	void GameEnd();

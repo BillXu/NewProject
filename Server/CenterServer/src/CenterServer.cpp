@@ -231,7 +231,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				{
 					if ( m_vTargetServers[svr] == INVALID_CONNECT_ID )
 					{
-						CLogMgr::SharedLogMgr()->ErrorLog("sever %s is disconnected",GetServerDescByType(svr)) ;
+						CLogMgr::SharedLogMgr()->ErrorLog("%s is not connecting,so can not transfer msg to it  ",GetServerDescByType(svr)) ;
 					}
 					else
 					{
@@ -320,7 +320,7 @@ void  CCenterServerApp::OnPeerDisconnected( CONNECT_ID nPeerDisconnected, Connec
 	{
 		if ( m_vTargetServers[nIdx] == nPeerDisconnected )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("Server type = %s disconnected ", GetServerDescByType((eServerType)nIdx) ) ;
+			CLogMgr::SharedLogMgr()->ErrorLog("%s disconnected ", GetServerDescByType((eServerType)nIdx) ) ;
 			m_vTargetServers[nIdx] = INVALID_CONNECT_ID ;
 			return ;
 		}

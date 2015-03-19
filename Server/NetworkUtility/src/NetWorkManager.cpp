@@ -117,6 +117,11 @@ void CNetWorkMgr::ReciveMessage()
 		}
 		else if ( _PACKET_TYPE_DISCONNECT == packet->_packetType )
 		{
+			if ( packet->_connectID == m_nCurrentServer )
+			{
+				m_nCurrentServer = INVALID_CONNECT_ID ;
+			}
+
 			EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnLostServer),packet) ;
 		}
 		else if ( _PACKET_TYPE_MSG == packet->_packetType )
@@ -137,13 +142,12 @@ bool CNetWorkMgr::SendMsg(const char *pbuffer, int iSize)
 {
     if ( m_pNetPeer == NULL )
         return false ;
-	m_pNetPeer->SendMsg((unsigned char*)pbuffer, iSize, m_nCurrentServer, false) ;
-    return true ;
+	return m_pNetPeer->SendMsg((unsigned char*)pbuffer, iSize, m_nCurrentServer, false) ;
 }
 
 bool CNetWorkMgr::SendMsg( const char* pbuffer , int iSize,CONNECT_ID& nServerNetUID )
 {
-	if ( m_pNetPeer == NULL )
+	if ( m_pNetPeer == NULL || nServerNetUID == INVALID_CONNECT_ID )
 		return false ;
 	m_pNetPeer->SendMsg((unsigned char*)pbuffer, iSize, nServerNetUID, false) ;
 	return true;

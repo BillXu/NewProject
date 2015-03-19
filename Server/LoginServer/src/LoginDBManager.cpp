@@ -29,7 +29,7 @@ CDBManager::~CDBManager()
 void CDBManager::Init(CLoginApp* pApp)
 {
 	m_pTheApp = pApp ;
-	if ( MAX_LEN_ACCOUNT < 18 )
+	if ( MAX_LEN_ACCOUNT < 20 )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("MAX_LEN_ACCOUNT must big than 18 , or guset login will crash ") ;
 	}
@@ -56,7 +56,12 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			{
 				memset(pLoginRegister->cAccount,0,sizeof(pLoginRegister->cAccount)) ;
 				memset(pLoginRegister->cPassword,0,sizeof(pLoginRegister->cPassword)) ;
-				sprintf_s(pLoginRegister->cAccount,"%d%d",time_t(NULL),rand()%1000 );
+				time_t tCur = time(NULL);
+				tm t ;
+				t = *localtime(&tCur);
+				uint16_t nRandN = rand()%10000 ;
+				uint16_t nRandN2 = rand() % 100 ;
+				sprintf_s(pLoginRegister->cAccount,"%d%d%d%d%d%d%d",nRandN2,t.tm_mon,t.tm_mday,t.tm_hour,t.tm_min,t.tm_sec,nRandN );
 				sprintf_s(pLoginRegister->cPassword,"hello");
 			}
 			
@@ -72,15 +77,16 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
 		}
 		break;
-	case MSG_PLAYER_CHECK_ACCOUNT:
+	case MSG_PLAYER_LOGIN:
 		{
-			stMsgCheckAccount* pLoginCheck = (stMsgCheckAccount*)pmsg ;
+			stMsgLogin* pLoginCheck = (stMsgLogin*)pmsg ;
 			pdata->nSessionID = nSessionID ;
 
 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
 			pRequest->cOrder = eReq_Order_High ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nRequestUID = pmsg->usMsgType ;
+			pRequest->pUserData = pdata ;
 			// format sql String ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"call CheckAccount('%s','%s')",pLoginCheck->cAccount,pLoginCheck->cPassword ) ;
 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
@@ -163,20 +169,19 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			CLogMgr::SharedLogMgr()->PrintLog("register success account = %s",pRow["strAccount"]->CStringValue() );
 		}
 		break;
-	case MSG_PLAYER_CHECK_ACCOUNT:
+	case MSG_PLAYER_LOGIN:
 		{
-			stMsgCheckAccountRet msgRet ;
+			stMsgLoginRet msgRet ;
 			if ( pResult->nAffectRow > 0 )
 			{
 				CMysqlRow& pRow = *pResult->vResultRows.front() ;
 				msgRet.nRet = pRow["nOutRet"]->IntValue() ;
-				msgRet.nUserID = pRow["nOutUID"]->IntValue() ;
-				CLogMgr::SharedLogMgr()->PrintLog("check accout = %s  ret = %d",msgRet.nRet ,pRow["strAccount"]->CStringValue() ) ;
+				//msgRet.nUserID = pRow["nOutUID"]->IntValue() ;
+				CLogMgr::SharedLogMgr()->PrintLog("check accout = %s  ret = %d",pRow["strAccount"]->CStringValue(),msgRet.nRet  ) ;
 			}
 			else
 			{
 				msgRet.nRet = 1 ;  // account error ;   
-				msgRet.nUserID = 0 ;
 				CLogMgr::SharedLogMgr()->ErrorLog("check account  why affect row = 0 ? ") ;
 			}
 			m_pTheApp->SendMsg((char*)&msgRet,sizeof(msgRet),pdata->nSessionID ) ;

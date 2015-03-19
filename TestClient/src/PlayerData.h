@@ -10,7 +10,7 @@ public:
 	CPlayerData(){}
 	~CPlayerData(){}
 	void SetLoginConfig( CRobotConfigFile::stRobotItem* pItem ){ pRobotItem = pItem ;}
-	bool OnMessage( RakNet::Packet* pMsg ) ;
+	bool OnMessage( Packet* pMsg ) ;
 	const char* GetName(){ return strName.c_str() ;}
 	const char* GetAccount(){ return pRobotItem->strAccount.c_str(); }
 	const char* GetPassword(){ return pRobotItem->strPassword.c_str();}

@@ -4,12 +4,12 @@
 #include "IScene.h"
 #include "PlayerData.h"
 struct stRobotAI ;
-class CClient
+class CClientRobot
 	:public CThreadT
 {
 public:
-	CClient();
-	~CClient();
+	CClientRobot();
+	~CClientRobot();
 	void Init();
 	virtual void __run(){ Run();delete this ;}
 	void Run();

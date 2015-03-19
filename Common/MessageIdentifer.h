@@ -65,11 +65,11 @@ enum eMsgType
 	MSG_SAVE_DB_LOG, // save log inter log db ;
 	
 	MSG_GATESERVER_INFO,
-	///------new define end---
-	MSG_SERVER_AND_CLIENT_COMMON_BEGIN = 100,  // server and client common msg , beyond specail game 
 	// login 
 	MSG_PLAYER_REGISTER,     // register an account ;
-	MSG_PLAYER_CHECK_ACCOUNT,  // check an account is valid ;
+	MSG_PLAYER_LOGIN,  // check an account is valid ;
+	///------new define end---
+	MSG_SERVER_AND_CLIENT_COMMON_BEGIN = 100,  // server and client common msg , beyond specail game 
 	MSG_PLAYER_ENTER_GAME,    // after check , enter game 
 	MSG_PLAYER_OTHER_LOGIN,  // more than one place login , prelogin need disconnect ; client recived must disconnect from server
 	//MSG_PLAYER_CONTINUE_LOGIN,  // contiune login prize ;

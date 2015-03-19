@@ -53,13 +53,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../Common;../Common/NetLib;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../Common;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;../Server/NetworkUtility/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>RakNetDLL.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtilityD.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Server/Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -71,8 +71,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../Common;../Common/NetLib;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../Common;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;../Server/NetworkUtility/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,7 +80,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>../Server/Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RakNetDLL.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtility.lib;pthreadVC2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -89,7 +89,6 @@
     <ClCompile Include="..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\Common\LogManager.cpp" />
-    <ClCompile Include="..\Common\NetWorkManager.cpp" />
     <ClCompile Include="..\Common\TaxasPokerPeerCard.cpp" />
     <ClCompile Include="..\Common\Utility.cpp" />
     <ClCompile Include="..\Server\ServerCommon\mutex.cpp" />
@@ -99,7 +98,6 @@
     <ClCompile Include="src\IScene.cpp" />
     <ClCompile Include="src\LoginScene.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\PaiJiuScene.cpp" />
     <ClCompile Include="src\PlayerData.cpp" />
     <ClCompile Include="src\RobotAIConfig.cpp" />
     <ClCompile Include="src\RobotConfig.cpp" />
@@ -118,7 +116,6 @@
     <ClInclude Include="..\Common\LogManager.h" />
     <ClInclude Include="..\Common\MessageDefine.h" />
     <ClInclude Include="..\Common\MessageIdentifer.h" />
-    <ClInclude Include="..\Common\NetWorkManager.h" />
     <ClInclude Include="..\Common\TaxasPokerMessage.h" />
     <ClInclude Include="..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\Common\Utility.h" />
@@ -129,7 +126,6 @@
     <ClInclude Include="src\IScene.h" />
     <ClInclude Include="src\LoginScene.h" />
     <ClInclude Include="src\main.h" />
-    <ClInclude Include="src\PaiJiuScene.h" />
     <ClInclude Include="src\PlayerData.h" />
     <ClInclude Include="src\RobotAIConfig.h" />
     <ClInclude Include="src\RobotConfig.h" />
