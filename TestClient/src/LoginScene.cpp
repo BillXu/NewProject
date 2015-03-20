@@ -63,8 +63,36 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 				pString = "Check account Error : unknown Error !" ;
 			}
 
-			CLogMgr::SharedLogMgr()->SystemLog("%s ret = %d",pString,pRetMsg->nRet ) ;
+			CLogMgr::SharedLogMgr()->SystemLog("%s ret = %d, account type = %d ",pString,pRetMsg->nRet,pRetMsg->nAccountType ) ;
+
+// 			stMsgModifyPassword msg ;
+// 			msg.nUserUID = 1201;
+// 			memset(msg.cNewPassword,0,sizeof(msg.cNewPassword)) ;
+// 			memset(msg.cOldPassword,0,sizeof(msg.cOldPassword)) ;
+// 			sprintf_s(msg.cNewPassword,"12") ;
+// 			sprintf_s(msg.cOldPassword,"6") ;
+// 			SendMsg(&msg,sizeof(msg)) ;
+
+			stMsgRebindAccount msg ;
+			msg.nCurUserUID = 1198 ;
+			memset(msg.cAccount,0,sizeof(msg.cAccount)) ;
+			memset(msg.cPassword,0,sizeof(msg.cPassword)) ;
+			sprintf_s(msg.cAccount,"2d3") ;
+			sprintf_s(msg.cPassword,"6") ;
+			SendMsg(&msg,sizeof(msg)) ;
 			return true ;
+		}
+		break;
+	case MSG_PLAYER_BIND_ACCOUNT:
+		{
+			stMsgRebindAccountRet* pRet = (stMsgRebindAccountRet*)pMsg ;
+			CLogMgr::SharedLogMgr()->SystemLog("bind account ret = %d",pRet->nRet ) ;
+		}
+		break;
+	case MSG_MODIFY_PASSWORD:
+		{
+			stMsgModifyPasswordRet* pRet = (stMsgModifyPasswordRet*)pMsg ;
+			CLogMgr::SharedLogMgr()->SystemLog("modify password ret = %d ",pRet->nRet);
 		}
 		break;
 	case MSG_ROBOT_ORDER_TO_ENTER_ROOM:
@@ -201,16 +229,6 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			}
 		}
 		break;
-	case MSG_PJ_ROOM_INFO:
-		{
-			//CLogMgr::SharedLogMgr()->SystemLog("%s Default error !",m_pClient->GetPlayerData()->GetName()) ;
-			//// change room scene and push this msg;
-			//IScene*pScene = new CPaiJiuScene(m_pClient) ;
-			//m_pClient->ChangeScene(pScene) ;
-			//pScene->OnMessage(pPacket) ;
-			return true ;
-		}
-		break;
 	case MSG_TP_ROOM_CUR_INFO:
 		{
 			// change room scene and push this msg;
@@ -218,19 +236,6 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			m_pClient->ChangeScene(pScene) ;
 			pScene->OnMessage(pPacket) ;
 			return true ;
-		}
-		break;
-	case MSG_BC_ROOM_INFO:
-		{
-			//IScene*pScene = new CBacScene(m_pClient) ;
-			//m_pClient->ChangeScene(pScene) ;
-			//pScene->OnMessage(pPacket) ;
-			return true ;
-		}
-		break;
-	case MSG_VERIFY_GATE:
-		{
-
 		}
 		break;
 	case MSG_ROBOT_ADD_MONEY:
@@ -255,7 +260,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 void CLoginScene::Verifyed()
 {
 	Register("hello name","23s","6",1);
-	Login("23s","6");
+	//Login("23","6");
 }
 
 void CLoginScene::Login( const char* pAccound , const char* pPassword )

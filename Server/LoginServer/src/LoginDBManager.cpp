@@ -92,39 +92,36 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
 		}
 		break;
-	//case MSG_PLAYER_BIND_ACCOUNT:
-	//	{
-	//		stMsgLoginBindAccount* pMsgRet = (stMsgLoginBindAccount*)pmsg ;
-	//		pdata->nSessionID = pMsgRet->nSessionID ;
-	//		pdata->nExtenArg1 = pMsgRet->nCurUserUID ;
-	//		pdata->pUserData = new char[sizeof(stMsgLoginBindAccount)] ;
-	//		memcpy(pdata->pUserData,pMsgRet,sizeof(stMsgLoginBindAccount));
+	case MSG_PLAYER_BIND_ACCOUNT:
+		{
+			stMsgRebindAccount* pMsgRet = (stMsgRebindAccount*)pmsg ;
+			pdata->nSessionID = nSessionID ;
+			pdata->nExtenArg1 = pMsgRet->nCurUserUID ;
 
-	//		stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-	//		pRequest->cOrder = eReq_Order_Super ;
-	//		pRequest->eType = eRequestType_Update ;
-	//		pRequest->nRequestUID = pmsg->usMsgType ;
-	//		pRequest->pUserData = pdata;
-	//		pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE account SET account = '%s', password = '%s',email = '%s',registerType = '%d' WHERE userUID = '%u'",pMsgRet->cAccount,pMsgRet->cPassword,pMsgRet->cEmail,2,pMsgRet->nCurUserUID ) ;
-	//		CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-	//	}
-	//	break;
-	//case MSG_MODIFY_PASSWORD:
-	//	{
-	//		stMsgLoginModifyPassword* pMsgRet = (stMsgLoginModifyPassword*)pmsg ;
-	//		pdata->nSessionID = pMsgRet->nSessionID ;
-	//		pdata->pUserData = new char[MAX_LEN_PASSWORD] ;
-	//		memcpy(pdata->pUserData,pMsgRet->cNewPassword,MAX_LEN_PASSWORD);
+			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+			pRequest->cOrder = eReq_Order_Super ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nRequestUID = pmsg->usMsgType ;
+			pRequest->pUserData = pdata;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"call RebindAccount(%d,'%s','%s')",pMsgRet->nCurUserUID,pMsgRet->cAccount,pMsgRet->cPassword ) ;
+			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+		}
+		break;
+	case MSG_MODIFY_PASSWORD:
+		{
+			stMsgModifyPassword* pMsgRet = (stMsgModifyPassword*)pmsg ;
+			pdata->nSessionID = nSessionID ;
+			pdata->nExtenArg1 = pMsgRet->nUserUID ;
 
-	//		stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-	//		pRequest->cOrder = eReq_Order_Super ;
-	//		pRequest->eType = eRequestType_Update ;
-	//		pRequest->nRequestUID = pmsg->usMsgType ;
-	//		pRequest->pUserData = pdata;
-	//		pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE account SET password = '%s' WHERE userUID = '%u' && password = '%s'",pMsgRet->cNewPassword,pMsgRet->nUserUID,pMsgRet->cOldPassword ) ;
-	//		CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-	//	}
-	//	break;
+			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+			pRequest->cOrder = eReq_Order_Super ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nRequestUID = pmsg->usMsgType ;
+			pRequest->pUserData = pdata;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"call ModifyPassword(%d,'%s','%s')",pMsgRet->nUserUID,pMsgRet->cOldPassword,pMsgRet->cNewPassword ) ;
+			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+		}
+		break;
 	default:
 		{
 			m_vReserverArgData.push_back(pdata) ;
@@ -165,6 +162,13 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			sprintf_s(msgRet.cAccount,"%s",pRow["strAccount"]->CStringValue());
 			sprintf_s(msgRet.cPassword,"%s",pRow["strPassword"]->CStringValue());
 			msgRet.nUserID = pRow["nOutUserUID"]->IntValue();
+
+			// request db to create new player data 
+			stMsgRequestDBCreatePlayerData msgCreateData ;
+			msgCreateData.nUserUID = msgRet.nUserID ;
+			m_pTheApp->SendMsg((char*)&msgCreateData,sizeof(msgCreateData),pdata->nSessionID) ;
+
+			// tell client the success register result ;
 			m_pTheApp->SendMsg((char*)&msgRet,sizeof(msgRet),pdata->nSessionID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("register success account = %s",pRow["strAccount"]->CStringValue() );
 		}
@@ -172,10 +176,12 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_PLAYER_LOGIN:
 		{
 			stMsgLoginRet msgRet ;
+			msgRet.nAccountType = 0 ;
 			if ( pResult->nAffectRow > 0 )
 			{
 				CMysqlRow& pRow = *pResult->vResultRows.front() ;
 				msgRet.nRet = pRow["nOutRet"]->IntValue() ;
+				msgRet.nAccountType = pRow["nOutRegisterType"]->IntValue() ;
 				//msgRet.nUserID = pRow["nOutUID"]->IntValue() ;
 				CLogMgr::SharedLogMgr()->PrintLog("check accout = %s  ret = %d",pRow["strAccount"]->CStringValue(),msgRet.nRet  ) ;
 			}
@@ -187,39 +193,45 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			m_pTheApp->SendMsg((char*)&msgRet,sizeof(msgRet),pdata->nSessionID ) ;
 		}
 		break;
-//	case MSG_PLAYER_BIND_ACCOUNT:
-//		{
-//			stMsgLoginBindAccount*pBind = (stMsgLoginBindAccount*)pdata->pUserData ;
-//			stMsgLoginBindAccountRet msgBack ;
-//			msgBack.nCurUserUID = pBind->nCurUserUID;
-//			msgBack.nSessionID = pdata->nSessionID ;
-//			msgBack.nRet = 0 ;
-//			memcpy(msgBack.cAccount,pBind->cAccount,sizeof(msgBack.cAccount));
-//			memcpy(msgBack.cPassword,pBind->cPassword,sizeof(msgBack.cPassword));
-//			memcpy(msgBack.cEmail,pBind->cEmail,sizeof(msgBack.cEmail));
-//			if ( pResult->nAffectRow <= 0 )
-//			{
-//				msgBack.nRet = 1 ;
-//			}
-//			m_pTheApp->SendMsg((char*)&msgBack,sizeof(msgBack) ,pdata->m_nReqrestFromAdd); 
-//			delete[] pdata->pUserData;
-//			pdata->pUserData = NULL ;
-//		}
-//		break;
-//	case MSG_MODIFY_PASSWORD:
-//		{
-//			char* pNewPassword = (char*)pdata->pUserData;
-//			stMsgLoginModifyPasswordRet msgBack ;
-//			msgBack.nSessionID = pdata->nSessionID ;
-//			msgBack.nRet = pResult->nAffectRow > 0 ? 0 : 1 ;
-//			memcpy(msgBack.cNewPassword,pNewPassword,MAX_LEN_PASSWORD);
-//			delete[] pdata->pUserData ;
-//			m_pTheApp->SendMsg((char*)&msgBack,sizeof(msgBack) ,pdata->m_nReqrestFromAdd); 
-//		}
+	case MSG_PLAYER_BIND_ACCOUNT:
+		{
+			stMsgRebindAccountRet msgBack ;
+			msgBack.nRet = 0 ;
+			if ( pResult->nAffectRow > 0 )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows.front() ;
+				msgBack.nRet = pRow["nOutRet"]->IntValue() ;
+			}
+			else
+			{
+				msgBack.nRet = 3 ;
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d ,bind account error db ",pdata->nExtenArg1) ;
+			}
+			m_pTheApp->SendMsg((char*)&msgBack,sizeof(msgBack) ,pdata->nSessionID); 
+			CLogMgr::SharedLogMgr()->PrintLog("rebind account ret = %d , userUID = %d",msgBack.nRet,pdata->nExtenArg1 ) ;
+		}
+		break;
+	case MSG_MODIFY_PASSWORD:
+		{
+			stMsgModifyPasswordRet msgBack ;
+			msgBack.nRet = 0 ;
+			if ( pResult->nAffectRow > 0 )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows.front() ;
+				msgBack.nRet = pRow["nOutRet"]->IntValue() ;
+			}
+			else
+			{
+				msgBack.nRet = 3 ;
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d , modify password error db ",pdata->nExtenArg1) ;
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d modify password ret = %d",pdata->nExtenArg1,msgBack.nRet ) ;
+			m_pTheApp->SendMsg((char*)&msgBack,sizeof(msgBack) ,pdata->nSessionID); 
+		}
 		break;
 	default:
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("unprocessed db result msg id = %d ", pResult->nRequestUID );
+			CLogMgr::SharedLogMgr()->ErrorLog("unprocessed login db result msg id = %d ", pResult->nRequestUID );
 		}
 	}
 	m_vReserverArgData.push_back(pdata) ;

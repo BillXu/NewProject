@@ -135,7 +135,7 @@ bool CDataBaseThread::ProcessRequest()
 						continue;
 					}
 
-					if ( pResult->nAffectRow == 1 )
+					if ( pResult->nAffectRow >= 1 )
 					{
 						if ( msqlResult != NULL )
 						{

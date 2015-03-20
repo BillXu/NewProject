@@ -31,13 +31,13 @@ CDBManager::~CDBManager()
 void CDBManager::Init()
 {
 	// register funcs here ;
-	stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-	pRequest->cOrder = eReq_Order_High ;
-	pRequest->eType = eRequestType_Select ;
-	pRequest->nRequestUID = -1;
-	pRequest->pUserData = NULL;
-	pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"(select max(Account.UserUID) FROM Account)") ;
-	CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+	//stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+	//pRequest->cOrder = eReq_Order_High ;
+	//pRequest->eType = eRequestType_Select ;
+	//pRequest->nRequestUID = -1;
+	//pRequest->pUserData = NULL;
+	//pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"(select max(Account.UserUID) FROM Account)") ;
+	//CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
 }
 
 void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessionID )
@@ -50,438 +50,440 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	}
 
 	pdata->eFromPort = eSenderPort ;
+
+	stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+	pRequest->cOrder = eReq_Order_Normal ;
+	pRequest->nRequestUID = pmsg->usMsgType ;
+	pRequest->pUserData = pdata;
+	pRequest->eType = eRequestType_Max ;
+	pRequest->nSqlBufferLen = 0 ;
+
 	switch( pmsg->usMsgType )
 	{
-	case MSG_CREATE_ROLE:
+	case MSG_REQUEST_CREATE_PLAYER_DATA:
 		{
-			stMsgGameServerCreateRole* pCreate = (stMsgGameServerCreateRole*)pmsg ;
-			pdata->nSessionID = pCreate->nSessionID ;
+			stMsgRequestDBCreatePlayerData* pCreate = (stMsgRequestDBCreatePlayerData*)pmsg ;
+			pdata->nSessionID = nSessionID ;
 			pdata->nExtenArg1 = pCreate->nUserUID ;
 
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Super ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
+			uint16_t nRandID = rand() % 10000 ;
+			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"INSERT INTO playerbasedata (userUID, defaultPhotoID, sex, playerName) VALUES ('%u', '%u', '%u', '%s');   \
-				INSERT INTO masterstudent (userUID) VALUES ('%u');  \
-				INSERT INTO playerfriend (userUID) VALUES ('%u');  \
-				INSERT INTO playeritems (userUID) VALUES ('%u');  \
-				INSERT INTO playermission (userUID) VALUES ('%u');  \
-				",pCreate->nUserUID,pCreate->nDefaultPhotoID,pCreate->nSex,pCreate->cName,
-				pCreate->nUserUID,
-				pCreate->nUserUID,
-				pCreate->nUserUID,
-				pCreate->nUserUID ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+				"call CreateNewRegisterPlayerData(%d,'guest%d')",pCreate->nUserUID,nRandID) ;
 		}
 		break;
-	case MSG_PLAYER_BASE_DATA:
-		{
-			stMsgGameServerGetBaseData* pbasedata = (stMsgGameServerGetBaseData*)pmsg ;
-			pdata->nSessionID = pbasedata->nSessionID ;
-			pdata->nExtenArg1 = pbasedata->nUserUID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT * FROM playerbasedata WHERE userUID = '%d'",pbasedata->nUserUID) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case MSG_PLAYER_SAVE_BASE_DATA:
-		{
-			stMsgGameServerSaveBaseData* pSaveBaseData = (stMsgGameServerSaveBaseData*)pmsg ;
-			pdata->nSessionID = pSaveBaseData->nSessionID ;
-			pdata->nExtenArg1 = pSaveBaseData->stBaseData.nUserUID ;
-
-			char pMaxCards[sizeof(pSaveBaseData->stBaseData.vMaxCards)*2 + 1 ] = {0} ;
-			m_pTheApp->GetDBThread()->EscapeString(pMaxCards,(char*)pSaveBaseData->stBaseData.vMaxCards,sizeof(pSaveBaseData->stBaseData.vMaxCards)) ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Low ;
-			pRequest->eType = eRequestType_Update ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer, 
-			"UPDATE playerbasedata SET playerName = '%s', defaultPhotoID = '%u', isUploadPhoto = '%u', signature = '%s', sex = '%u', vipLevel = '%u',   \
-			coin = '%I64u', diamond = '%u', winTimes = '%u', loseTimes = '%u', singleWinMost = '%I64u', maxCard = '%s',   \
-			longitude = '%f', latitude = '%f', exp = '%u', offlineTime = '%u',noticeID = '%u',vipEndTime = '%u',\
-			continueLoginDays = '%u',lastLoginTime = '%u',lastTakeCharityCoinTime = '%u',todayPlayTimes = '%u' , \
-			yesterdayPlayTimes = '%u',todayWinCoin = '%I64d',yesterdayWinCoin = '%I64d', \
-			takeMasterStudentRewardTime = '%u',rechargeTimes = '%u',curOnlineBoxID = '%u',onlineBoxPassedTime = '%u' WHERE userUID = '%u'", 
-			pSaveBaseData->stBaseData.cName,pSaveBaseData->stBaseData.nDefaulPhotoID,pSaveBaseData->stBaseData.bIsUploadPhoto,pSaveBaseData->stBaseData.cSignature,pSaveBaseData->stBaseData.nSex,pSaveBaseData->stBaseData.nVipLevel,
-			pSaveBaseData->stBaseData.nCoin,pSaveBaseData->stBaseData.nDiamoned,pSaveBaseData->stBaseData.nWinTimes,pSaveBaseData->stBaseData.nLoseTimes,pSaveBaseData->stBaseData.nSingleWinMost,pMaxCards,
-			pSaveBaseData->stBaseData.dfLongitude,pSaveBaseData->stBaseData.dfLatidue,pSaveBaseData->stBaseData.nExp,(unsigned int)pSaveBaseData->stBaseData.tOfflineTime,pSaveBaseData->stBaseData.nNoticeID,pSaveBaseData->stBaseData.nVipEndTime,
-			pSaveBaseData->stBaseData.nContinueDays,(unsigned int)pSaveBaseData->stBaseData.tLastLoginTime,(unsigned int)pSaveBaseData->stBaseData.tLastTakeCharityCoinTime,pSaveBaseData->stBaseData.nTodayPlayTimes,
-			pSaveBaseData->stBaseData.nYesterdayPlayTimes,pSaveBaseData->stBaseData.nTodayWinCoin,pSaveBaseData->stBaseData.nYesterdayWinCoin,
-			(unsigned int)pSaveBaseData->stBaseData.tTakeMasterStudentRewardTime,pSaveBaseData->stBaseData.nRechargeTimes,pSaveBaseData->stBaseData.nCurOnlineBoxID,pSaveBaseData->stBaseData.nOnlineBoxPassedTime,pSaveBaseData->stBaseData.nUserUID) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break ;
-	case MSG_SAVE_PLAYER_COIN:
-		{
-			stMsgGameServerSavePlayerCoin* pSaveCoin = (stMsgGameServerSavePlayerCoin*)pmsg ;
-			pdata->nSessionID = pSaveCoin->nSessionID ;
-			pdata->nExtenArg1 = pSaveCoin->nUserUID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Low ;
-			pRequest->eType = eRequestType_Update ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE gamedb.account SET nCoin = '%I64d', nDiamoned = '%d' WHERE UserUID = '%d'",pSaveCoin->nCoin,pSaveCoin->nDiamoned,pSaveCoin->nUserUID) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;  
-	case MSG_SAVE_FRIEND_LIST:
-		{
-			stMsgGameServerSaveFirendList* pSaveFriend = (stMsgGameServerSaveFirendList*)pmsg ;
-			pdata->nSessionID = pSaveFriend->nSessionID ;
-			pdata->nExtenArg1 = pSaveFriend->nUserUID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Low ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->eType = eRequestType_Update ;
-
-			char* pBuffer = (char*)pmsg ;
-			pBuffer += sizeof(stMsgGameServerSaveFirendList);
-
-			char *pFriendListBuffer = new char[sizeof(stServerSaveFrienItem)*pSaveFriend->nFriendCount*2+1] ;
-			memset(pFriendListBuffer,0,sizeof(sizeof(stServerSaveFrienItem)*pSaveFriend->nFriendCount*2+1));
-			m_pTheApp->GetDBThread()->EscapeString(pFriendListBuffer,pBuffer,pSaveFriend->nFriendCount * sizeof(stServerSaveFrienItem) ) ;
-			unsigned int nSaveTime = (unsigned int)time(NULL) ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE playerfriend SET friendCount = '%u',contentData = '%s',saveTime = '%u' WHERE userUID = '%d'",pSaveFriend->nFriendCount,pFriendListBuffer,nSaveTime,pSaveFriend->nUserUID) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-			delete[]pFriendListBuffer ;
-		}
-		break;
-	case MSG_REQUEST_FRIEND_LIST:
-		{
-			stMsgGameServerRequestFirendList* pRequestFriend = (stMsgGameServerRequestFirendList*)pmsg ;
-			pdata->nSessionID = pRequestFriend->nSessionID ;
-			pdata->nExtenArg1 = 0 ;  // more than one time select ; 
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT * FROM playerfriend WHERE userUID = '%u'",pRequestFriend->nUserUID ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case MSG_REQUEST_FRIEND_BRIFDATA_LIST:
-		{
-			stMsgGameServerRequestFriendBrifDataList* pRet = (stMsgGameServerRequestFriendBrifDataList*)pmsg ;
-			pdata->nSessionID = pRet->nSessionID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			char* pBffer = (char*)pRet ;
-			pBffer += sizeof(stMsgGameServerRequestFriendBrifDataList);
-			unsigned int * pUserUID = (unsigned int*)pBffer ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT %s FROM playerfriend WHERE userUID = '%u'",PLAYER_BRIF_DATA,*pUserUID ) ;
-			--pRet->nFriendCount ;
-			while ( pRet->nFriendCount--)
-			{
-				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"%s || userUID = '%u'",pRequest->pSqlBuffer,*pUserUID ) ;
-				++pUserUID ;
-			}
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case MSG_PLAYER_SERACH_PEERS:
-		{
-			stMsgGameServerGetSearchFriendResult* pMsgRet = (stMsgGameServerGetSearchFriendResult*)pmsg ;
-			pdata->nSessionID = pMsgRet->nSessionID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			char* pBuffer = new char[pMsgRet->nLen * 2 + 1 ] ;
-			memset(pBuffer,0 ,pMsgRet->nLen * 2 + 1  ) ;
-			m_pTheApp->GetDBThread()->EscapeString(pBuffer, (char*)pMsgRet + sizeof(stMsgGameServerGetSearchFriendResult),pMsgRet->nLen) ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT %s FROM playerbasedata where userUID regexp( '%s' ) or playerName regexp('%s') limit 15;", PLAYER_BRIF_DATA,pBuffer, pBuffer ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-			delete[] pBuffer ;
-		}
-		break;
-	case MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL:
-		{
-			stMsgGameServerGetSearchedPeerDetail* pMsgRet = (stMsgGameServerGetSearchedPeerDetail*)pmsg ;
-			pdata->nSessionID = pMsgRet->nSessionID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT %s FROM playerbasedata where userUID = %u", PLAYER_DETAIL_DATA,pMsgRet->nPeerUserUID) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case MSG_PLAYER_REQUEST_FRIEND_DETAIL:
-		{
-			stMsgGameServerGetFriendDetail* pMsgRet = (stMsgGameServerGetFriendDetail*)pmsg ;
-			pdata->nSessionID = pMsgRet->nSessionID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT %s FROM playerbasedata where userUID = %d", PLAYER_DETAIL_DATA,pMsgRet->nFriendUID) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case MSG_PLAYER_GET_MAIL_LIST:
-		{
-			stMsgGameServerGetMailList* pMsgRet = (stMsgGameServerGetMailList*)pmsg;
-			pdata->nSessionID = pMsgRet->nSessionID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select * from mail where userUID = %u order by postTime desc limit %d",pMsgRet->nUserUID, MAX_KEEP_MAIL_COUNT ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break; 
-	case MSG_PLAYER_SAVE_MAIL:
-		{
-			stMsgGameServerSaveMail* pMsgRet = (stMsgGameServerSaveMail*)pmsg  ;
-			pdata->nSessionID = pMsgRet->nSessionID ;
-			pdata->nExtenArg1 = pMsgRet->nUserUID ;
-			char* pmsgData = (char*)pmsg ;
-			pmsgData += sizeof(stMsgGameServerSaveMail);
-			stMail* pMailToSave = (stMail*)pmsgData ;
-			pdata->nExtenArg2 = (unsigned int)pMailToSave->nMailUID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Low ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			switch ( pMsgRet->nOperateType ) 
-			{
-			case eDBAct_Update:
-				{
-					pRequest->eType = eRequestType_Update ;
-					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE mail SET processAct = '%d' WHERE mailUID = '%I64d'",pMailToSave->eProcessAct,pMailToSave->nMailUID ) ;
-				}
-				break;
-			case eDBAct_Delete:
-				{
-					pRequest->eType = eRequestType_Delete ;
-					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"DELETE FROM mail WHERE mailUID ='%I64d' limit 1",pMailToSave->nMailUID ) ;
-				}
-				break;
-			case eDBAct_Add:
-				{
-					pRequest->eType = eRequestType_Add ;
-					char* pContent = new char[pMailToSave->nContentLen * 2 + 1 ] ;
-					memset(pContent,0,pMailToSave->nContentLen * 2 + 1 );
-					
-					char* pBuffer = (char*)pMsgRet;
-					pBuffer += sizeof(stMsgGameServerSaveMail);
-					pBuffer += sizeof(stMail);
-					m_pTheApp->GetDBThread()->EscapeString(pContent,pBuffer,pMailToSave->nContentLen ) ;
-					CLogMgr::SharedLogMgr()->PrintLog("mail title content Len = %d",pMailToSave->nContentLen) ;
-					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO mail (mailUID, userUID,postTime,mailType,mailContentLen,mailContent,processAct) VALUES ('%I64d', '%u','%u','%u','%u','%s','%u')",
-						pMailToSave->nMailUID,pMsgRet->nUserUID,pMailToSave->nPostTime,pMailToSave->eType,pMailToSave->nContentLen,pContent,pMailToSave->eProcessAct) ;
-					delete[] pContent ;
-				}
-				break;
-			default:
-				CLogMgr::SharedLogMgr()->ErrorLog("unknown save mail operation type !") ;
-				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"") ;
-				break;
-			}
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break; 
-	case MSG_GAME_SERVER_GET_MAX_MAIL_UID:
-		{
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = MSG_GAME_SERVER_GET_MAX_MAIL_UID;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"(select max(mail.mailUID) FROM mail)") ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case MSG_REQUEST_ITEM_LIST:
-		{
-			stMsgGameServerRequestItemList* pMsgRet = (stMsgGameServerRequestItemList*)pmsg ;
-			pdata->nSessionID = pMsgRet->nSessionID ;
-			pdata->nExtenArg1 = pMsgRet->nUserUID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select * from playeritems where userUID = %u",pMsgRet->nUserUID ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case MSG_SAVE_ITEM_LIST:
-		{
-			stMsgGameServerSaveItemList* pMsgRet = (stMsgGameServerSaveItemList*)pmsg ;
-			pdata->nSessionID = pMsgRet->nSessionID ;
-			pdata->nExtenArg1 = pMsgRet->nUserUID ;
-			char* pBuffer = new char[pMsgRet->nOwnItemKindCount * sizeof(stPlayerItem) * 2 + 1] ;
-			memset(pBuffer,0,pMsgRet->nOwnItemKindCount * sizeof(stPlayerItem) * 2 + 1);
-			m_pTheApp->GetDBThread()->EscapeString(pBuffer, (((char*)pmsg) + sizeof(stMsgGameServerSaveItemList)),pMsgRet->nOwnItemKindCount * sizeof(stPlayerItem) ) ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Low ;
-			pRequest->pUserData = pdata;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->eType = eRequestType_Update ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE playeritems SET itemsData = '%s',ownItemsKindCount = '%u' WHERE userUID = '%d'",pBuffer,pMsgRet->nOwnItemKindCount,pMsgRet->nUserUID ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-			delete[] pBuffer ;
-		}
-		break; 
-	case MSG_REQUEST_RANK:
-		{
-			stMsgGameServerRequestRank* pMsgRet = (stMsgGameServerRequestRank*)pmsg ;
-			pdata->nExtenArg1 = pMsgRet->eType ;
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			switch ( pMsgRet->eType)
-			{
-			case eRank_AllCoin:
-				{
-					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select yesterdayWinCoin ,%s from playerbasedata where userUID !=0 order by coin desc limit %d",PLAYER_DETAIL_DATA,RANK_SHOW_PEER_COUNT) ;
-				}
-				break;
-			case eRank_YesterDayWin:
-				{
-					unsigned int tYesterDay = (unsigned int)time(NULL) - 24 * 3600 ;
-					//struct tm tmNow = *localtime(&tNow) ;
-					//tmNow.tm_hour = 0 ;
-					//tmNow.tm_min = 0 ;
-					//tmNow.tm_sec = 0 ;
-					//time_t tZero = mktime(&tmNow) ;
-					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select yesterdayWinCoin ,%s from playerbasedata where (offlineTime >= '%u' || lastLoginTime >= '%u') order by todayWinCoin desc limit %d",PLAYER_DETAIL_DATA,tYesterDay,tYesterDay,RANK_SHOW_PEER_COUNT) ;
-				}
-				break;
-			case eRank_SingleWinMost:
-				{
-					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select yesterdayWinCoin ,%s from playerbasedata where userUID !=0 order by singleWinMost desc limit %d",PLAYER_DETAIL_DATA,RANK_SHOW_PEER_COUNT) ;
-				}
-				break;
-			default:
-				CLogMgr::SharedLogMgr()->ErrorLog("unknown rank type to select type = %d",pMsgRet->eType) ;
-				break;
-			}
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	//case MSG_GET_SHOP_BUY_RECORD:
-	//	{
-	//		stMsgGameServerGetShopBuyRecord* pMsgRet = (stMsgGameServerGetShopBuyRecord*)pmsg ;
-	//		pdata->nSessionID = pMsgRet->nSessionID ;
-	//		pdata->nExtenArg1 = pMsgRet->nUserUID ;
-
-	//		stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-	//		pRequest->cOrder = eReq_Order_High ;
-	//		pRequest->eType = eRequestType_Select ;
-	//		pRequest->nRequestUID = pmsg->usMsgType ;
-	//		pRequest->pUserData = pdata;
-	//		pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select * from playershopbuyrecord where nUserUID = %d",pMsgRet->nUserUID ) ;
-	//		CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-	//	}
-	//	break;
-	//case MSG_SAVE_SHOP_BUY_RECORD:
-	//	{
-	//		stMsgGameServerSaveShopBuyRecord* pMsgRet = (stMsgGameServerSaveShopBuyRecord*)pmsg;
-	//		pdata->nSessionID = pMsgRet->nSessionID ;
-	//		pdata->nExtenArg1 = pMsgRet->nUserUID ;
-
-	//		stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-	//		pRequest->cOrder = eReq_Order_Low ;
-	//		pRequest->nRequestUID = pmsg->usMsgType ;
-	//		pRequest->pUserData = pdata;
-
-	//		char* pSaveBuffer = new char[pMsgRet->nBufferLen * 2 + 1 ] ;
-	//		memset(pSaveBuffer,0,pMsgRet->nBufferLen * 2 + 1) ;
-	//		char* pBuffer = (char*)pmsg ;
-	//		pBuffer += sizeof(stMsgGameServerSaveShopBuyRecord);
-	//		m_pTheApp->GetDBThread()->EscapeString(pSaveBuffer,pBuffer,pMsgRet->nBufferLen ) ;
-	//		if ( pMsgRet->bAdd )
-	//		{
-	//			pRequest->eType = eRequestType_Add ;
-	//			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO `gamedb`.`playershopbuyrecord` (`nUserUID`, `pBuffer`) VALUES ('%d', '%s');",pMsgRet->nUserUID,pSaveBuffer) ;
-	//		}
-	//		else
-	//		{
-	//			pRequest->eType = eRequestType_Update ;
-	//			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE gamedb.playershopbuyrecord SET pBuffer = '%s' WHERE nUserUID = '%d'",pSaveBuffer,pMsgRet->nUserUID) ;
-	//		}
-	//		CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-	//		delete[] pSaveBuffer ;
-	//	}
-	//	break;
-	case MSG_GAME_SERVER_SAVE_MISSION_DATA:
-		{
-			stMsgGameServerSaveMissionData* pMissionData = (stMsgGameServerSaveMissionData*)pmsg ;
-			pdata->nSessionID = pMissionData->nSessionID ;
-			pdata->nExtenArg1 = pMissionData->nUserUID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Low ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-
-			char* pSaveBuffer = new char[pMissionData->nMissonCount * sizeof(stMissionSate) * 2 + 1 ] ;
-			memset(pSaveBuffer,0,pMissionData->nMissonCount * sizeof(stMissionSate) * 2 + 1) ;
-			char* pBuffer = (char*)pmsg ;
-			pBuffer += sizeof(stMsgGameServerSaveMissionData);
-			m_pTheApp->GetDBThread()->EscapeString(pSaveBuffer,pBuffer,pMissionData->nMissonCount * sizeof(stMissionSate)) ;
-			pRequest->eType = eRequestType_Update ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE playermission SET missionData = '%s',saveTime = '%u',missionCount = '%u' WHERE userUID = '%d'",pSaveBuffer,pMissionData->nSavetime,pMissionData->nMissonCount,pMissionData->nUserUID) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-			delete[] pSaveBuffer ;
-		}
-		break;
-	case MSG_GAME_SERVER_GET_MISSION_DATA:
-		{
-			stMsgGameServerGetMissionData* pMsgRet = (stMsgGameServerGetMissionData*)pmsg ;
-			pdata->nSessionID = pMsgRet->nSessionID ;
-			pdata->nExtenArg1 = pMsgRet->nUserUID ;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_High ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			pRequest->pUserData = pdata;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select * from playermission where userUID = %d",pMsgRet->nUserUID ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
+// 	case MSG_PLAYER_BASE_DATA:
+// 		{
+// 			stMsgGameServerGetBaseData* pbasedata = (stMsgGameServerGetBaseData*)pmsg ;
+// 			pdata->nSessionID = pbasedata->nSessionID ;
+// 			pdata->nExtenArg1 = pbasedata->nUserUID ;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT * FROM playerbasedata WHERE userUID = '%d'",pbasedata->nUserUID) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
+// 	case MSG_PLAYER_SAVE_BASE_DATA:
+// 		{
+// 			stMsgGameServerSaveBaseData* pSaveBaseData = (stMsgGameServerSaveBaseData*)pmsg ;
+// 			pdata->nSessionID = pSaveBaseData->nSessionID ;
+// 			pdata->nExtenArg1 = pSaveBaseData->stBaseData.nUserUID ;
+// 
+// 			char pMaxCards[sizeof(pSaveBaseData->stBaseData.vMaxCards)*2 + 1 ] = {0} ;
+// 			m_pTheApp->GetDBThread()->EscapeString(pMaxCards,(char*)pSaveBaseData->stBaseData.vMaxCards,sizeof(pSaveBaseData->stBaseData.vMaxCards)) ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_Low ;
+// 			pRequest->eType = eRequestType_Update ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer, 
+// 			"UPDATE playerbasedata SET playerName = '%s', defaultPhotoID = '%u', isUploadPhoto = '%u', signature = '%s', sex = '%u', vipLevel = '%u',   \
+// 			coin = '%I64u', diamond = '%u', winTimes = '%u', loseTimes = '%u', singleWinMost = '%I64u', maxCard = '%s',   \
+// 			longitude = '%f', latitude = '%f', exp = '%u', offlineTime = '%u',noticeID = '%u',vipEndTime = '%u',\
+// 			continueLoginDays = '%u',lastLoginTime = '%u',lastTakeCharityCoinTime = '%u',todayPlayTimes = '%u' , \
+// 			yesterdayPlayTimes = '%u',todayWinCoin = '%I64d',yesterdayWinCoin = '%I64d', \
+// 			takeMasterStudentRewardTime = '%u',rechargeTimes = '%u',curOnlineBoxID = '%u',onlineBoxPassedTime = '%u' WHERE userUID = '%u'", 
+// 			pSaveBaseData->stBaseData.cName,pSaveBaseData->stBaseData.nDefaulPhotoID,pSaveBaseData->stBaseData.bIsUploadPhoto,pSaveBaseData->stBaseData.cSignature,pSaveBaseData->stBaseData.nSex,pSaveBaseData->stBaseData.nVipLevel,
+// 			pSaveBaseData->stBaseData.nCoin,pSaveBaseData->stBaseData.nDiamoned,pSaveBaseData->stBaseData.nWinTimes,pSaveBaseData->stBaseData.nLoseTimes,pSaveBaseData->stBaseData.nSingleWinMost,pMaxCards,
+// 			pSaveBaseData->stBaseData.dfLongitude,pSaveBaseData->stBaseData.dfLatidue,pSaveBaseData->stBaseData.nExp,(unsigned int)pSaveBaseData->stBaseData.tOfflineTime,pSaveBaseData->stBaseData.nNoticeID,pSaveBaseData->stBaseData.nVipEndTime,
+// 			pSaveBaseData->stBaseData.nContinueDays,(unsigned int)pSaveBaseData->stBaseData.tLastLoginTime,(unsigned int)pSaveBaseData->stBaseData.tLastTakeCharityCoinTime,pSaveBaseData->stBaseData.nTodayPlayTimes,
+// 			pSaveBaseData->stBaseData.nYesterdayPlayTimes,pSaveBaseData->stBaseData.nTodayWinCoin,pSaveBaseData->stBaseData.nYesterdayWinCoin,
+// 			(unsigned int)pSaveBaseData->stBaseData.tTakeMasterStudentRewardTime,pSaveBaseData->stBaseData.nRechargeTimes,pSaveBaseData->stBaseData.nCurOnlineBoxID,pSaveBaseData->stBaseData.nOnlineBoxPassedTime,pSaveBaseData->stBaseData.nUserUID) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break ;
+// 	case MSG_SAVE_PLAYER_COIN:
+// 		{
+// 			stMsgGameServerSavePlayerCoin* pSaveCoin = (stMsgGameServerSavePlayerCoin*)pmsg ;
+// 			pdata->nSessionID = pSaveCoin->nSessionID ;
+// 			pdata->nExtenArg1 = pSaveCoin->nUserUID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_Low ;
+// 			pRequest->eType = eRequestType_Update ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE gamedb.account SET nCoin = '%I64d', nDiamoned = '%d' WHERE UserUID = '%d'",pSaveCoin->nCoin,pSaveCoin->nDiamoned,pSaveCoin->nUserUID) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;  
+// 	case MSG_SAVE_FRIEND_LIST:
+// 		{
+// 			stMsgGameServerSaveFirendList* pSaveFriend = (stMsgGameServerSaveFirendList*)pmsg ;
+// 			pdata->nSessionID = pSaveFriend->nSessionID ;
+// 			pdata->nExtenArg1 = pSaveFriend->nUserUID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_Low ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->eType = eRequestType_Update ;
+// 
+// 			char* pBuffer = (char*)pmsg ;
+// 			pBuffer += sizeof(stMsgGameServerSaveFirendList);
+// 
+// 			char *pFriendListBuffer = new char[sizeof(stServerSaveFrienItem)*pSaveFriend->nFriendCount*2+1] ;
+// 			memset(pFriendListBuffer,0,sizeof(sizeof(stServerSaveFrienItem)*pSaveFriend->nFriendCount*2+1));
+// 			m_pTheApp->GetDBThread()->EscapeString(pFriendListBuffer,pBuffer,pSaveFriend->nFriendCount * sizeof(stServerSaveFrienItem) ) ;
+// 			unsigned int nSaveTime = (unsigned int)time(NULL) ;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE playerfriend SET friendCount = '%u',contentData = '%s',saveTime = '%u' WHERE userUID = '%d'",pSaveFriend->nFriendCount,pFriendListBuffer,nSaveTime,pSaveFriend->nUserUID) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 			delete[]pFriendListBuffer ;
+// 		}
+// 		break;
+// 	case MSG_REQUEST_FRIEND_LIST:
+// 		{
+// 			stMsgGameServerRequestFirendList* pRequestFriend = (stMsgGameServerRequestFirendList*)pmsg ;
+// 			pdata->nSessionID = pRequestFriend->nSessionID ;
+// 			pdata->nExtenArg1 = 0 ;  // more than one time select ; 
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_High ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT * FROM playerfriend WHERE userUID = '%u'",pRequestFriend->nUserUID ) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
+// 	case MSG_REQUEST_FRIEND_BRIFDATA_LIST:
+// 		{
+// 			stMsgGameServerRequestFriendBrifDataList* pRet = (stMsgGameServerRequestFriendBrifDataList*)pmsg ;
+// 			pdata->nSessionID = pRet->nSessionID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_High ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			char* pBffer = (char*)pRet ;
+// 			pBffer += sizeof(stMsgGameServerRequestFriendBrifDataList);
+// 			unsigned int * pUserUID = (unsigned int*)pBffer ;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT %s FROM playerfriend WHERE userUID = '%u'",PLAYER_BRIF_DATA,*pUserUID ) ;
+// 			--pRet->nFriendCount ;
+// 			while ( pRet->nFriendCount--)
+// 			{
+// 				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"%s || userUID = '%u'",pRequest->pSqlBuffer,*pUserUID ) ;
+// 				++pUserUID ;
+// 			}
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
+// 	case MSG_PLAYER_SERACH_PEERS:
+// 		{
+// 			stMsgGameServerGetSearchFriendResult* pMsgRet = (stMsgGameServerGetSearchFriendResult*)pmsg ;
+// 			pdata->nSessionID = pMsgRet->nSessionID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_High ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			char* pBuffer = new char[pMsgRet->nLen * 2 + 1 ] ;
+// 			memset(pBuffer,0 ,pMsgRet->nLen * 2 + 1  ) ;
+// 			m_pTheApp->GetDBThread()->EscapeString(pBuffer, (char*)pMsgRet + sizeof(stMsgGameServerGetSearchFriendResult),pMsgRet->nLen) ;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT %s FROM playerbasedata where userUID regexp( '%s' ) or playerName regexp('%s') limit 15;", PLAYER_BRIF_DATA,pBuffer, pBuffer ) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 			delete[] pBuffer ;
+// 		}
+// 		break;
+// 	case MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL:
+// 		{
+// 			stMsgGameServerGetSearchedPeerDetail* pMsgRet = (stMsgGameServerGetSearchedPeerDetail*)pmsg ;
+// 			pdata->nSessionID = pMsgRet->nSessionID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_High ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT %s FROM playerbasedata where userUID = %u", PLAYER_DETAIL_DATA,pMsgRet->nPeerUserUID) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
+// 	case MSG_PLAYER_REQUEST_FRIEND_DETAIL:
+// 		{
+// 			stMsgGameServerGetFriendDetail* pMsgRet = (stMsgGameServerGetFriendDetail*)pmsg ;
+// 			pdata->nSessionID = pMsgRet->nSessionID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_High ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT %s FROM playerbasedata where userUID = %d", PLAYER_DETAIL_DATA,pMsgRet->nFriendUID) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
+// 	case MSG_PLAYER_GET_MAIL_LIST:
+// 		{
+// 			stMsgGameServerGetMailList* pMsgRet = (stMsgGameServerGetMailList*)pmsg;
+// 			pdata->nSessionID = pMsgRet->nSessionID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_High ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select * from mail where userUID = %u order by postTime desc limit %d",pMsgRet->nUserUID, MAX_KEEP_MAIL_COUNT ) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break; 
+// 	case MSG_PLAYER_SAVE_MAIL:
+// 		{
+// 			stMsgGameServerSaveMail* pMsgRet = (stMsgGameServerSaveMail*)pmsg  ;
+// 			pdata->nSessionID = pMsgRet->nSessionID ;
+// 			pdata->nExtenArg1 = pMsgRet->nUserUID ;
+// 			char* pmsgData = (char*)pmsg ;
+// 			pmsgData += sizeof(stMsgGameServerSaveMail);
+// 			stMail* pMailToSave = (stMail*)pmsgData ;
+// 			pdata->nExtenArg2 = (unsigned int)pMailToSave->nMailUID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_Low ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			switch ( pMsgRet->nOperateType ) 
+// 			{
+// 			case eDBAct_Update:
+// 				{
+// 					pRequest->eType = eRequestType_Update ;
+// 					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE mail SET processAct = '%d' WHERE mailUID = '%I64d'",pMailToSave->eProcessAct,pMailToSave->nMailUID ) ;
+// 				}
+// 				break;
+// 			case eDBAct_Delete:
+// 				{
+// 					pRequest->eType = eRequestType_Delete ;
+// 					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"DELETE FROM mail WHERE mailUID ='%I64d' limit 1",pMailToSave->nMailUID ) ;
+// 				}
+// 				break;
+// 			case eDBAct_Add:
+// 				{
+// 					pRequest->eType = eRequestType_Add ;
+// 					char* pContent = new char[pMailToSave->nContentLen * 2 + 1 ] ;
+// 					memset(pContent,0,pMailToSave->nContentLen * 2 + 1 );
+// 					
+// 					char* pBuffer = (char*)pMsgRet;
+// 					pBuffer += sizeof(stMsgGameServerSaveMail);
+// 					pBuffer += sizeof(stMail);
+// 					m_pTheApp->GetDBThread()->EscapeString(pContent,pBuffer,pMailToSave->nContentLen ) ;
+// 					CLogMgr::SharedLogMgr()->PrintLog("mail title content Len = %d",pMailToSave->nContentLen) ;
+// 					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO mail (mailUID, userUID,postTime,mailType,mailContentLen,mailContent,processAct) VALUES ('%I64d', '%u','%u','%u','%u','%s','%u')",
+// 						pMailToSave->nMailUID,pMsgRet->nUserUID,pMailToSave->nPostTime,pMailToSave->eType,pMailToSave->nContentLen,pContent,pMailToSave->eProcessAct) ;
+// 					delete[] pContent ;
+// 				}
+// 				break;
+// 			default:
+// 				CLogMgr::SharedLogMgr()->ErrorLog("unknown save mail operation type !") ;
+// 				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"") ;
+// 				break;
+// 			}
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break; 
+// 	case MSG_GAME_SERVER_GET_MAX_MAIL_UID:
+// 		{
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_Normal ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = MSG_GAME_SERVER_GET_MAX_MAIL_UID;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"(select max(mail.mailUID) FROM mail)") ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
+// 	case MSG_REQUEST_ITEM_LIST:
+// 		{
+// 			stMsgGameServerRequestItemList* pMsgRet = (stMsgGameServerRequestItemList*)pmsg ;
+// 			pdata->nSessionID = pMsgRet->nSessionID ;
+// 			pdata->nExtenArg1 = pMsgRet->nUserUID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_High ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select * from playeritems where userUID = %u",pMsgRet->nUserUID ) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
+// 	case MSG_SAVE_ITEM_LIST:
+// 		{
+// 			stMsgGameServerSaveItemList* pMsgRet = (stMsgGameServerSaveItemList*)pmsg ;
+// 			pdata->nSessionID = pMsgRet->nSessionID ;
+// 			pdata->nExtenArg1 = pMsgRet->nUserUID ;
+// 			char* pBuffer = new char[pMsgRet->nOwnItemKindCount * sizeof(stPlayerItem) * 2 + 1] ;
+// 			memset(pBuffer,0,pMsgRet->nOwnItemKindCount * sizeof(stPlayerItem) * 2 + 1);
+// 			m_pTheApp->GetDBThread()->EscapeString(pBuffer, (((char*)pmsg) + sizeof(stMsgGameServerSaveItemList)),pMsgRet->nOwnItemKindCount * sizeof(stPlayerItem) ) ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_Low ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->eType = eRequestType_Update ;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE playeritems SET itemsData = '%s',ownItemsKindCount = '%u' WHERE userUID = '%d'",pBuffer,pMsgRet->nOwnItemKindCount,pMsgRet->nUserUID ) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 			delete[] pBuffer ;
+// 		}
+// 		break; 
+// 	case MSG_REQUEST_RANK:
+// 		{
+// 			stMsgGameServerRequestRank* pMsgRet = (stMsgGameServerRequestRank*)pmsg ;
+// 			pdata->nExtenArg1 = pMsgRet->eType ;
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_Normal ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			switch ( pMsgRet->eType)
+// 			{
+// 			case eRank_AllCoin:
+// 				{
+// 					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select yesterdayWinCoin ,%s from playerbasedata where userUID !=0 order by coin desc limit %d",PLAYER_DETAIL_DATA,RANK_SHOW_PEER_COUNT) ;
+// 				}
+// 				break;
+// 			case eRank_YesterDayWin:
+// 				{
+// 					unsigned int tYesterDay = (unsigned int)time(NULL) - 24 * 3600 ;
+// 					//struct tm tmNow = *localtime(&tNow) ;
+// 					//tmNow.tm_hour = 0 ;
+// 					//tmNow.tm_min = 0 ;
+// 					//tmNow.tm_sec = 0 ;
+// 					//time_t tZero = mktime(&tmNow) ;
+// 					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select yesterdayWinCoin ,%s from playerbasedata where (offlineTime >= '%u' || lastLoginTime >= '%u') order by todayWinCoin desc limit %d",PLAYER_DETAIL_DATA,tYesterDay,tYesterDay,RANK_SHOW_PEER_COUNT) ;
+// 				}
+// 				break;
+// 			case eRank_SingleWinMost:
+// 				{
+// 					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select yesterdayWinCoin ,%s from playerbasedata where userUID !=0 order by singleWinMost desc limit %d",PLAYER_DETAIL_DATA,RANK_SHOW_PEER_COUNT) ;
+// 				}
+// 				break;
+// 			default:
+// 				CLogMgr::SharedLogMgr()->ErrorLog("unknown rank type to select type = %d",pMsgRet->eType) ;
+// 				break;
+// 			}
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
+// 	//case MSG_GET_SHOP_BUY_RECORD:
+// 	//	{
+// 	//		stMsgGameServerGetShopBuyRecord* pMsgRet = (stMsgGameServerGetShopBuyRecord*)pmsg ;
+// 	//		pdata->nSessionID = pMsgRet->nSessionID ;
+// 	//		pdata->nExtenArg1 = pMsgRet->nUserUID ;
+// 
+// 	//		stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 	//		pRequest->cOrder = eReq_Order_High ;
+// 	//		pRequest->eType = eRequestType_Select ;
+// 	//		pRequest->nRequestUID = pmsg->usMsgType ;
+// 	//		pRequest->pUserData = pdata;
+// 	//		pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select * from playershopbuyrecord where nUserUID = %d",pMsgRet->nUserUID ) ;
+// 	//		CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 	//	}
+// 	//	break;
+// 	//case MSG_SAVE_SHOP_BUY_RECORD:
+// 	//	{
+// 	//		stMsgGameServerSaveShopBuyRecord* pMsgRet = (stMsgGameServerSaveShopBuyRecord*)pmsg;
+// 	//		pdata->nSessionID = pMsgRet->nSessionID ;
+// 	//		pdata->nExtenArg1 = pMsgRet->nUserUID ;
+// 
+// 	//		stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 	//		pRequest->cOrder = eReq_Order_Low ;
+// 	//		pRequest->nRequestUID = pmsg->usMsgType ;
+// 	//		pRequest->pUserData = pdata;
+// 
+// 	//		char* pSaveBuffer = new char[pMsgRet->nBufferLen * 2 + 1 ] ;
+// 	//		memset(pSaveBuffer,0,pMsgRet->nBufferLen * 2 + 1) ;
+// 	//		char* pBuffer = (char*)pmsg ;
+// 	//		pBuffer += sizeof(stMsgGameServerSaveShopBuyRecord);
+// 	//		m_pTheApp->GetDBThread()->EscapeString(pSaveBuffer,pBuffer,pMsgRet->nBufferLen ) ;
+// 	//		if ( pMsgRet->bAdd )
+// 	//		{
+// 	//			pRequest->eType = eRequestType_Add ;
+// 	//			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO `gamedb`.`playershopbuyrecord` (`nUserUID`, `pBuffer`) VALUES ('%d', '%s');",pMsgRet->nUserUID,pSaveBuffer) ;
+// 	//		}
+// 	//		else
+// 	//		{
+// 	//			pRequest->eType = eRequestType_Update ;
+// 	//			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE gamedb.playershopbuyrecord SET pBuffer = '%s' WHERE nUserUID = '%d'",pSaveBuffer,pMsgRet->nUserUID) ;
+// 	//		}
+// 	//		CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 	//		delete[] pSaveBuffer ;
+// 	//	}
+// 	//	break;
+// 	case MSG_GAME_SERVER_SAVE_MISSION_DATA:
+// 		{
+// 			stMsgGameServerSaveMissionData* pMissionData = (stMsgGameServerSaveMissionData*)pmsg ;
+// 			pdata->nSessionID = pMissionData->nSessionID ;
+// 			pdata->nExtenArg1 = pMissionData->nUserUID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_Low ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 
+// 			char* pSaveBuffer = new char[pMissionData->nMissonCount * sizeof(stMissionSate) * 2 + 1 ] ;
+// 			memset(pSaveBuffer,0,pMissionData->nMissonCount * sizeof(stMissionSate) * 2 + 1) ;
+// 			char* pBuffer = (char*)pmsg ;
+// 			pBuffer += sizeof(stMsgGameServerSaveMissionData);
+// 			m_pTheApp->GetDBThread()->EscapeString(pSaveBuffer,pBuffer,pMissionData->nMissonCount * sizeof(stMissionSate)) ;
+// 			pRequest->eType = eRequestType_Update ;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"UPDATE playermission SET missionData = '%s',saveTime = '%u',missionCount = '%u' WHERE userUID = '%d'",pSaveBuffer,pMissionData->nSavetime,pMissionData->nMissonCount,pMissionData->nUserUID) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 			delete[] pSaveBuffer ;
+// 		}
+// 		break;
+// 	case MSG_GAME_SERVER_GET_MISSION_DATA:
+// 		{
+// 			stMsgGameServerGetMissionData* pMsgRet = (stMsgGameServerGetMissionData*)pmsg ;
+// 			pdata->nSessionID = pMsgRet->nSessionID ;
+// 			pdata->nExtenArg1 = pMsgRet->nUserUID ;
+// 
+// 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+// 			pRequest->cOrder = eReq_Order_High ;
+// 			pRequest->eType = eRequestType_Select ;
+// 			pRequest->nRequestUID = pmsg->usMsgType ;
+// 			pRequest->pUserData = pdata;
+// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"select * from playermission where userUID = %d",pMsgRet->nUserUID ) ;
+// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+// 		}
+// 		break;
 	default:
 		{
 			m_vReserverArgData.push_back(pdata) ;
 			CLogMgr::SharedLogMgr()->ErrorLog("unknown msg type = %d",pmsg->usMsgType ) ;
 		}
+	}
+
+	if ( pRequest->nSqlBufferLen == 0 || pRequest->eType == eRequestType_Max )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("a request sql len = 0 , msg = %d" , pRequest->nRequestUID ) ;
+		
+		CDBRequestQueue::VEC_DBREQUEST v ;
+		v.push_back(pRequest) ;
+		CDBRequestQueue::SharedDBRequestQueue()->PushReserveRequest(v);
+	}
+	else
+	{
+		CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
 	}
 }
 
@@ -504,17 +506,28 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	}
 
 	stArgData*pdata = (stArgData*)pResult->pUserData ;
-//	switch ( pResult->nRequestUID )
-//	{
-//	case MSG_CREATE_ROLE:
-//		{
-//			stMsgGameServerCreateRoleRet msgBack ;
-//			msgBack.nSessionID = pdata->nSessionID ;
-//			msgBack.nRet = pResult->nAffectRow > 0 ? 0 : 1 ;
-//			msgBack.nUserUID = pdata->nExtenArg1;
-//			m_pTheApp->SendMsg((char*)&msgBack,sizeof(msgBack) ,pdata->m_nReqrestFromAdd); 
-//		}
-//		break;
+	switch ( pResult->nRequestUID )
+	{
+	case MSG_REQUEST_CREATE_PLAYER_DATA:
+		{
+			if ( pResult->nAffectRow != 1 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("create player data error uid = %d",pdata->nExtenArg1) ;
+			}
+			else
+			{
+				CMysqlRow& pRow = *pResult->vResultRows.front();
+				if ( pRow["nOutRet"] != 0 )
+				{
+					CLogMgr::SharedLogMgr()->ErrorLog("create player data error uid = %d",pdata->nExtenArg1 ) ;
+				}
+				else
+				{
+					CLogMgr::SharedLogMgr()->PrintLog("create player data success uid = %d",pdata->nExtenArg1 ) ;
+				}
+			}
+		}
+		break;
 //	case MSG_PLAYER_BASE_DATA:
 //		{
 //			stArgData* pdata = (stArgData*)pResult->pUserData ;
@@ -996,11 +1009,11 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 //			}
 //		}
 //		break;
-//	default:
-//		{
-//			CLogMgr::SharedLogMgr()->ErrorLog("unprocessed db result msg id = %d ", pResult->nRequestUID );
-//		}
-//	}
+	default:
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("unprocessed db result msg id = %d ", pResult->nRequestUID );
+		}
+	}
 	m_vReserverArgData.push_back(pdata) ;
 }
 

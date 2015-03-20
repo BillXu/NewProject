@@ -67,14 +67,16 @@ enum eMsgType
 	MSG_GATESERVER_INFO,
 	// login 
 	MSG_PLAYER_REGISTER,     // register an account ;
+	MSG_REQUEST_CREATE_PLAYER_DATA,  // INFORM DB prepare data for player
 	MSG_PLAYER_LOGIN,  // check an account is valid ;
+	MSG_PLAYER_BIND_ACCOUNT, //  a quick enter player need to bind a real account and password ;
+	MSG_MODIFY_PASSWORD,
 	///------new define end---
 	MSG_SERVER_AND_CLIENT_COMMON_BEGIN = 100,  // server and client common msg , beyond specail game 
 	MSG_PLAYER_ENTER_GAME,    // after check , enter game 
 	MSG_PLAYER_OTHER_LOGIN,  // more than one place login , prelogin need disconnect ; client recived must disconnect from server
 	//MSG_PLAYER_CONTINUE_LOGIN,  // contiune login prize ;
-	MSG_PLAYER_BIND_ACCOUNT, //  a quick enter player need to bind a real account and password ;
-	MSG_MODIFY_PASSWORD,
+	
 	MSG_CREATE_ROLE,
 	// player base Data 
 	MSG_PLAYER_BASE_DATA = 150,

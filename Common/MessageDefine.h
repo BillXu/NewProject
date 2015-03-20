@@ -80,39 +80,29 @@ struct stMsgLoginRet
 {
 	stMsgLoginRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_LOGIN ; }
 	unsigned char nRet ; // 0 ; success ; 1 account error , 2 password error, 3 state error  ;
+	uint8_t nAccountType ; // 0 gueset , 1 registered ,2 rebinded  .
 };
-
-///--------------------ablove is new , below is old------
-
-
 
 struct stMsgRebindAccount
 	:public stMsg
 {
-	stMsgRebindAccount(){ cSysIdentifer = ID_MSG_C2LOGIN; usMsgType = MSG_PLAYER_BIND_ACCOUNT ;}
+	stMsgRebindAccount(){ cSysIdentifer = ID_MSG_PORT_LOGIN; usMsgType = MSG_PLAYER_BIND_ACCOUNT ;}
 	unsigned int nCurUserUID ;
 	char cAccount[MAX_LEN_ACCOUNT] ;
 	char cPassword[MAX_LEN_PASSWORD] ;
-	char cEmail[MAX_LEN_EMAIL] ;
 };
 
 struct stMsgRebindAccountRet
 	:public stMsg
 {
-	stMsgRebindAccountRet(){ cSysIdentifer = ID_MSG_LOGIN2C ;; usMsgType = MSG_PLAYER_BIND_ACCOUNT ; }
-	unsigned char nRet ; // 0 success , 1 double account ;
-	unsigned int nCurUserUID ;
-	char cAccount[MAX_LEN_ACCOUNT] ;
-	char cPassword[MAX_LEN_PASSWORD] ;
-	char cEmail[MAX_LEN_EMAIL] ;
+	stMsgRebindAccountRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ;; usMsgType = MSG_PLAYER_BIND_ACCOUNT ; }
+	unsigned char nRet ; // 0 success , 1 double account , 2 uid not exsit, 3 unknown error  ;
 };
-
-
 
 struct stMsgModifyPassword
 	:public stMsg
 {
-	stMsgModifyPassword(){ cSysIdentifer = ID_MSG_C2LOGIN ; usMsgType = MSG_MODIFY_PASSWORD ; }
+	stMsgModifyPassword(){ cSysIdentifer = ID_MSG_PORT_LOGIN ; usMsgType = MSG_MODIFY_PASSWORD ; }
 	unsigned int nUserUID ;
 	char cOldPassword[MAX_LEN_PASSWORD] ;
 	char cNewPassword[MAX_LEN_PASSWORD] ;
@@ -121,10 +111,19 @@ struct stMsgModifyPassword
 struct stMsgModifyPasswordRet
 	:public stMsg
 {
-	stMsgModifyPasswordRet(){ cSysIdentifer = ID_MSG_LOGIN2C ;usMsgType = MSG_MODIFY_PASSWORD ; }
-	unsigned char nRet ; // 0 success , 1 old password Error ;
-	char cNewPassword[MAX_LEN_PASSWORD] ;
+	stMsgModifyPasswordRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ;usMsgType = MSG_MODIFY_PASSWORD ; }
+	unsigned char nRet ; // 0 success , 1 uid not exsit , 2 old passworld error 
 };
+
+
+///--------------------ablove is new , below is old------
+
+
+
+
+
+
+
 
 struct stMsgCreateRole
 	:public stMsg

@@ -32,6 +32,13 @@ struct stMsgNewClientConnected
 	uint32_t nNewSessionID ;
 };
 
+struct stMsgRequestDBCreatePlayerData
+	:public stMsg
+{
+	stMsgRequestDBCreatePlayerData(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_REQUEST_CREATE_PLAYER_DATA ; }
+	uint32_t nUserUID ;
+};
+
 //----above is new , below is ok---------
 
 //--------------------------------------------
@@ -73,34 +80,6 @@ struct stMsgDB2GM
 //	
 //};
 
-struct stMsgLoginBindAccount
-	:public stMsgRebindAccount
-{
-	stMsgLoginBindAccount(){ cSysIdentifer = ID_MSG_LOGIN2DB; usMsgType = MSG_PLAYER_BIND_ACCOUNT ; }
-	unsigned int nSessionID ;
-};
-
-struct stMsgLoginBindAccountRet
-	:public stMsgRebindAccountRet
-{
-	stMsgLoginBindAccountRet(){ cSysIdentifer = ID_MSG_DB2LOGIN ; usMsgType = MSG_PLAYER_BIND_ACCOUNT ; }
-	unsigned int nSessionID ;
-};
-
-struct stMsgLoginModifyPassword
-	:public stMsgModifyPassword
-{
-public: 
-	stMsgLoginModifyPassword(){ cSysIdentifer = ID_MSG_LOGIN2DB; usMsgType = MSG_MODIFY_PASSWORD ; }
-	unsigned int nSessionID ;
-};
-
-struct stMsgLoginModifyPasswordRet
-	:public stMsgModifyPasswordRet
-{
-	stMsgLoginModifyPasswordRet(){ cSysIdentifer = ID_MSG_DB2LOGIN ; usMsgType = MSG_MODIFY_PASSWORD ; }
-	unsigned int nSessionID ;
-};
 
 struct stMsgGameServerCreateRole
 	:public stMsgCreateRole

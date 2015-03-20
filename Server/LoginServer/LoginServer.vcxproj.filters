@@ -45,13 +45,7 @@
     <ClInclude Include="src\main.h">
       <Filter>head</Filter>
     </ClInclude>
-    <ClInclude Include="src\LoginPeer.h">
-      <Filter>head</Filter>
-    </ClInclude>
     <ClInclude Include="src\LoginApp.h">
-      <Filter>head</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LoginPeerMgr.h">
       <Filter>head</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\IConfigFile.h">
@@ -104,13 +98,7 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\LoginPeer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\LoginApp.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LoginPeerMgr.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Common\IConfigFile.cpp">
