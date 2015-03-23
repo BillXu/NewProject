@@ -3,9 +3,9 @@
 #include "ContinueLoginConfig.h"
 #include "LogManager.h"
 #include "ItemConfig.h"
-#ifdef GAME_SERVER
-#include "../Server/GameServer/src/InformConfig.h"
-#include "../Server/GameServer/src/SlotMachine.h"
+#ifdef DATA_SERVER
+#include "../Server/DataServer/src/InformConfig.h"
+#include "../Server/DataServer/src/SlotMachine.h"
 #endif
 #include "RoomConfig.h"
 #include "ShopConfg.h"

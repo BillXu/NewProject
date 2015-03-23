@@ -1040,31 +1040,31 @@ void CDBManager::GetPlayerDetailData(stPlayerDetailData* pData, CMysqlRow&prow)
 	pData->nLoseTimes = prow["loseTimes"]->IntValue();
 	pData->nSingleWinMost = prow["singleWinMost"]->IntValue64();
 	pData->nWinTimes = prow["winTimes"]->IntValue();
-	pData->nYesterDayPlayTimes = prow["yesterdayPlayTimes"]->IntValue();
+	//pData->nYesterDayPlayTimes = prow["yesterdayPlayTimes"]->IntValue();
 	time_t tLastOffline = prow["offlineTime"]->IntValue();
 	time_t tNow = time(NULL) ;
 	struct tm tLast = *localtime(&tLastOffline) ;
 	struct tm tNowt = *localtime(&tNow) ;
 	if ( tLast.tm_yday == tNowt.tm_yday - 1 )  // yesterday offline ;
 	{
-		pData->nYesterDayPlayTimes = prow["todayPlayTimes"]->IntValue();
+		//pData->nYesterDayPlayTimes = prow["todayPlayTimes"]->IntValue();
 	}
 	else if ( tLast.tm_yday < tNowt.tm_yday -1 )
 	{
-		pData->nYesterDayPlayTimes = 0 ;
+		//pData->nYesterDayPlayTimes = 0 ;
 	}
 }
 
 void CDBManager::GetPlayerBrifData(stPlayerBrifData*pData,CMysqlRow&prow)
 {
 	pData->bIsOnLine = false ;
-	pData->bIsUploadPhoto = prow["isUploadPhoto"]->IntValue();
+	//pData->bIsUploadPhoto = prow["isUploadPhoto"]->IntValue();
 	memset(pData->cName,0,sizeof(pData->cName)) ;
 	memcpy(pData->cName,prow["playerName"]->BufferData(),prow["playerName"]->nBufferLen);
 	pData->nCoin = prow["coin"]->IntValue64();
-	pData->nDefaultPhotoID = prow["defaultPhotoID"]->IntValue();
+	//pData->nDefaultPhotoID = prow["defaultPhotoID"]->IntValue();
 	pData->nDiamoned = prow["diamond"]->IntValue();
-	pData->nExp = prow["exp"]->IntValue();
+	//pData->nExp = prow["exp"]->IntValue();
 	pData->nSex = prow["sex"]->IntValue();
 	pData->nUserUID = prow["userUID"]->IntValue();
 	pData->nVipLevel = prow["vipLevel"]->IntValue();

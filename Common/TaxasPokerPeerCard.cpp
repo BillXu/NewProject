@@ -310,7 +310,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 				m_eType =  eCard_TongHuaShun ;
 				m_vFinalCard.clear();
 				m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
-#if (!defined(GAME_SERVER)) && (!defined(ROBOT))
+#if (!defined(SERVER)) && (!defined(ROBOT))
 				m_strCardName = "同花顺";
 #endif	
 				return ;
@@ -322,7 +322,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 				m_eType =  eCard_TongHuaShun ;
 				m_vFinalCard.clear();
 				m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
-#if (!defined(GAME_SERVER)) && (!defined(ROBOT))
+#if (!defined(SERVER)) && (!defined(ROBOT))
 				m_strCardName = "同花顺";
 #endif	
 				return ;
@@ -568,7 +568,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		else  // one pairs ;
 		{
 			m_eType = eCard_YiDui ;
-#if defined(GAME_SERVER) || defined(ROBOT) 
+#if defined(SERVER) || defined(ROBOT) 
 
 #else
 			m_strCardName = "一对";

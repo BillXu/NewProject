@@ -195,6 +195,7 @@ bool CDataBaseThread::ProcessRequest()
 							else
 							{
 								delete pField ;
+								printf("not support data type from db") ;
 								assert(0&&"why support type not !");
 								continue; 
 							}

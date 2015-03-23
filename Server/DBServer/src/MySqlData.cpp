@@ -25,6 +25,33 @@ const char* stMysqlField::BufferData()
 	return pBuffer ; 
 }
 
+void stMysqlField::VecString( VEC_STRING& vOutString ,char cSplit)
+{
+	StringSplit(CStringValue(), cSplit, vOutString );
+}
+
+void stMysqlField::VecInt( std::vector<int>& vOutInt,char cSplit  )
+{
+	VEC_STRING vOutString ;
+	VecString(vOutString ,cSplit);
+	VEC_STRING::iterator iter = vOutString.begin() ;
+	for ( ; iter != vOutString.end(); ++iter )
+	{
+		vOutInt.push_back(atoi(iter->c_str()));
+	}
+}
+
+void stMysqlField::VecFloat( std::vector<float>& vOutFloat,char cSplit ) 
+{
+	VEC_STRING vOutString ;
+	VecString(vOutString ,cSplit);
+	VEC_STRING::iterator iter = vOutString.begin() ;
+	for ( ; iter != vOutString.end(); ++iter )
+	{
+		vOutFloat.push_back((float)atof(iter->c_str()));
+	}
+}
+
 stMysqlField::~stMysqlField()
 {
 	delete[] pBuffer;

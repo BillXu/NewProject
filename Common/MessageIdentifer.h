@@ -61,7 +61,9 @@ enum eMsgType
 	MSG_PUSH_APNS_TOKEN,  // used for apns ; APPLE remote push notification ;
 	// msg title used between server and client ;
 	MSG_RECONNECT,   // client with gate 
-	MSG_SAVE_PLAYER_COIN, // send to DB ;
+	MSG_SAVE_PLAYER_MONEY, // send to DB ;
+	MSG_SAVE_PLAYER_TAXAS_DATA,
+	MSG_SAVE_COMMON_LOGIC_DATA,
 	MSG_SAVE_DB_LOG, // save log inter log db ;
 	
 	MSG_GATESERVER_INFO,
@@ -71,16 +73,18 @@ enum eMsgType
 	MSG_PLAYER_LOGIN,  // check an account is valid ;
 	MSG_PLAYER_BIND_ACCOUNT, //  a quick enter player need to bind a real account and password ;
 	MSG_MODIFY_PASSWORD,
+	MSG_PLAYER_OTHER_LOGIN,  // more than one place login , prelogin need disconnect ; client recived must disconnect from server
+	MSG_PLAYER_BASE_DATA = 150,
+	MSG_PLAYER_SAVE_PLAYER_INFO,
+
 	///------new define end---
 	MSG_SERVER_AND_CLIENT_COMMON_BEGIN = 100,  // server and client common msg , beyond specail game 
 	MSG_PLAYER_ENTER_GAME,    // after check , enter game 
-	MSG_PLAYER_OTHER_LOGIN,  // more than one place login , prelogin need disconnect ; client recived must disconnect from server
+	
 	//MSG_PLAYER_CONTINUE_LOGIN,  // contiune login prize ;
 	
 	MSG_CREATE_ROLE,
 	// player base Data 
-	MSG_PLAYER_BASE_DATA = 150,
-	MSG_PLAYER_SAVE_BASE_DATA,
 	MSG_REQUEST_ROOM_LIST,
 	MSG_SHOW_CONTINUE_LOGIN_DLG,
 	MSG_GET_CONTINUE_LOGIN_REWARD,

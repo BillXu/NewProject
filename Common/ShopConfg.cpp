@@ -2,7 +2,7 @@
 #include "LogManager.h"
 #include "ConfigManager.h"
 #include "ItemConfig.h"
-#ifndef GAME_SERVER
+#ifndef SERVER
 #include "ClientApp.h"
 #endif
 #include <time.h>
@@ -97,7 +97,7 @@ stShopItem* CShopConfigMgr::GetShopItem(unsigned int nShopItemID )
 unsigned int CShopConfigMgr::GetCurrencySize()
 {
     int count = 0;
-#ifndef GAME_SERVER
+#ifndef SERVER
     MAP_SHOP_ITEMS::iterator iter = m_vAllShopItems.begin();
     for(iter=m_vAllShopItems.begin();iter!=m_vAllShopItems.end();++iter)
     {
@@ -122,7 +122,7 @@ unsigned int CShopConfigMgr::GetCurrencySize()
 unsigned int CShopConfigMgr::GetPropsSize()
 {
     int count = 0;
-#ifndef GAME_SERVER
+#ifndef SERVER
     MAP_SHOP_ITEMS::iterator iter = m_vAllShopItems.begin();
     for(iter=m_vAllShopItems.begin();iter!=m_vAllShopItems.end();++iter)
     {
@@ -169,7 +169,7 @@ unsigned int CShopConfigMgr::GetAppStoreProductSize()
 
 stShopItem* CShopConfigMgr::GetCurrencyByIndex(unsigned int index)
 {
-#ifndef GAME_SERVER
+#ifndef SERVER
     int count = 0;
     MAP_SHOP_ITEMS::iterator iter = m_vAllShopItems.begin();
     switch (index % 3) {
@@ -248,7 +248,7 @@ stShopItem* CShopConfigMgr::GetCurrencyByIndex(unsigned int index)
 
 stShopItem* CShopConfigMgr::GetPropsByIndex(unsigned int index)
 {
-#ifndef GAME_SERVER
+#ifndef SERVER
     int count = 0;
     MAP_SHOP_ITEMS::iterator iter = m_vAllShopItems.begin();
     for(iter=m_vAllShopItems.begin();iter!=m_vAllShopItems.end();++iter)
@@ -317,7 +317,7 @@ stShopItem* CShopConfigMgr::GetAppStoreProductByProductID(std::string productID)
 
 bool CShopConfigMgr::UpdateAppStoreProduct(std::string productID,std::string title,float price)
 {
-#ifndef GAME_SERVER
+#ifndef SERVER
     MAP_SHOP_ITEMS::iterator iter = m_vAllShopItems.begin();
     for(iter=m_vAllShopItems.begin();iter!=m_vAllShopItems.end();++iter)
     {

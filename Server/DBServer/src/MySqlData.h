@@ -1,6 +1,8 @@
 #pragma once 
 #include <string>
 #include <list>
+#include "utility.h"
+#define FILIED_SPLIT ','
 enum eValueType
 {
 	// warning : when add a type that need to New Buffer , we should add it to stFiled::~stFiled ; because the buffer will delect there ;
@@ -27,6 +29,9 @@ public:
 	double DoubleValue();
 	const char* BufferData();
 	const char* CStringValue(){ return BufferData() ;}
+	void VecString( VEC_STRING& vOutString ,char cSplit = FILIED_SPLIT );
+	void VecInt( std::vector<int>& vOutInt,char cSplit = FILIED_SPLIT );
+	void VecFloat( std::vector<float>& vOutFloat,char cSplit  = FILIED_SPLIT  ) ;
 	~stMysqlField();
 };
 

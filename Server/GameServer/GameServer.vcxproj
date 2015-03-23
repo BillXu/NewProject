@@ -14,6 +14,7 @@
     <ProjectGuid>{61A7DB25-7A43-44E9-A75D-FDD674D0E138}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>GameServer</RootNamespace>
+    <ProjectName>DataServer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -53,13 +54,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;GAME_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>RakNetDLL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -71,15 +72,15 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;GAME_SERVER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../Common;../../Common/NetLib;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>RakNetDLL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -99,7 +100,6 @@
     <ClInclude Include="..\..\Common\MessageDefine.h" />
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\..\Common\MissionConfig.h" />
-    <ClInclude Include="..\..\Common\NetWorkManager.h" />
     <ClInclude Include="..\..\Common\PeerCard.h" />
     <ClInclude Include="..\..\Common\RoomBaseData.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
@@ -110,38 +110,19 @@
     <ClInclude Include="..\..\Common\TaxasRoomData.h" />
     <ClInclude Include="..\..\Common\TitleLevelConfig.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\DataServer\src\EventCenter.h" />
+    <ClInclude Include="..\DataServer\src\Events.h" />
+    <ClInclude Include="..\DataServer\src\GameServerApp.h" />
+    <ClInclude Include="..\DataServer\src\IPlayerComponent.h" />
+    <ClInclude Include="..\DataServer\src\main.h" />
+    <ClInclude Include="..\DataServer\src\Player.h" />
+    <ClInclude Include="..\DataServer\src\PlayerBaseData.h" />
+    <ClInclude Include="..\DataServer\src\PlayerMail.h" />
+    <ClInclude Include="..\DataServer\src\PlayerManager.h" />
+    <ClInclude Include="..\DataServer\src\PlayerMission.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
-    <ClInclude Include="src\Brocaster.h" />
-    <ClInclude Include="src\EventCenter.h" />
-    <ClInclude Include="src\Events.h" />
-    <ClInclude Include="src\GameRank.h" />
-    <ClInclude Include="src\GameServerApp.h" />
-    <ClInclude Include="src\InformConfig.h" />
-    <ClInclude Include="src\IPlayerComponent.h" />
-    <ClInclude Include="src\main.h" />
-    <ClInclude Include="src\Player.h" />
-    <ClInclude Include="src\PlayerBaseData.h" />
-    <ClInclude Include="src\PlayerEvent.h" />
-    <ClInclude Include="src\PlayerFriend.h" />
-    <ClInclude Include="src\PlayerItem.h" />
-    <ClInclude Include="src\PlayerMail.h" />
-    <ClInclude Include="src\PlayerManager.h" />
-    <ClInclude Include="src\PlayerMission.h" />
-    <ClInclude Include="src\PlayerOnlineBox.h" />
-    <ClInclude Include="src\PlayerShop.h" />
-    <ClInclude Include="src\RobotManager.h" />
-    <ClInclude Include="src\RoomBaseNew.h" />
-    <ClInclude Include="src\RoomGolden.h" />
-    <ClInclude Include="src\RoomBase.h" />
-    <ClInclude Include="src\RoomGoldenNew.h" />
-    <ClInclude Include="src\RoomManager.h" />
-    <ClInclude Include="src\RoomPeer.h" />
-    <ClInclude Include="src\RoomTaxasNew.h" />
-    <ClInclude Include="src\RoomTexasPoker.h" />
-    <ClInclude Include="src\SlotMachine.h" />
-    <ClInclude Include="src\TaxasPokerPeer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\BoxConfig.cpp" />
@@ -154,7 +135,6 @@
     <ClCompile Include="..\..\Common\ItemConfig.cpp" />
     <ClCompile Include="..\..\Common\LogManager.cpp" />
     <ClCompile Include="..\..\Common\MissionConfig.cpp" />
-    <ClCompile Include="..\..\Common\NetWorkManager.cpp" />
     <ClCompile Include="..\..\Common\PeerCard.cpp" />
     <ClCompile Include="..\..\Common\RoomBaseData.cpp" />
     <ClCompile Include="..\..\Common\RoomConfig.cpp" />
@@ -163,35 +143,17 @@
     <ClCompile Include="..\..\Common\TaxasRoomData.cpp" />
     <ClCompile Include="..\..\Common\TitleLevelConfig.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\DataServer\src\EventCenter.cpp" />
+    <ClCompile Include="..\DataServer\src\GameServerApp.cpp" />
+    <ClCompile Include="..\DataServer\src\IPlayerComponent.cpp" />
+    <ClCompile Include="..\DataServer\src\main.cpp" />
+    <ClCompile Include="..\DataServer\src\Player.cpp" />
+    <ClCompile Include="..\DataServer\src\PlayerBaseData.cpp" />
+    <ClCompile Include="..\DataServer\src\PlayerMail.cpp" />
+    <ClCompile Include="..\DataServer\src\PlayerManager.cpp" />
+    <ClCompile Include="..\DataServer\src\PlayerMission.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
-    <ClCompile Include="src\Brocaster.cpp" />
-    <ClCompile Include="src\EventCenter.cpp" />
-    <ClCompile Include="src\GameRank.cpp" />
-    <ClCompile Include="src\GameServerApp.cpp" />
-    <ClCompile Include="src\InformConfig.cpp" />
-    <ClCompile Include="src\IPlayerComponent.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Player.cpp" />
-    <ClCompile Include="src\PlayerBaseData.cpp" />
-    <ClCompile Include="src\PlayerFriend.cpp" />
-    <ClCompile Include="src\PlayerItem.cpp" />
-    <ClCompile Include="src\PlayerMail.cpp" />
-    <ClCompile Include="src\PlayerManager.cpp" />
-    <ClCompile Include="src\PlayerMission.cpp" />
-    <ClCompile Include="src\PlayerOnlineBox.cpp" />
-    <ClCompile Include="src\PlayerShop.cpp" />
-    <ClCompile Include="src\RobotManager.cpp" />
-    <ClCompile Include="src\RoomBaseNew.cpp" />
-    <ClCompile Include="src\RoomGolden.cpp" />
-    <ClCompile Include="src\RoomBase.cpp" />
-    <ClCompile Include="src\RoomGoldenNew.cpp" />
-    <ClCompile Include="src\RoomManager.cpp" />
-    <ClCompile Include="src\RoomPeer.cpp" />
-    <ClCompile Include="src\RoomTaxasNew.cpp" />
-    <ClCompile Include="src\RoomTexasPoker.cpp" />
-    <ClCompile Include="src\SlotMachine.cpp" />
-    <ClCompile Include="src\TaxasPokerPeer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

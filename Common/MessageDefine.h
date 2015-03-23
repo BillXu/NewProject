@@ -115,6 +115,108 @@ struct stMsgModifyPasswordRet
 	unsigned char nRet ; // 0 success , 1 uid not exsit , 2 old passworld error 
 };
 
+struct stMsgPlayerOtherLogin
+	:public stMsg
+{
+	stMsgPlayerOtherLogin(){cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_OTHER_LOGIN ;}
+};
+
+// base data about 
+struct stPlayerBrifData
+{
+	char cName[MAX_LEN_CHARACTER_NAME];
+	uint32_t nUserUID ;
+	uint8_t nSex ; // eSex ;
+	uint8_t nVipLevel ;
+	uint16_t nPhotoID ;
+	uint64_t nCoin ;
+	uint32_t nDiamoned ;
+	bool bIsOnLine ;
+};
+
+struct stPlayerDetailData
+	:public stPlayerBrifData
+{
+	char cSignature[MAX_LEN_SIGURE] ;
+	uint64_t nSingleWinMost ;
+	uint64_t nMostCoinEver;
+	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
+	uint32_t nWinTimes ;
+	uint32_t nLoseTimes ;
+	double dfLongitude;
+	double dfLatidue;
+	uint32_t nExp ;
+	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
+	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
+};
+
+struct stCommonBaseData
+	:public stPlayerDetailData
+{
+	int64_t nYesterdayCoinOffset ;
+	int64_t nTodayCoinOffset ;
+};
+
+struct stServerBaseData
+	:public stCommonBaseData
+{
+	unsigned int tOfflineTime ;  // last offline time ;
+	unsigned int nContinueDays ;
+	unsigned int tLastLoginTime;
+	unsigned int tLastTakeCharityCoinTime ;
+};
+
+struct stMsgPlayerBaseData
+	:public stMsg
+{
+	stMsgPlayerBaseData(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_BASE_DATA ; }
+	stCommonBaseData stBaseData ;
+};
+
+// modify name and sigure
+struct stMsgPLayerModifyName
+	:public stMsg
+{
+	stMsgPLayerModifyName(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_MODIFY_NAME ; }
+	char pNewName[MAX_LEN_CHARACTER_NAME] ;
+};
+
+struct stMsgPlayerModifyNameRet
+	:public stMsg
+{
+	stMsgPlayerModifyNameRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_MODIFY_NAME ; }
+	unsigned char nRet ; // 0 ok
+	char pName[MAX_LEN_CHARACTER_NAME] ;
+};
+
+struct stMsgPLayerModifySigure
+	:public stMsg
+{
+	stMsgPLayerModifySigure(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_MODIFY_SIGURE ; }
+	char pNewSign[MAX_LEN_SIGURE] ;
+};
+
+struct stMsgPlayerModifySigureRet
+	:public stMsg
+{
+	stMsgPlayerModifySigureRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_MODIFY_SIGURE ; }
+	unsigned char nRet ;        // 0 ok
+};
+
+struct stMsgPlayerModifyPhoto
+	:public stMsg
+{
+	stMsgPlayerModifyPhoto(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_MODIFY_PHOTO ; }
+	uint16_t nPhotoID ;
+};
+
+struct stMsgPlayerModifyPhotoRet
+	:public stMsg
+{
+	stMsgPlayerModifyPhotoRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_MODIFY_PHOTO ; }
+	uint8_t nRet ; // 0 means success ;
+};
+
 
 ///--------------------ablove is new , below is old------
 
@@ -169,86 +271,6 @@ struct stMsgPlayerEnterGame
 	unsigned int nUserUID ;
 };
 
-struct stMsgPlayerOtherLogin
-	:public stMsg
-{
-	stMsgPlayerOtherLogin(){cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_PLAYER_OTHER_LOGIN ;}
-};
-
-// base data about 
-struct stCommonBaseData
-{
-	unsigned int nUserUID ;
-	char cName[MAX_LEN_CHARACTER_NAME];
-	unsigned short nDefaulPhotoID ;
-	bool bIsUploadPhoto ;
-	char cSignature[MAX_LEN_SIGURE] ;
-	unsigned char nSex ;
-	unsigned char nVipLevel ;
-	int64_t nCoin ;
-	unsigned int nDiamoned ;
-	unsigned int nWinTimes;
-	unsigned int nLoseTimes ;
-	int64_t nSingleWinMost;
-	unsigned char vMaxCards[MAX_TAXAS_HOLD_CARD] ;
-	double dfLongitude;
-	double dfLatidue;
-	unsigned int nExp ;
-	unsigned int nNoticeID ;
-	unsigned int nVipEndTime ;
-	unsigned int nTodayPlayTimes ;
-	unsigned int nYesterdayPlayTimes ;
-	int64_t nYesterdayWinCoin ;
-	int64_t nTodayWinCoin ;
-};
-
-struct stServerBaseData
-	:public stCommonBaseData
-{
-	unsigned int tOfflineTime ;  // last offline time ;
-	unsigned int nContinueDays ;
-	unsigned int tLastLoginTime;
-	unsigned int tLastTakeCharityCoinTime ;
-	unsigned int tTakeMasterStudentRewardTime;
-	unsigned int nRechargeTimes ;
-	unsigned short nCurOnlineBoxID ;
-	unsigned int nOnlineBoxPassedTime ;
-};
-
-struct stPlayerBrifData
-{
-	char cName[MAX_LEN_CHARACTER_NAME];
-	unsigned int nUserUID ;
-	unsigned char nSex ; // eSex ;
-	unsigned char nVipLevel ;
-	unsigned short nDefaultPhotoID ;
-	bool bIsUploadPhoto ;
-	unsigned int nExp ;
-	uint64_t nCoin ;
-	unsigned int nDiamoned ;
-	bool bIsOnLine ;
-};
-
-struct stPlayerDetailData
-	:public stPlayerBrifData
-{
-	char cSignature[MAX_LEN_SIGURE] ;
-	uint64_t nSingleWinMost ;
-	unsigned int nWinTimes ;
-	unsigned int nLoseTimes ;
-	unsigned int nYesterDayPlayTimes ;
-	double dfLongitude;
-	double dfLatidue;
-};
-
-struct stMsgPlayerBaseData
-	:public stMsg
-{
-	stMsgPlayerBaseData(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_PLAYER_BASE_DATA ; }
-	stCommonBaseData stBaseData ;
-	unsigned int nSessionID ; 
-};
-
 struct stMsgShowContinueLoginDlg
 	:public stMsg
 {
@@ -272,67 +294,6 @@ struct stMsgGetContinueLoginRewardRet
 	unsigned int nDayIdx ;
 	uint64_t nFinalCoin ;
 	unsigned int nDiamoned ;
-};
-// modify name and sigure
-struct stMsgPLayerModifyName
-	:public stMsg
-{
-	stMsgPLayerModifyName(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_MODIFY_NAME ; }
-	char pNewName[MAX_LEN_CHARACTER_NAME] ;
-};
-
-struct stMsgPlayerModifyNameRet
-	:public stMsg
-{
-	stMsgPlayerModifyNameRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_MODIFY_NAME ; }
-	unsigned char nRet ; // 0 ok
-	char pName[MAX_LEN_CHARACTER_NAME] ;
-};
-
-struct stMsgPLayerModifySigure
-	:public stMsg
-{
-	stMsgPLayerModifySigure(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_MODIFY_SIGURE ; }
-	char pNewSign[MAX_LEN_SIGURE] ;
-};
-
-struct stMsgPlayerModifySigureRet
-	:public stMsg
-{
-	stMsgPlayerModifySigureRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_MODIFY_SIGURE ; }
-	unsigned char nRet ;        // 0 ok
-	char pSign[MAX_LEN_SIGURE] ;
-};
-
-struct stMsgPlayerModifyPhoto
-	:public stMsg
-{
-	stMsgPlayerModifyPhoto(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_MODIFY_PHOTO ; }
-	bool bUploadPhoto ;
-	unsigned int nNewDefaultPhotoID ;
-};
-
-struct stMsgPlayerModifyPhotoRet
-	:public stMsg
-{
-	stMsgPlayerModifyPhotoRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_MODIFY_PHOTO ; }
-	unsigned char nRet ; // 0 means success ;
-	bool bUploadPhoto ;
-	unsigned int nNewDefaultPhotoID ;
-};
-
-struct stMsgPlayerModifySex
-	:public stMsg
-{
-	stMsgPlayerModifySex(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_MODIFY_SEX ;}
-	unsigned char nSex ; // eSex ;
-};
-
-struct stMsgPlayerModifySexRet
-	:public stMsg
-{
-	stMsgPlayerModifySexRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_MODIFY_SEX ;}
-	unsigned char nNewSex ; // eSex ;
 };
 
 struct stMsgPlayerUpdateVipLevel

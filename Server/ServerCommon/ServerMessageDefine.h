@@ -39,6 +39,79 @@ struct stMsgRequestDBCreatePlayerData
 	uint32_t nUserUID ;
 };
 
+struct stMsgOnPlayerLogin
+	:public stMsg
+{
+	stMsgOnPlayerLogin(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_LOGIN ; }
+	uint32_t nUserUID ;
+};
+
+// game and db 
+struct stMsgDataServerGetBaseData
+	:public stMsg
+{
+	stMsgDataServerGetBaseData(){cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_PLAYER_BASE_DATA ; }
+	unsigned int nUserUID ;
+};
+
+struct stMsgDataServerGetBaseDataRet
+	:public stMsg
+{
+	stMsgDataServerGetBaseDataRet(){cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_BASE_DATA ; }
+	unsigned char nRet ; // 0 success , 1 not exsit  ;
+	stServerBaseData stBaseData ;
+};
+
+// save player data ;
+struct stMsgSavePlayerInfo   
+	:public stMsg
+{
+	stMsgSavePlayerInfo(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_PLAYER_SAVE_PLAYER_INFO ; }
+	uint32_t nUserUID ;
+	char vName[MAX_LEN_CHARACTER_NAME] ;
+	char vSigure[MAX_LEN_SIGURE] ;
+	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
+	uint16_t nPhotoID ;
+};
+
+struct stMsgSavePlayerMoney
+	:public stMsg
+{
+	stMsgSavePlayerMoney(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_MONEY ; }
+	uint32_t nUserUID ;
+	uint64_t nCoin ;
+	uint32_t nDiamoned ;
+};
+
+struct stMsgSavePlayerTaxaPokerData
+	:public stMsg
+{
+	stMsgSavePlayerTaxaPokerData(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_TAXAS_DATA ; }
+	uint32_t nUserUID ;
+	uint32_t nWinTimes ;
+	uint32_t nLoseTimes ;
+	uint64_t nSingleWinMost ;
+	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
+};
+
+struct stMsgSavePlayerCommonLoginData
+	:public stMsg
+{
+	stMsgSavePlayerCommonLoginData(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_COMMON_LOGIC_DATA;  } 
+	uint32_t nUserUID ;
+	uint64_t nMostCoinEver;
+	uint8_t nVipLevel ;
+	uint32_t nExp ;
+	int64_t nYesterdayCoinOffset ;
+	int64_t nTodayCoinOffset ;
+	uint32_t tOfflineTime ;  // last offline time ;
+	uint32_t nContinueDays ;
+	uint32_t tLastLoginTime;
+	uint32_t tLastTakeCharityCoinTime ;
+	double dfLongitude;
+	double dfLatidue;
+};
+
 //----above is new , below is ok---------
 
 //--------------------------------------------
@@ -93,44 +166,6 @@ struct stMsgGameServerCreateRoleRet
 {
 	stMsgGameServerCreateRoleRet(){ cSysIdentifer = ID_MSG_DB2GM ; usMsgType = MSG_CREATE_ROLE ; }
 	unsigned int nSessionID ;
-};
-// game and db 
-struct stMsgGameServerGetBaseData
-	:public stMsgGM2DB
-{
-	stMsgGameServerGetBaseData(){cSysIdentifer = ID_MSG_GM2DB ; usMsgType = MSG_PLAYER_BASE_DATA ; }
-	unsigned int nUserUID ;
-};
-
-struct stMsgGameServerGetBaseDataRet
-	:public stMsgDB2GM
-{
-	stMsgGameServerGetBaseDataRet(){cSysIdentifer = ID_MSG_DB2GM ; usMsgType = MSG_PLAYER_BASE_DATA ; }
-	unsigned char nRet ; // 0 success , 1 not exsit  ;
-	stServerBaseData stBaseData ;
-};
-
-struct stMsgGameServerSaveBaseData
-	:public stMsgGM2DB
-{
-	stMsgGameServerSaveBaseData(){ cSysIdentifer = ID_MSG_GM2DB; usMsgType = MSG_PLAYER_SAVE_BASE_DATA ; }
-	stServerBaseData stBaseData ;
-};
-
-struct stMsgGameServerSavePlayerCoin
-	:public stMsgGM2DB
-{
-	stMsgGameServerSavePlayerCoin(){cSysIdentifer = ID_MSG_GM2DB; usMsgType = MSG_SAVE_PLAYER_COIN ; }
-	unsigned int nUserUID ;
-	uint64_t nCoin ;
-	unsigned int nDiamoned ;
-};
-
-struct stMsgGameServerSavePlayerCoinRet
-	:public stMsgDB2GM
-{
-	stMsgGameServerSavePlayerCoinRet(){ ID_MSG_DB2GM ; usMsgType = MSG_SAVE_PLAYER_COIN ; }
-	unsigned char nRet ; // 0 success , 1 failed ;
 };
 
 // mail module 

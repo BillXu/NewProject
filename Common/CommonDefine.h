@@ -1,9 +1,9 @@
 #pragma once
 #include "NativeTypes.h"
-#define MAX_LEN_ACCOUNT 50   // can not big then unsigned char max = 255
-#define  MAX_LEN_PASSWORD 50 // can not big then unsigned char max = 255
-#define MAX_LEN_CHARACTER_NAME 50 // can not big then unsigned char  max = 255
-#define MAX_LEN_SIGURE 100   // can not big then unsigned char  max = 255
+#define MAX_LEN_ACCOUNT 25   // can not big then unsigned char max = 255
+#define  MAX_LEN_PASSWORD 25 // can not big then unsigned char max = 255
+#define MAX_LEN_CHARACTER_NAME 25 // can not big then unsigned char  max = 255
+#define MAX_LEN_SIGURE 60   // can not big then unsigned char  max = 255
 #define MAX_LEN_EMAIL 50
 #define MAX_LEN_SPEAK_WORDS 200  
 #define MAX_MSG_BUFFER_LEN 2048*3
@@ -15,6 +15,8 @@
 #define TAXAS_PUBLIC_CARD 5
 #define MAX_ROOM_PEER 5
 #define MAX_TAXAS_HOLD_CARD 5
+#define MAX_UPLOAD_PIC 4
+#define MAX_JOINED_CLUB_CNT 10
 
 #define COIN_CONDITION_TO_GET_CHARITY 1000
 #define TIME_GET_CHARITY_ELAPS 60*60*2   // 2 HOURE
