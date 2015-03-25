@@ -140,13 +140,13 @@ struct stPlayerDetailData
 	char cSignature[MAX_LEN_SIGURE] ;
 	uint64_t nSingleWinMost ;
 	uint64_t nMostCoinEver;
-	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
 	uint32_t nWinTimes ;
 	uint32_t nLoseTimes ;
 	double dfLongitude;
 	double dfLatidue;
-	uint32_t nExp ;
+	uint32_t tOfflineTime ;  // last offline time ;
 	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
+	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
 	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
 };
 
@@ -160,7 +160,6 @@ struct stCommonBaseData
 struct stServerBaseData
 	:public stCommonBaseData
 {
-	unsigned int tOfflineTime ;  // last offline time ;
 	unsigned int nContinueDays ;
 	unsigned int tLastLoginTime;
 	unsigned int tLastTakeCharityCoinTime ;

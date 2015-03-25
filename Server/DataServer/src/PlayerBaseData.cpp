@@ -375,7 +375,7 @@ void CPlayerBaseData::TimerSave()
 		msgLogicData.dfLatidue = m_stBaseData.dfLatidue ;
 		msgLogicData.dfLongitude = m_stBaseData.dfLongitude ;
 		msgLogicData.nContinueDays = m_stBaseData.nContinueDays ;
-		msgLogicData.nExp = m_stBaseData.nExp ;
+		//msgLogicData.nExp = m_stBaseData.nExp ;
 		msgLogicData.nMostCoinEver = m_stBaseData.nMostCoinEver;
 		msgLogicData.nTodayCoinOffset = m_stBaseData.nTodayCoinOffset ;
 		msgLogicData.nYesterdayCoinOffset = m_stBaseData.nYesterdayCoinOffset ;

@@ -41,6 +41,26 @@ void stMysqlField::VecInt( std::vector<int>& vOutInt,char cSplit  )
 	}
 }
 
+std::string stMysqlField::Int64ArraryToString( int64_t vInt[] , uint16_t nCnt )
+{
+	std::string strResult = "" ;
+	char pBuffer[100] = { 0 } ;
+	for ( uint16_t nIdx = 0 ; nIdx < nCnt ; ++nIdx )
+	{
+		memset(pBuffer,0,sizeof(pBuffer)) ;
+		if ( nIdx == 0 )
+		{
+			sprintf_s(pBuffer,sizeof(pBuffer),"%I64d",vInt[nIdx] ) ;
+		}
+		else
+		{
+			sprintf_s(pBuffer,sizeof(pBuffer),"%c%I64d",FILIED_SPLIT,vInt[nIdx] ) ;
+		}
+		strResult.append(pBuffer) ;
+	}
+	return strResult ;
+}
+
 void stMysqlField::VecFloat( std::vector<float>& vOutFloat,char cSplit ) 
 {
 	VEC_STRING vOutString ;

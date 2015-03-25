@@ -67,6 +67,7 @@ void RunFunc ( CDBServerApp* pApp )
 	}
 }
 
+#include "MySqlData.h"
 int main()
 {
 	//SetConsoleCtrlHandler(ConsoleHandler, TRUE); 

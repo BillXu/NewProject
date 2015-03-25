@@ -1,4 +1,4 @@
-#include "GameServerApp.h"
+#include "TaxasServerApp.h"
 #include <iostream>
 #include <WinDef.h>
 #include <Dbghelp.h>
@@ -15,7 +15,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 		if ( strcmp(pBuffer,"exit") == 0 || strcmp(pBuffer,"Q") == 0 )
 		{
 			bRunning = false ;
-			CGameServerApp* pAp = (CGameServerApp*)lpParam ;
+			CTaxasServerApp* pAp = (CTaxasServerApp*)lpParam ;
 			pAp->Stop();
 			printf("Closing!!!\n");
 		}
@@ -27,7 +27,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 	return 0;
 }
 
-void CreateThred( CGameServerApp* pApp )
+void CreateThred( CTaxasServerApp* pApp )
 {
 	DWORD threadID;
 	HANDLE hThread;
@@ -37,7 +37,7 @@ void CreateThred( CGameServerApp* pApp )
 
 LONG WINAPI MyUnhandledExceptionFilter( struct _EXCEPTION_POINTERS* ExceptionInfo )
 {
-	HANDLE lhDumpFile = CreateFile(L"DumpFileForDataServer.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL ,NULL);
+	HANDLE lhDumpFile = CreateFile(L"DumpFileForTaxasServer.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL ,NULL);
 
 	MINIDUMP_EXCEPTION_INFORMATION loExceptionInfo;
 	loExceptionInfo.ExceptionPointers = ExceptionInfo;
@@ -51,7 +51,7 @@ LONG WINAPI MyUnhandledExceptionFilter( struct _EXCEPTION_POINTERS* ExceptionInf
 }
 
 
-void RunFunc ( CGameServerApp* pApp )
+void RunFunc ( CTaxasServerApp* pApp )
 {
 	// exception 
 	__try
@@ -104,7 +104,7 @@ int main()
 	//char c = pPeerA.PK(&pPeerB) ;
 	//printf( "type A = %d ,robot Type A = %d, type B = %d ,result = %d\n",nType,pPeerA.GetCardTypeForRobot(),nTypeB ,c) ;
 	/////----test
-	CGameServerApp theApp ;
+	CTaxasServerApp theApp ;
 	theApp.Init() ;
 	CreateThred(&theApp);
 #ifdef NDEBUG

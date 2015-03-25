@@ -1,16 +1,15 @@
 #pragma once
 #include "NetWorkManager.h"
 #include "Timer.h"
-#include "PlayerManager.h"
-#include "ConfigManager.h"
+#include "RoomConfig.h"
 #include "ServerConfig.h"
-class CBrocaster ;
-class CGameServerApp
+#include "MessageDefine.h"
+class CTaxasServerApp
 	:public CNetMessageDelegate
 {
 public:
-	static CGameServerApp* SharedGameServerApp();
-	~CGameServerApp();
+	static CTaxasServerApp* SharedGameServerApp();
+	~CTaxasServerApp();
 	void Init();
 	virtual bool OnMessage( Packet* pMsg ) ;
 	virtual bool OnLostSever(Packet* pMsg);
@@ -19,15 +18,12 @@ public:
 	void ShutDown();
 	bool SendMsg( unsigned int nSessionID , const char* pBuffer , int nLen, bool bBroadcast = false );
 	CTimerManager* GetTimerMgr(){ return m_pTimerMgr ; }
-	CPlayerManager* GetPlayerMgr(){ return m_pPlayerManager ; }
-	CConfigManager* GetConfigMgr(){ return m_pConfigManager ; }
+	CRoomConfigMgr* GetConfigMgr(){ return m_pRoomConfig ; }
 	void Stop(){ m_bRunning = false ;}
 protected:
 	bool ProcessPublicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
-	void CheckNewDay();
-	stServerConfig* GetServerConfig(eServerType eType);
 public:
-	static CGameServerApp* s_GameServerApp ;
+	static CTaxasServerApp* s_TaxasServerApp ;
 protected:
 	bool m_bRunning  ;
 	// server associate 
@@ -35,14 +31,8 @@ protected:
 	// conpentent ;
 	CTimerManager* m_pTimerMgr ;
 	CNetWorkMgr* m_pNetWork ;
-	CPlayerManager* m_pPlayerManager ;
 
-	CConfigManager* m_pConfigManager ;
-	// server config 
-	CSeverConfigMgr m_stSvrConfigMgr ;
-
-	// check NewDay ;
-	unsigned int m_nCurDay ;
+	CRoomConfigMgr* m_pRoomConfig;
 
 	char m_pSendBuffer[MAX_MSG_BUFFER_LEN] ;
 };

@@ -39,6 +39,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CenterServer", "CenterServe
 		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TaxasServer", "TaxasServer\TaxasServer.vcxproj", "{5541E81B-70F6-425F-871A-C6A97DB550AE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -85,6 +90,10 @@ Global
 		{B48CE06E-A341-4E61-9468-EF821196794E}.Debug|Win32.Build.0 = Debug|Win32
 		{B48CE06E-A341-4E61-9468-EF821196794E}.Release|Win32.ActiveCfg = Release|Win32
 		{B48CE06E-A341-4E61-9468-EF821196794E}.Release|Win32.Build.0 = Release|Win32
+		{5541E81B-70F6-425F-871A-C6A97DB550AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5541E81B-70F6-425F-871A-C6A97DB550AE}.Debug|Win32.Build.0 = Debug|Win32
+		{5541E81B-70F6-425F-871A-C6A97DB550AE}.Release|Win32.ActiveCfg = Release|Win32
+		{5541E81B-70F6-425F-871A-C6A97DB550AE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

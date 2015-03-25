@@ -1,4 +1,5 @@
 #pragma once 
+#include "NativeTypes.h"
 #include <string>
 #include <list>
 #include "utility.h"
@@ -21,6 +22,49 @@ struct stMysqlField
 	std::string strFieldName ;
 	char* pBuffer ;
 	int nBufferLen ;
+public:
+	template<class varType >
+	static std::string UnIntArraryToString( varType vInt[] , uint16_t nCnt )
+	{
+		std::string strResult = "" ;
+		char pBuffer[100] = { 0 } ;
+		for ( uint16_t nIdx = 0 ; nIdx < nCnt ; ++nIdx )
+		{
+			memset(pBuffer,0,sizeof(pBuffer)) ;
+			if ( nIdx == 0 )
+			{
+				sprintf_s(pBuffer,sizeof(pBuffer),"%u",vInt[nIdx] ) ;
+			}
+			else
+			{
+				sprintf_s(pBuffer,sizeof(pBuffer),"%c%u",FILIED_SPLIT,vInt[nIdx] ) ;
+			}
+			strResult.append(pBuffer) ;
+		}
+		return strResult ;
+	}
+
+	template<class varType >
+	static std::string IntArraryToString( varType vInt[] , uint16_t nCnt )
+	{
+		std::string strResult = "" ;
+		char pBuffer[100] = { 0 } ;
+		for ( uint16_t nIdx = 0 ; nIdx < nCnt ; ++nIdx )
+		{
+			memset(pBuffer,0,sizeof(pBuffer)) ;
+			if ( nIdx == 0 )
+			{
+				sprintf_s(pBuffer,sizeof(pBuffer),"%d",vInt[nIdx] ) ;
+			}
+			else
+			{
+				sprintf_s(pBuffer,sizeof(pBuffer),"%c%d",FILIED_SPLIT,vInt[nIdx] ) ;
+			}
+			strResult.append(pBuffer) ;
+		}
+		return strResult ;
+	}
+	static std::string Int64ArraryToString( int64_t vInt[] , uint16_t nCnt );
 public:
 	stMysqlField(const char* pName,int nLen):strFieldName(pName,nLen){ pBuffer = NULL ;}
 	unsigned int IntValue();

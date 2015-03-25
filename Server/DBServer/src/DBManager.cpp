@@ -5,8 +5,8 @@
 #include "ServerMessageDefine.h"
 #include "DBApp.h"
 #include "DataBaseThread.h"
-#define PLAYER_BRIF_DATA "playerName,userUID,sex,vipLevel,defaultPhotoID,isUploadPhoto,exp,coin,diamond"
-#define PLAYER_DETAIL_DATA "playerName,userUID,sex,vipLevel,defaultPhotoID,isUploadPhoto,exp,coin,diamond,signature,singleWinMost,winTimes,loseTimes,yesterdayPlayTimes,todayPlayTimes,longitude,latitude,offlineTime"
+#define PLAYER_BRIF_DATA "playerName,userUID,sex,vipLevel,photoID,coin,diamond"
+#define PLAYER_BRIF_DATA_DETAIL_EXT ",signature,singleWinMost,mostCoinEver,vUploadedPic,winTimes,loseTimes,longitude,latitude,offlineTime,maxCard,vJoinedClubID"
 CDBManager::CDBManager(CDBServerApp* theApp )
 {
 	m_vReserverArgData.clear();
@@ -50,6 +50,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	}
 
 	pdata->eFromPort = eSenderPort ;
+	pdata->nSessionID = nSessionID ;
 
 	stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
 	pRequest->cOrder = eReq_Order_Normal ;
@@ -63,7 +64,6 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	case MSG_REQUEST_CREATE_PLAYER_DATA:
 		{
 			stMsgRequestDBCreatePlayerData* pCreate = (stMsgRequestDBCreatePlayerData*)pmsg ;
-			pdata->nSessionID = nSessionID ;
 			pdata->nExtenArg1 = pCreate->nUserUID ;
 
 			uint16_t nRandID = rand() % 10000 ;
@@ -72,15 +72,54 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				"call CreateNewRegisterPlayerData(%d,'guest%d')",pCreate->nUserUID,nRandID) ;
 		}
 		break;
-// 	case MSG_PLAYER_BASE_DATA:
-// 		{
-// 			stMsgGameServerGetBaseData* pbasedata = (stMsgGameServerGetBaseData*)pmsg ;
-// 			pdata->nSessionID = pbasedata->nSessionID ;
-// 			pdata->nExtenArg1 = pbasedata->nUserUID ;
-// 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"SELECT * FROM playerbasedata WHERE userUID = '%d'",pbasedata->nUserUID) ;
-// 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-// 		}
-// 		break;
+	case MSG_PLAYER_BASE_DATA:
+		{
+			stMsgDataServerGetBaseData* pRet = (stMsgDataServerGetBaseData*)pmsg ;
+			pdata->nExtenArg1 = pRet->nUserUID ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM playerbasedata WHERE userUID = '%d'",pRet->nUserUID) ;
+		}
+		break;
+	case MSG_PLAYER_SAVE_PLAYER_INFO:
+		{
+			stMsgSavePlayerInfo* pRet = (stMsgSavePlayerInfo*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+			std::string strUploadPic = stMysqlField::UnIntArraryToString(pRet->vUploadedPic,MAX_UPLOAD_PIC) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE playerbasedata SET playerName = '%s', signature = '%s',vUploadedPic = '%s',photoID = '%d' WHERE userUID = '%d'",pRet->vName,pRet->vSigure,strUploadPic.c_str(),pRet->nPhotoID,pRet->nUserUID) ;
+		}
+		break;
+	case MSG_SAVE_PLAYER_MONEY:
+		{
+			stMsgSavePlayerMoney* pRet = (stMsgSavePlayerMoney*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE playerbasedata SET coin = '%I64d', diamond = '%d' WHERE userUID = '%d'",pRet->nCoin,pRet->nDiamoned,pRet->nUserUID) ;
+		}
+		break;
+	case MSG_SAVE_PLAYER_TAXAS_DATA:
+		{
+			stMsgSavePlayerTaxaPokerData* pRet = (stMsgSavePlayerTaxaPokerData*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+			std::string strMaxcard = stMysqlField::UnIntArraryToString(pRet->vMaxCards,MAX_TAXAS_HOLD_CARD) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE playerbasedata SET winTimes = '%d', loseTimes = '%d', singleWinMost = '%I64d', maxCard = '%s' WHERE userUID = '%d'",pRet->nWinTimes,pRet->nLoseTimes,pRet->nSingleWinMost,strMaxcard.c_str(),pRet->nUserUID) ;
+		}
+		break;
+	case MSG_SAVE_COMMON_LOGIC_DATA:
+		{
+			stMsgSavePlayerCommonLoginData* pRet = (stMsgSavePlayerCommonLoginData*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+			std::string strJoinedClub = stMysqlField::UnIntArraryToString(pRet->vJoinedClubID,MAX_JOINED_CLUB_CNT) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE playerbasedata SET mostCoinEver = '%I64d', vipLevel = '%d', nYesterdayCoinOffset = '%I64d', \
+				nTodayCoinOffset = '%I64d',offlineTime = '%d',continueLoginDays = '%d',lastLoginTime = '%d',lastTakeCharityCoinTime = '%d', \
+				longitude = '%f',latitude = '%f,vJoinedClubID = '%s' WHERE userUID = '%d' ",
+				pRet->nMostCoinEver,pRet->nVipLevel,pRet->nYesterdayCoinOffset,pRet->nTodayCoinOffset,pRet->tOfflineTime,pRet->nContinueDays,pRet->tLastLoginTime,pRet->tLastTakeCharityCoinTime,pRet->dfLongitude,pRet->dfLatidue,
+				strJoinedClub.c_str(),pRet->nUserUID) ;
+		}
+		break;
 // 	case MSG_PLAYER_SAVE_BASE_DATA:
 // 		{
 // 			stMsgGameServerSaveBaseData* pSaveBaseData = (stMsgGameServerSaveBaseData*)pmsg ;
@@ -490,20 +529,20 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 void CDBManager::OnDBResult(stDBResult* pResult)
 {
 	// process result 
-	if ( pResult->nRequestUID == (unsigned int )-1 )   // get current max curUID ;
-	{
-		if ( pResult->nAffectRow > 0 )
-		{
-			CMysqlRow& pRow = *pResult->vResultRows.front(); 
-			unsigned int nMaxID = pRow["max(Account.UserUID)"]->IntValue();
-			if ( nMaxID >= nCurUserUID )
-			{
-				nCurUserUID = ++nMaxID ;
-				CLogMgr::SharedLogMgr()->SystemLog("curMaxUID is %d",nMaxID ) ;
-			}
-		}
-		return;
-	}
+// 	if ( pResult->nRequestUID == (unsigned int )-1 )   // get current max curUID ;
+// 	{
+// 		if ( pResult->nAffectRow > 0 )
+// 		{
+// 			CMysqlRow& pRow = *pResult->vResultRows.front(); 
+// 			unsigned int nMaxID = pRow["max(Account.UserUID)"]->IntValue();
+// 			if ( nMaxID >= nCurUserUID )
+// 			{
+// 				nCurUserUID = ++nMaxID ;
+// 				CLogMgr::SharedLogMgr()->SystemLog("curMaxUID is %d",nMaxID ) ;
+// 			}
+// 		}
+// 		return;
+// 	}
 
 	stArgData*pdata = (stArgData*)pResult->pUserData ;
 	switch ( pResult->nRequestUID )
@@ -528,91 +567,32 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
-//	case MSG_PLAYER_BASE_DATA:
-//		{
-//			stArgData* pdata = (stArgData*)pResult->pUserData ;
-//			stMsgGameServerGetBaseDataRet msg ;
-//			msg.nSessionID = pdata->nSessionID ;
-//			memset(&msg.stBaseData,0,sizeof(msg.stBaseData)) ;
-//			msg.nRet = 0 ;
-//			if ( pResult->nAffectRow <= 0 )
-//			{
-//				CLogMgr::SharedLogMgr()->ErrorLog("can not find base data with userUID = %d , session id = %d " , pdata->nExtenArg1,msg.nSessionID ) ;
-//				msg.nRet = 1 ;
-//				m_pTheApp->SendMsg((char*)&msg,sizeof(msg),pdata->m_nReqrestFromAdd) ;
-//			}
-//			else
-//			{
-//				CMysqlRow& pRow = *pResult->vResultRows.front(); 
-//				if ( pRow["playerName"]->nBufferLen > 0 )
-//				{
-//					memcpy(msg.stBaseData.cName,pRow["playerName"]->BufferData(),pRow["playerName"]->nBufferLen);
-//				}
-//				msg.stBaseData.nDefaulPhotoID = pRow["defaultPhotoID"]->IntValue();
-//				msg.stBaseData.bIsUploadPhoto = pRow["isUploadPhoto"]->IntValue();
-//				if ( pRow["signature"]->nBufferLen > 0 )
-//				{
-//					memcpy(msg.stBaseData.cSignature,pRow["signature"]->BufferData(),pRow["signature"]->nBufferLen);
-//				}
-//				msg.stBaseData.nSex = pRow["sex"]->IntValue();
-//				msg.stBaseData.nVipLevel = pRow["vipLevel"]->IntValue();
-//				msg.stBaseData.nCoin = pRow["coin"]->IntValue64();
-//				msg.stBaseData.nDiamoned = pRow["diamond"]->IntValue();
-//				msg.stBaseData.nWinTimes = pRow["winTimes"]->IntValue();
-//				msg.stBaseData.nLoseTimes = pRow["loseTimes"]->IntValue();
-//				msg.stBaseData.nSingleWinMost = pRow["singleWinMost"]->IntValue64();
-//				if ( pRow["maxCard"]->nBufferLen > 0 )
-//				{
-//					memcpy(msg.stBaseData.vMaxCards,pRow["maxCard"]->BufferData(),pRow["maxCard"]->nBufferLen);
-//				}
-//				msg.stBaseData.dfLongitude = pRow["longitude"]->FloatValue();
-//				msg.stBaseData.dfLatidue = pRow["latitude"]->FloatValue();
-//				msg.stBaseData.nExp = pRow["exp"]->IntValue();
-//				msg.stBaseData.tOfflineTime = pRow["offlineTime"]->IntValue();
-//				msg.stBaseData.nNoticeID = pRow["noticeID"]->IntValue();
-//				msg.stBaseData.nVipEndTime = pRow["vipEndTime"]->IntValue();
-//				msg.stBaseData.nContinueDays = pRow["continueLoginDays"]->IntValue();
-//				msg.stBaseData.tLastLoginTime = pRow["lastLoginTime"]->IntValue();
-//				msg.stBaseData.tLastTakeCharityCoinTime = pRow["lastTakeCharityCoinTime"]->IntValue();
-//				msg.stBaseData.nTodayPlayTimes = pRow["todayPlayTimes"]->IntValue();
-//				msg.stBaseData.nYesterdayPlayTimes = pRow["yesterdayPlayTimes"]->IntValue();
-//				msg.stBaseData.tLastTakeCharityCoinTime = pRow["takeMasterStudentRewardTime"]->IntValue();
-//				msg.stBaseData.nYesterdayWinCoin = pRow["yesterdayWinCoin"]->IntValue64();
-//				msg.stBaseData.nTodayWinCoin = pRow["todayWinCoin"]->IntValue64();
-//				msg.stBaseData.nCurOnlineBoxID = pRow["curOnlineBoxID"]->IntValue();
-//				msg.stBaseData.nOnlineBoxPassedTime = pRow["onlineBoxPassedTime"]->IntValue();
-//				msg.stBaseData.nUserUID = pRow["userUID"]->IntValue();
-//				// process today and yesterday things 
-//				if ( msg.stBaseData.tOfflineTime != 0 )
-//				{
-//					time_t  tCur = time(NULL) ;
-//					struct tm tmNow = *localtime(&tCur);
-//					struct tm tmLastLogin = *localtime((time_t*)&msg.stBaseData.tOfflineTime);
-//					if ( tmNow.tm_yday == tmLastLogin.tm_yday )
-//					{
-//						// the same day , do nothing ;
-//					}
-//					else if( tmNow.tm_yday == tmLastLogin.tm_yday + 1 )
-//					{
-//						msg.stBaseData.nYesterdayWinCoin = msg.stBaseData.nTodayWinCoin;
-//						msg.stBaseData.nTodayWinCoin = 0 ;
-//
-//						msg.stBaseData.nYesterdayPlayTimes = msg.stBaseData.nTodayPlayTimes;
-//						msg.stBaseData.nTodayPlayTimes = 0 ;
-//					}
-//					else
-//					{
-//						msg.stBaseData.nYesterdayWinCoin = 0;
-//						msg.stBaseData.nTodayWinCoin = 0 ;
-//
-//						msg.stBaseData.nYesterdayPlayTimes = 0;
-//						msg.stBaseData.nTodayPlayTimes = 0 ;
-//					}
-//				}
-//				m_pTheApp->SendMsg((char*)&msg,sizeof(msg),pdata->m_nReqrestFromAdd) ;
-//			}
-//		}
-//		break;
+	case MSG_PLAYER_BASE_DATA:
+		{
+			stArgData* pdata = (stArgData*)pResult->pUserData ;
+			stMsgDataServerGetBaseDataRet msg ;
+			memset(&msg.stBaseData,0,sizeof(msg.stBaseData)) ;
+			msg.nRet = 0 ;
+			if ( pResult->nAffectRow <= 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find base data with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
+				msg.nRet = 1 ;
+				m_pTheApp->SendMsg((char*)&msg,sizeof(msg),pdata->nSessionID) ;
+			}
+			else
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[0] ;
+				GetPlayerDetailData(&msg.stBaseData,pRow);
+				msg.stBaseData.nYesterdayCoinOffset = pRow["nYesterdayCoinOffset"]->IntValue() ;
+				msg.stBaseData.nTodayCoinOffset = pRow["nTodayCoinOffset"]->IntValue() ;
+				msg.stBaseData.tLastLoginTime = pRow["lastLoginTime"]->IntValue() ;
+				msg.stBaseData.tLastTakeCharityCoinTime = pRow["lastTakeCharityCoinTime"]->IntValue() ;
+				msg.stBaseData.nContinueDays = pRow["continueLoginDays"]->IntValue() ;
+
+				m_pTheApp->SendMsg((char*)&msg,sizeof(msg),pdata->nSessionID) ;
+			}
+		}
+		break;
 //	case MSG_PLAYER_SAVE_BASE_DATA:
 //		{
 //			if ( pResult->nAffectRow > 0 )
@@ -1011,7 +991,14 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 //		break;
 	default:
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("unprocessed db result msg id = %d ", pResult->nRequestUID );
+			if ( pResult->nAffectRow <= 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("unprocessed db result msg id = %d , row cnt = %d  ", pResult->nRequestUID,pResult->nAffectRow );
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->SystemLog("unprocessed db result msg id = %d , row cnt = %d  ", pResult->nRequestUID,pResult->nAffectRow );
+			}
 		}
 	}
 	m_vReserverArgData.push_back(pdata) ;
@@ -1034,37 +1021,77 @@ void CDBManager::GetPlayerDetailData(stPlayerDetailData* pData, CMysqlRow&prow)
 {
 	GetPlayerBrifData(pData,prow) ;
 	memset(pData->cSignature,0,sizeof(pData->cSignature)) ;
-	memcpy(pData->cSignature,prow["signature"]->BufferData(),prow["signature"]->nBufferLen);
+	sprintf_s(pData->cSignature,sizeof(pData->cSignature),"%s",prow["signature"]->CStringValue()) ;
+	pData->nMostCoinEver = prow["mostCoinEver"]->IntValue64();
 	pData->dfLatidue = prow["latitude"]->FloatValue();
 	pData->dfLongitude = prow["longitude"]->FloatValue();
 	pData->nLoseTimes = prow["loseTimes"]->IntValue();
-	pData->nSingleWinMost = prow["singleWinMost"]->IntValue64();
 	pData->nWinTimes = prow["winTimes"]->IntValue();
-	//pData->nYesterDayPlayTimes = prow["yesterdayPlayTimes"]->IntValue();
+	pData->nSingleWinMost = prow["singleWinMost"]->IntValue64();
 	time_t tLastOffline = prow["offlineTime"]->IntValue();
-	time_t tNow = time(NULL) ;
-	struct tm tLast = *localtime(&tLastOffline) ;
-	struct tm tNowt = *localtime(&tNow) ;
-	if ( tLast.tm_yday == tNowt.tm_yday - 1 )  // yesterday offline ;
+	pData->tOfflineTime = tLastOffline ;
+	
+	std::vector<int> vInt ;
+	vInt.clear();
+	// read max card ;
+	prow["maxCard"]->VecInt(vInt);
+	memset(pData->vMaxCards,0,sizeof(pData->vMaxCards)) ;
+	CLogMgr::SharedLogMgr()->PrintLog("max card size = %d uid = %d",vInt.size(),pData->nUserUID ) ;
+	if ( vInt.size() == MAX_TAXAS_HOLD_CARD )
 	{
-		//pData->nYesterDayPlayTimes = prow["todayPlayTimes"]->IntValue();
+		for ( uint8_t nIdx = 0 ; nIdx < MAX_TAXAS_HOLD_CARD ; ++nIdx )
+		{
+			pData->vMaxCards[nIdx] = vInt[nIdx] ;
+		}
 	}
-	else if ( tLast.tm_yday < tNowt.tm_yday -1 )
+
+	//read upload pic 
+	vInt.clear();
+	prow["vUploadedPic"]->VecInt(vInt);
+	memset(pData->vUploadedPic,0,sizeof(pData->vUploadedPic)) ;
+	CLogMgr::SharedLogMgr()->PrintLog("vUploadedPic size = %d uid = %d",vInt.size(),pData->nUserUID ) ;
+	if ( vInt.size() == MAX_UPLOAD_PIC )
 	{
-		//pData->nYesterDayPlayTimes = 0 ;
+		for ( uint8_t nIdx = 0 ; nIdx < MAX_UPLOAD_PIC ; ++nIdx )
+		{
+			pData->vUploadedPic[nIdx] = vInt[nIdx] ;
+		}
 	}
+
+	// read joined club ids ;
+	vInt.clear();
+	prow["vJoinedClubID"]->VecInt(vInt);
+	memset(pData->vJoinedClubID,0,sizeof(pData->vJoinedClubID)) ;
+	CLogMgr::SharedLogMgr()->PrintLog("vJoinedClubID size = %d uid = %d",vInt.size(),pData->nUserUID ) ;
+	if ( vInt.size() == MAX_JOINED_CLUB_CNT )
+	{
+		for ( uint8_t nIdx = 0 ; nIdx < MAX_JOINED_CLUB_CNT ; ++nIdx )
+		{
+			pData->vJoinedClubID[nIdx] = vInt[nIdx] ;
+		}
+	}
+
+// 	time_t tNow = time(NULL) ;
+// 	struct tm tLast = *localtime(&tLastOffline) ;
+// 	struct tm tNowt = *localtime(&tNow) ;
+// 	if ( tLast.tm_yday == tNowt.tm_yday - 1 )  // yesterday offline ;
+// 	{
+// 		//pData->nYesterDayPlayTimes = prow["todayPlayTimes"]->IntValue();
+// 	}
+// 	else if ( tLast.tm_yday < tNowt.tm_yday -1 )
+// 	{
+// 		//pData->nYesterDayPlayTimes = 0 ;
+// 	}
 }
 
 void CDBManager::GetPlayerBrifData(stPlayerBrifData*pData,CMysqlRow&prow)
 {
 	pData->bIsOnLine = false ;
-	//pData->bIsUploadPhoto = prow["isUploadPhoto"]->IntValue();
 	memset(pData->cName,0,sizeof(pData->cName)) ;
-	memcpy(pData->cName,prow["playerName"]->BufferData(),prow["playerName"]->nBufferLen);
+	sprintf_s(pData->cName,sizeof(pData->cName),"%s",prow["playerName"]->CStringValue()) ;
 	pData->nCoin = prow["coin"]->IntValue64();
-	//pData->nDefaultPhotoID = prow["defaultPhotoID"]->IntValue();
 	pData->nDiamoned = prow["diamond"]->IntValue();
-	//pData->nExp = prow["exp"]->IntValue();
+	pData->nPhotoID = prow["photoID"]->IntValue();
 	pData->nSex = prow["sex"]->IntValue();
 	pData->nUserUID = prow["userUID"]->IntValue();
 	pData->nVipLevel = prow["vipLevel"]->IntValue();

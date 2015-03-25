@@ -101,7 +101,6 @@ struct stMsgSavePlayerCommonLoginData
 	uint32_t nUserUID ;
 	uint64_t nMostCoinEver;
 	uint8_t nVipLevel ;
-	uint32_t nExp ;
 	int64_t nYesterdayCoinOffset ;
 	int64_t nTodayCoinOffset ;
 	uint32_t tOfflineTime ;  // last offline time ;
@@ -110,6 +109,7 @@ struct stMsgSavePlayerCommonLoginData
 	uint32_t tLastTakeCharityCoinTime ;
 	double dfLongitude;
 	double dfLatidue;
+	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
 };
 
 //----above is new , below is ok---------
