@@ -2,18 +2,26 @@
 #pragma pack(push)
 #pragma pack(1)
 #include "CommonDefine.h"
-struct stPeerBaseData
+
+struct stTaxasInRoomPeerData
 {
-	unsigned int nSessionID ;
-	uint64_t nCurCoin ;
-	unsigned int nDiamond;
-	unsigned char cRoomIdx ;
-	unsigned int nUserUID ;
-	char cName[MAX_LEN_CHARACTER_NAME] ;
-	unsigned int nUserDefinePhotoID ;      // 0 means do not upload image 
-	unsigned short nDefaultPhotoID ;
-	unsigned char cVipLevel ; // 0 menas no vip ;
-	int nPeerState ; //  eRoomPeerState
+	uint32_t nSessionID ;
+	uint32_t nUserUID ;
+	char cName[MAX_LEN_CHARACTER_NAME];
+	uint8_t nSex ; // eSex ;
+	uint8_t nVipLevel ;
+	uint16_t nPhotoID ;
+};
+
+struct stTaxasPeerBaseData
+	:public stTaxasInRoomPeerData
+{
+	uint64_t nTakeInMoney ; // maybe coin or diamond
+	uint8_t eCurAct ;  // eRoomPeerAction
+	uint64_t nBetCoinThisRound ;
+	uint8_t vHoldCard[TAXAS_PEER_CARD];
+	uint32_t nStateFlag ;
+	uint8_t nSeatIdx ;
 };
 
 struct stRoomBaseDataOnly
@@ -29,17 +37,17 @@ struct stRoomBaseDataOnly
 };
 
 // golden 
-struct stGoldenPeerData
-	:public stPeerBaseData
-{
-	uint64_t nBetCoin ;
-	unsigned char nShowedCardCnt ;
-	unsigned char vShowedCardIdx[GOLDEN_PEER_CARD] ;
-	unsigned char vHoldCard[GOLDEN_PEER_CARD];
-	unsigned short nChangeCardUsedDiamond ; 
-	unsigned char nChangeCardTimes ; 
-	unsigned short nPKTimes;     // fan bei ka shi yong
-};
+//struct stGoldenPeerData
+//	:public stPeerBaseData
+//{
+//	uint64_t nBetCoin ;
+//	unsigned char nShowedCardCnt ;
+//	unsigned char vShowedCardIdx[GOLDEN_PEER_CARD] ;
+//	unsigned char vHoldCard[GOLDEN_PEER_CARD];
+//	unsigned short nChangeCardUsedDiamond ; 
+//	unsigned char nChangeCardTimes ; 
+//	unsigned short nPKTimes;     // fan bei ka shi yong
+//};
 
 struct stRoomGoldenDataOnly
 	:public stRoomBaseDataOnly
@@ -62,15 +70,15 @@ struct stGoldenHoldPeerCard
 };
 
 // taxpoker peer 
-struct stTaxasPeerData
-	:public stPeerBaseData
-{
-	unsigned char eCurAct ;  // eRoomPeerAction
-	uint64_t nAllBetCoin ;
-	uint64_t nWinCoinFromPools ; // include the nAllBetCoin
-	uint64_t nBetCoinThisRound ;
-	unsigned char vHoldCard[TAXAS_PEER_CARD];
-};
+//struct stTaxasPeerData
+//	:public stPeerBaseData
+//{
+//	unsigned char eCurAct ;  // eRoomPeerAction
+//	uint64_t nAllBetCoin ;
+//	uint64_t nWinCoinFromPools ; // include the nAllBetCoin
+//	uint64_t nBetCoinThisRound ;
+//	unsigned char vHoldCard[TAXAS_PEER_CARD];
+//};
 
 struct stTaxasRoomDataSimple
 	:public stRoomBaseDataOnly

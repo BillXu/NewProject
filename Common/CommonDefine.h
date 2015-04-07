@@ -45,6 +45,14 @@ enum eRoomType
 enum eRoomState
 {
 	eRoomState_None,
+	// state for texas poker
+	eRoomState_TP_WaitJoin = eRoomState_None,
+	eRoomState_TP_BetBlind,
+	eRoomState_TP_PrivateCard,
+	eRoomState_TP_Beting,
+	eRoomState_TP_BetEndResult,
+	eRoomState_TP_PublicCard,
+	eRoomState_TP_GameResult,
 	// state for golden 
 	eRoomState_Golden_WaitPeerToJoin = eRoomState_None,
 	eRoomState_Golden_WaitPeerReady,
@@ -62,13 +70,7 @@ enum eRoomState
 	eRoomState_PJ_ShowCard,   // fan kai xian jia de pai 
 	eRoomState_PJ_Settlement, // jie suan ;
 	eRoomState_PJ_BankerSelectGoOn,
-	// state for texas poker
-	eRoomState_TP_WaitJoin = eRoomState_None,
-	eRoomState_TP_Player_Distr,
-	eRoomState_TP_Distr_Public,
-	eRoomState_TP_Wait_Bet,
-	eRoomState_TP_Caculate_Round,
-	eRoomState_TP_Caculate_GameResult,
+
 
 	// state for Baccarat ;
 	eRoomState_BC_Shuffle,
@@ -297,7 +299,7 @@ enum eRoomLevel
 #define TIME_TAXAS_CACULATE_FINAL 2
 #define TIME_TAXAS_RESULT_STAY 1.0
 #define MIN_PEERS_IN_ROOM_ROBOT 6
-#define MAX_PEERS_IN_ROOM 9
+#define MAX_PEERS_IN_TAXAS_ROOM 9
 #define TIME_LOW_LIMIT_FOR_NORMAL_ROOM 10
 // baccarat define 
 enum eBaccaratBetPort
