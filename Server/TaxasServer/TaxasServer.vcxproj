@@ -84,6 +84,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\CardPoker.h" />
+    <ClInclude Include="..\..\Common\CommonData.h" />
     <ClInclude Include="..\..\Common\CommonDefine.h" />
     <ClInclude Include="..\..\Common\ConfigReader.h" />
     <ClInclude Include="..\..\Common\IConfigFile.h" />
@@ -97,6 +98,8 @@
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\TaxasRoom.h" />
+    <ClInclude Include="src\TaxasRoomState.h" />
     <ClInclude Include="src\TaxasServerApp.h" />
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +113,8 @@
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\TaxasRoom.cpp" />
+    <ClCompile Include="src\TaxasRoomState.cpp" />
     <ClCompile Include="src\TaxasServerApp.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

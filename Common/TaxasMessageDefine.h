@@ -18,7 +18,7 @@ struct stMsgTaxasRoomInfo
 	stMsgTaxasRoomInfo(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_TAXAS_ROOM_INFO; }
 	stTaxasRoomDataSimple tSimpleData ;
 	unsigned char nPeerCnt ;
-	stTaxasPeerData* pPlayerData ;
+	//stTaxasPeerData* pPlayerData ;
 	unsigned char nVicePoolCnt ;
 	stVicePoolItem* pPools ;
 	unsigned char nKickCnt ;
@@ -44,7 +44,7 @@ struct stMsgTaxasRoomSitDown
 	:public stMsg
 {
 	stMsgTaxasRoomSitDown(){cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_TAXAS_ROOM_SITDOWN ; }
-	stTaxasPeerData vPlayerSitDown ;
+	//stTaxasPeerData vPlayerSitDown ;
 };
 
 struct stMsgTaxasPlayerStandUp

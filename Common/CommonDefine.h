@@ -50,9 +50,10 @@ enum eRoomState
 	eRoomState_TP_BetBlind,
 	eRoomState_TP_PrivateCard,
 	eRoomState_TP_Beting,
-	eRoomState_TP_BetEndResult,
+	eRoomState_TP_OneRoundBetEndResult,
 	eRoomState_TP_PublicCard,
 	eRoomState_TP_GameResult,
+	eRoomState_TP_MAX,
 	// state for golden 
 	eRoomState_Golden_WaitPeerToJoin = eRoomState_None,
 	eRoomState_Golden_WaitPeerReady,
