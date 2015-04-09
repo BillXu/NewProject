@@ -2,6 +2,7 @@
 #include "CommonDefine.h"
 #include "LogManager.h"
 #include "ServerMessageDefine.h"
+#include "RoomManager.h"
 CTaxasServerApp* CTaxasServerApp::s_TaxasServerApp = NULL ;
 CTaxasServerApp* CTaxasServerApp::SharedGameServerApp()
 {
@@ -13,6 +14,15 @@ CTaxasServerApp::~CTaxasServerApp()
 	delete m_pTimerMgr ;
 	delete m_pNetWork ;
 	delete m_pRoomConfig ;
+	delete m_pRoomMgr ;
+}
+
+CTaxasServerApp::CTaxasServerApp()
+{
+	 m_pTimerMgr = NULL;
+	 m_pNetWork = NULL;
+	 m_pRoomConfig = NULL;
+	 m_pRoomMgr = NULL;
 }
 
 void CTaxasServerApp::Init()
@@ -50,6 +60,9 @@ void CTaxasServerApp::Init()
 	m_pRoomConfig->LoadFile("../configFile/RoomConfig.txt") ;
 	// init component ;
 	m_pTimerMgr = new CTimerManager ;
+	
+	m_pRoomMgr = new CRoomManager ;
+	m_pRoomMgr->Init();
 }
 
 bool CTaxasServerApp::OnMessage( Packet* pMsg )
@@ -72,6 +85,11 @@ bool CTaxasServerApp::OnMessage( Packet* pMsg )
 	stMsgTransferData* pData = (stMsgTransferData*)pRet ;
 	stMsg* preal = (stMsg*)(pMsg->_orgdata + sizeof(stMsgTransferData));
 	if ( ProcessPublicMsg(preal,(eMsgPort)pData->nSenderPort,pData->nSessionID) )
+	{
+		return true ;
+	}
+
+	if ( m_pRoomMgr && m_pRoomMgr->OnMsg(preal,(eMsgPort)pData->nSenderPort,pData->nSessionID) )
 	{
 		return true ;
 	}

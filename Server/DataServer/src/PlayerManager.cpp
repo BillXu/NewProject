@@ -6,7 +6,7 @@
 #include "GameServerApp.h"
 #include <assert.h>
 #include "EventCenter.h"
-
+#include "PlayerBaseData.h"
 CPlayerManager::CPlayerManager()
 {
 	m_vOfflinePlayers.clear() ;
@@ -118,7 +118,117 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 //#endif
 		return true ;
 	}
+
+	if ( ProcessTaxasServerMsg(prealMsg,eSenderPort,nSessionID) )
+	{
+		return true ;
+	}
+
 	return false ;
+}
+
+bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nRoomID  )
+{
+	if ( eSenderPort != ID_MSG_PORT_TAXAS )
+	{
+		return false ;
+	}
+
+	switch ( prealMsg->usMsgType )
+	{
+	case MSG_TP_REQUEST_PLAYER_DATA:
+		{
+			stMsgRequestTaxasPlayerData* pData = (stMsgRequestTaxasPlayerData*)prealMsg;
+			stMsgRequestTaxasPlayerDataRet msgBack ;
+			msgBack.nRoomID = nRoomID ;
+			msgBack.nRet = 0 ;
+			CPlayer* pPlayer = GetPlayerBySessionID(pData->nSessionID) ;
+			if ( pPlayer == NULL )
+			{
+				msgBack.nRet = 1 ;
+				CGameServerApp::SharedGameServerApp()->SendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("why can not find player session from taxas server session id = %d",pData->nSessionID ) ;
+				return true ;
+			}
+
+			msgBack.tData.nPhotoID = pPlayer->GetBaseData()->GetPhotoID();
+			memset(msgBack.tData.cName,0,sizeof(msgBack.tData.cName) );
+			sprintf_s(msgBack.tData.cName,sizeof(msgBack.tData.cName),"%s",pPlayer->GetBaseData()->GetPlayerName()) ;
+			msgBack.tData.nSessionID = pData->nSessionID ;
+			msgBack.tData.nSex = pPlayer->GetBaseData()->GetSex();
+			msgBack.tData.nUserUID = pPlayer->GetUserUID();
+			msgBack.tData.nVipLevel = pPlayer->GetBaseData()->GetVipLevel() ;
+			CGameServerApp::SharedGameServerApp()->SendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			pPlayer->SetStayInTaxasRoomID(nRoomID) ;
+		}
+		break;
+	case MSG_TP_REQUEST_TAKE_IN_MONEY:
+		{
+			stMsgRequestTaxasPlayerTakeInCoin* pRet = (stMsgRequestTaxasPlayerTakeInCoin*)prealMsg ;
+			stMsgRequestTaxasPlayerTakeInCoinRet msgBack ;
+			CPlayer* pPlayer = GetPlayerBySessionID(pRet->nPlayerSessionID ) ;
+			if ( pPlayer == NULL )
+			{
+				msgBack.nRet = 2 ;
+				CGameServerApp::SharedGameServerApp()->SendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_REQUEST_TAKE_IN_MONEY why can not find player session from taxas server session id = %d",pRet->nPlayerSessionID ) ;
+				return true ;
+			}
+
+			if ( pPlayer->GetBaseData()->SetTakeInCoin(pRet->nMoneyToTakeIn,pRet->bIsDiamond) )
+			{
+				msgBack.nRet = 0 ;
+				msgBack.nMoneyToTakeIn = pRet->nMoneyToTakeIn ;
+				msgBack.nRoomID = nRoomID ;
+				msgBack.nSeatIdx = pRet->nSeatIdx ;
+				msgBack.bIsDiamond = pRet->bIsDiamond ;
+				CGameServerApp::SharedGameServerApp()->SendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			}
+			else
+			{
+				msgBack.nRet = 1 ;
+				CGameServerApp::SharedGameServerApp()->SendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			}
+		}
+		break;
+	case MSG_TP_INFORM_STAND_UP:
+		{
+			stMsgInformTaxasPlayerStandUp* pRet = (stMsgInformTaxasPlayerStandUp*)prealMsg ;
+			CPlayer* pPlayer = GetPlayerBySessionID(pRet->nSessionID) ;
+			if ( pPlayer == NULL )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_INFORM_STAND_UP why can not find player uid from taxas server uid = %d",pRet->nSessionID ) ;
+				return true ;
+			}
+
+			if ( pPlayer->GetUserUID() != pRet->nUserUID && pRet->nUserUID != 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("pPlayer->GetUserUID() != pRet->nUserUID why can not find player uid from taxas server uid = %d",pRet->nSessionID ) ;
+				 pPlayer = GetPlayerByUserUID(pRet->nUserUID) ;
+			}
+
+			if ( pPlayer )
+			{
+				pPlayer->GetBaseData()->CacluateTaxasRoomMoney(pRet->nTakeInMoney,pRet->bIsDiamond) ;
+			}
+		}
+		break;
+	case MSG_TP_INFORM_LEAVE:
+		{
+			stMsgInformTaxasPlayerLeave* pRet = (stMsgInformTaxasPlayerLeave*)prealMsg ;
+			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nUserUID) ;
+			if ( pPlayer == NULL )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_INFORM_LEAVE why can not find player uid from taxas server uid = %d",pRet->nUserUID ) ;
+				return true ;
+			}
+			pPlayer->SetStayInTaxasRoomID(0) ;
+		}
+		break;
+	default:
+		return false ;
+	}
+	return true ;
 }
 
 CPlayer* CPlayerManager::GetPlayerBySessionID( unsigned int nSessionID , bool bInclueOffline )

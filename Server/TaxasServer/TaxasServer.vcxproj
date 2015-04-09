@@ -92,12 +92,14 @@
     <ClInclude Include="..\..\Common\MessageDefine.h" />
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
+    <ClInclude Include="..\..\Common\TaxasMessageDefine.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\RoomManager.h" />
     <ClInclude Include="src\TaxasRoom.h" />
     <ClInclude Include="src\TaxasRoomState.h" />
     <ClInclude Include="src\TaxasServerApp.h" />
@@ -113,6 +115,7 @@
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\RoomManager.cpp" />
     <ClCompile Include="src\TaxasRoom.cpp" />
     <ClCompile Include="src\TaxasRoomState.cpp" />
     <ClCompile Include="src\TaxasServerApp.cpp" />

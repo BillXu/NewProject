@@ -22,6 +22,7 @@ public:
 protected:
 	void OnPlayerOffline(CPlayer* pOfflinePlayer);
 	bool ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
+	bool ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID  );
 	void AddPlayer(CPlayer*);
 	void LogState();
 	bool ProcessIsAlreadyLogin(unsigned int nUserID ,unsigned nSessionID ) ;

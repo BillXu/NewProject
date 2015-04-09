@@ -1,6 +1,9 @@
 #include "TaxasRoomState.h"
 #include "TaxasRoom.h"
 #include "LogManager.h"
+#include "TaxasMessageDefine.h"
+#include "ServerMessageDefine.h"
+#include "TaxasServerApp.h"
 CTaxasBaseRoomState::CTaxasBaseRoomState()
 {
 	m_fDuringTime = 0 ;
@@ -16,6 +19,76 @@ bool CTaxasBaseRoomState::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 {
 	switch( prealMsg->usMsgType )
 	{
+	case MSG_TP_PLAYER_SIT_DOWN:
+		{
+			stMsgTaxasPlayerSitDown* pRet = (stMsgTaxasPlayerSitDown*)prealMsg ;
+			stMsgTaxasPlayerSitDownRet msgBack ;
+			msgBack.nSeatIdx = pRet->nSeatIdx ;
+			if ( m_pRoom->IsPlayerInRoomWithSessionID(nPlayerSessionID) == false )
+			{
+				msgBack.nRet = 2;
+				m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("you are not in room session id = %d",nPlayerSessionID ) ;
+				return true ;
+			}
+
+			if ( pRet->nSeatIdx >= m_pRoom->m_stRoomConfig.nMaxSeat || m_pRoom->m_vSitDownPlayers[pRet->nSeatIdx].IsInvalid() == false )
+			{
+				msgBack.nRet = 1;
+				m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("invalid seat idx = %d , can not sit down session id = %d",pRet->nSeatIdx,nPlayerSessionID ) ;
+				return true ;
+			}
+
+			if ( pRet->nTakeInMoney > m_pRoom->m_stRoomConfig.nMaxTakeInCoin || pRet->nTakeInMoney < m_pRoom->m_stRoomConfig.nMinNeedToEnter )
+			{
+				msgBack.nRet = 3;
+				m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("invalid take in coin = %I64d , can not sit down session id = %d",pRet->nTakeInMoney,nPlayerSessionID ) ;
+				return true ;
+			}
+
+			// request data serve to get coin ;
+			stMsgRequestTaxasPlayerTakeInCoin msgTakein ;
+			msgTakein.bIsDiamond = false ;
+			msgTakein.nMoneyToTakeIn = pRet->nTakeInMoney ;
+			msgTakein.nPlayerSessionID = nPlayerSessionID;
+			msgTakein.nSeatIdx = pRet->nSeatIdx ;
+			CTaxasServerApp::SharedGameServerApp()->SendMsg(m_pRoom->GetRoomID(),(char*)&msgTakein,sizeof(msgTakein)) ;
+			return true ;
+		}
+		break;
+	case MSG_TP_REQUEST_TAKE_IN_MONEY:
+		{
+			stMsgRequestTaxasPlayerTakeInCoinRet* pRet = (stMsgRequestTaxasPlayerTakeInCoinRet*)prealMsg ;
+			if ( pRet->nRet )
+			{
+				stMsgTaxasPlayerSitDownRet msgBack ;
+				msgBack.nSeatIdx = pRet->nSeatIdx ;
+				msgBack.nRet = 4;
+				m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("can not sit down sever say error = %d , session id = %d",pRet->nRet,nPlayerSessionID) ;
+			}
+			else
+			{
+				if ( pRet->nSeatIdx > m_pRoom->m_stRoomConfig.nMaxSeat || m_pRoom->m_vSitDownPlayers[pRet->nSeatIdx].IsInvalid() == false || m_pRoom->IsPlayerInRoomWithSessionID(nPlayerSessionID) == false  )
+				{
+					CLogMgr::SharedLogMgr()->ErrorLog("argument error , can not sit down session id = %d",nPlayerSessionID ) ;
+
+					stMsgInformTaxasPlayerStandUp msgUp ;
+					msgUp.bIsDiamond = pRet->bIsDiamond ;
+					msgUp.nTakeInMoney = pRet->nMoneyToTakeIn ;
+					msgUp.nUserUID = 0 ;
+					msgUp.nSessionID = nPlayerSessionID ;
+					m_pRoom->SendMsgToPlayer(m_pRoom->nRoomID,&msgUp,sizeof(msgUp));  // tell data server ;
+
+					return true ;
+				}
+				m_pRoom->OnPlayerSitDown(pRet->nSeatIdx,nPlayerSessionID,pRet->nMoneyToTakeIn) ;
+				return true ;
+			}
+		}
+		break;
 	default:
 		return false ;
 	}

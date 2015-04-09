@@ -4,11 +4,13 @@
 #include "RoomConfig.h"
 #include "ServerConfig.h"
 #include "MessageDefine.h"
+class CRoomManager ;
 class CTaxasServerApp
 	:public CNetMessageDelegate
 {
 public:
 	static CTaxasServerApp* SharedGameServerApp();
+	CTaxasServerApp();
 	~CTaxasServerApp();
 	void Init();
 	virtual bool OnMessage( Packet* pMsg ) ;
@@ -19,6 +21,7 @@ public:
 	bool SendMsg( unsigned int nSessionID , const char* pBuffer , int nLen, bool bBroadcast = false );
 	CTimerManager* GetTimerMgr(){ return m_pTimerMgr ; }
 	CRoomConfigMgr* GetConfigMgr(){ return m_pRoomConfig ; }
+	CRoomManager* GetRoomMgr(){ return m_pRoomMgr ; }
 	void Stop(){ m_bRunning = false ;}
 protected:
 	bool ProcessPublicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
@@ -34,5 +37,6 @@ protected:
 
 	CRoomConfigMgr* m_pRoomConfig;
 
+	CRoomManager* m_pRoomMgr ;
 	char m_pSendBuffer[MAX_MSG_BUFFER_LEN] ;
 };

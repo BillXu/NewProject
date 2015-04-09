@@ -59,7 +59,11 @@ public:
 	virtual CTaxasBaseRoomState* CreateRoomState( eRoomState eState );
 	void SendRoomMsg(stMsg* pMsg, uint16_t nLen );
 	void SendMsgToPlayer( uint32_t nSessionID, stMsg* pMsg, uint16_t nLen  );
-	virtual void OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
+	virtual bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
+	void AddPlayer( stTaxasInRoomPeerData& nPeerData );
+	uint32_t GetRoomID(){ return nRoomID ;}
+	bool IsPlayerInRoomWithSessionID(uint32_t nSessionID );
+	void OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID , uint64_t nTakeInMoney );
 
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
@@ -78,6 +82,10 @@ protected:
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 	stVicePool& GetFirstCanUseVicePool();
 	void CaculateVicePool(stVicePool& pPool );
+	void SendRoomInfoToPlayer(uint32_t nSessionID );
+	stTaxasInRoomPeerData* GetInRoomPlayerDataBySessionID( uint32_t nSessionID );
+
+	friend class CTaxasBaseRoomState ;
 protected:
 	// static data 
 	uint32_t nRoomID ;
@@ -86,7 +94,7 @@ protected:
 	CTaxasBaseRoomState* m_vAllState[eRoomState_TP_MAX];
 
 	// running members ;
-	eRoomState m_eCurRoomState ; // eeRoomState ;
+	eRoomState m_eCurRoomState ; // eRoomState ;
 	uint8_t m_nBankerIdx ;
 	uint8_t m_nLittleBlindIdx ;
 	uint8_t m_nBigBlindIdx ;

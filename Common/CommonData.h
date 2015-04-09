@@ -24,6 +24,11 @@ struct stTaxasPeerBaseData
 	uint8_t nSeatIdx ;
 };
 
+
+
+
+//-------------------up are new ----
+
 struct stRoomBaseDataOnly
 {
 	unsigned int nRoomID ;

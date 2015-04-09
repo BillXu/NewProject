@@ -4,6 +4,7 @@
 // Define message , used between Servers ;mainly DBServer and GameServer 
 #include "MessageDefine.h"
 #include "BaseData.h"
+#include "CommonData.h"
 #define DBServer_PORT 5001
 // WARNNING:变长字符串，我们不包括终结符 \0 ;
 
@@ -110,6 +111,68 @@ struct stMsgSavePlayerCommonLoginData
 	double dfLongitude;
 	double dfLatidue;
 	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
+};
+
+// data and taxas server 
+struct stMsgRequestTaxasPlayerData
+	:public stMsg
+{
+	uint32_t nSessionID ;
+	stMsgRequestTaxasPlayerData(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_REQUEST_PLAYER_DATA ; }
+};
+
+struct stMsgRequestTaxasPlayerDataRet
+	:public stMsg
+{
+	stMsgRequestTaxasPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_REQUEST_PLAYER_DATA ; }
+	uint32_t nRoomID ;
+	uint8_t nRet ; // 0 succes , 1 not find player data ;
+	stTaxasInRoomPeerData tData ;
+};
+
+struct stMsgRequestTaxasPlayerTakeInCoin
+	:public stMsg
+{
+	stMsgRequestTaxasPlayerTakeInCoin(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_REQUEST_TAKE_IN_MONEY ; }
+	uint32_t nPlayerSessionID ;
+	uint8_t nSeatIdx ;
+	uint64_t nMoneyToTakeIn;
+	bool bIsDiamond ;
+};
+
+struct stMsgRequestTaxasPlayerTakeInCoinRet
+	:public stMsg
+{
+	stMsgRequestTaxasPlayerTakeInCoinRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_REQUEST_TAKE_IN_MONEY ; }
+	uint8_t nRet ; // 0 success , 1 not enough , 2 canot find player 
+	uint32_t nRoomID ;
+	uint8_t nSeatIdx ;
+	uint32_t nMoneyToTakeIn;  // 0 means money not enough ;
+	bool bIsDiamond ;
+};
+
+struct stMsgInformTaxasPlayerStandUp
+	:public stMsg
+{
+	stMsgInformTaxasPlayerStandUp(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_INFORM_STAND_UP ; }
+	uint32_t nUserUID ;
+	uint32_t nSessionID ;
+	uint32_t nTakeInMoney;
+	bool bIsDiamond ;
+};
+
+struct stMsgInformTaxasPlayerLeave
+	:public stMsg
+{
+	stMsgInformTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_INFORM_LEAVE; }
+	uint32_t nUserUID ;
+};
+
+struct stMsgOrderTaxasPlayerLeave
+	:public stMsg
+{
+	stMsgOrderTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_ORDER_LEAVE ; }
+	uint32_t nRoomID ;
 };
 
 //----above is new , below is ok---------

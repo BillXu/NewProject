@@ -35,6 +35,7 @@ public:
 	void OnTimerSave(float fTimeElaps,unsigned int nTimerID );
 	void OnReactive(uint32_t nSessionID );
 	time_t GetDisconnectTime(){ return m_nDisconnectTime ;}
+	void SetStayInTaxasRoomID(uint32_t nRoomID ){ m_nTaxasRoomID = nRoomID ; }
 protected:
 	bool ProcessPublicPlayerMsg( stMsg* pMessage , eMsgPort eSenderPort );
 	void PushTestAPNs();
@@ -45,4 +46,5 @@ protected:
 	ePlayerState m_eSate ;
 	CTimer* m_pTimerSave ;
 	time_t m_nDisconnectTime ;
+	uint32_t m_nTaxasRoomID ;
 }; 

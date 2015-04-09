@@ -25,10 +25,10 @@ public:
 	uint64_t GetAllCoin(){ return m_stBaseData.nCoin + m_nTakeInCoin ;}
 	unsigned int GetAllDiamoned(){ return m_stBaseData.nDiamoned + m_nTakeInDiamoned ;}
 	uint64_t GetTakeInMoney(bool bDiamoned = false ){ return bDiamoned ? m_nTakeInDiamoned : m_nTakeInCoin ; }
-	void SetTakeInCoin(uint64_t nCoin, bool bDiamoned = false);
-	bool ModifyTakeInMoney(int64_t nOffset,bool bDiamond = false );
+	bool SetTakeInCoin(uint64_t nCoin, bool bDiamoned = false);
+	//bool ModifyTakeInMoney(int64_t nOffset,bool bDiamond = false );
 	bool ModifyMoney(int64_t nOffset,bool bDiamond = false );
-	void CaculateTakeInMoney();
+	//void CaculateTakeInMoney();
 	bool OnPlayerEvent(stPlayerEvetArg* pArg);
 	void AddWinTimes(){ ++m_stBaseData.nWinTimes;}
 	void AddLoseTimes(){ ++m_stBaseData.nLoseTimes;}
@@ -44,6 +44,8 @@ public:
 	static bool EventFunc(void* pUserData,stEventArg* pArg);
 	stServerBaseData* GetData(){ return &m_stBaseData ;}
 	virtual void OnReactive(uint32_t nSessionID );
+	uint16_t GetPhotoID(){ return m_stBaseData.nPhotoID ;}
+	void CacluateTaxasRoomMoney(uint64_t nNewTakeIn, bool bDiamond );
 public:
 	friend class CPlayerOnlineBox ;
 protected:

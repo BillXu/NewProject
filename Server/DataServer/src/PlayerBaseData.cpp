@@ -400,20 +400,28 @@ void CPlayerBaseData::TimerSave()
 	}
 }
 
-void CPlayerBaseData::SetTakeInCoin(uint64_t nCoinOffset, bool bDiamoned)
+bool CPlayerBaseData::SetTakeInCoin(uint64_t nCoinOffset, bool bDiamoned)
 {
-// 	CaculateTakeInMoney();
-// 	if ( bDiamoned == false )
-// 	{
-// 		
-// 		m_nTakeInCoin = min(nCoinOffset,GetAllCoin()); 
-// 		m_stBaseData.nCoin -= m_nTakeInCoin ;
-// 	}
-// 	else
-// 	{
-// 		m_nTakeInDiamoned = (unsigned int)min(nCoinOffset,GetAllDiamoned()); ;
-// 		m_stBaseData.nDiamoned -= (unsigned int)m_nTakeInCoin ;
-// 	}
+ 	//CaculateTakeInMoney();
+ 	if ( bDiamoned == false )
+ 	{
+ 		if ( nCoinOffset > GetAllCoin() )
+		{
+			return false ;
+		}
+ 		m_nTakeInCoin = min(nCoinOffset,GetAllCoin()); 
+ 		m_stBaseData.nCoin -= m_nTakeInCoin ;
+ 	}
+ 	else
+ 	{
+		if ( nCoinOffset > GetAllDiamoned() )
+		{
+			return false ;
+		}
+ 		m_nTakeInDiamoned = (unsigned int)min(nCoinOffset,GetAllDiamoned()); ;
+ 		m_stBaseData.nDiamoned -= (unsigned int)m_nTakeInCoin ;
+ 	}
+	return true ;
 }
 
 bool CPlayerBaseData::ModifyMoney(int64_t nOffset,bool bDiamond  )
@@ -439,8 +447,8 @@ bool CPlayerBaseData::ModifyMoney(int64_t nOffset,bool bDiamond  )
 	return true ;
 }
 
-bool CPlayerBaseData::ModifyTakeInMoney(int64_t nOffset,bool bDiamond )
-{
+//bool CPlayerBaseData::ModifyTakeInMoney(int64_t nOffset,bool bDiamond )
+//{
 // 	if ( bDiamond )
 // 	{
 // 		if ( nOffset < 0 && (-1*nOffset) > m_nTakeInDiamoned )
@@ -458,16 +466,16 @@ bool CPlayerBaseData::ModifyTakeInMoney(int64_t nOffset,bool bDiamond )
 // 		}
 // 		m_nTakeInCoin += nOffset ;
 // 	}
-	return true ;
-}
+//	return true ;
+//}
 
-void CPlayerBaseData::CaculateTakeInMoney()
-{
-// 	m_stBaseData.nDiamoned += m_nTakeInDiamoned;
-// 	m_stBaseData.nCoin += m_nTakeInCoin ;
-// 	m_nTakeInCoin = 0;
-// 	m_nTakeInDiamoned = 0 ;
-}
+//void CPlayerBaseData::CaculateTakeInMoney()
+//{
+//	m_stBaseData.nDiamoned += m_nTakeInDiamoned;
+//	m_stBaseData.nCoin += m_nTakeInCoin ;
+//	m_nTakeInCoin = 0;
+//	m_nTakeInDiamoned = 0 ;
+//}
 
 bool CPlayerBaseData::OnPlayerEvent(stPlayerEvetArg* pArg)
 {
@@ -541,4 +549,18 @@ void CPlayerBaseData::OnNewDay(stEventArg* pArg)
 void CPlayerBaseData::OnReactive(uint32_t nSessionID )
 {
 	CEventCenter::SharedEventCenter()->RemoveEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
+}
+
+void CPlayerBaseData::CacluateTaxasRoomMoney(uint64_t nNewTakeIn, bool bDiamond )
+{
+	if ( bDiamond )
+	{
+		m_stBaseData.nDiamoned += nNewTakeIn ;
+		m_nTakeInDiamoned = 0 ;
+	}
+	else
+	{
+		m_stBaseData.nCoin += nNewTakeIn ;
+		m_nTakeInCoin = 0 ;
+	}
 }

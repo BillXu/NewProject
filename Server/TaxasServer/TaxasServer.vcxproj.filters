@@ -75,6 +75,12 @@
     <ClInclude Include="src\TaxasRoomState.h">
       <Filter>src\Room</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\TaxasMessageDefine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RoomManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -115,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="src\TaxasRoomState.cpp">
       <Filter>src\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RoomManager.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
