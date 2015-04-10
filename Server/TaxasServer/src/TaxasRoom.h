@@ -3,6 +3,7 @@
 #include "RoomConfig.h"
 #include "CommonData.h"
 #include "CardPoker.h"
+#include "Timer.h"
 class CTaxasBaseRoomState ;
 
 typedef std::vector<uint8_t> VEC_INT8 ;
@@ -44,9 +45,22 @@ struct stVicePool
 	VEC_INT8 vWinnerIdxs ;
 
 	void Reset(){ bUsed = false ; nCoin = 0 ; vInPoolPlayerIdx.clear() ; vWinnerIdxs.clear(); }
+	void RemovePlayer(uint8_t nIdx)
+	{
+		VEC_INT8::iterator iter = vInPoolPlayerIdx.begin();
+		for ( ; iter != vInPoolPlayerIdx.end(); ++iter )
+		{
+			if ( (*iter) == nIdx  )
+			{
+				vInPoolPlayerIdx.erase(iter) ;
+				return ;
+			}
+		}
+	}
 };
 
 class CTaxasRoom
+	:public CTimerDelegate
 {
 public:
 	typedef std::vector<stTaxasInRoomPeerData*> VEC_IN_ROOM_PEERS ;
@@ -55,7 +69,7 @@ public:
 	virtual ~CTaxasRoom();
 	bool Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig );
 	void GoToState( eRoomState eState );
-	void Update(float fDeta );
+	virtual void Update(float fTimeElpas, unsigned int nTimerID );
 	virtual CTaxasBaseRoomState* CreateRoomState( eRoomState eState );
 	void SendRoomMsg(stMsg* pMsg, uint16_t nLen );
 	void SendMsgToPlayer( uint32_t nSessionID, stMsg* pMsg, uint16_t nLen  );
@@ -64,6 +78,11 @@ public:
 	uint32_t GetRoomID(){ return nRoomID ;}
 	bool IsPlayerInRoomWithSessionID(uint32_t nSessionID );
 	void OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID , uint64_t nTakeInMoney );
+	void OnPlayerStandUp(uint8_t nSeatIdx );
+	uint8_t GetSeatIdxBySessionID(uint32_t nSessionID );
+	void OnPlayerLeaveRoom(uint32_t nPlayerSession );
+	uint8_t GetCurWaitActPlayerIdx(){ return m_nCurWaitPlayerActionIdx ; }
+	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t nValue );  // return error code , 0 success ;
 
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );

@@ -3,6 +3,7 @@
 #include "LogManager.h"
 #include "TaxasRoom.h"
 #include "ServerMessageDefine.h"
+#include "RoomConfig.h"
 CRoomManager::CRoomManager()
 {
 
@@ -15,6 +16,13 @@ CRoomManager::~CRoomManager()
 
 bool CRoomManager::Init()
 {
+	stBaseRoomConfig* pconfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,1);;
+	if ( pconfig )
+	{
+		CTaxasRoom* pRoom = new CTaxasRoom ;
+		pRoom->Init(1,(stTaxasRoomConfig*)pconfig) ;
+		m_vRooms[pRoom->GetRoomID()] = pRoom ;
+	}
 	return true ;
 }
 
@@ -65,9 +73,9 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		if ( pRet->nRet )
 		{
 			stMsgTaxasEnterRoomRet msgBack ;
-			msgBack.nRet = 2 ;
+			msgBack.nRet = pRet->nRet ;
 			CTaxasServerApp::SharedGameServerApp()->SendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-			CLogMgr::SharedLogMgr()->SystemLog("invalid session id = %d can not get player data ", nSessionID ) ;
+			CLogMgr::SharedLogMgr()->SystemLog("invalid session id = %d can not get player data ret = %d ", nSessionID,pRet->nRet ) ;
 			return true ;
 		}
 
@@ -77,7 +85,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 			CLogMgr::SharedLogMgr()->ErrorLog("why room is null server error room id = %d",pRet->nRoomID ) ;
 
 			stMsgTaxasEnterRoomRet msgBack ;
-			msgBack.nRet = 1 ;
+			msgBack.nRet = 3;
 			CTaxasServerApp::SharedGameServerApp()->SendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			return true ;
 		}
@@ -89,6 +97,19 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 	if ( MSG_TP_REQUEST_TAKE_IN_MONEY == prealMsg->usMsgType && eSenderPort == ID_MSG_PORT_DATA )
 	{
 		stMsgRequestTaxasPlayerTakeInCoinRet* pRet = (stMsgRequestTaxasPlayerTakeInCoinRet*)prealMsg ;
+		CTaxasRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
+		if ( pRoom == NULL )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("why not the room id = %d is null can not process msg = %d, session id = %d",pRet->nRoomID,MSG_TP_REQUEST_TAKE_IN_MONEY,nSessionID)  ;
+			return true ;
+		}
+		pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;
+		return true ;
+	}
+
+	if ( MSG_TP_ORDER_LEAVE == prealMsg->usMsgType && eSenderPort == ID_MSG_PORT_DATA )
+	{
+		stMsgOrderTaxasPlayerLeave* pRet = (stMsgOrderTaxasPlayerLeave*)prealMsg ;
 		CTaxasRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
 		if ( pRoom == NULL )
 		{
@@ -113,6 +134,11 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 
 CTaxasRoom*CRoomManager::GetRoomByID(uint32_t nRoomID )
 {
+	MAP_ID_ROOM::iterator iter = m_vRooms.find(nRoomID) ;
+	if ( iter != m_vRooms.end() )
+	{
+		return iter->second ;
+	}
 	return NULL ;
 }
 

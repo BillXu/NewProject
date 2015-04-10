@@ -22,9 +22,8 @@ public:
 	void OnProcessContinueLogin();
 	void OnPlayerDisconnect();
 	virtual void TimerSave();
-	uint64_t GetAllCoin(){ return m_stBaseData.nCoin + m_nTakeInCoin ;}
-	unsigned int GetAllDiamoned(){ return m_stBaseData.nDiamoned + m_nTakeInDiamoned ;}
-	uint64_t GetTakeInMoney(bool bDiamoned = false ){ return bDiamoned ? m_nTakeInDiamoned : m_nTakeInCoin ; }
+	uint64_t GetAllCoin(){ return m_stBaseData.nCoin;}
+	unsigned int GetAllDiamoned(){ return m_stBaseData.nDiamoned;}
 	bool SetTakeInCoin(uint64_t nCoin, bool bDiamoned = false);
 	//bool ModifyTakeInMoney(int64_t nOffset,bool bDiamond = false );
 	bool ModifyMoney(int64_t nOffset,bool bDiamond = false );
@@ -32,7 +31,7 @@ public:
 	bool OnPlayerEvent(stPlayerEvetArg* pArg);
 	void AddWinTimes(){ ++m_stBaseData.nWinTimes;}
 	void AddLoseTimes(){ ++m_stBaseData.nLoseTimes;}
-	void SetSingleWinMost(uint64_t nWin ){ if ( GetSingleWinMost() < nWin ){ m_stBaseData.nSingleWinMost = nWin ; } }
+	void SetSingleWinMost(uint64_t nWin ){ if ( GetSingleWinMost() < nWin ){ m_stBaseData.nSingleWinMost = nWin ; m_bTaxasDataDirty = true; } }
 	uint64_t GetSingleWinMost(){ return m_stBaseData.nSingleWinMost ;}
 	unsigned char* GetMaxCards(){ return m_stBaseData.vMaxCards ; }
 	char* GetPlayerName(){ return m_stBaseData.cName ;}
@@ -45,7 +44,7 @@ public:
 	stServerBaseData* GetData(){ return &m_stBaseData ;}
 	virtual void OnReactive(uint32_t nSessionID );
 	uint16_t GetPhotoID(){ return m_stBaseData.nPhotoID ;}
-	void CacluateTaxasRoomMoney(uint64_t nNewTakeIn, bool bDiamond );
+	void CacluateTaxasRoomMoney(uint64_t nCurTakeIn, bool bDiamond );
 public:
 	friend class CPlayerOnlineBox ;
 protected:
@@ -54,9 +53,9 @@ protected:
 private:
 	stServerBaseData m_stBaseData ;
 	// not store in db 
-	uint64_t m_nTakeInCoin ;
-	unsigned m_nTakeInDiamoned ;
 	bool m_bGivedLoginReward ;
+	uint64_t m_nTakeInDiamoned   ;
+	uint64_t m_nTakeInCoin  ;
 
 	bool m_bMoneyDataDirty;
 	bool m_bTaxasDataDirty;

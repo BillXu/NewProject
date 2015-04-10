@@ -24,7 +24,7 @@ struct stMsgTaxasEnterRoomRet
 	:public stMsg
 {
 	stMsgTaxasEnterRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ENTER_ROOM ; }
-	uint8_t nRet ; // 0 success , 1 error ; 2 invalid session id ;3 already in room ;
+	uint8_t nRet ; // 0 success , 1 invalid session id ;2 already in room ; 3 room id error ;
 };
 
 struct stMsgTaxasRoomInfoBase
@@ -84,6 +84,19 @@ struct stMsgTaxasRoomSitDown
 {
 	stMsgTaxasRoomSitDown(){cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ROOM_SIT_DOWN ; }
 	stTaxasPeerBaseData tPlayerData ;
+};
+
+struct stMsgTaxasPlayerStandUp
+	:stMsgToRoom
+{
+	stMsgTaxasPlayerStandUp(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_PLAYER_STAND_UP ; }
+};
+
+struct stMsgTaxasRoomStandUp
+	:public stMsg
+{
+	stMsgTaxasRoomStandUp(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ROOM_STAND_UP ; }
+	uint32_t nSeatIdx ;
 };
 
 struct stMsgTaxasPlayerLeave
@@ -149,7 +162,7 @@ struct stMsgTaxasPlayerActRet
 	:public stMsg
 {
 	stMsgTaxasPlayerActRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_PLAYER_ACT ; }
-	uint8_t nRet ; // 0 success ;
+	uint8_t nRet ; // 0 success ; 1 not your turn ; 2 . you are not in this game , 3 state error , you can not act , 4 unknown act type 5 . can not do this act , 6 coin not engough
 };
 
 struct stMsgTaxasRoomAct

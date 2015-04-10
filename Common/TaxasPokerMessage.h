@@ -16,7 +16,7 @@ struct stTPRoomPeerBrifInfo
 struct stMsgTaxasPokerTypeEnter
 :public stMsg
 {
-    stMsgTaxasPokerTypeEnter(){ usMsgType = MSG_TP_TYPE_ENTER ; cSysIdentifer = ID_MSG_C2GAME ; }
+    stMsgTaxasPokerTypeEnter(){ usMsgType = MSG_TP_ENTER_ROOM ; cSysIdentifer = ID_MSG_C2GAME ; }
     unsigned char cSpeedType ;
     unsigned char cSeatType ;
     unsigned int nBigBlind ;

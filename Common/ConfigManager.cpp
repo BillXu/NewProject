@@ -44,7 +44,7 @@ void CConfigManager::LoadAllConfigFile( const char* pConfigRootPath )
 	pConfgiPath[eConfig_SlotMachine] = strCL + "SlotMachine.txt";
 	pConfgiPath[eConfig_Box] = strCL + "BoxConfig.txt";
 	pConfgiPath[eConfig_Room] = strCL + "RoomConfig.txt";
-	pConfgiPath[eConfig_TitleLevel] = strCL + "TitleLevelConfig.txt";
+	//pConfgiPath[eConfig_TitleLevel] = strCL + "TitleLevelConfig.txt";
 	// go on login 
 	m_vConfigs[eConfig_ContinueLogin] = new CContiuneLoginConfigMgr ;
 	// item config ;
@@ -68,7 +68,7 @@ void CConfigManager::LoadAllConfigFile( const char* pConfigRootPath )
 	m_vConfigs[eConfig_Box] = new CBoxConfigMgr ;
 
 	// title level config 
-	m_vConfigs[eConfig_TitleLevel] = new CTitleLevelConfig ;
+	//m_vConfigs[eConfig_TitleLevel] = new CTitleLevelConfig ;
 
 	for ( int i = eConfig_One; i < eConfig_Max ; ++i )
 	{

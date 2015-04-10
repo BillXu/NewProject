@@ -100,36 +100,70 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 	{
 	case MSG_VERIFY_APNS:
 		{
+			if ( m_vTargetServers[eSvrType_APNS] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_APNS close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_APNS]);
+			}
+
 			m_vTargetServers[eSvrType_APNS] = pData->_connectID;
 			CLogMgr::SharedLogMgr()->SystemLog("apns server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
 		}
 		break;
 	case MSG_VERIFY_LOGIN:
 		{
+			if ( m_vTargetServers[eSvrType_Login] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Login close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Login]);
+			}
 			m_vTargetServers[eSvrType_Login] = pData->_connectID;
 			CLogMgr::SharedLogMgr()->SystemLog("login server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
 		}
 		break;
 	case MSG_VERIFY_LOG:
 		{
+			if ( m_vTargetServers[eSvrType_Log] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Log close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Log]);
+			}
+
 			m_vTargetServers[eSvrType_Log] = pData->_connectID;
 			CLogMgr::SharedLogMgr()->SystemLog("log server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
 		}
 		break;
 	case MSG_VERIFY_DB:
 		{
+			if ( m_vTargetServers[eSvrType_DB] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_DB close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_DB]);
+			}
+
 			m_vTargetServers[eSvrType_DB] = pData->_connectID;
 			CLogMgr::SharedLogMgr()->SystemLog("DB server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
 		}
 		break;
 	case MSG_VERIFY_DATA:
 		{
+			if ( m_vTargetServers[eSvrType_Data] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Data close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Data]);
+			}
+
 			m_vTargetServers[eSvrType_Data] = pData->_connectID;
 			CLogMgr::SharedLogMgr()->SystemLog("Data server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
 		}
 		break;
 	case MSG_VERIFY_TAXAS:
 		{
+			if ( m_vTargetServers[eSvrType_Taxas] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Taxas close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Taxas]);
+			}
 			m_vTargetServers[eSvrType_Taxas] = pData->_connectID;
 			CLogMgr::SharedLogMgr()->SystemLog("Taxas server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
 		}
@@ -350,6 +384,8 @@ const char* CCenterServerApp::GetServerDescByType(eServerType eType )
 		"eSvrType_Log",
 		"eSvrType_LogDataBase",
 		"eSvrType_Center",
+		"eSvrType_Data",
+		"eSvrType_Taxas",
 		"eSvrType_Max",
 	} ;
 	

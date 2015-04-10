@@ -36,6 +36,7 @@ public:
 	void OnReactive(uint32_t nSessionID );
 	time_t GetDisconnectTime(){ return m_nDisconnectTime ;}
 	void SetStayInTaxasRoomID(uint32_t nRoomID ){ m_nTaxasRoomID = nRoomID ; }
+	uint32_t GetTaxasRoomID(){ return m_nTaxasRoomID ; }
 protected:
 	bool ProcessPublicPlayerMsg( stMsg* pMessage , eMsgPort eSenderPort );
 	void PushTestAPNs();

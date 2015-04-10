@@ -419,8 +419,10 @@ bool CPlayerBaseData::SetTakeInCoin(uint64_t nCoinOffset, bool bDiamoned)
 			return false ;
 		}
  		m_nTakeInDiamoned = (unsigned int)min(nCoinOffset,GetAllDiamoned()); ;
- 		m_stBaseData.nDiamoned -= (unsigned int)m_nTakeInCoin ;
+ 		m_stBaseData.nDiamoned -= (unsigned int)m_nTakeInDiamoned ;
  	}
+
+	m_bMoneyDataDirty = true ;
 	return true ;
 }
 
@@ -563,4 +565,6 @@ void CPlayerBaseData::CacluateTaxasRoomMoney(uint64_t nNewTakeIn, bool bDiamond 
 		m_stBaseData.nCoin += nNewTakeIn ;
 		m_nTakeInCoin = 0 ;
 	}
+
+	m_bMoneyDataDirty = true ;
 }

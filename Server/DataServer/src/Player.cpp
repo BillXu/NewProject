@@ -249,6 +249,13 @@ void CPlayer::OnPlayerDisconnect()
 	
 	m_nDisconnectTime = time(NULL) ;
 	SetState(ePlayerState_Offline) ;
+
+	if ( m_nTaxasRoomID != 0 )  // order to leave 
+	{
+		stMsgOrderTaxasPlayerLeave msgLeave ;
+		msgLeave.nRoomID = m_nTaxasRoomID ;
+		CGameServerApp::SharedGameServerApp()->SendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
+	}
 }
 
 void CPlayer::PostPlayerEvent(stPlayerEvetArg* pEventArg )
@@ -287,6 +294,13 @@ void CPlayer::OnAnotherClientLoginThisPeer(unsigned int nSessionID )
 	// tell prelogin client to disconnect ;
 	stMsgPlayerOtherLogin msg ;
 	SendMsgToClient((char*)&msg,sizeof(msg)) ;
+
+	if ( m_nTaxasRoomID != 0 )  // order to leave 
+	{
+		stMsgOrderTaxasPlayerLeave msgLeave ;
+		msgLeave.nRoomID = m_nTaxasRoomID ;
+		CGameServerApp::SharedGameServerApp()->SendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
+	}
 
 	CLogMgr::SharedLogMgr()->ErrorLog("pls remember inform other server this envent OnAnotherClientLoginThisPeer ") ;
 

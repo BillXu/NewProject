@@ -229,7 +229,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			}
 		}
 		break;
-	case MSG_TP_ROOM_CUR_INFO:
+	case MSG_TP_ROOM_BASE_INFO:
 		{
 			// change room scene and push this msg;
 			IScene*pScene = new CTaxasPokerScene(m_pClient) ;

@@ -107,6 +107,7 @@ bool CGameServerApp::ProcessPublicMsg( stMsg* prealMsg , eMsgPort eSenderPort , 
 bool CGameServerApp::OnLostSever(Packet* pMsg)
 {
 	m_nCenterSvrNetworkID = INVALID_CONNECT_ID ;
+	CLogMgr::SharedLogMgr()->ErrorLog("center server disconnected !") ;
 	return false ;
 }
 
@@ -120,6 +121,7 @@ bool CGameServerApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 		cMsg.usMsgType = MSG_VERIFY_DATA ;
 		m_pNetWork->SendMsg((char*)&cMsg,sizeof(stMsg),pMsg->_connectID) ;
 		CLogMgr::SharedLogMgr()->SystemLog("Connected to Center Svr") ;
+		return false ;
 	}
 
 	CLogMgr::SharedLogMgr()->ErrorLog("connect Center svr failed") ;

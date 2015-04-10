@@ -146,9 +146,6 @@
     <ClInclude Include="src\tinyxml.h">
       <Filter>RobotConfig\tinyXml</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\TaxasPokerMessage.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\TaxasPokerPeerCard.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -166,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="..\Server\ServerCommon\ThreadMod.h">
       <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\TaxasMessageDefine.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

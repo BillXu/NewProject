@@ -85,8 +85,33 @@ bool CTaxasBaseRoomState::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 					return true ;
 				}
 				m_pRoom->OnPlayerSitDown(pRet->nSeatIdx,nPlayerSessionID,pRet->nMoneyToTakeIn) ;
+				CLogMgr::SharedLogMgr()->PrintLog("player seat idx = %d sit down takein coin = %I64d",pRet->nSeatIdx,pRet->nMoneyToTakeIn) ;
 				return true ;
 			}
+		}
+		break;
+	case MSG_TP_PLAYER_STAND_UP:
+		{
+			uint8_t nSeatIdx = m_pRoom->GetSeatIdxBySessionID(nPlayerSessionID);
+			if ( nSeatIdx >= m_pRoom->m_stRoomConfig.nMaxSeat )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("you already stand up session id = %d",nPlayerSessionID ) ;
+				break;
+			}
+			m_pRoom->OnPlayerStandUp(nSeatIdx) ;
+			CLogMgr::SharedLogMgr()->PrintLog("player seat idx = %d stand up ",nSeatIdx );
+		}
+		break;
+	case MSG_TP_ORDER_LEAVE:
+	case MSG_TP_PLAYER_LEAVE:
+		{
+			if ( m_pRoom->IsPlayerInRoomWithSessionID(nPlayerSessionID) == false )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("you are not in room so how you leave , session id = %d",nPlayerSessionID ) ;
+				break;
+			}
+			m_pRoom->OnPlayerLeaveRoom(nPlayerSessionID) ;
+			CLogMgr::SharedLogMgr()->ErrorLog("player session id = %d leave room ",nPlayerSessionID ) ;
 		}
 		break;
 	default:
@@ -210,15 +235,57 @@ void CTaxasStatePlayerBet::Update(float fDelte )
 void CTaxasStatePlayerBet::OnStateTimeOut()
 {
 	m_pRoom->OnPlayerActTimeOut() ;
+
+	if ( m_pRoom->IsThisRoundBetOK() == false )
+	{
+		m_pRoom->InformPlayerAct();
+	}
 }
 
 bool CTaxasStatePlayerBet::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
 {
-	if ( CTaxasBaseRoomState::OnMessage(prealMsg,eSenderPort,nPlayerSessionID) )
+	switch ( prealMsg->usMsgType )
 	{
-		return true ;
+	case MSG_TP_ORDER_LEAVE:
+	case MSG_TP_PLAYER_LEAVE:
+	case MSG_TP_PLAYER_STAND_UP:
+		{
+			uint8_t nSeatIdx = m_pRoom->GetSeatIdxBySessionID(nPlayerSessionID);
+			CTaxasBaseRoomState::OnMessage(prealMsg,eSenderPort,nPlayerSessionID);
+			if ( m_pRoom->GetCurWaitActPlayerIdx() == nSeatIdx )
+			{
+				if ( m_pRoom->IsThisRoundBetOK() == false )
+				{
+					m_pRoom->InformPlayerAct();
+				}
+			}
+		}
+		break;
+	case MSG_TP_PLAYER_ACT:
+		{
+			uint8_t nSeatIdx = m_pRoom->GetSeatIdxBySessionID(nPlayerSessionID);
+			stMsgTaxasPlayerActRet msgBack ;
+			stMsgTaxasPlayerAct* pAct = (stMsgTaxasPlayerAct*)prealMsg ;
+			msgBack.nRet = m_pRoom->OnPlayerAction( nSeatIdx,(eRoomPeerAction)pAct->nPlayerAct,pAct->nValue) ;
+			if ( msgBack.nRet == 0 )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("room id = %d player idx = %d do act = %d, value = %I64d",m_pRoom->GetRoomID(), nSeatIdx,pAct->nPlayerAct,pAct->nValue ) ;
+				if ( nSeatIdx == m_pRoom->GetCurWaitActPlayerIdx() && m_pRoom->IsThisRoundBetOK() == false )
+				{
+					m_pRoom->InformPlayerAct();
+				}
+			}
+			else
+			{
+				m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack));
+				CLogMgr::SharedLogMgr()->ErrorLog("player idx = %d act error ret = %d , room id = %d",nSeatIdx,msgBack.nRet,m_pRoom->GetRoomID()); 
+			}
+		}
+		break;
+	default:
+		return CTaxasBaseRoomState::OnMessage(prealMsg,eSenderPort,nPlayerSessionID);
 	}
-	return false ;
+	return true ;
 }
 
 // caculate vice pool

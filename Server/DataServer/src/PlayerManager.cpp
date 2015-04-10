@@ -151,6 +151,19 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 				return true ;
 			}
 
+			if ( pPlayer->GetTaxasRoomID() )
+			{
+				msgBack.nRet = 2 ;
+				CGameServerApp::SharedGameServerApp()->SendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("can not enter room already in other room id = %d  session id = %d",pPlayer->GetTaxasRoomID(),pData->nSessionID ) ;
+
+				// may have error  order leave 
+				stMsgOrderTaxasPlayerLeave msg ;
+				msg.nRoomID = pPlayer->GetTaxasRoomID() ;
+				CGameServerApp::SharedGameServerApp()->SendMsg(pPlayer->GetSessionID(),(char*)&msg,sizeof(msg)) ;
+				return true ;
+			}
+
 			msgBack.tData.nPhotoID = pPlayer->GetBaseData()->GetPhotoID();
 			memset(msgBack.tData.cName,0,sizeof(msgBack.tData.cName) );
 			sprintf_s(msgBack.tData.cName,sizeof(msgBack.tData.cName),"%s",pPlayer->GetBaseData()->GetPlayerName()) ;
@@ -194,17 +207,20 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 	case MSG_TP_INFORM_STAND_UP:
 		{
 			stMsgInformTaxasPlayerStandUp* pRet = (stMsgInformTaxasPlayerStandUp*)prealMsg ;
-			CPlayer* pPlayer = GetPlayerBySessionID(pRet->nSessionID) ;
+			CPlayer* pPlayer = NULL ;
+			if ( pRet->nUserUID )
+			{
+				pPlayer = GetPlayerByUserUID(pRet->nUserUID ) ;
+			}
+			else
+			{
+				pPlayer = GetPlayerBySessionID(pRet->nSessionID ) ;
+			}
+
 			if ( pPlayer == NULL )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_INFORM_STAND_UP why can not find player uid from taxas server uid = %d",pRet->nSessionID ) ;
 				return true ;
-			}
-
-			if ( pPlayer->GetUserUID() != pRet->nUserUID && pRet->nUserUID != 0 )
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("pPlayer->GetUserUID() != pRet->nUserUID why can not find player uid from taxas server uid = %d",pRet->nSessionID ) ;
-				 pPlayer = GetPlayerByUserUID(pRet->nUserUID) ;
 			}
 
 			if ( pPlayer )

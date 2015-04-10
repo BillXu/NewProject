@@ -11,6 +11,7 @@ public:
 	virtual void LeaveState();
 	virtual void Update(float fDelte );
 	virtual void OnStateTimeOut(){}
+	float GetDuringTime(){ return m_fDuringTime ;}
 	void SetState(eRoomState eState ){ m_eState = eRoomState_TP_MAX ; }
 protected:
 	float m_fDuringTime ;

@@ -126,7 +126,7 @@ struct stMsgRequestTaxasPlayerDataRet
 {
 	stMsgRequestTaxasPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_REQUEST_PLAYER_DATA ; }
 	uint32_t nRoomID ;
-	uint8_t nRet ; // 0 succes , 1 not find player data ;
+	uint8_t nRet ; // 0 succes , 1 not find player data , 2 already in another taxas room ;
 	stTaxasInRoomPeerData tData ;
 };
 
@@ -157,7 +157,7 @@ struct stMsgInformTaxasPlayerStandUp
 	stMsgInformTaxasPlayerStandUp(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_INFORM_STAND_UP ; }
 	uint32_t nUserUID ;
 	uint32_t nSessionID ;
-	uint32_t nTakeInMoney;
+	uint64_t nTakeInMoney;
 	bool bIsDiamond ;
 };
 
