@@ -1,5 +1,7 @@
 Server/Bin/
 Server/Bin/ServerBin/*.*
+Common/src/
+PokerClient/DeZhouPoker/
 #################
 ## Eclipse
 #################
@@ -351,3 +353,4 @@ MyPoker/proj.ios_mac/MyPoker.xcodeproj/project.xcworkspace/xcuserdata/BillSky.xc
 Server/Bin/ServerBin/TestClient.pdb
 *.pdb
 *.pdb
+PokerClient/main.lua
