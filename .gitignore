@@ -351,3 +351,7 @@ MyPoker/proj.ios_mac/MyPoker.xcodeproj/project.xcworkspace/xcuserdata/BillSky.xc
 Server/Bin/ServerBin/TestClient.pdb
 *.pdb
 *.pdb
+MyPoker/cocos2d/cocos/2d/Debug.win32/
+MyPoker/cocos2d/cocos/audio/proj.win32/Debug.win32/
+MyPoker/proj.win32/Debug.win32/
+MyPoker/cocos2d/external/chipmunk/proj.win32/Debug.win32/
