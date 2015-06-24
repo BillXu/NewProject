@@ -1,0 +1,387 @@
+{
+  "ID": "3f0ed0e2-c120-4fef-bbd0-dd69ba0dc17c",
+  "Version": "2.2.1.0",
+  "Name": "MainScene",
+  "Content": {
+    "Content": {
+      "Animation": {
+        "Duration": 55,
+        "Speed": 1.0,
+        "Timelines": [
+          {
+            "ActionTag": -1042745231,
+            "Property": "Position",
+            "Frames": [
+              {
+                "X": 358.0,
+                "Y": 542.0,
+                "FrameIndex": 35,
+                "ctype": "PointFrameData"
+              },
+              {
+                "X": 510.0,
+                "Y": 148.0,
+                "FrameIndex": 40,
+                "ctype": "PointFrameData"
+              },
+              {
+                "X": 206.0,
+                "Y": 196.0,
+                "FrameIndex": 50,
+                "ctype": "PointFrameData"
+              },
+              {
+                "X": 94.0,
+                "Y": 494.0,
+                "FrameIndex": 55,
+                "ctype": "PointFrameData"
+              }
+            ],
+            "ctype": "TimelineData"
+          },
+          {
+            "ActionTag": 1510596304,
+            "Property": "Position",
+            "Frames": [
+              {
+                "X": 292.0005,
+                "Y": 351.9998,
+                "FrameIndex": 0,
+                "ctype": "PointFrameData"
+              },
+              {
+                "X": 172.0005,
+                "Y": 617.9998,
+                "FrameIndex": 15,
+                "ctype": "PointFrameData"
+              },
+              {
+                "X": 472.0005,
+                "Y": 591.9998,
+                "FrameIndex": 30,
+                "ctype": "PointFrameData"
+              },
+              {
+                "X": 529.998,
+                "Y": 443.9908,
+                "FrameIndex": 45,
+                "ctype": "PointFrameData"
+              },
+              {
+                "X": 269.9987,
+                "Y": 319.9903,
+                "FrameIndex": 55,
+                "ctype": "PointFrameData"
+              }
+            ],
+            "ctype": "TimelineData"
+          },
+          {
+            "ActionTag": 1510596304,
+            "Property": "Scale",
+            "Frames": [
+              {
+                "X": 1.0067,
+                "Y": 1.0033,
+                "FrameIndex": 0,
+                "ctype": "ScaleValueFrameData"
+              },
+              {
+                "X": 2.3667,
+                "Y": 2.4333,
+                "FrameIndex": 45,
+                "ctype": "ScaleValueFrameData"
+              },
+              {
+                "X": 1.0,
+                "Y": 1.0,
+                "FrameIndex": 55,
+                "ctype": "ScaleValueFrameData"
+              }
+            ],
+            "ctype": "TimelineData"
+          }
+        ],
+        "ctype": "TimelineActionData"
+      },
+      "AnimationList": [
+        {
+          "StartIndex": 35,
+          "EndIndex": 55,
+          "Name": "animation0",
+          "ctype": "AnimationInfoData"
+        }
+      ],
+      "ObjectData": {
+        "PrePosition": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "PreSize": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "Children": [
+          {
+            "FileData": {
+              "Type": "Normal",
+              "Path": "mypage_1/back_ground2_640.jpg"
+            },
+            "Tag": 8,
+            "PositionPercentXEnabled": true,
+            "PositionPercentYEnabled": true,
+            "PrePosition": {
+              "X": 0.5,
+              "Y": 0.5
+            },
+            "PreSize": {
+              "X": 1.0,
+              "Y": 1.0
+            },
+            "ActionTag": 1004992065,
+            "Position": {
+              "X": 320.0,
+              "Y": 480.0
+            },
+            "Scale": {
+              "ScaleX": 1.0,
+              "ScaleY": 1.0
+            },
+            "AnchorPoint": {
+              "ScaleX": 0.5,
+              "ScaleY": 0.5
+            },
+            "CColor": {},
+            "Size": {
+              "X": 640.0,
+              "Y": 960.0
+            },
+            "FrameEvent": "",
+            "Name": "back_ground2_640_3",
+            "ctype": "SpriteObjectData"
+          },
+          {
+            "Volume": 1.0,
+            "Tag": 15,
+            "PrePosition": {
+              "X": 0.31875,
+              "Y": 0.7104167
+            },
+            "PreSize": {
+              "X": 0.0,
+              "Y": 0.0
+            },
+            "LeftMargin": 204.0,
+            "RightMargin": 436.0,
+            "TopMargin": 278.0,
+            "BottomMargin": 682.0,
+            "ActionTag": 1575544315,
+            "Position": {
+              "X": 204.0,
+              "Y": 682.0
+            },
+            "Scale": {
+              "ScaleX": 1.0,
+              "ScaleY": 1.0
+            },
+            "AnchorPoint": {},
+            "CColor": {},
+            "Size": {
+              "X": 0.0,
+              "Y": 0.0
+            },
+            "FrameEvent": "",
+            "Name": "Audio_1",
+            "ctype": "SimpleAudioObjectData"
+          },
+          {
+            "FontSize": 14,
+            "ButtonText": "Button",
+            "TextColor": {
+              "R": 65,
+              "G": 65,
+              "B": 70
+            },
+            "DisabledFileData": {
+              "Type": "Default",
+              "Path": "Default/Button_Disable.png"
+            },
+            "PressedFileData": {
+              "Type": "Normal",
+              "Path": "mypage_1/header_level_b.png"
+            },
+            "NormalFileData": {
+              "Type": "Normal",
+              "Path": "mypage_1/header_level.png"
+            },
+            "Scale9Width": 176,
+            "Scale9Height": 176,
+            "TouchEnable": true,
+            "Tag": 8,
+            "PrePosition": {
+              "X": 0.600781262,
+              "Y": 0.280729175
+            },
+            "PreSize": {
+              "X": 0.1875,
+              "Y": 0.125
+            },
+            "LeftMargin": 324.5,
+            "RightMargin": 195.5,
+            "TopMargin": 630.5,
+            "BottomMargin": 209.5,
+            "ActionTag": 1217976009,
+            "Position": {
+              "X": 384.5,
+              "Y": 269.5
+            },
+            "Scale": {
+              "ScaleX": 1.0,
+              "ScaleY": 1.0
+            },
+            "AnchorPoint": {
+              "ScaleX": 0.5,
+              "ScaleY": 0.5
+            },
+            "CColor": {},
+            "Size": {
+              "X": 120.0,
+              "Y": 120.0
+            },
+            "FrameEvent": "",
+            "Name": "Button_1",
+            "ctype": "ButtonObjectData"
+          },
+          {
+            "FileData": {
+              "Type": "Normal",
+              "Path": "mypage_1/btn_shop_120_120.png"
+            },
+            "Tag": 14,
+            "PrePosition": {
+              "X": 0.559375,
+              "Y": 0.564583361
+            },
+            "PreSize": {
+              "X": 0.0,
+              "Y": 0.0
+            },
+            "LeftMargin": 298.0,
+            "RightMargin": 222.0,
+            "TopMargin": 358.0,
+            "BottomMargin": 482.0,
+            "ActionTag": -1042745231,
+            "Position": {
+              "X": 358.0,
+              "Y": 542.0
+            },
+            "Scale": {
+              "ScaleX": 1.0,
+              "ScaleY": 1.0
+            },
+            "AnchorPoint": {
+              "ScaleX": 0.5,
+              "ScaleY": 0.5
+            },
+            "CColor": {},
+            "Size": {
+              "X": 120.0,
+              "Y": 120.0
+            },
+            "FrameEvent": "",
+            "Name": "btn_shop_120_120_6",
+            "ctype": "SpriteObjectData"
+          },
+          {
+            "FontSize": 14,
+            "ButtonText": "",
+            "TextColor": {
+              "R": 65,
+              "G": 65,
+              "B": 70
+            },
+            "DisabledFileData": {
+              "Type": "Normal",
+              "Path": "mypage_1/btn_menu_120_120.png"
+            },
+            "PressedFileData": {
+              "Type": "Normal",
+              "Path": "mypage_1/btn_friend_120_120.png"
+            },
+            "NormalFileData": {
+              "Type": "Normal",
+              "Path": "mypage_1/btn_battle_120_120.png"
+            },
+            "Scale9Enable": true,
+            "Scale9Width": 120,
+            "Scale9Height": 120,
+            "TouchEnable": true,
+            "Tag": 11,
+            "PrePosition": {
+              "X": 0.343750775,
+              "Y": 0.5329165
+            },
+            "PreSize": {
+              "X": 0.1875,
+              "Y": 0.125
+            },
+            "LeftMargin": 160.000488,
+            "RightMargin": 359.9995,
+            "TopMargin": 388.400146,
+            "BottomMargin": 451.599823,
+            "ActionTag": 1510596304,
+            "Position": {
+              "X": 220.000488,
+              "Y": 511.599823
+            },
+            "Scale": {
+              "ScaleX": 1.2787,
+              "ScaleY": 1.2893
+            },
+            "AnchorPoint": {
+              "ScaleX": 0.5,
+              "ScaleY": 0.5
+            },
+            "CColor": {},
+            "Size": {
+              "X": 120.0,
+              "Y": 120.0
+            },
+            "FrameEvent": "",
+            "Name": "Button_2",
+            "ctype": "ButtonObjectData"
+          }
+        ],
+        "Position": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "Scale": {
+          "ScaleX": 1.0,
+          "ScaleY": 1.0
+        },
+        "AnchorPoint": {},
+        "CColor": {},
+        "Size": {
+          "X": 640.0,
+          "Y": 960.0
+        },
+        "FrameEvent": "",
+        "Name": "Scene",
+        "ctype": "SingleNodeObjectData"
+      },
+      "ctype": "GameProjectData"
+    },
+    "CameraPosition": {
+      "ValueX": 0.0,
+      "ValueY": 5.0,
+      "ValueZ": -1.0
+    },
+    "CameraRotation": {
+      "ValueX": 0.0,
+      "ValueY": 0.0,
+      "ValueZ": 0.0
+    }
+  },
+  "Type": "Scene"
+}

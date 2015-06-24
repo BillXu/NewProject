@@ -84,7 +84,11 @@ bool HelloWorld::init()
 void HelloWorld::OnFinishRecord(const char* pFileName, bool bInterupted )
 {
     printf("start play %s\n",pFileName ) ;
-    CVoicerManager::GetInstance()->PlayVoice(pFileName) ;
+<<<<<<< HEAD
+    //CVoicerManager::GetInstance()->PlayVoice(pFileName) ;
+=======
+   // CVoicerManager::GetInstance()->PlayVoice(pFileName) ;
+>>>>>>> c04460d1fd07c4e5f8db649853fcc976fc7b9142
     pLable->setString("playing sound") ;
 }
 
@@ -96,23 +100,31 @@ void HelloWorld::menuCloseCallback(Ref* pSender)
     {
         printf("stop recorder\n");
         pLable->setString("stop recorder") ;
-        CVoicerManager::GetInstance()->StopRecord();
+       // CVoicerManager::GetInstance()->StopRecord();
         Director::getInstance()->getScheduler()->unschedule("soundMetering", this);
     }
     else
     {
         printf("开始录音\n");
-        pLable->setString("开始录音") ;
-        CVoicerManager::GetInstance()->SetDelegate(this) ;
+<<<<<<< HEAD
+        pLable->setString("start") ;
+=======
+        //pLable->setString("开始录音") ;
+>>>>>>> c04460d1fd07c4e5f8db649853fcc976fc7b9142
+        //CVoicerManager::GetInstance()->SetDelegate(this) ;
         std::string strPath = FileUtils::getInstance()->getWritablePath() ;
         //strPath.append("helloVoice2.wav");
         std::string strn = StringUtils::format("%u",(unsigned int)time(NULL));
         strPath = strPath + strn ;
-        CVoicerManager::GetInstance()->StartRecord(strPath.c_str());
-        Director::getInstance()->getScheduler()->schedule([](float ft){ float f = CVoicerManager::GetInstance()->GetWavMertering() ; printf("sound wave %.4f\n",f) ; pMetering->setScaleY(f);}, this, 0.1, false, "soundMetering");
+<<<<<<< HEAD
+       // CVoicerManager::GetInstance()->StartRecord(strPath.c_str());
+=======
+        //CVoicerManager::GetInstance()->StartRecord(strPath.c_str());
+>>>>>>> c04460d1fd07c4e5f8db649853fcc976fc7b9142
+        //Director::getInstance()->getScheduler()->schedule([](float ft){ float f = CVoicerManager::GetInstance()->GetWavMertering() ; printf("sound wave %.4f\n",f) ; pMetering->setScaleY(f);}, this, 0.1, false, "soundMetering");
     }
     bRecording = !bRecording ;
-    return ;
+   // return ;
     
     if ( m_pChipGroup )
     {

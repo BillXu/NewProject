@@ -35,9 +35,12 @@ TestClient/Debug/
 ######
 ## add by bill
 #####
-*.png
-*.jpg
-*.jpeg
+MyGame/cocos2d/
+MyGame/cocos2d/*
+#*.png
+#*.jpg
+#*.jpeg
+MyGame/proj.win32/Debug.win32/
 ######
 ## svn ignore
 #####
@@ -353,4 +356,13 @@ MyPoker/proj.ios_mac/MyPoker.xcodeproj/project.xcworkspace/xcuserdata/BillSky.xc
 Server/Bin/ServerBin/TestClient.pdb
 *.pdb
 *.pdb
+MyPoker/cocos2d/cocos/2d/Debug.win32/
+MyPoker/cocos2d/cocos/audio/proj.win32/Debug.win32/
+MyPoker/proj.win32/Debug.win32/
+MyPoker/cocos2d/external/chipmunk/proj.win32/Debug.win32/
+=======
 PokerClient/main.lua
+*.tlog
+CocosProject/src/
+CocosProject/runtime/
+MyPoker/cocos2d/
