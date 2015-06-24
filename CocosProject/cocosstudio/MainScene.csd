@@ -1,5 +1,5 @@
 <GameProjectFile>
-  <PropertyGroup Type="Scene" Name="MainScene" ID="3f0ed0e2-c120-4fef-bbd0-dd69ba0dc17c" Version="2.2.9.0" />
+  <PropertyGroup Type="Scene" Name="MainScene" ID="3f0ed0e2-c120-4fef-bbd0-dd69ba0dc17c" Version="2.3.0.1" />
   <Content ctype="GameProjectContent">
     <Content>
       <Animation Duration="0" Speed="1.0000" />
@@ -31,7 +31,7 @@
             <PrePosition X="0.3187" Y="0.6004" />
             <PreSize />
           </AbstractNodeData>
-          <AbstractNodeData Name="Button_1" ActionTag="1217976009" Tag="999" IconVisible="False" LeftMargin="324.5000" RightMargin="195.5000" TopMargin="806.5000" BottomMargin="209.5000" TouchEnable="True" FontSize="14" ButtonText="Button" Scale9Width="176" Scale9Height="176" ctype="ButtonObjectData">
+          <AbstractNodeData Name="Button_1" ActionTag="1217976009" Tag="999" IconVisible="False" LeftMargin="324.5000" RightMargin="195.5000" TopMargin="806.5000" BottomMargin="209.5000" TouchEnable="True" FontSize="14" ButtonText="Button" Scale9Width="176" Scale9Height="176" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
             <Size X="120.0000" Y="120.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="384.5000" Y="269.5000" />
@@ -57,7 +57,7 @@
             <FileData Type="Normal" Path="mypage_1/btn_shop_120_120.png" Plist="" />
             <BlendFunc Src="1" Dst="771" />
           </AbstractNodeData>
-          <AbstractNodeData Name="Button_2" ActionTag="1510596304" Tag="11" IconVisible="False" LeftMargin="232.0005" RightMargin="287.9995" TopMargin="724.0002" BottomMargin="291.9998" TouchEnable="True" FontSize="14" Scale9Width="120" Scale9Height="120" ctype="ButtonObjectData">
+          <AbstractNodeData Name="Button_2" ActionTag="1510596304" Tag="11" IconVisible="False" LeftMargin="232.0005" RightMargin="287.9995" TopMargin="724.0002" BottomMargin="291.9998" TouchEnable="True" FontSize="14" Scale9Width="120" Scale9Height="120" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
             <Size X="120.0000" Y="120.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="292.0005" Y="351.9998" />

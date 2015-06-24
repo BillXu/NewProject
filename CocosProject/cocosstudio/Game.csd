@@ -1,5 +1,5 @@
 <GameProjectFile>
-  <PropertyGroup Type="Scene" Name="Game" ID="132727bb-e479-4d9f-a6c1-dd794a35f95d" Version="2.2.9.0" />
+  <PropertyGroup Type="Scene" Name="Game" ID="132727bb-e479-4d9f-a6c1-dd794a35f95d" Version="2.3.0.1" />
   <Content ctype="GameProjectContent">
     <Content>
       <Animation Duration="0" Speed="1.0000" />
@@ -12,7 +12,7 @@
             <Position X="319.9985" Y="-0.0001" />
             <Scale ScaleX="0.5974" ScaleY="0.5908" />
             <CColor A="255" R="255" G="255" B="255" />
-            <PrePosition X="0.5000" Y="0.0000" />
+            <PrePosition X="0.5000" />
             <PreSize X="1.6875" Y="1.6901" />
             <FileData Type="Normal" Path="image/tx_bg.jpg" Plist="" />
             <BlendFunc Src="770" Dst="771" />
@@ -152,7 +152,7 @@
             <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
             <BlendFunc Src="1" Dst="771" />
           </AbstractNodeData>
-          <AbstractNodeData Name="mainPool" ActionTag="473178116" Tag="231" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="285.9526" RightMargin="282.0474" TopMargin="411.8480" BottomMargin="688.1520" FontSize="36" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="mainPool" ActionTag="473178116" Tag="231" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="285.9526" RightMargin="282.0474" TopMargin="411.8480" BottomMargin="688.1520" FontSize="36" LabelText="2000" ctype="TextObjectData">
             <Size X="72.0000" Y="36.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="706.1520" />
@@ -163,7 +163,7 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool0" ActionTag="-35712483" Tag="232" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="379.7899" BottomMargin="732.2101" FontSize="24" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="vicePool0" ActionTag="-35712483" Tag="232" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="379.7899" BottomMargin="732.2101" FontSize="24" LabelText="2000" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="744.2101" />
@@ -174,7 +174,7 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool1" ActionTag="-1397504558" Tag="233" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="350.8057" BottomMargin="761.1943" FontSize="24" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="vicePool1" ActionTag="-1397504558" Tag="233" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="350.8057" BottomMargin="761.1943" FontSize="24" LabelText="2000" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="773.1943" />
@@ -185,7 +185,7 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool2" ActionTag="1888588010" Tag="234" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="319.2225" BottomMargin="792.7775" FontSize="24" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="vicePool2" ActionTag="1888588010" Tag="234" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="319.2225" BottomMargin="792.7775" FontSize="24" LabelText="2000" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="804.7775" />
@@ -196,7 +196,7 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool3" ActionTag="873848991" Tag="235" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="290.2384" BottomMargin="821.7616" FontSize="24" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="vicePool3" ActionTag="873848991" Tag="235" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="290.2384" BottomMargin="821.7616" FontSize="24" LabelText="2000" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="833.7616" />
@@ -207,7 +207,7 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool4" ActionTag="1687958284" Tag="236" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="258.6537" BottomMargin="853.3463" FontSize="24" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="vicePool4" ActionTag="1687958284" Tag="236" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="258.6537" BottomMargin="853.3463" FontSize="24" LabelText="2000" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="865.3463" />
@@ -218,7 +218,7 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool5" ActionTag="-1111113491" Tag="237" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="231.5688" BottomMargin="880.4312" FontSize="24" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="vicePool5" ActionTag="-1111113491" Tag="237" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="231.5688" BottomMargin="880.4312" FontSize="24" LabelText="2000" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="892.4312" />
@@ -229,7 +229,7 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool6" ActionTag="-891798343" Tag="238" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="202.7158" BottomMargin="909.2842" FontSize="24" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="vicePool6" ActionTag="-891798343" Tag="238" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="202.7158" BottomMargin="909.2842" FontSize="24" LabelText="2000" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="921.2842" />
@@ -240,7 +240,7 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool7" ActionTag="-2061866850" Tag="239" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="173.5757" BottomMargin="938.4243" FontSize="24" LabelText="2000" OutlineSize="1" ShadowOffsetX="2" ShadowOffsetY="-2" ctype="TextObjectData">
+          <AbstractNodeData Name="vicePool7" ActionTag="-2061866850" Tag="239" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="297.9526" RightMargin="294.0474" TopMargin="173.5757" BottomMargin="938.4243" FontSize="24" LabelText="2000" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="321.9526" Y="950.4243" />
