@@ -297,7 +297,6 @@ bool CSession::OnClose()
 
 	LOGI("Client Closed!");
 	delete this; //! 安全的自删除源于底层的彻底的异步分离
-	AtomicAdd(&g_nTotalCloesed, 1);
 	return true;
 }
 

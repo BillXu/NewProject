@@ -1,6 +1,6 @@
 #include "IBaseScene.h"
 #include "ClientApp.h"
-#include "LogManager.h""
+#include "LogManager.h"
 bool IBaseScene::OnLostSever(Packet* pMsg)
 {
 	cocos2d::MessageBox("lost server connect","error");
