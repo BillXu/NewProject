@@ -121,7 +121,7 @@ void INetwork::CheckHeatBeat()
 	for ( ; iterDel != vWillDelete.end(); ++iterDel )
 	{
 		LOGD( "check bet bet failed delete session");
-		(*iterDel)->OnClose();
+		(*iterDel)->Close();
 	}
 }
 
@@ -161,7 +161,12 @@ void INetwork::ProcessSendMsg()
 				MAP_ID_SESSION::iterator iter_se = m_vAllSessions.find(packet->_connectID) ;
 				if ( iter_se == m_vAllSessions.end() )
 				{
-					LOGFMTW( "can not find connect id = %d ,send failed",packet->_connectID );
+					LOGFMTW( "can not find connect id = %d ,send failed, all sessionSize = %d",packet->_connectID,m_vAllSessions.size() );
+					MAP_ID_SESSION::iterator iter = m_vAllSessions.begin();
+					for ( ; iter != m_vAllSessions.end(); ++iter )
+					{
+						LOGFMTW( "current connectid = %d",iter->first );
+					}
 				}
 				else
 				{

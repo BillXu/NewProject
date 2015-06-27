@@ -1,7 +1,6 @@
 #include "Session.h"
 #include "ServerNetworkImp.h"
 #include "depends/protocol4z/protocol4z.h"
-int g_nTotalCloesed = 0 ;
 CSession::CSession()
 {
 	m_pNetwork = NULL;
@@ -25,7 +24,7 @@ CSession::~CSession()
 {
 	if ( m_socket && !m_bSeverMode )
 	{
-		DestroyTcpSocket(m_socket);
+		//DestroyTcpSocket(m_socket);  // mostly m_socket will delete it self ;
 	}
 }
 
@@ -204,15 +203,12 @@ bool CSession::OnConnect(bool bConnected)
 		memcpy(p->_orgdata,&cInfo,sizeof(cInfo));
 		m_pNetwork->AddPacket(p);
 
-		LOGI("connect failed so close delete ! ");
-		delete this; //! 安全的自删除源于底层的彻底的异步分离
-		AtomicAdd(&g_nTotalCloesed, 1);
-
-		// bao zhen seeseion hui bei delete
-		{
-			//m_nHeatBetTimeOut = time(NULL) + 2 ;
-			//m_bWaitDelete = true ;
-		}
+		//LOGI("connect failed so close delete ! ");
+		printf("connect failed so close socket = %X, sesion = %X \n",(int)m_socket,(int)this) ;
+		// as connected failed tcpsocket will not delete it self ; so we do it ;
+		delete m_socket; ;
+		m_socket = nullptr ;
+		delete this ;
 	}
 	return true;
 }

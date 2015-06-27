@@ -49,17 +49,33 @@ bool CClientApp::init()
 
 void CClientApp::enterForground()
 {
+	connectToSvr();
+	cocos2d::Director::getInstance()->getScheduler()->schedule([=](float fTime){ update(fTime);},this,0,false,"clientUpdate");
+}
+
+void CClientApp::enterBackground()
+{
+	disconnectFromSvr();
+	cocos2d::Director::getInstance()->getScheduler()->unscheduleAllForTarget(this);
+}
+
+void CClientApp::connectToSvr()
+{
+	if ( m_eNetState == CNetWorkMgr::eConnectType_Connected || m_eNetState == CNetWorkMgr::eConnectType_Connecting )
+	{
+		printf("connecting or connected so do not need connect to ");
+		return ;
+	}
+
 	if ( m_pNetwork )
 	{
 		m_pNetwork->SetupNetwork(1) ;
 		m_pNetwork->ConnectToServer("203.186.75.136",50001);
 	}
 	m_eNetState = CNetWorkMgr::eConnectType_Connecting ;
-	
-	cocos2d::Director::getInstance()->getScheduler()->schedule([=](float fTime){ update(fTime);},this,0,false,"clientUpdate");
 }
 
-void CClientApp::enterBackground()
+void CClientApp::disconnectFromSvr()
 {
 	if ( m_pNetwork )
 	{
@@ -67,7 +83,6 @@ void CClientApp::enterBackground()
 		m_pNetwork->ShutDown();
 	}
 	m_eNetState = CNetWorkMgr::eConnectType_None ;
-	cocos2d::Director::getInstance()->getScheduler()->unscheduleAllForTarget(this);
 }
 
 // net delegate 
@@ -89,6 +104,10 @@ bool CClientApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 	{
 		m_pConnectID = pMsg->_connectID ;
 		m_eNetState = CNetWorkMgr::eConnectType_Connected ;
+		stMsg msgVerify ;
+		msgVerify.cSysIdentifer = ID_MSG_VERIFY ;
+		msgVerify.usMsgType = MSG_VERIFY_CLIENT ;
+		sendMsg(&msgVerify,sizeof(msgVerify));
 	}
 	else
 	{
@@ -121,5 +140,21 @@ void CClientApp::update(float fDeta )
 	if ( m_pNetwork )
 	{
 		m_pNetwork->ReciveMessage() ;
+	}
+}
+
+void CClientApp::addMsgDelegate(CNetMessageDelegate* pDelegate )
+{
+	if ( m_pNetwork )
+	{
+		m_pNetwork->AddMessageDelegate(pDelegate) ;
+	}
+}
+
+void CClientApp::removeMsgDelegate( CNetMessageDelegate* pDelegate )
+{
+	if ( m_pNetwork )
+	{
+		m_pNetwork->RemoveMessageDelegate(pDelegate);
 	}
 }

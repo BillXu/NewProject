@@ -44,7 +44,7 @@ void CNetWorkMgr::ShutDown()
     {
         m_pNetPeer->CloseConnection(m_nCurrentServer);
 		m_pNetPeer->Stop();
-        delete m_pNetPeer;
+        //delete m_pNetPeer;
         m_pNetPeer = NULL ;
     }
 }

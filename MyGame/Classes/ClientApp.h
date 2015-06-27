@@ -12,6 +12,8 @@ public:
 	bool init();
 	void enterForground();
 	void enterBackground();
+	void connectToSvr();
+	void disconnectFromSvr();
 
 	// net delegate 
 	virtual bool OnMessage( Packet* pMsg );
@@ -20,6 +22,9 @@ public:
 	bool sendMsg(stMsg* pMsg , uint16_t nLen );
 	bool isConnecting();
 	void update(float fDeta );
+
+	void addMsgDelegate(CNetMessageDelegate* pDelegate );
+	void removeMsgDelegate( CNetMessageDelegate* pDelegate );
 protected:
 	static CClientApp* s_ClientApp;
 	CNetWorkMgr* m_pNetwork ;

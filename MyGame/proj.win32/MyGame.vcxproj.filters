@@ -24,34 +24,34 @@
     <ClCompile Include="..\Classes\HelloWorldScene.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\BaseData.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\CardPoker.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\ConfigReader.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\IConfigFile.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\ItemConfig.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\LogManager.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\RoomConfig.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\TaxasPokerPeerCard.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\NewProject\Common\Utility.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\ClientApp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\CardPoker.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\ConfigReader.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\IConfigFile.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\LogManager.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\RoomConfig.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\Utility.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\loginScene.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\IBaseScene.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,55 +65,55 @@
     <ClInclude Include="..\Classes\HelloWorldScene.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\BaseData.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\CardPoker.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\CommonData.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\CommonDefine.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\ConfigReader.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\IConfigFile.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\ItemConfig.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\LogManager.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\MessageDefine.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\MessageIdentifer.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\NativeTypes.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\RoomConfig.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\TaxasMessageDefine.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\TaxasPokerMessage.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\TaxasPokerPeerCard.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\NewProject\Common\Utility.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\Classes\ClientApp.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\CardPoker.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\CommonData.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\CommonDefine.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\ConfigReader.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\IConfigFile.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\LogManager.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\MessageDefine.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\MessageIdentifer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\NativeTypes.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\RoomConfig.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\TaxasMessageDefine.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\TaxasPokerMessage.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\Utility.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\loginScene.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\IBaseScene.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
