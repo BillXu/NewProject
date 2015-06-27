@@ -16,7 +16,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 		{
 			bRunning = false ;
 			CGameServerApp* pAp = (CGameServerApp*)lpParam ;
-			pAp->Stop();
+			pAp->stop();
 			printf("Closing!!!\n");
 		}
 		else
@@ -56,7 +56,7 @@ void RunFunc ( CGameServerApp* pApp )
 	// exception 
 	__try
 	{
-		pApp->Run() ;
+		pApp->run() ;
 	}
 	__except(MyUnhandledExceptionFilter(GetExceptionInformation()))
 	{
@@ -105,13 +105,20 @@ int main()
 	//printf( "type A = %d ,robot Type A = %d, type B = %d ,result = %d\n",nType,pPeerA.GetCardTypeForRobot(),nTypeB ,c) ;
 	/////----test
 	CGameServerApp theApp ;
-	theApp.Init() ;
+	bool bok = theApp.init() ;
+	if ( !bok )
+	{
+		printf("init data svr error , start up error\n");
+		char c ;
+		scanf("%c",&c);
+		return 0 ;
+	}
 	CreateThred(&theApp);
 #ifdef NDEBUG
 	RunFunc(&theApp);
 #endif // _DEBUG
 #ifdef _DEBUG
-	theApp.Run();
+	theApp.run();
 #endif // _DEBUG
 	return 0 ;
 }

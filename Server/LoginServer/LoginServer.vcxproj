@@ -22,6 +22,7 @@
     <ClInclude Include="..\DBServer\src\DBRequest.h" />
     <ClInclude Include="..\DBServer\src\DBRequestFlags.h" />
     <ClInclude Include="..\DBServer\src\MySqlData.h" />
+    <ClInclude Include="..\ServerCommon\ISeverApp.h" />
     <ClInclude Include="..\ServerCommon\mutex.h" />
     <ClInclude Include="..\ServerCommon\Sem.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
@@ -40,6 +41,7 @@
     <ClCompile Include="..\DBServer\src\DataBaseThread.cpp" />
     <ClCompile Include="..\DBServer\src\DBRequest.cpp" />
     <ClCompile Include="..\DBServer\src\MySqlData.cpp" />
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\mutex.cpp" />
     <ClCompile Include="..\ServerCommon\Sem.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />

@@ -6,23 +6,12 @@
 #include "DBRequest.h"
 CLoginApp::CLoginApp()
 {
-	m_pNetWork = NULL ;
-	m_nCenterSvrNetworkID = INVALID_CONNECT_ID ;
 	m_pDBThread = NULL ;
 	m_pDBMgr = NULL ;
-
-	memset(m_pSendBuffer,0,sizeof(m_pSendBuffer));
 }
 
 CLoginApp::~CLoginApp()
 {
-	if ( m_pNetWork )
-	{
-		m_pNetWork->ShutDown();
-		delete m_pNetWork ;
-		m_pNetWork = NULL ;
-	}
-
 	if ( m_pDBMgr )
 	{
 		delete m_pDBMgr ;
@@ -37,8 +26,9 @@ CLoginApp::~CLoginApp()
 	}
 }
 
-void CLoginApp::Init()
+bool CLoginApp::init()
 {
+	IServerApp::init();
 	CLogMgr::SharedLogMgr()->SetOutputFile("LoginSvr");
 	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
 	
@@ -51,7 +41,7 @@ void CLoginApp::Init()
 	if ( pSvrConfigItem == NULL )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("Data base config is null , can not start login svr ") ;
-		return ;
+		return false;
 	}
 	m_pDBThread = new CDataBaseThread ;
 	bool bRet = m_pDBThread->InitDataBase(pSvrConfigItem->strIPAddress,pSvrConfigItem->nPort,pSvrConfigItem->strAccount,pSvrConfigItem->strPassword,"taxpokerdb");
@@ -65,7 +55,7 @@ void CLoginApp::Init()
 		delete m_pDBThread ;
 		m_pDBThread = NULL ;
 		CLogMgr::SharedLogMgr()->ErrorLog("start db thread errror ") ;
-		return ;
+		return false;
 	}
 
 	m_pDBMgr = new CDBManager;
@@ -76,120 +66,41 @@ void CLoginApp::Init()
 	if ( pSvrConfigItem == NULL )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null so can not start svr ") ;
-		delete m_pNetWork ;
-		m_pNetWork = NULL ;
-		return ;
+		return false;
 	}
-	m_pNetWork = new CNetWorkMgr ;
-	m_pNetWork->SetupNetwork(2);
-	m_pNetWork->AddMessageDelegate(this);
-	m_pNetWork->ConnectToServer(pSvrConfigItem->strIPAddress,pSvrConfigItem->nPort,pSvrConfigItem->strPassword) ;
-	CLogMgr::SharedLogMgr()->SystemLog("connectting to center svr...") ;
-
+	setConnectServerConfig(pSvrConfigItem);
+	return true ;
 }
 
-void CLoginApp::MainLoop()
+void CLoginApp::update(float fdeta )
 {
-	while( true )
+	IServerApp::update(fdeta);
+				// process DB Result ;
+	CDBRequestQueue::VEC_DBRESULT vResultOut ;
+	CDBRequestQueue::SharedDBRequestQueue()->GetAllResult(vResultOut) ;
+	CDBRequestQueue::VEC_DBRESULT::iterator iter = vResultOut.begin() ;
+	for ( ; iter != vResultOut.end(); ++iter )
 	{
-		if ( m_pNetWork) 
-		{
-			m_pNetWork->ReciveMessage() ;
-		}
-
-		// process DB Result ;
-		CDBRequestQueue::VEC_DBRESULT vResultOut ;
-		CDBRequestQueue::SharedDBRequestQueue()->GetAllResult(vResultOut) ;
-		CDBRequestQueue::VEC_DBRESULT::iterator iter = vResultOut.begin() ;
-		for ( ; iter != vResultOut.end(); ++iter )
-		{
-			stDBResult* pRet = *iter ;
-			m_pDBMgr->OnDBResult(pRet) ;
-			delete pRet ;
-		}
-		vResultOut.clear();
-
-		Sleep(1);
+		stDBResult* pRet = *iter ;
+		m_pDBMgr->OnDBResult(pRet) ;
+		delete pRet ;
 	}
-	
+	vResultOut.clear();
+}
+
+void CLoginApp::onExit()
+{
 	if ( m_pDBThread )
 	{
 		m_pDBThread->StopWork();
 	}
 }
 
-bool CLoginApp::OnMessage( Packet* pMsg )
+bool CLoginApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
 {
-	CHECK_MSG_SIZE(stMsg,pMsg->_len) ;
-	stMsg* pmsg = (stMsg*)pMsg->_orgdata ;
-	if ( pmsg->cSysIdentifer == ID_MSG_VERIFY )
-	{
-		CLogMgr::SharedLogMgr()->SystemLog("no need recieve verify msg") ;
-		return true ;
-	}
-
-	stMsg* pRet = (stMsg*)pMsg->_orgdata ;
-	if ( pRet->usMsgType != MSG_TRANSER_DATA )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why msg type is not transfer data , type = %d",pRet->usMsgType ) ;
-		return true;
-	}
-
-	stMsgTransferData* pData = (stMsgTransferData*)pRet ;
 	if ( m_pDBMgr )
 	{
-		stMsg* preal = (stMsg*)(pMsg->_orgdata + sizeof(stMsgTransferData));
-		m_pDBMgr->OnMessage(preal,(eMsgPort)pData->nSenderPort,pData->nSessionID ) ;
+		m_pDBMgr->OnMessage(prealMsg,eSenderPort,nSessionID ) ;
 	}
-	return true ;
-}
-
-bool CLoginApp::OnLostSever(Packet* pMsg)
-{
-	m_pNetWork->DisconnectServer(pMsg->_connectID);
-	m_nCenterSvrNetworkID = INVALID_CONNECT_ID ;
-	CLogMgr::SharedLogMgr()->ErrorLog("center svr lost ") ;
-	return true ;
-}
-
-bool CLoginApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
-{
-	if ( eSate == eConnect_Accepted )
-	{
-		stMsg cMsg ;
-		cMsg.cSysIdentifer = ID_MSG_PORT_CENTER ;
-		cMsg.usMsgType = MSG_VERIFY_LOGIN ;
-		m_pNetWork->SendMsg((char*)&cMsg,sizeof(stMsg),pMsg->_connectID) ;
-		CLogMgr::SharedLogMgr()->SystemLog("Connected to Center Svr") ;
-		m_nCenterSvrNetworkID = pMsg->_connectID;
-		return true ;
-	}
-	CLogMgr::SharedLogMgr()->ErrorLog("connect Center svr failed") ;
-	return true ;
-}
-
-bool CLoginApp::SendMsg( const char* pBuffer , unsigned int nBufferLen, uint32_t nSessioniD  )
-{
-	if ( m_pNetWork == NULL || m_nCenterSvrNetworkID == INVALID_CONNECT_ID  )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr is not connected can not send msg") ;
-		return false ;
-	}
-
-	stMsgTransferData msgTransData ;
-	msgTransData.nSenderPort = ID_MSG_PORT_LOGIN ;
-	msgTransData.bBroadCast = false ;
-	msgTransData.nSessionID = nSessioniD ;
-	int nLne = sizeof(msgTransData) ;
-	if ( nLne + nBufferLen >= MAX_MSG_BUFFER_LEN )
-	{
-		stMsg* pmsg = (stMsg*)pBuffer ;
-		CLogMgr::SharedLogMgr()->ErrorLog("msg send to session id = %d , is too big , cannot send , msg id = %d ",nSessioniD,pmsg->usMsgType) ;
-		return false;
-	}
-	memcpy(m_pSendBuffer,&msgTransData,nLne);
-	memcpy(m_pSendBuffer + nLne , pBuffer,nBufferLen );
-	nLne += nBufferLen ;
-	m_pNetWork->SendMsg(m_pSendBuffer,nLne,m_nCenterSvrNetworkID ) ;
 	return true ;
 }

@@ -145,7 +145,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			if ( pResult->nAffectRow <= 0 )
 			{
 				msgRet.nRet = 1 ;
-				m_pTheApp->SendMsg((char*)&msgRet,sizeof(msgRet),pdata->nSessionID) ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet));
 				CLogMgr::SharedLogMgr()->ErrorLog("why register affect row = 0 ") ;
 				return ;
 			}
@@ -154,7 +154,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			 msgRet.nRet = pRow["nOutRet"]->IntValue();
 			 if ( msgRet.nRet != 0 )
 			 {
-				 m_pTheApp->SendMsg((char*)&msgRet,sizeof(msgRet),pdata->nSessionID) ;
+				 m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet));
 				 CLogMgr::SharedLogMgr()->PrintLog("register failed duplicate account = %s",pRow["strAccount"]->CStringValue() );
 				 return ;
 			 }
@@ -166,10 +166,10 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			// request db to create new player data 
 			stMsgRequestDBCreatePlayerData msgCreateData ;
 			msgCreateData.nUserUID = msgRet.nUserID ;
-			m_pTheApp->SendMsg((char*)&msgCreateData,sizeof(msgCreateData),pdata->nSessionID) ;
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgCreateData,sizeof(msgCreateData)) ;
 
 			// tell client the success register result ;
-			m_pTheApp->SendMsg((char*)&msgRet,sizeof(msgRet),pdata->nSessionID) ;
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet));
 			CLogMgr::SharedLogMgr()->PrintLog("register success account = %s",pRow["strAccount"]->CStringValue() );
 		}
 		break;
@@ -190,7 +190,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msgRet.nRet = 1 ;  // account error ;   
 				CLogMgr::SharedLogMgr()->ErrorLog("check account  why affect row = 0 ? ") ;
 			}
-			m_pTheApp->SendMsg((char*)&msgRet,sizeof(msgRet),pdata->nSessionID ) ;
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet) ) ;
 		}
 		break;
 	case MSG_PLAYER_BIND_ACCOUNT:
@@ -207,7 +207,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msgBack.nRet = 3 ;
 				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d ,bind account error db ",pdata->nExtenArg1) ;
 			}
-			m_pTheApp->SendMsg((char*)&msgBack,sizeof(msgBack) ,pdata->nSessionID); 
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)); 
 			CLogMgr::SharedLogMgr()->PrintLog("rebind account ret = %d , userUID = %d",msgBack.nRet,pdata->nExtenArg1 ) ;
 		}
 		break;
@@ -226,7 +226,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d , modify password error db ",pdata->nExtenArg1) ;
 			}
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d modify password ret = %d",pdata->nExtenArg1,msgBack.nRet ) ;
-			m_pTheApp->SendMsg((char*)&msgBack,sizeof(msgBack) ,pdata->nSessionID); 
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)); 
 		}
 		break;
 	default:

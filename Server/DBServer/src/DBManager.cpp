@@ -577,7 +577,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("can not find base data with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
 				msg.nRet = 1 ;
-				m_pTheApp->SendMsg((char*)&msg,sizeof(msg),pdata->nSessionID) ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 			}
 			else
 			{
@@ -588,8 +588,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msg.stBaseData.tLastLoginTime = pRow["lastLoginTime"]->IntValue() ;
 				msg.stBaseData.tLastTakeCharityCoinTime = pRow["lastTakeCharityCoinTime"]->IntValue() ;
 				msg.stBaseData.nContinueDays = pRow["continueLoginDays"]->IntValue() ;
-
-				m_pTheApp->SendMsg((char*)&msg,sizeof(msg),pdata->nSessionID) ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 			}
 		}
 		break;

@@ -54,7 +54,7 @@ bool CTaxasBaseRoomState::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 			msgTakein.nMoneyToTakeIn = pRet->nTakeInMoney ;
 			msgTakein.nPlayerSessionID = nPlayerSessionID;
 			msgTakein.nSeatIdx = pRet->nSeatIdx ;
-			CTaxasServerApp::SharedGameServerApp()->SendMsg(m_pRoom->GetRoomID(),(char*)&msgTakein,sizeof(msgTakein)) ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(m_pRoom->GetRoomID(),(char*)&msgTakein,sizeof(msgTakein)) ;
 			return true ;
 		}
 		break;

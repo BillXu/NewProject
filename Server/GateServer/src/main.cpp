@@ -18,7 +18,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 		{
 			bRunning = false ;
 			CGateServer* pAp = (CGateServer*)lpParam ;
-			pAp->Stop();
+			pAp->stop();
 			printf("Closing!!!\n");
 		}
 		else
@@ -56,7 +56,7 @@ void RunFunc ( CGateServer* pApp )
 	// exception 
 	__try
 	{
-		pApp->RunLoop() ;
+		pApp->run() ;
 	}
 	__except(MyUnhandledExceptionFilter(GetExceptionInformation()))
 	{
@@ -68,12 +68,19 @@ int main()
 	//zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
 	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
 	CGateServer  theApp ;
-	theApp.Init() ;
+	bool bok = theApp.init() ;
+	if (!bok )
+	{
+		printf("init svr error \n") ;
+		char c ;
+		scanf("%c",&c);
+		return 0 ;
+	}
 	CreateThred(&theApp);
 #ifdef NDEBUG
 	RunFunc(&theApp);
 #endif // _DEBUG
 #ifdef _DEBUG
-	theApp.RunLoop() ;
+	theApp.run() ;
 #endif // _DEBUG
 }

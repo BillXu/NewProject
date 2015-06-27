@@ -59,7 +59,7 @@ bool CTaxasRoom::Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig )
 		pRoomConfig->nMaxSeat = MAX_PEERS_IN_TAXAS_ROOM ;
 	}
 
-	SetTimerManager(CTaxasServerApp::SharedGameServerApp()->GetTimerMgr()) ;
+	SetTimerManager(CTaxasServerApp::SharedGameServerApp()->getTimerMgr()) ;
 	SetEnableUpdate(true) ;
 	return true ;
 }
@@ -173,7 +173,7 @@ void CTaxasRoom::SendRoomMsg(stMsg* pMsg, uint16_t nLen )
 
 void CTaxasRoom::SendMsgToPlayer( uint32_t nSessionID, stMsg* pMsg, uint16_t nLen  )
 {
-	CTaxasServerApp::SharedGameServerApp()->SendMsg(nSessionID,(char*)pMsg,nLen) ;
+	CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)pMsg,nLen) ;
 }
 
 bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
@@ -270,7 +270,7 @@ void CTaxasRoom::OnPlayerStandUp(uint8_t nSeatIdx )
 	msgInfom.nTakeInMoney = m_vSitDownPlayers[nSeatIdx].nTakeInMoney ;
 	msgInfom.nUserUID = m_vSitDownPlayers[nSeatIdx].nUserUID ;
 	msgInfom.bIsDiamond = false ;
-	CTaxasServerApp::SharedGameServerApp()->SendMsg(GetRoomID(),(char*)&msgInfom,sizeof(msgInfom)) ;
+	CTaxasServerApp::SharedGameServerApp()->sendMsg(GetRoomID(),(char*)&msgInfom,sizeof(msgInfom)) ;
 
 
 
@@ -311,7 +311,7 @@ void CTaxasRoom::OnPlayerLeaveRoom(uint32_t nPlayerSession )
 	{
 		stMsgInformTaxasPlayerLeave msgLeave ;
 		msgLeave.nUserUID = GetInRoomPlayerDataBySessionID(nPlayerSession)->nUserUID ;
-		CTaxasServerApp::SharedGameServerApp()->SendMsg(GetRoomID(),(char*)&msgLeave,sizeof(msgLeave)) ;
+		CTaxasServerApp::SharedGameServerApp()->sendMsg(GetRoomID(),(char*)&msgLeave,sizeof(msgLeave)) ;
 	}
 
 	// remove from vec ;

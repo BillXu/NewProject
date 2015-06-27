@@ -7,8 +7,8 @@ struct stServerConfig
 	unsigned char nSvrType ;
 	char strIPAddress[16] ;
 	unsigned short nPort ;
-	char strAccount[80];
-	char strPassword[80];
+	char strAccount[30];
+	char strPassword[30];
 };
 
 class CSeverConfigMgr

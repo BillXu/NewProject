@@ -96,9 +96,11 @@
     <ClInclude Include="..\..\Common\MessageDefine.h" />
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\ISeverApp.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerDefine.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
+    <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\ClientManager.h" />
     <ClInclude Include="src\GateClient.h" />
     <ClInclude Include="src\GateServer.h" />
@@ -109,7 +111,9 @@
     <ClCompile Include="..\..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\..\Common\LogManager.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\ClientManager.cpp" />
     <ClCompile Include="src\GateClient.cpp" />
     <ClCompile Include="src\GateServer.cpp" />

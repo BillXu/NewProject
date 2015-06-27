@@ -146,7 +146,7 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 			if ( pPlayer == NULL )
 			{
 				msgBack.nRet = 1 ;
-				CGameServerApp::SharedGameServerApp()->SendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 				CLogMgr::SharedLogMgr()->ErrorLog("why can not find player session from taxas server session id = %d",pData->nSessionID ) ;
 				return true ;
 			}
@@ -154,13 +154,13 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 			if ( pPlayer->GetTaxasRoomID() )
 			{
 				msgBack.nRet = 2 ;
-				CGameServerApp::SharedGameServerApp()->SendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 				CLogMgr::SharedLogMgr()->ErrorLog("can not enter room already in other room id = %d  session id = %d",pPlayer->GetTaxasRoomID(),pData->nSessionID ) ;
 
 				// may have error  order leave 
 				stMsgOrderTaxasPlayerLeave msg ;
 				msg.nRoomID = pPlayer->GetTaxasRoomID() ;
-				CGameServerApp::SharedGameServerApp()->SendMsg(pPlayer->GetSessionID(),(char*)&msg,sizeof(msg)) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pPlayer->GetSessionID(),(char*)&msg,sizeof(msg)) ;
 				return true ;
 			}
 
@@ -171,7 +171,7 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 			msgBack.tData.nSex = pPlayer->GetBaseData()->GetSex();
 			msgBack.tData.nUserUID = pPlayer->GetUserUID();
 			msgBack.tData.nVipLevel = pPlayer->GetBaseData()->GetVipLevel() ;
-			CGameServerApp::SharedGameServerApp()->SendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			pPlayer->SetStayInTaxasRoomID(nRoomID) ;
 		}
 		break;
@@ -183,7 +183,7 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 			if ( pPlayer == NULL )
 			{
 				msgBack.nRet = 2 ;
-				CGameServerApp::SharedGameServerApp()->SendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_REQUEST_TAKE_IN_MONEY why can not find player session from taxas server session id = %d",pRet->nPlayerSessionID ) ;
 				return true ;
 			}
@@ -195,12 +195,12 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 				msgBack.nRoomID = nRoomID ;
 				msgBack.nSeatIdx = pRet->nSeatIdx ;
 				msgBack.bIsDiamond = pRet->bIsDiamond ;
-				CGameServerApp::SharedGameServerApp()->SendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			}
 			else
 			{
 				msgBack.nRet = 1 ;
-				CGameServerApp::SharedGameServerApp()->SendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			}
 		}
 		break;

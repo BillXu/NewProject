@@ -43,7 +43,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 			CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d , type = %d , level = %d",pRel->nRoomID,pRel->nType,pRel->nLevel );
 			stMsgTaxasEnterRoomRet msgBack ;
 			msgBack.nRet = 1 ;
-			CTaxasServerApp::SharedGameServerApp()->SendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			return true ;
 		}
 
@@ -51,7 +51,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		{
 			stMsgTaxasEnterRoomRet msgBack ;
 			msgBack.nRet = 3 ;
-			CTaxasServerApp::SharedGameServerApp()->SendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			return true ;
 		}
 		
@@ -74,7 +74,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		{
 			stMsgTaxasEnterRoomRet msgBack ;
 			msgBack.nRet = pRet->nRet ;
-			CTaxasServerApp::SharedGameServerApp()->SendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			CLogMgr::SharedLogMgr()->SystemLog("invalid session id = %d can not get player data ret = %d ", nSessionID,pRet->nRet ) ;
 			return true ;
 		}
@@ -86,7 +86,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 
 			stMsgTaxasEnterRoomRet msgBack ;
 			msgBack.nRet = 3;
-			CTaxasServerApp::SharedGameServerApp()->SendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			return true ;
 		}
 
@@ -144,5 +144,5 @@ CTaxasRoom*CRoomManager::GetRoomByID(uint32_t nRoomID )
 
 void CRoomManager::SendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID )
 {
-	CTaxasServerApp::SharedGameServerApp()->SendMsg(nSessionID,(char*)pmsg,nLen) ;
+	CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)pmsg,nLen) ;
 }

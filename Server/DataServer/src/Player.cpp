@@ -36,7 +36,7 @@ CPlayer::~CPlayer()
 
 	if ( m_pTimerSave )
 	{
-		CGameServerApp::SharedGameServerApp()->GetTimerMgr()->RemoveTimer(m_pTimerSave) ;
+		CGameServerApp::SharedGameServerApp()->getTimerMgr()->RemoveTimer(m_pTimerSave) ;
 		m_pTimerSave = NULL ;
 	}
 }
@@ -66,7 +66,7 @@ void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
 
 	if ( m_pTimerSave == NULL )
 	{
-		m_pTimerSave = CGameServerApp::SharedGameServerApp()->GetTimerMgr()->AddTimer(this,cc_selector_timer(CPlayer::OnTimerSave)) ;
+		m_pTimerSave = CGameServerApp::SharedGameServerApp()->getTimerMgr()->AddTimer(this,cc_selector_timer(CPlayer::OnTimerSave)) ;
 		m_pTimerSave->SetDelayTime( TIME_SAVE * 0.5 ) ;
 		m_pTimerSave->SetInterval(TIME_SAVE) ;
 		m_pTimerSave->Start();
@@ -254,7 +254,7 @@ void CPlayer::OnPlayerDisconnect()
 	{
 		stMsgOrderTaxasPlayerLeave msgLeave ;
 		msgLeave.nRoomID = m_nTaxasRoomID ;
-		CGameServerApp::SharedGameServerApp()->SendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
+		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
 	}
 }
 
@@ -274,7 +274,7 @@ void CPlayer::SendMsgToClient(const char* pBuffer, unsigned short nLen,bool bBro
 {
 	if ( IsState(ePlayerState_Online)  )
 	{
-		CGameServerApp::SharedGameServerApp()->SendMsg(GetSessionID(),pBuffer,nLen,bBrocat) ;
+		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),pBuffer,nLen,bBrocat) ;
 		return ;
 	}
 	CLogMgr::SharedLogMgr()->PrintLog("player uid = %d not online so , can not send msg" ,GetUserUID() ) ;
@@ -299,7 +299,7 @@ void CPlayer::OnAnotherClientLoginThisPeer(unsigned int nSessionID )
 	{
 		stMsgOrderTaxasPlayerLeave msgLeave ;
 		msgLeave.nRoomID = m_nTaxasRoomID ;
-		CGameServerApp::SharedGameServerApp()->SendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
+		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
 	}
 
 	CLogMgr::SharedLogMgr()->ErrorLog("pls remember inform other server this envent OnAnotherClientLoginThisPeer ") ;

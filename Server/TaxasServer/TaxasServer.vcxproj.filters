@@ -81,6 +81,9 @@
     <ClInclude Include="src\RoomManager.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISeverApp.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -124,6 +127,9 @@
     </ClCompile>
     <ClCompile Include="src\RoomManager.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

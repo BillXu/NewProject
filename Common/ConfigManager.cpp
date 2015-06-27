@@ -49,15 +49,15 @@ void CConfigManager::LoadAllConfigFile( const char* pConfigRootPath )
 	m_vConfigs[eConfig_ContinueLogin] = new CContiuneLoginConfigMgr ;
 	// item config ;
 	m_vConfigs[eConfig_Item] = new CItemConfigManager ;
-#ifdef GAME_SERVER
+#ifdef SERVER
 	// inform config 
-	m_vConfigs[eConfig_Informs] = new CInformConfig ;
+	//m_vConfigs[eConfig_Informs] = new CInformConfig ;
 
 	// slot manchine
-	m_vConfigs[eConfig_SlotMachine] = new CSlotMachine ;
+	//m_vConfigs[eConfig_SlotMachine] = new CSlotMachine ;
 
 	// room config
-	m_vConfigs[eConfig_Room] = new CRoomConfigMgr ;
+	//m_vConfigs[eConfig_Room] = new CRoomConfigMgr ;
 #endif 
 	// shop config 
 	//m_vConfigs[eConfig_Shop] = new CShopConfigMgr ;

@@ -12,13 +12,10 @@ CGateServer* CGateServer::SharedGateServer()
 
 CGateServer::CGateServer()
 {
-	m_bRunning = true ;
 	m_pNetWorkForClients = NULL ;
-	m_pNetWorkCenterSvr = NULL ;
 	m_pGateManager = NULL ;
 	m_nSvrIdx = m_nAllGeteCount = 0 ;
 	m_nCurMaxSessionID = 0 ;
-	m_nCenterServerNetID = INVALID_CONNECT_ID;
 	if ( s_GateServer )
 	{
 		assert(0&&"only once should");
@@ -27,19 +24,18 @@ CGateServer::CGateServer()
 
 CGateServer::~CGateServer()
 {
-	m_pNetWorkCenterSvr->ShutDown() ;
 	if ( m_pNetWorkForClients )
 	{
 		m_pNetWorkForClients->ShutDown() ;
 	}
 	delete m_pNetWorkForClients ;
 	delete m_pGateManager ;
-	delete m_pNetWorkCenterSvr ;
 	s_GateServer = NULL ;
 }
 
-void CGateServer::Init()
+bool CGateServer::init()
 {
+	IServerApp::init();
 	if ( s_GateServer )
 	{
 		assert(0&&"only once should");
@@ -50,36 +46,32 @@ void CGateServer::Init()
 	
 	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
 
-	// connect to center svr ;
-	ConnectToCenterServer();
+	stServerConfig* pSvrConfig = m_stSvrConfigMgr.GetServerConfig(eSvrType_Center) ;
+	if ( !pSvrConfig )
+	{
+		return false ;
+	}
+	setConnectServerConfig(pSvrConfig);
+	return true ;
 }
 
-void CGateServer::RunLoop()
+void CGateServer::update(float fDeta )
 {
-	while ( m_bRunning )
+	//IServerApp::update(fDeta);  we do not the gate svr do the reconnect 
+	if ( m_pNetWorkForClients )
 	{
-		if ( m_pNetWorkForClients )
-		{
-			m_pNetWorkForClients->RecieveMsg() ;
-		}
-
-		if ( m_pNetWorkCenterSvr )
-		{
-			m_pNetWorkCenterSvr->ReciveMessage();
-		}
-
-		if ( m_pGateManager )
-		{
-			m_pGateManager->UpdateReconectClientLife();
-		}
-		Sleep(2);
+		m_pNetWorkForClients->RecieveMsg() ;
 	}
 
+	if ( m_pGateManager )
+	{
+		m_pGateManager->UpdateReconectClientLife();
+	}
+}
+
+void CGateServer::onExit()
+{
 	m_pNetWorkForClients->ShutDown() ;
-	if ( IsCenterServerConnected() )
-	{
-		m_pNetWorkCenterSvr->DisconnectServer(m_nCenterServerNetID);
-	}
 }
 
 void CGateServer::SendMsgToClient(const char* pData , int nLength , CONNECT_ID& nSendToOrExcpet ,bool bBroadcast )
@@ -92,18 +84,16 @@ void CGateServer::SendMsgToClient(const char* pData , int nLength , CONNECT_ID& 
 
 void CGateServer::SendMsgToCenterServer( const char* pmsg, uint16_t nLen )
 {
-	if ( m_pNetWorkCenterSvr && IsCenterServerConnected() )
-	{
-		m_pNetWorkCenterSvr->SendMsg(pmsg,nLen) ;
-	}
-	else
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center server is not connected ") ;
-	}
+	sendMsg(pmsg,nLen);
 }
 
 bool CGateServer::OnMessage( Packet* pPacket )
 {
+	//if ( IServerApp::OnMessage(pPacket) )
+	//{
+	//	return true ;
+	//}
+
 	stMsg* pMsg = (stMsg*)pPacket->_orgdata ;
 	if ( MSG_TRANSER_DATA == pMsg->usMsgType )
 	{
@@ -153,53 +143,6 @@ bool CGateServer::OnMessage( Packet* pPacket )
 void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort )
 {
 
-}
-
-bool CGateServer::OnLostSever(Packet* pMsg)
-{
-	CLogMgr::SharedLogMgr()->ErrorLog("center server lost, we can not reconnect , please restart all gate svr ;");
-	//m_pNetWorkCenterSvr->DisconnectServer(m_nCenterServerNetID);
-	m_nCenterServerNetID = INVALID_CONNECT_ID ;
-	//ConnectToCenterServer();
-	return true ;
-}
-
-bool CGateServer::OnConnectStateChanged( eConnectState eSate, Packet* pMsg )                         
-{
-	if ( eConnect_Accepted == eSate )
-	{
-		m_nCenterServerNetID = pMsg->_connectID ;
-		stMsg msg ;
-		msg.cSysIdentifer = eSvrType_Center ;
-		msg.usMsgType = MSG_VERIFY_GATE ;
-		SendMsgToCenterServer((char*)&msg,sizeof(msg)) ;
-		CLogMgr::SharedLogMgr()->SystemLog("connected center server");
-	}
-	else  // connect failed error 
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog(" conencted failed, we can not reconnect , please restart all gate svr ;");
-		//ConnectToCenterServer();
-	}
-	return true ;
-}
-
-void CGateServer::ConnectToCenterServer()
-{
-	stServerConfig* pSvrConfig = m_stSvrConfigMgr.GetServerConfig(eSvrType_Center) ;
-	if ( pSvrConfig == NULL )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("get eSvrType_Center config error " ) ;
-		return ;
-	}
-
-	if ( NULL == m_pNetWorkCenterSvr )
-	{
-		m_pNetWorkCenterSvr = new CNetWorkMgr ;
-		m_pNetWorkCenterSvr->SetupNetwork();
-		m_pNetWorkCenterSvr->AddMessageDelegate(this);
-	}
-	m_pNetWorkCenterSvr->ConnectToServer(pSvrConfig->strIPAddress,pSvrConfig->nPort);
-	CLogMgr::SharedLogMgr()->SystemLog("connecting to center server....");
 }
 
 uint32_t CGateServer::GenerateSessionID()

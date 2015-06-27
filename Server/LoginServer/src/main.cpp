@@ -33,7 +33,7 @@ void RunFunc ( CLoginApp* pApp )
 	// exception 
 	__try
 	{
-		pApp->MainLoop() ;
+		pApp->run() ;
 	}
 	__except(MyUnhandledExceptionFilter(GetExceptionInformation()))
 	{
@@ -49,12 +49,19 @@ int main()
 	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
 
 	CLoginApp theApp ;
-	theApp.Init();
+	bool bok = theApp.init();
+	if ( bok == false )
+	{
+		printf("init svr error \n");
+		char c ;
+		scanf("%c",&c) ;
+		return 0 ;
+	}
 #ifdef NDEBUG
 	RunFunc(&theApp);
 #endif // _DEBUG
 #ifdef _DEBUG
-	theApp.MainLoop() ;
+	theApp.run() ;
 #endif // _DEBUG
 	return 0 ;
 }

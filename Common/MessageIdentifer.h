@@ -42,6 +42,7 @@ enum eMsgType
 	//--new define begin---
 	// the msg title used between servers 
 	MSG_SERVERS_USE,
+	MSG_VERIFY_BEGIN,
 	MSG_VERIFY_GAME,  // verify that is game server ;
 	MSG_VERIFY_LOGIN, // verify login server ;
 	MSG_VERIFY_CLIENT, // verify that is client ;
@@ -52,7 +53,8 @@ enum eMsgType
 	MSG_VERIFY_LOG, // LOG sever 
 	MSG_VERIFY_TAXAS, // TAXAS POKER SERVER 
 	MSG_VERIFY_DATA, // VIERIFY DATA SERVER ;
-	MSG_TRANSER_DATA, // tranfer data between servers ;
+	MSG_VERIFY_END,
+	MSG_TRANSER_DATA = 100, // tranfer data between servers ;
 	MSG_DISCONNECT_SERVER, 
 	MSG_DISCONNECT_CLIENT,
 	MSG_CONNECT_NEW_CLIENT,
@@ -74,7 +76,7 @@ enum eMsgType
 	MSG_PLAYER_BIND_ACCOUNT, //  a quick enter player need to bind a real account and password ;
 	MSG_MODIFY_PASSWORD,
 	MSG_PLAYER_OTHER_LOGIN,  // more than one place login , prelogin need disconnect ; client recived must disconnect from server
-	MSG_PLAYER_BASE_DATA = 150,
+	MSG_PLAYER_BASE_DATA = 250,
 	MSG_PLAYER_SAVE_PLAYER_INFO,
 
 	// message id for taxas poker

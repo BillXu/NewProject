@@ -6,7 +6,7 @@ bool CContiuneLoginConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	pConfig->nDayIdx = refReaderRow["DayIndex"]->IntValue() ;
 	pConfig->nDiamoned = refReaderRow["Diamoned"]->IntValue() ;
 	pConfig->nGiveCoin = refReaderRow["Coin"]->IntValue() ;
-#ifndef GAME_SERVER
+#ifndef SERVER
 	pConfig->strVipRewardDesc = refReaderRow["VipRewardDesc"]->StringValue();
 #endif
 	

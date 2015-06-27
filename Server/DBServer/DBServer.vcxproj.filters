@@ -70,6 +70,12 @@
     <ClInclude Include="..\ServerCommon\ThreadMod.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISeverApp.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\Timer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -113,6 +119,12 @@
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ThreadMod.cpp">
       <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\Timer.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

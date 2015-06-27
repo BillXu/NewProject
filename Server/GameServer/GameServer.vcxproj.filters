@@ -133,6 +133,9 @@
     <ClInclude Include="..\DataServer\src\PlayerMission.h">
       <Filter>src\Player</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISeverApp.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
@@ -212,6 +215,9 @@
     </ClCompile>
     <ClCompile Include="..\DataServer\src\PlayerMission.cpp">
       <Filter>src\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

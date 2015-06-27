@@ -339,7 +339,7 @@ stGateClient* CGateClientMgr::GetGateClientByNetWorkID(CONNECT_ID& nNetWorkID )
 
 bool CGateClientMgr::CheckServerStateOk( stGateClient* pClient)
 {
-	bool b = CGateServer::SharedGateServer()->IsCenterServerConnected() ;
+	bool b = CGateServer::SharedGateServer()->isConnected() ;
 	if ( b )
 	{
 		return true ;

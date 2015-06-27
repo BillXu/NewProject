@@ -27,7 +27,7 @@ class CGetInput
 			c = getchar();
 			if ( c == 'q' || c == 'Q')
 			{
-				theApp.Stop();
+				theApp.stop();
 				break; 
 			}
 			Sleep(10);
@@ -56,11 +56,7 @@ void RunFunc ( CDBServerApp* pApp )
 	// exception 
 	__try
 	{
-		while (  pApp->IsRunning() )
-		{
-			pApp->MainLoop() ;
-			Sleep(5);
-		}
+		pApp->run();
 	}
 	__except(MyUnhandledExceptionFilter(GetExceptionInformation()))
 	{
@@ -73,17 +69,19 @@ int main()
 	//SetConsoleCtrlHandler(ConsoleHandler, TRUE); 
 	CGetInput input ;
 	input.Start();
-	theApp.Init();
+	bool bok = theApp.init();
+	if ( !bok )
+	{
+		printf("init svr error\n");
+		char c ;
+		scanf("%c",&c);
+		return 0;
+	}
 #ifdef NDEBUG
 	RunFunc(&theApp) ;
 #else
-	while (  theApp.IsRunning() )
-	{
-		theApp.MainLoop() ;
-		Sleep(5);
-	}
+	theApp.run();
 #endif
-	theApp.OnExit();
 	Sleep(3000) ; // wait other thread finish work ;
 	return 0 ; 
 }

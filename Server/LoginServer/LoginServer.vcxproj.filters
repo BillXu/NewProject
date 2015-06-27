@@ -84,6 +84,9 @@
     <ClInclude Include="src\LoginDBManager.h">
       <Filter>head</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISeverApp.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\Utility.cpp">
@@ -130,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="src\LoginDBManager.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
+      <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
