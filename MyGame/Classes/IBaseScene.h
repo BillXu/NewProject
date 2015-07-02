@@ -2,6 +2,8 @@
 #include "cocos2d.h"
 #include "NetWorkManager.h"
 #include "CommonDefine.h"
+#include "cocostudio/CocoStudio.h"
+#include "ui/CocosGUI.h"
 USING_NS_CC ;
 struct stMsg ;
 class IBaseScene

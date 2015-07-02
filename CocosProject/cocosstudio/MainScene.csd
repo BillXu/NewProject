@@ -8,7 +8,7 @@
           <RenderColor A="255" R="216" G="191" B="216" />
         </AnimationInfo>
       </AnimationList>
-      <ObjectData Name="Scene" Visible="False" ctype="GameNodeObjectData">
+      <ObjectData Name="Scene" ctype="GameNodeObjectData">
         <Size X="640.0000" Y="1136.0000" />
         <Children>
           <AbstractNodeData Name="back_ground2_640_3" ActionTag="1004992065" Tag="8" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" TopMargin="88.0000" BottomMargin="88.0000" ctype="SpriteObjectData">

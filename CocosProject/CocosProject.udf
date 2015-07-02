@@ -24,13 +24,9 @@
       <Value ctype="TabsInfo">
         <OpenedDocuments>
           <FilePathData Path="Game.csd" />
-          <FilePathData Path="login.csd" />
-          <FilePathData Path="MainScene.csd" />
-          <FilePathData Path="Player.csd" />
-          <FilePathData Path="playerData.csd" />
           <FilePathData Path="PlayerSelf.csd" />
         </OpenedDocuments>
-        <ActiveDocument Path="login.csd" />
+        <ActiveDocument Path="Game.csd" />
       </Value>
     </Item>
     <Item Key="CocosRecentOperation">

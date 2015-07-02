@@ -1,5 +1,7 @@
 #include "ClientApp.h"
 #include "cocos2d.h"
+#include "loginScene.h"
+#include "CardPoker.h"
 CClientApp* CClientApp::s_ClientApp = NULL ;
 CClientApp* CClientApp::getInstance()
 {
@@ -44,6 +46,13 @@ bool CClientApp::init()
 	}
 
 	m_eNetState = CNetWorkMgr::eConnectType_None ;
+
+	FileUtils::getInstance()->addSearchPath("res/");
+	// create a scene. it's an autorelease object
+	auto scene = CLoginScene::createLoginScene();
+	// run
+	 cocos2d::Director::getInstance()->runWithScene(scene);
+
 	return true ;
 }
 
@@ -157,4 +166,44 @@ void CClientApp::removeMsgDelegate( CNetMessageDelegate* pDelegate )
 	{
 		m_pNetwork->RemoveMessageDelegate(pDelegate);
 	}
+}
+
+SpriteFrame* CClientApp::getCardSpriteByCompsiteNum(uint16_t nNum )
+{
+	CCard tc ;
+	tc.RsetCardByCompositeNum(nNum);
+	std::string spriteValue  ;
+	uint8_t nType = 0 ;
+	switch ( tc.GetType() )
+	{
+	case CCard::eCard_Diamond:
+		nType = 4 ;
+		break;
+	case CCard::eCard_Heart:
+		nType = 2 ;
+	case CCard::eCard_Sword:
+		nType = 1 ;
+		break;
+	case CCard::eCard_Club:
+		nType = 3 ;
+		break;
+	default:
+		break;
+	}
+
+	if ( nType == 0 || tc.GetCardCompositeNum() == 0 )
+	{
+		return nullptr ;
+	}
+
+	if ( tc.GetCardFaceNum(true) <= 9 )
+	{
+		spriteValue = String::createWithFormat("%d0%d.png",nType,tc.GetCardFaceNum(true))->getCString();
+	}
+	else
+	{
+		spriteValue = String::createWithFormat("%d0%c.png",nType,'a'+ tc.GetCardFaceNum(true)%10)->getCString();
+	}
+
+	return SpriteFrameCache::getInstance()->getSpriteFrameByName(spriteValue.c_str());
 }

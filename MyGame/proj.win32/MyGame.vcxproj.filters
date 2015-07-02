@@ -13,6 +13,9 @@
     <Filter Include="common">
       <UniqueIdentifier>{a77822f0-faaa-4f72-90d5-252187ea5eff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\poker">
+      <UniqueIdentifier>{838bbc86-8cad-486f-85d4-ccdab5bc833d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -53,6 +56,24 @@
     </ClCompile>
     <ClCompile Include="..\Classes\IBaseScene.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\MainScene.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TaxasPlayer.cpp">
+      <Filter>src\poker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\LocalTaxasPlayer.cpp">
+      <Filter>src\poker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TaxasPokerScene.cpp">
+      <Filter>src\poker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TaxasPokerData.cpp">
+      <Filter>src\poker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TaxasPokerSceneState.cpp">
+      <Filter>src\poker</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -101,9 +122,6 @@
     <ClInclude Include="..\..\Common\TaxasMessageDefine.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\TaxasPokerMessage.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h">
       <Filter>common</Filter>
     </ClInclude>
@@ -115,6 +133,24 @@
     </ClInclude>
     <ClInclude Include="..\Classes\IBaseScene.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\MainScene.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TaxasPlayer.h">
+      <Filter>src\poker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\LocalTaxasPlayer.h">
+      <Filter>src\poker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TaxasPokerScene.h">
+      <Filter>src\poker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TaxasPokerData.h">
+      <Filter>src\poker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TaxasPokerSceneState.h">
+      <Filter>src\poker</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

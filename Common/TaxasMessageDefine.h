@@ -202,6 +202,7 @@ struct stMsgTaxasRoomGameResult
 	uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM] ; 
 };
 
+
 //------------------------------------------------------before are new --
 
 

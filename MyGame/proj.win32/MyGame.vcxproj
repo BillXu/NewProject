@@ -150,7 +150,13 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y</Command>
     <ClCompile Include="..\Classes\ClientApp.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
     <ClCompile Include="..\Classes\IBaseScene.cpp" />
+    <ClCompile Include="..\Classes\LocalTaxasPlayer.cpp" />
     <ClCompile Include="..\Classes\loginScene.cpp" />
+    <ClCompile Include="..\Classes\MainScene.cpp" />
+    <ClCompile Include="..\Classes\TaxasPlayer.cpp" />
+    <ClCompile Include="..\Classes\TaxasPokerData.cpp" />
+    <ClCompile Include="..\Classes\TaxasPokerScene.cpp" />
+    <ClCompile Include="..\Classes\TaxasPokerSceneState.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -165,14 +171,19 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y</Command>
     <ClInclude Include="..\..\Common\NativeTypes.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
     <ClInclude Include="..\..\Common\TaxasMessageDefine.h" />
-    <ClInclude Include="..\..\Common\TaxasPokerMessage.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\ClientApp.h" />
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
     <ClInclude Include="..\Classes\IBaseScene.h" />
+    <ClInclude Include="..\Classes\LocalTaxasPlayer.h" />
     <ClInclude Include="..\Classes\loginScene.h" />
+    <ClInclude Include="..\Classes\MainScene.h" />
+    <ClInclude Include="..\Classes\TaxasPlayer.h" />
+    <ClInclude Include="..\Classes\TaxasPokerData.h" />
+    <ClInclude Include="..\Classes\TaxasPokerScene.h" />
+    <ClInclude Include="..\Classes\TaxasPokerSceneState.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>

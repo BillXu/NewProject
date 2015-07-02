@@ -82,7 +82,7 @@ public:
 	uint8_t GetSeatIdxBySessionID(uint32_t nSessionID );
 	void OnPlayerLeaveRoom(uint32_t nPlayerSession );
 	uint8_t GetCurWaitActPlayerIdx(){ return m_nCurWaitPlayerActionIdx ; }
-	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t nValue );  // return error code , 0 success ;
+	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t& nValue );  // return error code , 0 success ;
 
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );

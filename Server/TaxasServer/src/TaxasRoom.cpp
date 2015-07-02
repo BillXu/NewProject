@@ -328,7 +328,7 @@ void CTaxasRoom::OnPlayerLeaveRoom(uint32_t nPlayerSession )
 	}
 }
 
-uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t nValue )
+uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t& nValue )
 {
 	if ( nSeatIdx >= m_stRoomConfig.nMaxSeat || m_vSitDownPlayers[nSeatIdx].IsInvalid() )
 	{
@@ -368,7 +368,7 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 		{
 			if ( pData.nTakeInMoney + pData.nBetCoinThisRound < m_nMostBetCoinThisRound )
 			{
-				return 6 ;
+				return OnPlayerAction(nSeatIdx,eRoomPeerAction_AllIn,pData.nTakeInMoney);
 			}
 			pData.eCurAct = act ;
 			pData.BetCoin(m_nMostBetCoinThisRound - pData.nBetCoinThisRound ) ;
@@ -378,7 +378,7 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 		{
 			if ( pData.nTakeInMoney < nValue )
 			{
-				return 6 ;
+				return OnPlayerAction(nSeatIdx,eRoomPeerAction_AllIn,pData.nTakeInMoney);
 			}
 
 			if ( pData.nBetCoinThisRound + nValue <= m_nMostBetCoinThisRound + m_nLittleBlind * 2  )
@@ -395,7 +395,12 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 		{
 			pData.eCurAct = act ;
 			pData.nStateFlag = eRoomPeer_AllIn;
-			pData.BetCoin(pData.nTakeInMoney) ;
+			if ( nValue < pData.nTakeInMoney )
+			{
+				nValue = pData.nTakeInMoney ;
+			}
+
+			pData.BetCoin(nValue) ;
 			if ( pData.nBetCoinThisRound == 0 )
 			{
 				pData.nBetCoinThisRound = 1 ;   // avoid 0 all In bug ;

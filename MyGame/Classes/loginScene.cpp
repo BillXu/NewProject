@@ -1,6 +1,7 @@
 #include "loginScene.h"
 #include "MessageDefine.h"
 #include "ClientApp.h"
+#include "MainScene.h"
 cocos2d::Scene* CLoginScene::createLoginScene()
 {
 	auto scene = Scene::create();
@@ -128,7 +129,11 @@ bool CLoginScene::onMsg(stMsg* pmsg )
 		break;
 	case MSG_PLAYER_BASE_DATA:
 		{
-			printf("recieved base data\n");
+			//printf("recieved base data\n");
+			stMsgPlayerBaseData* pRet = (stMsgPlayerBaseData*)pmsg ;
+			CClientApp::getInstance()->setPlayerData(&pRet->stBaseData) ;
+			auto scene = CMainScene::createScene();
+			Director::getInstance()->replaceScene(scene);
 		}
 		break;
 	default:

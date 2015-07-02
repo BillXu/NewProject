@@ -77,14 +77,17 @@ bool HelloWorld::init()
     
 
 	// read cocostuido 
-	Node* pRoot = CSLoader::getInstance()->createNodeWithFlatBuffersFile("res/login.csb");
+	Node* pRoot = CSLoader::getInstance()->createNodeWithFlatBuffersFile("res/Game.csb");
 	addChild(pRoot,1);
 	auto cSize = pRoot->getContentSize();
 	pRoot->setContentSize(Director::getInstance()->getWinSize()) ;
+	ui::Helper::doLayout(pRoot);
 
-	//cocostudio::timeline::ActionTimeline *action = CSLoader::getInstance()->createTimeline("res/login.csb"); 
+	cocostudio::timeline::ActionTimeline *action = CSLoader::getInstance()->createTimeline("res/PlayerSelf.csb"); 
 	////action->retain();
-	//pRoot->runAction(action);
+	pRoot->getChildByName("self")->runAction(action);
+	action->play("showBtn",true);
+	return true;
 	auto bg = pRoot->getChildByName("signup_bg_2") ;
 	auto winSize = Director::getInstance()->getWinSize();
 	auto pos = bg->getPosition();
@@ -96,7 +99,7 @@ bool HelloWorld::init()
  //           //cocostudio::ActionManagerEx::getInstance()->playActionByName("res/MainScene.csb","animation0");
 	//		action->play("animation0",true);
  //       });
-	ui::Helper::doLayout(pRoot);
+	
 	if ( g_pNetWork == nullptr )
 	{
 		g_pNetWork = new CNetWorkMgr ;

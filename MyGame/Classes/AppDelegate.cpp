@@ -1,7 +1,7 @@
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
 #include "ClientApp.h"
-
+#include "loginScene.h"
 USING_NS_CC;
 
 AppDelegate::AppDelegate() {
@@ -41,19 +41,16 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	director->getOpenGLView()->setDesignResolutionSize(640,1136,ResolutionPolicy::FIXED_WIDTH);
 
     // turn on display FPS
-	FileUtils::getInstance()->addSearchPath("res/");
     director->setDisplayStats(true); 
 
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0 / 60);
+	register_all_packages();
 
-    register_all_packages();
-
-    // create a scene. it's an autorelease object
-    auto scene = HelloWorld::createScene();
-
-    // run
-    director->runWithScene(scene);
+	//FileUtils::getInstance()->addSearchPath("res/");
+	//auto scene = HelloWorld::createScene();
+	//director->replaceScene(scene);
+	//return true ;
 	CClientApp::getInstance()->init() ;
     return true;
 }
