@@ -57,18 +57,22 @@ bool AppDelegate::applicationDidFinishLaunching() {
 
 // This function will be called when the app is inactive. When comes a phone call,it's be invoked too
 void AppDelegate::applicationDidEnterBackground() {
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32 )
     Director::getInstance()->stopAnimation();
 
     // if you use SimpleAudioEngine, it must be pause
     // SimpleAudioEngine::getInstance()->pauseBackgroundMusic();
 	CClientApp::getInstance()->enterBackground();
+#endif
 }
 
 // this function will be called when the app is active again
 void AppDelegate::applicationWillEnterForeground() {
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32 )
     Director::getInstance()->startAnimation();
 
     // if you use SimpleAudioEngine, it must resume here
     // SimpleAudioEngine::getInstance()->resumeBackgroundMusic();
 	CClientApp::getInstance()->enterForground();
+#endif
 }

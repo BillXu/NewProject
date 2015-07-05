@@ -27,15 +27,15 @@ bool CLoginScene::init()
 	ui::Helper::doLayout(pRoot);
 
 	auto bg = pRoot->getChildByName("signup_bg_2") ;
-	m_pAccount = dynamic_cast<ui::EditBox*>(bg->getChildByName("account"));
-	m_pName = dynamic_cast<ui::EditBox*>(bg->getChildByName("name"));
-	m_pPassword = dynamic_cast<ui::EditBox*>(bg->getChildByName("password"));
+	m_pAccount = dynamic_cast<ui::TextField*>(bg->getChildByName("account"));
+	m_pName = dynamic_cast<ui::TextField*>(bg->getChildByName("name"));
+	m_pPassword = dynamic_cast<ui::TextField*>(bg->getChildByName("password"));
 
 	auto Btn = dynamic_cast<ui::Button*>(bg->getChildByName("btnLogin")) ;    
 	Btn->setPressedActionEnabled(true);
 	Btn->addClickEventListener([=](Ref* sender){
 			// on login pressed
-			if ( strlen(m_pPassword->getText()) == 0 || 0 == strlen(m_pAccount->getText()) )
+			if ( strlen(m_pPassword->getString().c_str()) == 0 || 0 == strlen(m_pAccount->getString().c_str()) )
 			{
 				cocos2d::MessageBox("account or password is null","error") ;
 				return ;
@@ -44,10 +44,10 @@ bool CLoginScene::init()
 			{
 				stMsgLogin msgLogin ;
 				memset(msgLogin.cAccount,0,sizeof(msgLogin.cAccount)) ;
-				sprintf_s(msgLogin.cAccount,sizeof(msgLogin.cAccount),"%s",m_pAccount->getText()) ;
+				sprintf_s(msgLogin.cAccount,sizeof(msgLogin.cAccount),"%s",m_pAccount->getString().c_str()) ;
 
 				memset(msgLogin.cPassword,0,sizeof(msgLogin.cPassword)) ;
-				sprintf_s(msgLogin.cPassword,sizeof(msgLogin.cPassword),"%s",m_pPassword->getText()) ;
+				sprintf_s(msgLogin.cPassword,sizeof(msgLogin.cPassword),"%s",m_pPassword->getString().c_str()) ;
 				sendMsg(&msgLogin,sizeof(msgLogin)) ;
 			}
 
@@ -57,7 +57,7 @@ bool CLoginScene::init()
 	Btn->setPressedActionEnabled(true);
 	Btn->addClickEventListener([=](Ref* sender){
 		// on register pressed
-		if ( strlen(m_pPassword->getText()) == 0 || 0 == strlen(m_pAccount->getText()) )
+		if ( strlen(m_pPassword->getString().c_str()) == 0 || 0 == strlen(m_pAccount->getString().c_str()) )
 		{
 			cocos2d::MessageBox("account or password is null","error") ;
 			return ;
@@ -68,10 +68,10 @@ bool CLoginScene::init()
 			msgRegister.cRegisterType = 1 ;
 			msgRegister.nChannel = 0 ;
 			memset(msgRegister.cAccount,0,sizeof(msgRegister.cAccount)) ;
-			sprintf_s(msgRegister.cAccount,sizeof(msgRegister.cAccount),"%s",m_pAccount->getText()) ;
+			sprintf_s(msgRegister.cAccount,sizeof(msgRegister.cAccount),"%s",m_pAccount->getString().c_str()) ;
 
 			memset(msgRegister.cPassword,0,sizeof(msgRegister.cPassword)) ;
-			sprintf_s(msgRegister.cPassword,sizeof(msgRegister.cPassword),"%s",m_pPassword->getText()) ;
+			sprintf_s(msgRegister.cPassword,sizeof(msgRegister.cPassword),"%s",m_pPassword->getString().c_str()) ;
 			sendMsg(&msgRegister,sizeof(msgRegister)) ;
 		}
 	});
@@ -88,7 +88,7 @@ bool CLoginScene::onMsg(stMsg* pmsg )
 			const char* pError = nullptr ;
 			if ( pRet->nRet == 0 )
 			{
-
+				CCLOG("login success");
 			}
 			else if ( 1 == pRet->nRet )
 			{
@@ -123,7 +123,7 @@ bool CLoginScene::onMsg(stMsg* pmsg )
 			}
 			else
 			{
-				printf("register success\n");
+				CCLOG("register success\n");
 			}
 		}
 		break;

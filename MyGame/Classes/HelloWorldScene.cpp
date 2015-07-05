@@ -130,7 +130,7 @@ bool HelloWorld::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 {
 	if ( eSate == eConnect_Accepted )
 	{
-		printf("ok\n");
+		CCLOG("ok\n");
 	}
 	return true ;
 }

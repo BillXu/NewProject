@@ -254,7 +254,7 @@ bool CTaxasPokerBettingState::onMsg(stMsg* pmsg )
 			stMsgTaxasRoomWaitPlayerAct* pRet = (stMsgTaxasRoomWaitPlayerAct*)pmsg ;
 			if ( pRet->nActPlayerIdx >= MAX_PEERS_IN_TAXAS_ROOM )
 			{
-				printf("invalid act player idx = %d\n",pRet->nActPlayerIdx);
+				CCLOG("invalid act player idx = %d\n",pRet->nActPlayerIdx);
 				return true ;
 			}
 			m_pScene->getTaxasPlayerBySvrIdx(pRet->nActPlayerIdx)->onWaitAction();
@@ -265,7 +265,7 @@ bool CTaxasPokerBettingState::onMsg(stMsg* pmsg )
 			stMsgTaxasRoomAct* pret = (stMsgTaxasRoomAct*)pmsg;
 			if ( pret->nPlayerIdx >= MAX_PEERS_IN_TAXAS_ROOM )
 			{
-				printf("MSG_TP_ROOM_ACT invalid act player idx = %d\n",pret->nPlayerIdx);
+				CCLOG("MSG_TP_ROOM_ACT invalid act player idx = %d\n",pret->nPlayerIdx);
 				return true ;
 			}
 			CTaxasPlayer* pPlayer = m_pScene->getTaxasPlayerBySvrIdx(pret->nPlayerIdx);
@@ -312,7 +312,7 @@ void CTaxasPokerBettingState::onLocalPlayerActCallBack(CTaxasPlayer* pPlayer ,ui
 	{
 		uint32_t nlowLimit = m_pScene->getPokerData()->getPlayerAddCoinLowLimit(pPlayer->getServerIdx());
 		uint64_t nupLimit = m_pScene->getPokerData()->getPlayerAddCoinUpLimit(pPlayer->getServerIdx());
-		if ( msgsend.nValue > nupLimit );
+		if ( msgsend.nValue > nupLimit )
 		{
 			msgsend.nValue = nupLimit ;
 		}

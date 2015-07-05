@@ -2,6 +2,7 @@
 #include "TaxasMessageDefine.h"
 #include "assert.h"
 #include <string>
+#include "cocos2d.h"
 stTaxasPeerBaseData* stTaxasPokerData::getTaxasPlayerData( uint8_t nSvrIdx)
 {
 	if ( nSvrIdx >= MAX_PEERS_IN_TAXAS_ROOM )
@@ -154,7 +155,7 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 				{
 					if ( pPlayerData.nTakeInMoney <= pret->nValue )
 					{
-						printf("you should all in not add\n");
+						CCLOG("you should all in not add\n");
 						pret->nValue = pPlayerData.nTakeInMoney ;
 					}
 					pPlayerData.nBetCoinThisRound += pret->nValue ;

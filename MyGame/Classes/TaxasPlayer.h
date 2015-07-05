@@ -24,8 +24,8 @@ public:
 	void setClickPhotoCallBack(std::function<void(CTaxasPlayer*)>& lpFunc );
 	Node* getRoot();
 	void setPos(Vec2& pt );
-	void betBlind(uint32_t nValue );
-	void betCoinGoToMainPool(Vec2& ptMainPoolWorldPt );
+	void betBlind(uint32_t nValue ){}
+	void betCoinGoToMainPool(Vec2& ptMainPoolWorldPt ){}
 	void showFinalCard();
 	void onWinCoinArrived( uint64_t nWinCoin );
 protected:

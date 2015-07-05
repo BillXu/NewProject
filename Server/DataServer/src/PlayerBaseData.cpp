@@ -61,7 +61,7 @@ void CPlayerBaseData::Reset()
 	stMsgDataServerGetBaseData msg ;
 	msg.nUserUID = GetPlayer()->GetUserUID() ;
 	SendMsg(&msg,sizeof(msg)) ;
-
+	CLogMgr::SharedLogMgr()->PrintLog("requesting userdata for uid = %d",msg.nUserUID);
 	// register new day event ;
 	CEventCenter::SharedEventCenter()->RegisterEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
 }
@@ -79,6 +79,8 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				return true; 
 			}
 			memcpy(&m_stBaseData,&pBaseData->stBaseData,sizeof(m_stBaseData));
+			CLogMgr::SharedLogMgr()->PrintLog("recived base data uid = %d",pBaseData->stBaseData.nUserUID);
+			SendBaseDatToClient();
 			return true ;
 		}
 		break;
@@ -384,6 +386,7 @@ void CPlayerBaseData::TimerSave()
 		msgLogicData.tLastLoginTime = m_stBaseData.tLastLoginTime ;
 		msgLogicData.tLastTakeCharityCoinTime = m_stBaseData.tLastTakeCharityCoinTime ;
 		msgLogicData.tOfflineTime = m_stBaseData.tOfflineTime ;
+		memcpy(msgLogicData.vJoinedClubID,m_stBaseData.vJoinedClubID,sizeof(msgLogicData.vJoinedClubID));
 		SendMsg((stMsgSavePlayerMoney*)&msgLogicData,sizeof(msgLogicData)) ;
 	}
 

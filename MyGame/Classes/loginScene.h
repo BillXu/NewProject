@@ -13,7 +13,7 @@ public:
 	bool onMsg(stMsg* pmsg ) ;
 	void editBoxReturn(ui::EditBox* editBox);
 protected:
-	ui::EditBox* m_pAccount ;
-	ui::EditBox* m_pPassword ;
-	ui::EditBox* m_pName ;
+	ui::TextField* m_pAccount ;
+	ui::TextField* m_pPassword ;
+	ui::TextField* m_pName ;
 };

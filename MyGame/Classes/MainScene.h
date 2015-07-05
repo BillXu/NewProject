@@ -9,5 +9,5 @@ public:
 	bool init();
 	bool onMsg(stMsg* pmsg );
 protected:
-	Label* m_pName ,*m_pCoin,*m_pID;
+	ui::Text* m_pName ,*m_pCoin,*m_pID;
 };

@@ -66,7 +66,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 		CPlayer* pPlayer = GetPlayerBySessionID(nSessionID) ;
 		if ( pPlayer != NULL && pPlayer->GetUserUID() == pmsgenter->nUserUID )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("double nSession, this nSessionID already have player, already login , do not login again ? ") ;
+			CLogMgr::SharedLogMgr()->ErrorLog("double nSession, this nSessionID already have player, already login , do not login again  id = %d? ",nSessionID) ;
 			return true ;
 		}
 

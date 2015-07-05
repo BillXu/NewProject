@@ -177,12 +177,13 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 		{
 			stMsgLoginRet msgRet ;
 			msgRet.nAccountType = 0 ;
+			uint32_t nUserUID = 0 ;
 			if ( pResult->nAffectRow > 0 )
 			{
 				CMysqlRow& pRow = *pResult->vResultRows.front() ;
 				msgRet.nRet = pRow["nOutRet"]->IntValue() ;
 				msgRet.nAccountType = pRow["nOutRegisterType"]->IntValue() ;
-				//msgRet.nUserID = pRow["nOutUID"]->IntValue() ;
+				nUserUID = pRow["nOutUID"]->IntValue() ;
 				CLogMgr::SharedLogMgr()->PrintLog("check accout = %s  ret = %d",pRow["strAccount"]->CStringValue(),msgRet.nRet  ) ;
 			}
 			else
@@ -191,6 +192,13 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				CLogMgr::SharedLogMgr()->ErrorLog("check account  why affect row = 0 ? ") ;
 			}
 			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet) ) ;
+			// tell data svr login success 
+			if (msgRet.nRet == 0 )
+			{
+				stMsgOnPlayerLogin msgData ;
+				msgData.nUserUID =  nUserUID;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgData,sizeof(msgData) ) ;
+			}
 		}
 		break;
 	case MSG_PLAYER_BIND_ACCOUNT:

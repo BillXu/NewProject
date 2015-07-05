@@ -18,9 +18,9 @@ bool CMainScene::init()
 	pRoot->setContentSize(Director::getInstance()->getWinSize()) ;
 	ui::Helper::doLayout(pRoot);
 
-	m_pName = (Label*)pRoot->getChildByName("name");
-	m_pCoin = (Label*)pRoot->getChildByName("coin");
-	m_pID = (Label*)pRoot->getChildByName("id");
+	m_pName = (ui::Text*)pRoot->getChildByName("name");
+	m_pCoin = dynamic_cast<ui::Text*>(pRoot->getChildByName("coin"));
+	m_pID = (ui::Text*)pRoot->getChildByName("id");
 
 	auto pBtn = (ui::Button*)pRoot->getChildByName("Button_1");
 	pBtn->addClickEventListener([=](Ref*){

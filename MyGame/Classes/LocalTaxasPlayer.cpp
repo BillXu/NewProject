@@ -49,14 +49,14 @@ void CLocalTaxasPlayer::onPrivateCard(uint8_t nIdx , uint16_t nCompsiteNum )
 		m_pHoldCard[nIdx]->setVisible(true);
 		if (nCompsiteNum >= 53 )
 		{
-			printf("my private card error = %d\n",nCompsiteNum );
+			CCLOG("my private card error = %d\n",nCompsiteNum );
 			nCompsiteNum = 2;
 		}
 		m_pHoldCard[nIdx]->setSpriteFrame(CClientApp::getCardSpriteByCompsiteNum(nCompsiteNum));
 	}
 	else
 	{
-		printf("my private card idx error = %d\n",nIdx );
+		CCLOG("my private card idx error = %d\n",nIdx );
 	}
 }
 

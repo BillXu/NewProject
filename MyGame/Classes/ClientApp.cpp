@@ -53,12 +53,16 @@ bool CClientApp::init()
 	// run
 	 cocos2d::Director::getInstance()->runWithScene(scene);
 
+	 // connect to svr
+	 connectToSvr();
+	 cocos2d::Director::getInstance()->getScheduler()->schedule([=](float fTime){ update(fTime);},this,0,false,"clientUpdate");
 	return true ;
 }
 
 void CClientApp::enterForground()
 {
 	connectToSvr();
+	cocos2d::Director::getInstance()->getScheduler()->unscheduleAllForTarget(this);
 	cocos2d::Director::getInstance()->getScheduler()->schedule([=](float fTime){ update(fTime);},this,0,false,"clientUpdate");
 }
 
@@ -72,7 +76,7 @@ void CClientApp::connectToSvr()
 {
 	if ( m_eNetState == CNetWorkMgr::eConnectType_Connected || m_eNetState == CNetWorkMgr::eConnectType_Connecting )
 	{
-		printf("connecting or connected so do not need connect to ");
+		CCLOG("connecting or connected so do not need connect to \n");
 		return ;
 	}
 
@@ -82,6 +86,7 @@ void CClientApp::connectToSvr()
 		m_pNetwork->ConnectToServer("203.186.75.136",50001);
 	}
 	m_eNetState = CNetWorkMgr::eConnectType_Connecting ;
+	CCLOG("start to connectting tosvr");
 }
 
 void CClientApp::disconnectFromSvr()
@@ -104,6 +109,7 @@ bool CClientApp::OnLostSever(Packet* pMsg)
 {
 	m_pConnectID = INVALID_CONNECT_ID ;
 	m_eNetState = CNetWorkMgr::eConnectType_Disconnectd ;
+	CCLOG("svr disconnect");
 	return false ;
 }
 
@@ -117,10 +123,12 @@ bool CClientApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 		msgVerify.cSysIdentifer = ID_MSG_VERIFY ;
 		msgVerify.usMsgType = MSG_VERIFY_CLIENT ;
 		sendMsg(&msgVerify,sizeof(msgVerify));
+		CCLOG("connect to svr success ");
 	}
 	else
 	{
 		m_eNetState = CNetWorkMgr::eConnectType_None ;
+		CCLOG("connect to svr failed ");
 	}
 	return false ;
 }
@@ -133,7 +141,7 @@ bool CClientApp::sendMsg(stMsg* pMsg , uint16_t nLen )
 	}
 	else
 	{
-		printf("server is disconnected , cann't send msg\n");
+		CCLOG("server is disconnected , cann't send msg\n");
 	}
 	return false ;
 }

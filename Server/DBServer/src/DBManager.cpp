@@ -115,7 +115,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"UPDATE playerbasedata SET mostCoinEver = '%I64d', vipLevel = '%d', nYesterdayCoinOffset = '%I64d', \
 				nTodayCoinOffset = '%I64d',offlineTime = '%d',continueLoginDays = '%d',lastLoginTime = '%d',lastTakeCharityCoinTime = '%d', \
-				longitude = '%f',latitude = '%f,vJoinedClubID = '%s' WHERE userUID = '%d' ",
+				longitude = '%f',latitude = '%f',vJoinedClubID = '%s' WHERE userUID = '%d' ",
 				pRet->nMostCoinEver,pRet->nVipLevel,pRet->nYesterdayCoinOffset,pRet->nTodayCoinOffset,pRet->tOfflineTime,pRet->nContinueDays,pRet->tLastLoginTime,pRet->tLastTakeCharityCoinTime,pRet->dfLongitude,pRet->dfLatidue,
 				strJoinedClub.c_str(),pRet->nUserUID) ;
 		}
@@ -556,9 +556,9 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			else
 			{
 				CMysqlRow& pRow = *pResult->vResultRows.front();
-				if ( pRow["nOutRet"] != 0 )
+				if ( pRow["nOutRet"]->IntValue() != 0 )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("create player data error uid = %d",pdata->nExtenArg1 ) ;
+					CLogMgr::SharedLogMgr()->ErrorLog("pp create player data error uid = %d ret = %d",pdata->nExtenArg1,pRow["nOutRet"]->IntValue() ) ;
 				}
 				else
 				{

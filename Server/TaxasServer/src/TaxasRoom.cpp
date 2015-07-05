@@ -256,7 +256,8 @@ void CTaxasRoom::OnPlayerStandUp(uint8_t nSeatIdx )
 	// first do give up action ; if you playing game ;
 	if ( m_vSitDownPlayers[nSeatIdx].IsHaveState(eRoomPeer_WaitCaculate) )
 	{
-		OnPlayerAction(nSeatIdx,eRoomPeerAction_GiveUp,0) ;
+		uint64_t nValue = 0 ;
+		OnPlayerAction(nSeatIdx,eRoomPeerAction_GiveUp,nValue) ;
 	}
 
 	// tell others 
@@ -588,11 +589,13 @@ void CTaxasRoom::OnPlayerActTimeOut()
 {
 	if ( m_nMostBetCoinThisRound == m_vSitDownPlayers[m_nCurWaitPlayerActionIdx].nBetCoinThisRound )
 	{
-		OnPlayerAction(m_nCurWaitPlayerActionIdx,eRoomPeerAction_Pass,0) ;
+		uint64_t nValue = 0 ;
+		OnPlayerAction(m_nCurWaitPlayerActionIdx,eRoomPeerAction_Pass,nValue) ;
 	}
 	else
 	{
-		OnPlayerAction(m_nCurWaitPlayerActionIdx,eRoomPeerAction_GiveUp,0) ;
+		uint64_t nValue = 0 ;
+		OnPlayerAction(m_nCurWaitPlayerActionIdx,eRoomPeerAction_GiveUp,nValue) ;
 	}
 }
 
