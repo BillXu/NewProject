@@ -273,6 +273,7 @@ void CPlayerBaseData::SendBaseDatToClient()
 	stMsgPlayerBaseData msg ;
 	memcpy(&msg.stBaseData,&m_stBaseData,sizeof(msg.stBaseData));
 	SendMsg(&msg,sizeof(msg)) ;
+	CLogMgr::SharedLogMgr()->PrintLog("send base data to session id = %d ",GetPlayer()->GetSessionID() );
 }
 
 void CPlayerBaseData::OnProcessContinueLogin()

@@ -359,6 +359,7 @@ bool CTcpSocket::Close()
 	}
 	else if (m_nLinkStatus == LS_WAITCLOSE)
 	{
+		CloseImlp();
 		LCW("CTcpSocket::Close(),  socket status = LS_WAITCLOSE, socket=" << (unsigned int) m_socket);
 	}
 	return true;

@@ -16,7 +16,7 @@ CRoomManager::~CRoomManager()
 
 bool CRoomManager::Init()
 {
-	stBaseRoomConfig* pconfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,1);;
+	stBaseRoomConfig* pconfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,0);
 	if ( pconfig )
 	{
 		CTaxasRoom* pRoom = new CTaxasRoom ;
@@ -50,7 +50,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		if ( pRoom->IsPlayerInRoomWithSessionID(nSessionID) )
 		{
 			stMsgTaxasEnterRoomRet msgBack ;
-			msgBack.nRet = 3 ;
+			msgBack.nRet = 2 ;
 			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			return true ;
 		}
@@ -58,6 +58,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		stMsgRequestTaxasPlayerData msg ;
 		msg.nSessionID = nSessionID ;
 		SendMsg(&msg,sizeof(msg),pRoom->GetRoomID()) ;
+		CLogMgr::SharedLogMgr()->PrintLog("rquest player data for room ");
 		return true ;
 	}
 
@@ -91,6 +92,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		}
 
 		pRoom->AddPlayer(pRet->tData);
+		CLogMgr::SharedLogMgr()->PrintLog("recive player data , do joined to room");
 		return true;
 	}
 

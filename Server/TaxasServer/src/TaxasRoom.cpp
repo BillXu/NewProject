@@ -35,7 +35,7 @@ CTaxasRoom::~CTaxasRoom()
 
 bool CTaxasRoom::Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig )
 {
-	GoToState(eRoomState_TP_WaitJoin) ;
+	this->nRoomID = nRoomID ;
 	m_nBankerIdx = 0;
 	m_nLittleBlindIdx = 0;
 	m_nBigBlindIdx = 0;
@@ -61,6 +61,7 @@ bool CTaxasRoom::Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig )
 
 	SetTimerManager(CTaxasServerApp::SharedGameServerApp()->getTimerMgr()) ;
 	SetEnableUpdate(true) ;
+	GoToState(eRoomState_TP_WaitJoin) ;
 	return true ;
 }
 
@@ -72,7 +73,7 @@ void CTaxasRoom::GoToState( eRoomState eState )
 		eState = eRoomState_TP_WaitJoin ;
 	}
 
-	if ( m_vAllState[m_eCurRoomState] )
+	if ( m_eCurRoomState < eRoomState_TP_MAX && m_vAllState[m_eCurRoomState] )
 	{
 		m_vAllState[m_eCurRoomState]->LeaveState();
 	}
@@ -1048,6 +1049,7 @@ void CTaxasRoom::SendRoomInfoToPlayer(uint32_t nSessionID )
 		memcpy(&msgPlayerData.tPlayerData,&m_vSitDownPlayers[nIdx],sizeof(msgPlayerData.tPlayerData));
 		SendMsgToPlayer(nSessionID,&msgPlayerData,sizeof(msgPlayerData)) ;
 	}
+	CLogMgr::SharedLogMgr()->PrintLog("send room data to player ");
 }
 
 stTaxasInRoomPeerData* CTaxasRoom::GetInRoomPlayerDataBySessionID( uint32_t nSessionID )

@@ -387,6 +387,7 @@ bool CPlayerManager::ProcessIsAlreadyLogin(unsigned int nUserID ,unsigned nSessi
 			pPlayer->OnAnotherClientLoginThisPeer(nSessionID) ;
 			m_vAllActivePlayers.erase(iter_ma) ;
 			AddPlayer(pPlayer) ;
+			CLogMgr::SharedLogMgr()->PrintLog("other decivec login");
 			return true ;
 		}
 	}

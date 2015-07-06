@@ -300,6 +300,7 @@ void CPlayer::OnAnotherClientLoginThisPeer(unsigned int nSessionID )
 		stMsgOrderTaxasPlayerLeave msgLeave ;
 		msgLeave.nRoomID = m_nTaxasRoomID ;
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
+		m_nTaxasRoomID = 0 ;
 	}
 
 	CLogMgr::SharedLogMgr()->ErrorLog("pls remember inform other server this envent OnAnotherClientLoginThisPeer ") ;

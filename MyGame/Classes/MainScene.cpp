@@ -27,7 +27,7 @@ bool CMainScene::init()
 		//cocos2d::MessageBox("send enter room msg","tip");
 		stMsgTaxasEnterRoom msgEnterRoom ;
 		msgEnterRoom.nLevel = 0 ;
-		msgEnterRoom.nRoomID = 0 ;
+		msgEnterRoom.nRoomID = 1 ;
 		msgEnterRoom.nType = 0 ;
 		sendMsg(&msgEnterRoom,sizeof(msgEnterRoom)) ;
 	});
@@ -44,6 +44,12 @@ bool CMainScene::onMsg(stMsg* pmsg )
 	if ( MSG_TP_ENTER_ROOM == pmsg->usMsgType )
 	{
 		// change to poker scene
+		CCLOG("tp enter room ret ");
+		return true ;
+	}
+	else if ( MSG_TP_ROOM_BASE_INFO == pmsg->usMsgType ) 
+	{
+		CCLOG("recived room data");
 		return true ;
 	}
 	return false ;
