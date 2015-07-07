@@ -19,14 +19,14 @@ public:
 	stTaxasPokerData* getPokerData(){ return &m_tGameData ;};
 	void distributePrivateCard();
 	CLocalTaxasPlayer* getLocalPlayer(){ return m_pLocalPlayer ;}
-	float playersBetCoinGoMainPool(){return 0 ;}
-	void onPlayersBetCoinArrived( uint8_t nNewVicePoolCnt ){}
-	void onPlayerGiveupCoinArrived(){}
-	Vec2 getMainPoolWorldPos(){ return Vec2::ZERO;}
-	void distributePublicCard(uint8_t nRound ){} // invalid value , 1 , 2 ,3 
-	void showAllPlayersFinalCard(){}
-	void winCoinGoToWinners(uint8_t nPoolIdx,uint64_t nCoinPerWinner,uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM],uint8_t nWinnerCnt){}
-	void goToState(eRoomState eState,stMsg* pmsg = nullptr ){}
+	void playersBetCoinGoMainPool();
+	void onPlayersBetCoinArrived( uint8_t nNewVicePoolCnt );
+	void onPlayerGiveupCoinArrived();
+	Vec2 getMainPoolWorldPos();
+	void distributePublicCard(uint8_t nRound ); // invalid value , 1 , 2 ,3 
+	void showAllPlayersFinalCard();
+	void winCoinGoToWinners(uint8_t nPoolIdx,uint64_t nCoinPerWinner,uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM],uint8_t nWinnerCnt);
+	void goToState(eRoomState eState,stMsg* pmsg = nullptr );
 protected:
 	void doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetIdx );
 protected:
@@ -38,4 +38,5 @@ protected:
 	Vec2 m_vPosOfTaxasPlayers[MAX_PEERS_IN_TAXAS_ROOM];
 	CLocalTaxasPlayer* m_pLocalPlayer ;
 	stTaxasPokerData m_tGameData;
+	Vec2 m_ptMailPoolWorldPt ;
 };

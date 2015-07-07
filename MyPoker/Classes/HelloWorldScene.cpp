@@ -37,95 +37,53 @@ bool HelloWorld::init()
 
     // add a "close" icon to exit the progress. it's an autorelease object
     auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
-                                           "CloseSelected.png",
+                                           "Resources/CloseNormal.png",
+                                           "Resources/CloseSelected.png",
                                            CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
     
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
-                                origin.y + closeItem->getContentSize().height/2));
+	//closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
+    //                            origin.y + closeItem->getContentSize().height/2));
+	closeItem->setPosition(Vec2(origin.x   ,
+		origin.y ));
 
     // create menu, it's an autorelease object
     auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
+    menu->setPosition(Vec2(100,100));
+    this->addChild(menu, 2);
+	menu->setVisible(true);
+	auto s = Sprite::create("Resources/CloseNormal.png");
+	this->addChild(s);
+	s->setPosition(Vec2(100,100));
 
     /////////////////////////////
     // 3. add your codes below...
 
     // add a label shows "Hello World"
     // create and initialize a label
-    
-    pLable = LabelTTF::create("Hello World", "Arial", 24);
-    
-    // position the label on the center of the screen
-    pLable->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - pLable->getContentSize().height));
-
-    // add the label as a child to this layer
-    this->addChild(pLable, 1);
 
     // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-    pMetering = Sprite::create("0.png");
 
-    // position the sprite on the center of the screen
-    sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-    sprite->setScale(2);
 
     // add the sprite as a child to this layer
-    this->addChild(sprite, 0);
-    addChild(pMetering);
-    pMetering->setPosition(sprite->getPosition());
-    pMetering->setAnchorPoint(Point(0.5,0));
-    m_pChipGroup = nullptr ;
+	m_pChipGroup = CChipGroup::CreateGroup();
+	addChild(m_pChipGroup);
+	m_pChipGroup->setPosition(Point(330,330));
+	//m_pChipGroup->SetDestPosition(Point(568,320));
+	//m_pChipGroup->SetDestPosition(Point::ZERO);
+	//m_pChipGroup->SetDestPosition(Point(130,130));
+	m_pChipGroup->SetGroupCoin(10,true);
     return true;
 }
 
 void HelloWorld::OnFinishRecord(const char* pFileName, bool bInterupted )
 {
     printf("start play %s\n",pFileName ) ;
-<<<<<<< HEAD
-    //CVoicerManager::GetInstance()->PlayVoice(pFileName) ;
-=======
-   // CVoicerManager::GetInstance()->PlayVoice(pFileName) ;
->>>>>>> c04460d1fd07c4e5f8db649853fcc976fc7b9142
     pLable->setString("playing sound") ;
 }
 
 
 void HelloWorld::menuCloseCallback(Ref* pSender)
 {
-    static bool bRecording = false ;
-    if ( bRecording )
-    {
-        printf("stop recorder\n");
-        pLable->setString("stop recorder") ;
-       // CVoicerManager::GetInstance()->StopRecord();
-        Director::getInstance()->getScheduler()->unschedule("soundMetering", this);
-    }
-    else
-    {
-        printf("开始录音\n");
-<<<<<<< HEAD
-        pLable->setString("start") ;
-=======
-        //pLable->setString("开始录音") ;
->>>>>>> c04460d1fd07c4e5f8db649853fcc976fc7b9142
-        //CVoicerManager::GetInstance()->SetDelegate(this) ;
-        std::string strPath = FileUtils::getInstance()->getWritablePath() ;
-        //strPath.append("helloVoice2.wav");
-        std::string strn = StringUtils::format("%u",(unsigned int)time(NULL));
-        strPath = strPath + strn ;
-<<<<<<< HEAD
-       // CVoicerManager::GetInstance()->StartRecord(strPath.c_str());
-=======
-        //CVoicerManager::GetInstance()->StartRecord(strPath.c_str());
->>>>>>> c04460d1fd07c4e5f8db649853fcc976fc7b9142
-        //Director::getInstance()->getScheduler()->schedule([](float ft){ float f = CVoicerManager::GetInstance()->GetWavMertering() ; printf("sound wave %.4f\n",f) ; pMetering->setScaleY(f);}, this, 0.1, false, "soundMetering");
-    }
-    bRecording = !bRecording ;
-   // return ;
-    
     if ( m_pChipGroup )
     {
         m_pChipGroup->removeFromParent();
@@ -133,11 +91,11 @@ void HelloWorld::menuCloseCallback(Ref* pSender)
     }
     m_pChipGroup = CChipGroup::CreateGroup();
     addChild(m_pChipGroup);
-    m_pChipGroup->setPosition(Point(330,330));
-    //m_pChipGroup->SetDestPosition(Point(568,320));
+	m_pChipGroup->SetGroupCoin(6,true);
+    m_pChipGroup->setPosition(Point(130,130));
+    m_pChipGroup->SetDestPosition(Point(568,420));
     //m_pChipGroup->SetDestPosition(Point::ZERO);
     //m_pChipGroup->SetDestPosition(Point(130,130));
-    m_pChipGroup->SetGroupCoin(10,true);
     static std::function<void(CChipGroup*p)> f = [](CChipGroup*p){
         CCLOG("finish");
         p->SetFinishCallBack(nullptr);
@@ -145,8 +103,8 @@ void HelloWorld::menuCloseCallback(Ref* pSender)
         p->SetGroupCoin(5);
         p->Start(CChipGroup::eChipMoveType::eChipMove_Origin2Group, 0);
     } ;
-    m_pChipGroup->SetFinishCallBack(f);
-    m_pChipGroup->Start(CChipGroup::eChipMoveType::eChipMove_Origin2None, 0);
+    //m_pChipGroup->SetFinishCallBack(f);
+    m_pChipGroup->Start(CChipGroup::eChipMoveType::eChipMove_Group2None, 0.8);
     return ;
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
 	MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");

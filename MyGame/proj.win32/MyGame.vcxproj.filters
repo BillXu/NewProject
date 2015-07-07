@@ -75,6 +75,9 @@
     <ClCompile Include="..\Classes\TaxasPokerSceneState.cpp">
       <Filter>src\poker</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\ChipGroup.cpp">
+      <Filter>src\poker</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -150,6 +153,9 @@
       <Filter>src\poker</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\TaxasPokerSceneState.h">
+      <Filter>src\poker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ChipGroup.h">
       <Filter>src\poker</Filter>
     </ClInclude>
   </ItemGroup>

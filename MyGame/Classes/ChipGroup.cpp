@@ -90,11 +90,12 @@ void CChipGroup::Start(eChipMoveType eType , float fAniTime )
                 CallFuncN* pFunc = nullptr;
                 if ( nIdx == m_vAllSprites.size() -1 )
                 {
-                    pFunc = CallFuncN::create([this](Node*pnode){ pnode->setVisible(false); if (m_funAniFinish ) m_funAniFinish(this); } );
+                    pFunc = CallFuncN::create([this](Node*pnode){ pnode->setVisible(false); if (m_funAniFinish ) m_funAniFinish(this);  m_bRunningAni = false;  } );
                 }
                 Sequence* pSeq = Sequence::create(pdelay,pShow,pm,pFunc,NULL);
                 m_vAllSprites[m_vAllSprites.size() - 1 - nIdx]->runAction(pSeq);
 				m_vAllSprites[m_vAllSprites.size() - 1 - nIdx]->setOpacity(255);
+				m_vAllSprites[m_vAllSprites.size() - 1 - nIdx]->setPosition(ptOrigDest);
             }
         }
             break;
@@ -109,12 +110,13 @@ void CChipGroup::Start(eChipMoveType eType , float fAniTime )
                 CallFuncN* pFunc = nullptr;
                 if ( nIdx == m_vAllSprites.size() -1 )
                 {
-                    pFunc = CallFuncN::create([this](Node*pnode){ if (m_funAniFinish ) m_funAniFinish(this); } );
+                    pFunc = CallFuncN::create([this](Node*pnode){ if (m_funAniFinish ) m_funAniFinish(this);  m_bRunningAni = false;  } );
                 }
                 Sequence* pSeq = Sequence::create(pdelay,pShow,pMoveto,changeOrder,pFunc,NULL);
                 Node* pTemp = m_vAllSprites[m_vAllSprites.size() - 1 - nIdx];
                 pTemp->runAction(pSeq);
 				pTemp->setOpacity(255);
+				pTemp->setPosition(ptOrigDest);
             }
         }
             break;
@@ -140,7 +142,7 @@ void CChipGroup::Start(eChipMoveType eType , float fAniTime )
                 Sequence* pSeq = nullptr;
                 if ( nIdx == m_vAllSprites.size() -1 )
                 {
-                    CallFunc* pFunc = CallFunc::create([this](){ if (m_funAniFinish ) m_funAniFinish(this); });
+                    CallFunc* pFunc = CallFunc::create([this](){ if (m_funAniFinish ) m_funAniFinish(this); m_bRunningAni = false;  });
                     pSeq = Sequence::create(pdelay,pShow,pMoveto,pFunc,NULL);
                 }
                 else
@@ -149,37 +151,40 @@ void CChipGroup::Start(eChipMoveType eType , float fAniTime )
                 }
                 m_vAllSprites[nIdx]->runAction(pSeq);
 				m_vAllSprites[nIdx]->setOpacity(255);
+				m_vAllSprites[nIdx]->setPosition(ptOrigDest);
             }
         }
             break ;
         default:
             break;
     }
+	m_bRunningAni = true ;
 }
 
 void CChipGroup::SetGroupCoin( uint64_t nAllCoin  , bool bVisible )
 {
+	m_bRunningAni = false ;
+	bool bRcreate = nAllCoin != m_nCoin ;
     m_nCoin = nAllCoin ;
     
     // clear all sprite
-    m_vAllSprites.clear();
-    removeAllChildren() ;
-    m_ptOrigPos = getPosition();
-    m_ptDestPos = getPosition() ;
-    static int id = 0 ;
-    ++id;
-    // prepare sprite with new all coin count ;
-    uint64_t nIdx = 0 ;
-    while ( nIdx < nAllCoin )
-    {
-        Sprite* ps = Sprite::create(StringUtils::format("Resources/%d.png",id%2)) ; //Sprite::create(StringUtils::format("%lld.png",nIdx++%2)) ;
-        addChild(ps);
-        //ps->setRotation(random()%360);
-        ps->setScale(0.5);
-        m_vAllSprites.push_back(ps);
-        ++nIdx;
-		++id;
-    }
+	if ( bRcreate )
+	{
+		m_vAllSprites.clear();
+		removeAllChildren() ;
+		m_ptOrigPos = getPosition();
+		uint64_t nIdx = 0 ;
+		while ( nIdx < nAllCoin )
+		{
+			Sprite* ps = Sprite::create(StringUtils::format("%d.png",nIdx%2)) ; //Sprite::create(StringUtils::format("%lld.png",nIdx++%2)) ;
+			addChild(ps);
+			//ps->setRotation(random()%360);
+			ps->setScale(0.5);
+			m_vAllSprites.push_back(ps);
+			++nIdx;
+		}
+	}
+
     
     // pack coin sprite ;
     for ( size_t nIdx = 0 ; nIdx < m_vAllSprites.size(); ++nIdx )

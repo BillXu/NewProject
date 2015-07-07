@@ -259,7 +259,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				}
 				else if ( eSvrType_Max == svr )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("unknown msg target = %d",pReal->cSysIdentifer ) ;
+					CLogMgr::SharedLogMgr()->ErrorLog("unknown msg target = %d , msg = %d",pReal->cSysIdentifer ,pReal->usMsgType) ;
 				}
 				else
 				{

@@ -93,6 +93,9 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			nLittleBlindIdx = pRet->nLittleBlindIdx ;
 			nBigBlindIdx = pRet->nBigBlindIdx ;
 			nBankerIdx = pRet->nBankerIdx ;
+
+			vAllTaxasPlayerData[nLittleBlindIdx].nBetCoinThisRound = nLittleBlind ;
+			vAllTaxasPlayerData[nBigBlindIdx].nBetCoinThisRound = nLittleBlind *2;
 		}
 		break;
 	case MSG_TP_PRIVATE_CARD:
@@ -204,6 +207,16 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 					break;
 				}
 				vVicePool[nIdx] = pRet->vNewVicePool[nNewIdx];
+			}
+
+			// refresh player data ;
+			for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
+			{
+				if ( vAllTaxasPlayerData[nIdx].nUserUID )
+				{
+					vAllTaxasPlayerData[nIdx].nBetCoinThisRound = 0 ;
+					vAllTaxasPlayerData[nIdx].eCurAct = eRoomPeerAction_None ;
+				}
 			}
 		}
 		break;

@@ -13,6 +13,7 @@ Scene* CTaxasPokerScene::createScene()
 bool CTaxasPokerScene::init()
 {
 	IBaseScene::init();
+	m_ptMailPoolWorldPt = Vec2::ZERO;
 	memset(&m_tGameData,0,sizeof(m_tGameData));
 	Node* pRoot = CSLoader::getInstance()->createNodeWithFlatBuffersFile("res/Game.csb");
 	addChild(pRoot);
@@ -240,6 +241,92 @@ void CTaxasPokerScene::doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetI
 }
 
 void CTaxasPokerScene::distributePrivateCard()
+{
+
+}
+
+void CTaxasPokerScene::playersBetCoinGoMainPool()
+{
+	bool bHave = false;
+	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
+	{
+		if ( m_vTaxasPlayers[nIdx]->getRoot()->isVisible() && m_vTaxasPlayers[nIdx]->isHavePlayer() )
+		{
+			if ( m_vTaxasPlayers[nIdx]->betCoinGoToMainPool(getMainPoolWorldPos(),TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL) )
+			{
+				bHave = true;
+			}
+		}
+	}
+
+	if ( m_pLocalPlayer->getRoot()->isVisible() )
+	{
+		if ( m_pLocalPlayer->betCoinGoToMainPool(getMainPoolWorldPos(),TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL) )
+		{
+			bHave = true ;
+		}
+	}
+
+	if ( bHave )
+	{
+		Director::getInstance()->getScheduler()->schedule([=](float ft){ onPlayersBetCoinArrived(0);},this,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,0,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,false,"PGM");
+	}
+}
+
+void CTaxasPokerScene::onPlayersBetCoinArrived( uint8_t nNewVicePoolCnt )
+{
+	// refresh main pool and build vice pool ;
+}
+
+void CTaxasPokerScene::onPlayerGiveupCoinArrived()
+{
+	// refresh main pool ;
+}
+
+Vec2 CTaxasPokerScene::getMainPoolWorldPos()
+{
+	if ( m_ptMailPoolWorldPt == Vec2::ZERO )
+	{
+		m_ptMailPoolWorldPt = m_pMainPool->getParent()->convertToWorldSpace(m_pMainPool->getPosition());
+	}
+	return m_ptMailPoolWorldPt ;
+}
+
+void CTaxasPokerScene::distributePublicCard(uint8_t nRound )
+{
+
+}
+
+void CTaxasPokerScene::showAllPlayersFinalCard()
+{
+	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
+	{
+		if ( m_vTaxasPlayers[nIdx]->getRoot()->isVisible() && m_vTaxasPlayers[nIdx]->isHavePlayer() )
+		{
+			bool bW = (m_vTaxasPlayers[nIdx]->getPlayerData().nStateFlag & eRoomPeer_WaitCaculate) == eRoomPeer_WaitCaculate ;
+			if ( bW )
+			{
+				m_vTaxasPlayers[nIdx]->showFinalCard();
+			}
+		}
+	}
+
+	if ( m_pLocalPlayer->getRoot()->isVisible())
+	{
+		bool bW = (m_pLocalPlayer->getPlayerData().nStateFlag & eRoomPeer_WaitCaculate) == eRoomPeer_WaitCaculate ;
+		if ( bW )
+		{
+			m_pLocalPlayer->showFinalCard();
+		}
+	}
+}
+
+void CTaxasPokerScene::winCoinGoToWinners(uint8_t nPoolIdx,uint64_t nCoinPerWinner,uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM],uint8_t nWinnerCnt)
+{
+
+}
+
+void CTaxasPokerScene::goToState(eRoomState eState,stMsg* pmsg )
 {
 
 }

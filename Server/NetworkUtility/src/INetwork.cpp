@@ -21,6 +21,20 @@ bool INetwork::GetAllPacket(VEC_PACKET& vOutPackets ) // must delete out side ;
 	return vOutPackets.empty() == false ;
 }
 
+bool INetwork:: GetFirstPacket(Packet** ppPacket )
+{
+	CAutoLock al(m_lockRecvPackets);
+	if ( m_vRecievedPackets.empty() )
+	{
+		*ppPacket = nullptr ;
+		return false ;
+	}
+
+	*ppPacket = m_vRecievedPackets.front();
+	m_vRecievedPackets.erase(m_vRecievedPackets.begin());
+	return true ;
+}
+
 bool INetwork::SendMsg(unsigned char* pBuffer , unsigned short nLen ,CONNECT_ID nSendToOrExcpt , bool bBorcast)
 {
 	if ( nLen >=  _MSG_BUF_LEN )

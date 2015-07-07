@@ -3,6 +3,7 @@
 #include "CommonDefine.h"
 #include "CommonData.h"
 USING_NS_CC ;
+class CChipGroup;
 class CTaxasPlayer
 	:public Node  // just for autorelease with render tree , no other meannings ;
 {
@@ -24,10 +25,13 @@ public:
 	void setClickPhotoCallBack(std::function<void(CTaxasPlayer*)>& lpFunc );
 	Node* getRoot();
 	void setPos(Vec2& pt );
-	void betBlind(uint32_t nValue ){}
-	void betCoinGoToMainPool(Vec2& ptMainPoolWorldPt ){}
+	void betBlind(uint32_t nValue );
+	bool betCoinGoToMainPool(Vec2& ptMainPoolWorldPt, float fAni );
 	void showFinalCard();
-	void onWinCoinArrived( uint64_t nWinCoin );
+	void winCoinGoToPlayer( Vec2& ptWinPoolWorldPt, float fAni );
+protected:
+	void doBetCoinAni();
+	void refreshCoin(CChipGroup* pGrop = nullptr );
 protected:
 	Node* m_pRoot ;
 	stTaxasPeerBaseData* m_pBindPlayerData; // CTaxasPlayer will display and serve for m_pBindPlayerData all life , but will not change m_pBindPlayerData 
@@ -37,4 +41,7 @@ protected:
 	int8_t m_nLocalIdx ;  // this idx will change , depoend on local player sit ;becasuse local player idx always 8 ;
 	int8_t m_nSvrIdx ;  // this idx will not change ;
 	std::function<void(CTaxasPlayer*)> lpFuncClick;
+
+	CChipGroup* m_pBetCoinAni, *m_pCoinGoToMainlPoolAni;
+	CChipGroup* m_vWinCoinAni[MAX_PEERS_IN_TAXAS_ROOM];
 };

@@ -138,6 +138,50 @@ void CNetWorkMgr::ReciveMessage()
 	}
 }
 
+void CNetWorkMgr::ReciveOneMessage()
+{
+	ProcessDelegateAddRemove();
+	if ( m_pNetPeer == NULL )
+		return ;
+	Packet* packet = nullptr ;
+	
+	if ( m_pNetPeer->GetFirstPacket(&packet) == false )
+	{
+		return ;
+	}
+
+	if (packet == nullptr )
+	{
+		return ;
+	}
+
+	if ( packet->_packetType == _PACKET_TYPE_CONNECTED )
+	{
+		m_nCurrentServer = packet->_connectID;
+		EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),packet) ;
+	}
+	else if ( _PACKET_TYPE_DISCONNECT == packet->_packetType )
+	{
+		if ( packet->_connectID == m_nCurrentServer )
+		{
+			m_nCurrentServer = INVALID_CONNECT_ID ;
+		}
+
+		EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnLostServer),packet) ;
+	}
+	else if ( _PACKET_TYPE_MSG == packet->_packetType )
+	{
+		ProcessDelegateAddRemove();
+		s_nCurrentDataSize = packet->_len ;
+		EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnReciveLogicMessage),packet) ;
+	}
+	else if ( _PACKET_TYPE_CONNECT_FAILED == packet->_packetType )
+	{
+		EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),packet) ;
+	}
+	delete packet;
+}
+
 bool CNetWorkMgr::SendMsg(const char *pbuffer, int iSize)
 {
     if ( m_pNetPeer == NULL )

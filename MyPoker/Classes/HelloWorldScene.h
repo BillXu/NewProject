@@ -4,11 +4,7 @@
 #include "cocos2d.h"
 class CChipGroup ;
 //#include "VoicerManager.h"
-<<<<<<< HEAD
-class HelloWorld : public cocos2d::Layer/*,public CVoiceRecordDelegate*/
-=======
 class HelloWorld : public cocos2d::Layer//,public CVoiceRecordDelegate
->>>>>>> c04460d1fd07c4e5f8db649853fcc976fc7b9142
 {
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer

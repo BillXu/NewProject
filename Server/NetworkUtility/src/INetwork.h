@@ -12,6 +12,7 @@ public:
 	INetwork();
 	virtual ~INetwork();
 	bool GetAllPacket(VEC_PACKET& vOutPackets ); // must delete out side ;
+	bool GetFirstPacket(Packet** ppPacket ); // must delete out side ;
 	bool SendMsg(unsigned char* pBuffer , unsigned short nLen ,CONNECT_ID nSendToOrExcpt , bool bBorcast = false) ;
 	void CloseConnection(CONNECT_ID nConnectID );
 	char* GetIPStringByConnectID( CONNECT_ID nConnectID );

@@ -554,7 +554,9 @@ void CPlayerBaseData::OnNewDay(stEventArg* pArg)
 
 void CPlayerBaseData::OnReactive(uint32_t nSessionID )
 {
-	CEventCenter::SharedEventCenter()->RemoveEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
+	CEventCenter::SharedEventCenter()->RegisterEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
+	CLogMgr::SharedLogMgr()->PrintLog("player reactive send base data");
+	SendBaseDatToClient();
 }
 
 void CPlayerBaseData::CacluateTaxasRoomMoney(uint64_t nNewTakeIn, bool bDiamond )

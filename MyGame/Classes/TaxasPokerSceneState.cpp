@@ -272,7 +272,7 @@ bool CTaxasPokerBettingState::onMsg(stMsg* pmsg )
 			pPlayer->onAct(pret->nPlayerAct,pret->nValue);
 			if ( pret->nPlayerAct == eRoomPeerAction_GiveUp )
 			{
-				pPlayer->betCoinGoToMainPool(m_pScene->getMainPoolWorldPos());
+				pPlayer->betCoinGoToMainPool(m_pScene->getMainPoolWorldPos(),TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL);
 				Director::getInstance()->getScheduler()->schedule([=](float ft){ m_pScene->onPlayerGiveupCoinArrived();},this,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,0,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,false,"giveUpCoin");
 			}
 		}
@@ -358,9 +358,7 @@ void CTaxasPokerOneBetRoundEndResultState::enterState(stMsg* pmsg)
 		
 		// all peer coin go to main pool 
 		uint8_t nNewVicePoolCnt = pRet->nNewVicePoolCnt;
-		float fT = m_pScene->playersBetCoinGoMainPool();
-		// refesh main pool and vice pool
-		Director::getInstance()->getScheduler()->schedule([=](float ft){ m_pScene->onPlayersBetCoinArrived(nNewVicePoolCnt);},this,fT,0,fT,false,"onArrive");
+		m_pScene->playersBetCoinGoMainPool();
 	}
 }
 

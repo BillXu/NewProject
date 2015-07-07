@@ -1,4 +1,5 @@
 #include "TaxasPlayer.h"
+#include "ChipGroup.h"
 #define SCHEDULE_FUNC_NAME_FOR_TIMER "timeCountDown"
 CTaxasPlayer* CTaxasPlayer::create(Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerData)
 {
@@ -13,6 +14,8 @@ bool CTaxasPlayer::init(Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerD
 	m_pBindPlayerData = tPlayerData ;
 	lpFuncClick = nullptr ;
 	m_pRoot = pRoot ;
+	m_pCoinGoToMainlPoolAni = m_pBetCoinAni = nullptr ;
+	memset(m_vWinCoinAni,0,sizeof(m_vWinCoinAni));
 	m_pName = (Label*)pRoot->getChildByName("name");
 	m_pCoin = (Label*)pRoot->getChildByName("coin");
 	m_pHoldCard[0] = (Sprite*)pRoot->getChildByName("holdCard0");
@@ -94,6 +97,7 @@ void CTaxasPlayer::onAct(uint16_t nAct , uint32_t nValue )
 	Director::getInstance()->getScheduler()->unschedule(SCHEDULE_FUNC_NAME_FOR_TIMER,this);
 
 	m_pState->getParent()->setVisible(eRoomPeerAction_None != nAct );
+	bool bDoBet = false ;
 	switch ( nAct )
 	{
 	case eRoomPeerAction_Pass:
@@ -104,16 +108,19 @@ void CTaxasPlayer::onAct(uint16_t nAct , uint32_t nValue )
 	case eRoomPeerAction_AllIn:
 		{
 			m_pState->setString("All In");
+			bDoBet = true ;
 		}
 		break;
 	case eRoomPeerAction_Follow:
 		{
 			m_pState->setString("Follow");
+			bDoBet = true ;
 		}
 		break;
 	case eRoomPeerAction_Add:
 		{
 			m_pState->setString("Add");
+			bDoBet = true ;
 		}
 		break;
 	case eRoomPeerAction_GiveUp:
@@ -126,12 +133,10 @@ void CTaxasPlayer::onAct(uint16_t nAct , uint32_t nValue )
 		break;
 	} 
 
-	m_pBetCoin->getParent()->setVisible(m_pBindPlayerData->nBetCoinThisRound > 0);
-	if ( m_pBindPlayerData->nBetCoinThisRound > 0 )
+	if ( bDoBet )
 	{
-		m_pBetCoin->setString(String::createWithFormat("%I64d",m_pBindPlayerData->nBetCoinThisRound)->getCString()) ;
+		doBetCoinAni();
 	}
-	m_pCoin->setString(String::createWithFormat("%I64d",m_pBindPlayerData->nTakeInMoney)->getCString()) ;
 }
 
 //void CTaxasPlayer::setPlayerData(stTaxasPeerBaseData* tPlayerData )
@@ -205,3 +210,100 @@ void CTaxasPlayer::setPos(Vec2& pt )
 {
 	m_pRoot->setPosition(pt);
 }
+
+void CTaxasPlayer::betBlind(uint32_t nValue )
+{
+	doBetCoinAni();
+}
+
+bool CTaxasPlayer::betCoinGoToMainPool(Vec2& ptMainPoolWorldPt, float fAni )
+{
+	if ( m_pBetCoin->getParent()->isVisible() )
+	{
+		CCLOG("do not bet , so no go pool ani");
+		m_pState->setVisible(false); 
+		refreshCoin();
+		return false;
+	}
+
+	if ( nullptr == m_pCoinGoToMainlPoolAni )
+	{
+		m_pCoinGoToMainlPoolAni = CChipGroup::CreateGroup();
+		m_pCoinGoToMainlPoolAni->SetFinishCallBack([=](CChipGroup*){ m_pState->setVisible(false); refreshCoin(); });
+		m_pCoinGoToMainlPoolAni->setPosition(Vec2::ZERO) ;
+		m_pBetCoin->addChild(m_pCoinGoToMainlPoolAni);
+	}
+	m_pCoinGoToMainlPoolAni->SetGroupCoin(8,false );
+	Vec2 pt = m_pCoinGoToMainlPoolAni->getParent()->convertToNodeSpace(ptMainPoolWorldPt);
+	m_pCoinGoToMainlPoolAni->SetDestPosition(pt);
+	m_pBetCoinAni->Start(CChipGroup::eChipMove_Group2None,fAni);
+	return true ;
+}
+
+void CTaxasPlayer::showFinalCard()
+{
+
+}
+
+void CTaxasPlayer::doBetCoinAni()
+{
+	if ( nullptr == m_pBetCoinAni )
+	{
+		m_pBetCoinAni = CChipGroup::CreateGroup();
+		m_pBetCoinAni->SetFinishCallBack(CC_CALLBACK_1(CTaxasPlayer::refreshCoin,this));
+		m_pBetCoinAni->setPosition(Vec2::ZERO) ;
+		m_pCoin->addChild(m_pBetCoinAni);
+	}
+	m_pBetCoinAni->SetGroupCoin(3,false );
+	Vec2 pt = m_pBetCoin->getPosition();
+	pt = m_pBetCoin->getParent()->convertToWorldSpace(pt);
+	pt = m_pBetCoinAni->getParent()->convertToNodeSpace(pt);
+	m_pBetCoinAni->SetDestPosition(pt);
+	m_pBetCoinAni->Start(CChipGroup::eChipMove_Group2None,0.1);
+}
+
+void CTaxasPlayer::refreshCoin(CChipGroup* pGrop)
+{
+	m_pBetCoin->getParent()->setVisible(m_pBindPlayerData->nBetCoinThisRound > 0);
+	if ( m_pBindPlayerData->nBetCoinThisRound > 0 )
+	{
+		m_pBetCoin->setString(String::createWithFormat("%I64d",m_pBindPlayerData->nBetCoinThisRound)->getCString()) ;
+	}
+	m_pCoin->setString(String::createWithFormat("%I64d",m_pBindPlayerData->nTakeInMoney)->getCString()) ;
+}
+
+void CTaxasPlayer::winCoinGoToPlayer( Vec2& ptWinPoolWorldPt, float fAni )
+{
+	CChipGroup* pTarget = nullptr ;
+	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM; ++nIdx )
+	{
+		if ( m_vWinCoinAni[nIdx] && m_vWinCoinAni[nIdx]->isRunningAni() == false )
+		{
+			pTarget = m_vWinCoinAni[nIdx];
+			break;
+		}
+
+		if ( m_vWinCoinAni[nIdx] == nullptr )
+		{
+			pTarget = CChipGroup::CreateGroup();
+			pTarget->SetFinishCallBack(CC_CALLBACK_1(CTaxasPlayer::refreshCoin,this));
+			pTarget->setPosition(Vec2::ZERO) ;
+			m_pCoin->addChild(pTarget);
+			m_vWinCoinAni[nIdx] = pTarget ;
+			pTarget->SetDestPosition(Vec2::ZERO);
+			break;
+		}
+	}
+
+	if ( pTarget == nullptr )
+	{
+		CCLOG("why so many win pool , do not have win ani");
+		refreshCoin();
+		return ;
+	}
+	pTarget->SetGroupCoin(3,false );
+	Vec2 pt = pTarget->getParent()->convertToNodeSpace(ptWinPoolWorldPt);
+	pTarget->SetOriginPosition(pt);
+	pTarget->Start(CChipGroup::eChipMove_Group2None,fAni);
+}
+

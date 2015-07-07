@@ -156,7 +156,7 @@ void CClientApp::update(float fDeta )
 {
 	if ( m_pNetwork )
 	{
-		m_pNetwork->ReciveMessage() ;
+		m_pNetwork->ReciveOneMessage();
 	}
 }
 
