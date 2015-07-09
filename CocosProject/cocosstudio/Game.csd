@@ -6,10 +6,10 @@
       <ObjectData Name="Scene" Tag="40" ctype="GameNodeObjectData">
         <Size X="640.0000" Y="1136.0000" />
         <Children>
-          <AbstractNodeData Name="tx_bg_1" ActionTag="-288805344" Tag="41" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BottomEdge" LeftMargin="-222.0391" RightMargin="-217.9609" TopMargin="-783.9999" BottomMargin="-0.0001" ctype="SpriteObjectData">
+          <AbstractNodeData Name="tx_bg_1" ActionTag="-288805344" Tag="41" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BottomEdge" LeftMargin="-222.0480" RightMargin="-217.9520" TopMargin="-783.9999" BottomMargin="-0.0001" ctype="SpriteObjectData">
             <Size X="1080.0000" Y="1920.0000" />
             <AnchorPoint ScaleX="0.5000" />
-            <Position X="317.9609" Y="-0.0001" />
+            <Position X="317.9520" Y="-0.0001" />
             <Scale ScaleX="0.5974" ScaleY="0.5908" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition X="0.4968" Y="0.0000" />
@@ -270,6 +270,17 @@
             <PrePosition X="0.5000" Y="0.1133" />
             <PreSize />
             <FileData Type="Normal" Path="Player.csd" Plist="" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="vicePool8" ActionTag="-738826018" Tag="624" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="302.0737" RightMargin="289.9263" TopMargin="143.7465" BottomMargin="968.2535" FontSize="24" LabelText="2000" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="TextObjectData">
+            <Size X="48.0000" Y="24.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="326.0737" Y="980.2535" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition X="0.5095" Y="0.8629" />
+            <PreSize />
+            <OutlineColor A="255" R="255" G="0" B="0" />
+            <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
         </Children>
       </ObjectData>

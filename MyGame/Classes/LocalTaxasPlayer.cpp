@@ -41,11 +41,12 @@ void CLocalTaxasPlayer::onClickBtn(cocos2d::Ref* pBtn)
 	m_pAction->play("showBtn",true);
 }
 
-void CLocalTaxasPlayer::onPrivateCard(uint8_t nIdx , uint16_t nCompsiteNum )
+void CLocalTaxasPlayer::onPrivateCard(uint8_t nIdx )
 {
 	// show real card
 	if ( nIdx < TAXAS_PEER_CARD )
 	{
+		uint8_t nCompsiteNum = getPlayerData().vHoldCard[nIdx];
 		m_pHoldCard[nIdx]->setVisible(true);
 		if (nCompsiteNum >= 53 )
 		{

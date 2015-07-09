@@ -147,7 +147,7 @@ struct stMsgRequestTaxasPlayerTakeInCoinRet
 	uint8_t nRet ; // 0 success , 1 not enough , 2 canot find player 
 	uint32_t nRoomID ;
 	uint8_t nSeatIdx ;
-	uint32_t nMoneyToTakeIn;  // 0 means money not enough ;
+	uint64_t nMoneyToTakeIn;  // 0 means money not enough ;
 	bool bIsDiamond ;
 };
 

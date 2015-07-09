@@ -21,14 +21,16 @@ public:
 	int8_t getLocalIdx();
 	void setServerIdx(int8_t nSvrIdx );
 	int8_t getServerIdx();
-	virtual void onPrivateCard(uint8_t nIdx , uint16_t nCompsiteNum );
-	void setClickPhotoCallBack(std::function<void(CTaxasPlayer*)>& lpFunc );
+	virtual void onPrivateCard(uint8_t nIdx );
+	void setClickPhotoCallBack(std::function<void(CTaxasPlayer*)> lpFunc );
 	Node* getRoot();
 	void setPos(Vec2& pt );
 	void betBlind(uint32_t nValue );
 	bool betCoinGoToMainPool(Vec2& ptMainPoolWorldPt, float fAni );
 	void showFinalCard();
 	void winCoinGoToPlayer( Vec2& ptWinPoolWorldPt, float fAni );
+	bool isHaveState(eRoomPeerState eS);
+	void distributeHoldCard(Vec2& ptWorldPt,uint8_t nIdx , float fAniTime, float fDelay );
 protected:
 	void doBetCoinAni();
 	void refreshCoin(CChipGroup* pGrop = nullptr );
@@ -37,6 +39,8 @@ protected:
 	stTaxasPeerBaseData* m_pBindPlayerData; // CTaxasPlayer will display and serve for m_pBindPlayerData all life , but will not change m_pBindPlayerData 
 	Label *m_pName ,*m_pState , *m_pTime, *m_pCoin,*m_pBetCoin;
 	Sprite* m_pHoldCard[TAXAS_PEER_CARD];
+	Vec2 m_vHoldCardPt[TAXAS_PEER_CARD];
+	float m_vHoldCardRot[TAXAS_PEER_CARD];
 	int8_t m_nTimeCountDown;
 	int8_t m_nLocalIdx ;  // this idx will change , depoend on local player sit ;becasuse local player idx always 8 ;
 	int8_t m_nSvrIdx ;  // this idx will not change ;

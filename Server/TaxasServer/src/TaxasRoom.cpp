@@ -59,6 +59,8 @@ bool CTaxasRoom::Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig )
 		pRoomConfig->nMaxSeat = MAX_PEERS_IN_TAXAS_ROOM ;
 	}
 
+	m_stRoomConfig = *pRoomConfig ;
+
 	SetTimerManager(CTaxasServerApp::SharedGameServerApp()->getTimerMgr()) ;
 	SetEnableUpdate(true) ;
 	GoToState(eRoomState_TP_WaitJoin) ;

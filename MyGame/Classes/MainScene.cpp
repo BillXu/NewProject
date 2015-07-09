@@ -1,6 +1,7 @@
 #include "MainScene.h"
 #include "ClientApp.h"
 #include "TaxasMessageDefine.h"
+#include "TaxasPokerScene.h"
 cocos2d::Scene* CMainScene::createScene()
 {
 	auto pScene = Scene::create();
@@ -50,6 +51,13 @@ bool CMainScene::onMsg(stMsg* pmsg )
 	else if ( MSG_TP_ROOM_BASE_INFO == pmsg->usMsgType ) 
 	{
 		CCLOG("recived room data");
+		CTaxasPokerScene* player = new CTaxasPokerScene ;
+		player->init();
+		auto scene = Scene::create();
+		scene->addChild(player);
+		player->onMsg(pmsg);
+		player->release();
+		Director::getInstance()->replaceScene(scene);
 		return true ;
 	}
 	return false ;

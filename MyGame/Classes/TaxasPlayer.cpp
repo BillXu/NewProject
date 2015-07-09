@@ -26,6 +26,12 @@ bool CTaxasPlayer::init(Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerD
 	m_nLocalIdx = nPosIdx;
 	m_nSvrIdx = nPosIdx;
 
+	for ( uint8_t nIdx = 0 ; nIdx < TAXAS_PEER_CARD ; ++nIdx )
+	{
+		m_vHoldCardRot[nIdx] = m_pHoldCard[nIdx]->getRotation();
+		m_vHoldCardPt[nIdx] = m_pHoldCard[nIdx]->getPosition();
+	}
+
 	Sprite* pbg = (Sprite*)pRoot->getChildByName("f_1");
 	auto listener = EventListenerTouchOneByOne::create();
 	listener->setSwallowTouches(true);
@@ -66,7 +72,7 @@ void CTaxasPlayer::refreshContent()
 	stTaxasPeerBaseData& tPlayerData = *m_pBindPlayerData;
 	bool bInGame = (tPlayerData.nStateFlag & eRoomPeer_StayThisRound) == eRoomPeer_StayThisRound;
 
-	m_pTime->getParent()->setVisible(false);
+	m_pTime->setVisible(false);
 	m_pName->setVisible(bHaveGuy);
 	m_pCoin->setVisible(bHaveGuy);
 	m_pHoldCard[0]->setVisible(bHaveGuy && bInGame);
@@ -184,12 +190,11 @@ int8_t CTaxasPlayer::getServerIdx()
 	return m_nSvrIdx ;
 }
 
-void CTaxasPlayer::onPrivateCard(uint8_t nIdx , uint16_t nCompsiteNum )
+void CTaxasPlayer::onPrivateCard(uint8_t nIdx)
 {
 	if (nIdx < TAXAS_PEER_CARD  )
 	{
-		m_pHoldCard[nIdx]->setVisible(nCompsiteNum != 0 );
-		m_pBindPlayerData->vHoldCard[nIdx] = nCompsiteNum ;
+		m_pHoldCard[nIdx]->setVisible( getPlayerData().vHoldCard[nIdx] != 0  );
 	}
 	else
 	{
@@ -197,7 +202,7 @@ void CTaxasPlayer::onPrivateCard(uint8_t nIdx , uint16_t nCompsiteNum )
 	}
 }
 
-void CTaxasPlayer::setClickPhotoCallBack(std::function<void(CTaxasPlayer*)>& lpFunc )
+void CTaxasPlayer::setClickPhotoCallBack(std::function<void(CTaxasPlayer*)> lpFunc )
 {
 	lpFuncClick = lpFunc ;
 }
@@ -305,5 +310,30 @@ void CTaxasPlayer::winCoinGoToPlayer( Vec2& ptWinPoolWorldPt, float fAni )
 	Vec2 pt = pTarget->getParent()->convertToNodeSpace(ptWinPoolWorldPt);
 	pTarget->SetOriginPosition(pt);
 	pTarget->Start(CChipGroup::eChipMove_Group2None,fAni);
+}
+
+bool CTaxasPlayer::isHaveState(eRoomPeerState eS)
+{
+	if ( isHavePlayer() == false )
+	{
+		return false ;
+	}
+	return ((getPlayerData().nStateFlag & eS) == eS );
+}
+
+void CTaxasPlayer::distributeHoldCard(Vec2& ptWorldPt, uint8_t nIdx , float fAniTime, float fDelay  )
+{
+	Sprite* ps = m_pHoldCard[nIdx] ;
+	Vec2 pt = ps->getParent()->convertToNodeSpace(ptWorldPt);
+	ps->setVisible(true);
+	ps->setPosition(pt);
+	ps->setRotation(0);
+	DelayTime* pDelay = DelayTime::create(fDelay);
+	MoveTo* ptTarget = MoveTo::create(fAniTime,m_vHoldCardPt[nIdx]);
+	RotateTo* pRot = RotateTo::create(fAniTime,m_vHoldCardRot[nIdx]) ;
+	Spawn* pa = Spawn::createWithTwoActions(ptTarget,pRot);
+	CallFunc* pfunc = CallFunc::create([=](){onPrivateCard(nIdx);});
+	Sequence* psq = Sequence::create(pDelay,pa,pfunc,nullptr);
+	ps->runAction(psq);
 }
 

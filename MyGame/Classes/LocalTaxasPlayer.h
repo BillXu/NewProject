@@ -10,7 +10,7 @@ public:
 	bool init(cocos2d::Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerData);
 	virtual void onWaitAction();
 	void onClickBtn(cocos2d::Ref* pBtn);
-	void onPrivateCard(uint8_t nIdx , uint16_t nCompsiteNum );
+	void onPrivateCard(uint8_t nIdx);
 	void bindPlayerData(stTaxasPeerBaseData* tPlayerData );
 protected:
 	ui::Button *m_pbtnFollow,*m_pbtnCheck,*m_pbtnAdd,*m_pbtnGiveUp,*m_pbtnAllIn;

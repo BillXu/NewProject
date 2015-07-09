@@ -3,6 +3,7 @@
 #include "TaxasPokerData.h"
 class CTaxasPlayer;
 class CLocalTaxasPlayer;
+class CTaxasPokerSceneStateBase ;
 class CTaxasPokerScene
 	:public IBaseScene
 {
@@ -27,6 +28,7 @@ public:
 	void showAllPlayersFinalCard();
 	void winCoinGoToWinners(uint8_t nPoolIdx,uint64_t nCoinPerWinner,uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM],uint8_t nWinnerCnt);
 	void goToState(eRoomState eState,stMsg* pmsg = nullptr );
+	void onClickPlayerPhoto(CTaxasPlayer*pPlayer);
 protected:
 	void doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetIdx );
 protected:
@@ -39,4 +41,7 @@ protected:
 	CLocalTaxasPlayer* m_pLocalPlayer ;
 	stTaxasPokerData m_tGameData;
 	Vec2 m_ptMailPoolWorldPt ;
+
+	CTaxasPokerSceneStateBase* m_vAllState[eRoomState_TP_MAX];
+	eRoomState m_eCurState;
 };

@@ -23,10 +23,10 @@
     <Item Key="TabsParamsKey">
       <Value ctype="TabsInfo">
         <OpenedDocuments>
-          <FilePathData Path="Game.csd" />
           <FilePathData Path="PlayerSelf.csd" />
+          <FilePathData Path="Game.csd" />
         </OpenedDocuments>
-        <ActiveDocument Path="Game.csd" />
+        <ActiveDocument Path="PlayerSelf.csd" />
       </Value>
     </Item>
     <Item Key="CocosRecentOperation">
