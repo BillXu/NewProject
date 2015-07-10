@@ -2,6 +2,7 @@
 #include "cocos2d.h"
 #include "CommonDefine.h"
 #include "CommonData.h"
+#include "ui/CocosGUI.h"
 USING_NS_CC ;
 class CChipGroup;
 class CTaxasPlayer
@@ -12,7 +13,7 @@ public:
 	virtual bool init(Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerData);
 	void doLayoutforPos();
 	void refreshContent();
-	void onAct(uint16_t nAct , uint32_t nValue );
+	virtual void onAct(uint16_t nAct , uint32_t nValue );
 	//void bindPlayerData(stTaxasPeerBaseData* tPlayerData );
 	virtual void onWaitAction();
 	bool isHavePlayer(){ return m_pBindPlayerData->nUserUID != 0 ;}
@@ -37,7 +38,7 @@ protected:
 protected:
 	Node* m_pRoot ;
 	stTaxasPeerBaseData* m_pBindPlayerData; // CTaxasPlayer will display and serve for m_pBindPlayerData all life , but will not change m_pBindPlayerData 
-	Label *m_pName ,*m_pState , *m_pTime, *m_pCoin,*m_pBetCoin;
+	ui::Text *m_pName ,*m_pState , *m_pTime, *m_pCoin,*m_pBetCoin;
 	Sprite* m_pHoldCard[TAXAS_PEER_CARD];
 	Vec2 m_vHoldCardPt[TAXAS_PEER_CARD];
 	float m_vHoldCardRot[TAXAS_PEER_CARD];

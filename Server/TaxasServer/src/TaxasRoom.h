@@ -87,6 +87,7 @@ public:
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
 	void StartGame();
+	void ResetRoomData();
 	void DistributePrivateCard();
 	void PreparePlayersForThisRoundBet();
 	uint8_t InformPlayerAct();
@@ -97,6 +98,7 @@ public:
 	uint8_t CaculateGameResult(); //return pool cnt ;
 	uint64_t GetAllBetCoinThisRound();
 	bool IsPublicDistributeFinish();
+	bool isPlayerAlreadySitDown(uint32_t nSessionID );
 protected:
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 	stVicePool& GetFirstCanUseVicePool();

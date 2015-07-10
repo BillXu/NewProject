@@ -24,6 +24,7 @@ class CTaxasStateWaitJoin
 	:public CTaxasBaseRoomState
 {
 public:
+	virtual void EnterState(CTaxasRoom* pRoom );
 	void Update(float fDelte );
 };
 

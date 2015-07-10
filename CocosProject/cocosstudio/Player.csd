@@ -30,21 +30,19 @@
           </AbstractNodeData>
           <AbstractNodeData Name="holdCard0" ActionTag="946856764" Tag="38" IconVisible="False" LeftMargin="-22.1384" RightMargin="-11.8616" TopMargin="8.1895" BottomMargin="-55.1895" ctype="SpriteObjectData">
             <Size X="34.0000" Y="47.0000" />
-            <Children>
-              <AbstractNodeData Name="holdCard1" ActionTag="-2070923109" Tag="39" IconVisible="False" LeftMargin="18.6003" RightMargin="-18.6003" TopMargin="-0.0642" BottomMargin="0.0642" ctype="SpriteObjectData">
-                <Size X="34.0000" Y="47.0000" />
-                <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-                <Position X="35.6003" Y="23.5642" />
-                <Scale ScaleX="1.0000" ScaleY="1.0000" />
-                <CColor A="255" R="255" G="255" B="255" />
-                <PrePosition X="1.0471" Y="0.5014" />
-                <PreSize />
-                <FileData Type="PlistSubImage" Path="card-back-small.png" Plist="image/cards.plist" />
-                <BlendFunc Src="1" Dst="771" />
-              </AbstractNodeData>
-            </Children>
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="-5.1384" Y="-31.6895" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-back-small.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="holdCard1" ActionTag="-2070923109" Tag="39" IconVisible="False" LeftMargin="-3.0265" RightMargin="-30.9735" TopMargin="8.9359" BottomMargin="-55.9359" ctype="SpriteObjectData">
+            <Size X="34.0000" Y="47.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="13.9735" Y="-32.4359" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition />

@@ -16,13 +16,13 @@ bool CTaxasPlayer::init(Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerD
 	m_pRoot = pRoot ;
 	m_pCoinGoToMainlPoolAni = m_pBetCoinAni = nullptr ;
 	memset(m_vWinCoinAni,0,sizeof(m_vWinCoinAni));
-	m_pName = (Label*)pRoot->getChildByName("name");
-	m_pCoin = (Label*)pRoot->getChildByName("coin");
+	m_pName = (ui::Text*)pRoot->getChildByName("name");
+	m_pCoin = (ui::Text*)pRoot->getChildByName("coin");
 	m_pHoldCard[0] = (Sprite*)pRoot->getChildByName("holdCard0");
-	m_pHoldCard[1] = (Sprite*)m_pHoldCard[0]->getChildByName("holdCard1");
-	m_pTime = (Label*)pRoot->getChildByName("time");
-	m_pState = (Label*)(pRoot->getChildByName("stateBg")->getChildByName("state"));
-	m_pBetCoin = (Label*)(pRoot->getChildByName("betCoinBg")->getChildByName("betCoin"));
+	m_pHoldCard[1] = (Sprite*)pRoot->getChildByName("holdCard1");
+	m_pTime = (ui::Text*)pRoot->getChildByName("time");
+	m_pState = (ui::Text*)(pRoot->getChildByName("stateBg")->getChildByName("state"));
+	m_pBetCoin = (ui::Text*)(pRoot->getChildByName("betCoinBg")->getChildByName("betCoin"));
 	m_nLocalIdx = nPosIdx;
 	m_nSvrIdx = nPosIdx;
 
@@ -37,6 +37,8 @@ bool CTaxasPlayer::init(Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerD
 	listener->setSwallowTouches(true);
 	listener->onTouchBegan = [pbg](Touch*ptouch, Event*)->bool
 	{
+		if ( pbg->isVisible() == false || pbg->getParent()->isVisible() == false )
+			return false ;
 		Vec2 pt = ptouch->getLocation();
 		Rect box = pbg->getBoundingBox();
 		pt = pbg->getParent()->convertToNodeSpace(pt);
@@ -76,6 +78,7 @@ void CTaxasPlayer::refreshContent()
 	m_pName->setVisible(bHaveGuy);
 	m_pCoin->setVisible(bHaveGuy);
 	m_pHoldCard[0]->setVisible(bHaveGuy && bInGame);
+	m_pHoldCard[1]->setVisible(bHaveGuy && bInGame);
 	m_pBetCoin->getParent()->setVisible(bHaveGuy && bInGame);
 	m_pState->getParent()->setVisible(bHaveGuy && bInGame);
 	
@@ -241,7 +244,7 @@ bool CTaxasPlayer::betCoinGoToMainPool(Vec2& ptMainPoolWorldPt, float fAni )
 	m_pCoinGoToMainlPoolAni->SetGroupCoin(8,false );
 	Vec2 pt = m_pCoinGoToMainlPoolAni->getParent()->convertToNodeSpace(ptMainPoolWorldPt);
 	m_pCoinGoToMainlPoolAni->SetDestPosition(pt);
-	m_pBetCoinAni->Start(CChipGroup::eChipMove_Group2None,fAni);
+	m_pCoinGoToMainlPoolAni->Start(CChipGroup::eChipMove_Group2None,fAni);
 	return true ;
 }
 
@@ -334,6 +337,7 @@ void CTaxasPlayer::distributeHoldCard(Vec2& ptWorldPt, uint8_t nIdx , float fAni
 	Spawn* pa = Spawn::createWithTwoActions(ptTarget,pRot);
 	CallFunc* pfunc = CallFunc::create([=](){onPrivateCard(nIdx);});
 	Sequence* psq = Sequence::create(pDelay,pa,pfunc,nullptr);
+	ps->stopAllActions();
 	ps->runAction(psq);
 }
 

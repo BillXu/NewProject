@@ -206,11 +206,11 @@ SpriteFrame* CClientApp::getCardSpriteByCompsiteNum(uint16_t nNum )
 
 	if ( tc.GetCardFaceNum(true) <= 9 )
 	{
-		spriteValue = String::createWithFormat("%d0%d.png",nType,tc.GetCardFaceNum(true))->getCString();
+		spriteValue = String::createWithFormat("card-%d0%d.png",nType,tc.GetCardFaceNum(true))->getCString();
 	}
 	else
 	{
-		spriteValue = String::createWithFormat("%d0%c.png",nType,'a'+ tc.GetCardFaceNum(true)%10)->getCString();
+		spriteValue = String::createWithFormat("card-%d0%c.png",nType,'a'+ tc.GetCardFaceNum(true)%10)->getCString();
 	}
 
 	return SpriteFrameCache::getInstance()->getSpriteFrameByName(spriteValue.c_str());

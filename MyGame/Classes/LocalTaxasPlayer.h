@@ -9,10 +9,13 @@ public:
 	static CLocalTaxasPlayer* create(cocos2d::Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerData );
 	bool init(cocos2d::Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerData);
 	virtual void onWaitAction();
+	virtual void onAct(uint16_t nAct , uint32_t nValue );
 	void onClickBtn(cocos2d::Ref* pBtn);
 	void onPrivateCard(uint8_t nIdx);
 	void bindPlayerData(stTaxasPeerBaseData* tPlayerData );
+	void setActCallBack( std::function<void(CTaxasPlayer* pPlayer ,uint8_t nActValue, uint32_t nValue)> func){ lpfuncLocalAct = func; }
 protected:
-	ui::Button *m_pbtnFollow,*m_pbtnCheck,*m_pbtnAdd,*m_pbtnGiveUp,*m_pbtnAllIn;
+	ui::Button *m_vbtnAct[eRoomPeerAction_Max];
 	cocostudio::timeline::ActionTimeline *m_pAction;
+	std::function<void(CTaxasPlayer* pPlayer ,uint8_t nActValue, uint32_t nValue)> lpfuncLocalAct ;
 };

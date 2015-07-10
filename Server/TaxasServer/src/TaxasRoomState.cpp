@@ -32,6 +32,14 @@ bool CTaxasBaseRoomState::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 				return true ;
 			}
 
+			if ( m_pRoom->isPlayerAlreadySitDown(nPlayerSessionID) )
+			{
+				msgBack.nRet = 4;
+				m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("you are already sit down session id = %d",nPlayerSessionID ) ;
+				return true ;
+			}
+
 			if ( pRet->nSeatIdx >= m_pRoom->m_stRoomConfig.nMaxSeat || m_pRoom->m_vSitDownPlayers[pRet->nSeatIdx].IsInvalid() == false )
 			{
 				msgBack.nRet = 1;
@@ -140,6 +148,12 @@ void CTaxasBaseRoomState::Update(float fDelte )
 }
 
 // wait join state 
+void CTaxasStateWaitJoin::EnterState(CTaxasRoom* pRoom )
+{
+	CTaxasBaseRoomState::EnterState(pRoom);
+	m_pRoom->ResetRoomData() ;
+}
+
 void CTaxasStateWaitJoin::Update(float fDelte )
 {
 	if ( m_pRoom->GetPlayerCntWithState(eRoomPeer_SitDown) >= 2 )
@@ -239,6 +253,7 @@ void CTaxasStatePlayerBet::OnStateTimeOut()
 	if ( m_pRoom->IsThisRoundBetOK() == false )
 	{
 		m_pRoom->InformPlayerAct();
+		m_fDuringTime = 15 ;
 	}
 }
 
@@ -273,6 +288,7 @@ bool CTaxasStatePlayerBet::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 				if ( nSeatIdx == m_pRoom->GetCurWaitActPlayerIdx() && m_pRoom->IsThisRoundBetOK() == false )
 				{
 					m_pRoom->InformPlayerAct();
+					m_fDuringTime = 15 ;
 				}
 			}
 			else

@@ -136,6 +136,7 @@ bool CTaxasPokerSceneStateBase::onMsg(stMsg* pmsg )
 			CTaxasPlayer* pPosPlayer = m_pScene->getTaxasPlayerBySvrIdx(ttPlayerData->nSeatIdx);
 			if ( bLocalUser )
 			{
+				CCLOG("my svr idx = %d",ttPlayerData->nSeatIdx);
 				// copy pPosPlayer's info to m_LocalPlayer, because m_LocalPlayer will logic work on pPosPlayer ;
 				m_pScene->getLocalPlayer()->getRoot()->setVisible(true);
 				m_pScene->getLocalPlayer()->setServerIdx(ttPlayerData->nSeatIdx) ;
@@ -257,6 +258,7 @@ bool CTaxasPokerBettingState::onMsg(stMsg* pmsg )
 				CCLOG("invalid act player idx = %d\n",pRet->nActPlayerIdx);
 				return true ;
 			}
+			CCLOG("wait act idx = %d ",pRet->nActPlayerIdx);
 			m_pScene->getTaxasPlayerBySvrIdx(pRet->nActPlayerIdx)->onWaitAction();
 		}
 		break;

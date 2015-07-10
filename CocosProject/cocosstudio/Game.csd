@@ -251,16 +251,6 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="self" ActionTag="-1026486405" Tag="289" IconVisible="True" HorizontalEdge="BothEdge" VerticalEdge="BottomEdge" LeftMargin="320.0000" RightMargin="320.0000" TopMargin="1007.3457" BottomMargin="128.6543" InnerActionSpeed="1.0000" ctype="ProjectNodeObjectData">
-            <Size />
-            <AnchorPoint />
-            <Position X="320.0000" Y="128.6543" />
-            <Scale ScaleX="1.0000" ScaleY="1.0000" />
-            <CColor A="255" R="255" G="255" B="255" />
-            <PrePosition X="0.5000" Y="0.1133" />
-            <PreSize />
-            <FileData Type="Normal" Path="PlayerSelf.csd" Plist="" />
-          </AbstractNodeData>
           <AbstractNodeData Name="player8" ActionTag="-881892530" Tag="636" IconVisible="True" HorizontalEdge="BothEdge" VerticalEdge="BottomEdge" LeftMargin="320.0000" RightMargin="320.0000" TopMargin="1007.3000" BottomMargin="128.7000" InnerActionSpeed="1.0000" ctype="ProjectNodeObjectData">
             <Size />
             <AnchorPoint />
@@ -271,10 +261,20 @@
             <PreSize />
             <FileData Type="Normal" Path="Player.csd" Plist="" />
           </AbstractNodeData>
-          <AbstractNodeData Name="vicePool8" ActionTag="-738826018" Tag="624" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="302.0737" RightMargin="289.9263" TopMargin="143.7465" BottomMargin="968.2535" FontSize="24" LabelText="2000" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="TextObjectData">
+          <AbstractNodeData Name="self" ActionTag="-1026486405" Tag="289" IconVisible="True" HorizontalEdge="BothEdge" VerticalEdge="BottomEdge" LeftMargin="320.0000" RightMargin="320.0000" TopMargin="1007.3457" BottomMargin="128.6543" InnerActionSpeed="1.0000" ctype="ProjectNodeObjectData">
+            <Size />
+            <AnchorPoint />
+            <Position X="320.0000" Y="128.6543" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition X="0.5000" Y="0.1133" />
+            <PreSize />
+            <FileData Type="Normal" Path="PlayerSelf.csd" Plist="" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="vicePool8" ActionTag="-738826018" Tag="624" IconVisible="False" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="302.0800" RightMargin="289.9200" TopMargin="143.7456" BottomMargin="968.2544" FontSize="24" LabelText="2000" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="TextObjectData">
             <Size X="48.0000" Y="24.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-            <Position X="326.0737" Y="980.2535" />
+            <Position X="326.0800" Y="980.2544" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition X="0.5095" Y="0.8629" />

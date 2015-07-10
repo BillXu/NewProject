@@ -46,6 +46,27 @@ CTaxasPokerPeerCard::eCardType CTaxasPokerPeerCard::GetCardType()
 	return m_eType ; 
 }
 
+void CTaxasPokerPeerCard::adjustPosForSpecailShunZi()
+{
+	if ( m_vFinalCard.size() != 5 )
+	{
+		return ;
+	}
+
+	if ( GetCardType() == eCard_ShunZi || eCard_TongHuaShun == GetCardType() )
+	{
+		sort(m_vFinalCard.begin(),m_vFinalCard.end(),CompFunction );
+		if (m_vFinalCard[0]->GetCardFaceNum(false) == 2 && m_vFinalCard[4]->GetCardFaceNum(false) == 1 )
+		{
+			CCard* pCard = m_vFinalCard[4];
+			VEC_CARD::iterator iter = m_vFinalCard.end();
+			--iter ;
+			m_vFinalCard.erase(iter);
+			m_vFinalCard.insert(m_vFinalCard.begin(),pCard);
+		}
+	}
+}
+
 char CTaxasPokerPeerCard::PK(CTaxasPokerPeerCard* pPeerCard )
 {
 	if ( nCardCountWhenCaculate < m_vAllCard.size() )
@@ -104,18 +125,15 @@ char CTaxasPokerPeerCard::PK(CTaxasPokerPeerCard* pPeerCard )
 		break;
 	}
 
+	// sort common final card 
+	sort(m_vFinalCard.begin(),m_vFinalCard.end(),CompFunction );
+	sort(pPeerCard->m_vFinalCard.begin(),pPeerCard->m_vFinalCard.end(),CompFunction );
+	adjustPosForSpecailShunZi();
+	pPeerCard->adjustPosForSpecailShunZi();
 	for ( int i = m_vFinalCard.size() -1  ; i >= 0 ; --i )
 	{
-		unsigned char nNumSelf = m_vFinalCard[i]->GetCardFaceNum() ;
-		if ( nNumSelf == 1 )
-		{
-			nNumSelf = 14 ;
-		}
-		unsigned char nNumOther = pPeerCard->m_vFinalCard[i]->GetCardFaceNum() ;
-		if ( nNumOther == 1 )
-		{
-			nNumOther = 14 ;
-		}
+		unsigned char nNumSelf = m_vFinalCard[i]->GetCardFaceNum(true) ;
+		unsigned char nNumOther = pPeerCard->m_vFinalCard[i]->GetCardFaceNum(true) ;
 
 		if ( nNumSelf > nNumOther )
 		{
@@ -143,23 +161,23 @@ void CTaxasPokerPeerCard::Reset()
 
 void CTaxasPokerPeerCard::LogInfo()
 {
-	CLogMgr::SharedLogMgr()->PrintLog("card Type = %s",m_strCardName.c_str() ) ;
-	CLogMgr::SharedLogMgr()->PrintLog("All card is :") ;
+	CLogMgr::SharedLogMgr()->SystemLog("card Type = %s",m_strCardName.c_str() ) ;
+	CLogMgr::SharedLogMgr()->SystemLog("All card is :") ;
 
 	
-	for ( unsigned int i= 0 ; i < m_vAllCard.size() ; ++i )
+	for ( unsigned int i= 0 ; i < m_vAllCard.size() ; ++i )	
 	{
 		m_vAllCard[i]->LogCardInfo();
 	}
 
-	CLogMgr::SharedLogMgr()->PrintLog("Final card is :") ;
+	CLogMgr::SharedLogMgr()->SystemLog("Final card is :") ;
 	for ( unsigned int i= 0 ; i < m_vFinalCard.size() ; ++i )
 	{
 		m_vFinalCard[i]->LogCardInfo();
 	}
 }
 
-void CTaxasPokerPeerCard::GetFinalCard( unsigned char* vMaxCard)
+void CTaxasPokerPeerCard::GetFinalCard( unsigned char vMaxCard[5])
 {
     if ( nCardCountWhenCaculate < m_vAllCard.size() )
 	{
@@ -177,6 +195,14 @@ void CTaxasPokerPeerCard::GetFinalCard( unsigned char* vMaxCard)
 			vMaxCard[i] = m_vFinalCard[i]->GetCardCompositeNum();
 		}
 	}
+}
+
+void CTaxasPokerPeerCard::GetHoldCard(unsigned char vHoldeCard[2] )
+{
+	if ( m_vDefaul.size() != 2 )
+		return ;
+	vHoldeCard[0] = m_vDefaul[0]->GetCardCompositeNum();
+	vHoldeCard[1] = m_vDefaul[1]->GetCardCompositeNum();
 }
 
 unsigned char CTaxasPokerPeerCard::GetCardTypeForRobot()
@@ -311,7 +337,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 				m_vFinalCard.clear();
 				m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
 #if (!defined(SERVER)) && (!defined(ROBOT))
-				m_strCardName = "同花顺";
+				m_strCardName = "tong hua shun";
 #endif	
 				return ;
 			}
@@ -327,35 +353,6 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 #endif	
 				return ;
 			}
-//			unsigned char nShunCount = 0 ;
-//			for ( int i = vC.size() -1  ; i > 0 ; --i )
-//			{
-//				if ( vC[i]->GetCardFaceNum(true) == vC[i-1]->GetCardFaceNum(true) + 1 )
-//				{
-//					++nShunCount ;
-//					if ( nShunCount == 4 )
-//					{
-//						m_eType =  eCard_TongHuaShun ;
-//#if (!defined(GAME_SERVER)) && (!defined(ROBOT))
-//						m_strCardName = "同花顺";
-//#endif	
-//						m_vFinalCard.clear() ;
-//						for ( size_t j = i - 1 ;j < vC.size() ; ++j )
-//						{
-//							m_vFinalCard.push_back(vC[j]) ;
-//							if ( m_vFinalCard.size() == 5 )
-//							{
-//								break;
-//							}
-//						}
-//						return ;
-//					}
-//				}
-//				else if ( vC[i]->GetCardFaceNum(true) > vC[i-1]->GetCardFaceNum(true) + 1 )
-//				{
-//					nShunCount = 0 ;
-//				}
-//			}
 			return ;
 		}
 	}
@@ -383,49 +380,11 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		m_strCardName = "顺子";
 		return ;
 	}
-	// find shun zi ;
-	//unsigned char nShunCount = 0 ;
-	//for ( int i = m_vAllCard.size() -1  ; i > 0 ; --i )
-	//{
-	//	if ( m_vAllCard[i]->GetCardFaceNum(true) == m_vAllCard[i-1]->GetCardFaceNum(true) + 1 )
-	//	{
-	//		++nShunCount ;
-	//		if ( nShunCount == 4 )
-	//		{
-	//			m_eType =  eCard_ShunZi ;
-	//			m_strCardName = "顺子";
-	//			m_vFinalCard.clear() ;
-	//			for ( size_t j = i - 1 ;j < m_vAllCard.size() ; ++j )
-	//			{
-	//				if ( (j+1) < m_vAllCard.size() && m_vAllCard[j]->GetCardFaceNum(true) == m_vAllCard[j+1]->GetCardFaceNum(true) )
-	//				{
-	//					// avoid pairs ;
-	//					continue;
-	//				}
 
-	//				m_vFinalCard.push_back(m_vAllCard[j]) ;
-	//				if ( m_vFinalCard.size() == 5 )
-	//				{
-	//					return;
-	//				}
-	//			}
-	//		}
-	//	}
-	//	else if ( m_vAllCard[i]->GetCardFaceNum(true) == m_vAllCard[i-1]->GetCardFaceNum(true) )  // may be pair ;
-	//	{
-	//		// do nothing 
-	//	}
-	//	else
-	//	{
-	//		nShunCount = 0 ;
-	//	}
-	//}
-
-	// process some duizi ;
 	VEC_CARD vPairs[3] ;
 	VEC_CARD vAllCardHelper;
 	int nPairIdx = 0 ;
-	CCard* pCardIndicator = NULL ;
+//	CCard* pCardIndicator = NULL ;
 	vAllCardHelper.assign(m_vAllCard.begin(),m_vAllCard.end()) ;
 	for ( int i = vAllCardHelper.size() -1  ; i > 0 ; --i )
 	{
@@ -604,8 +563,7 @@ void CTaxasPokerPeerCard::ClearVecCard(VEC_CARD& vCards )
 
 void CTaxasPokerPeerCard::CheckShunZi(VEC_CARD& AllCard , bool bSpecailA, VEC_CARD& vResultChardOut )
 {
-	CCard vCard ;
-	vCard.RsetCardByCompositeNum(AllCard[AllCard.size()-1]->GetCardCompositeNum()) ;
+	CCard* vCard = AllCard[AllCard.size()-1] ;
 	if ( bSpecailA == false ) // only for check A 2 3 4 5 
 	{
 		if (  AllCard[AllCard.size()-1]->GetCardFaceNum() != 1 || AllCard[0]->GetCardFaceNum() != 2 )
@@ -614,11 +572,10 @@ void CTaxasPokerPeerCard::CheckShunZi(VEC_CARD& AllCard , bool bSpecailA, VEC_CA
 			return ;
 		}
 
-		AllCard.insert(AllCard.begin(),&vCard) ;
-
 		VEC_CARD::iterator iter = AllCard.end();
 		--iter ;
 		AllCard.erase(iter) ;
+		AllCard.insert(AllCard.begin(),vCard) ;
 	}
 
 	vResultChardOut.clear();

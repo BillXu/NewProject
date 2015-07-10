@@ -24,7 +24,7 @@ bool CTaxasPokerScene::init()
 	pRoot->setContentSize(Director::getInstance()->getWinSize()) ;
 	ui::Helper::doLayout(pRoot);
 
-	m_pMainPool = (Label*)pRoot->getChildByName("mainPool");
+	m_pMainPool = (ui::Text*)pRoot->getChildByName("mainPool");
 
 	for ( uint8_t nIdx = 0 ; nIdx < TAXAS_PUBLIC_CARD ; ++nIdx )
 	{
@@ -33,7 +33,7 @@ bool CTaxasPokerScene::init()
 
 	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
 	{
-		m_vVicePool[nIdx] = (Label*)pRoot->getChildByName(String::createWithFormat("vicePool%d",nIdx)->getCString());
+		m_vVicePool[nIdx] = (ui::Text*)pRoot->getChildByName(String::createWithFormat("vicePool%d",nIdx)->getCString());
 	}
 
 	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
@@ -47,6 +47,7 @@ bool CTaxasPokerScene::init()
 
 	Node* pLayerNode = (Sprite*)pRoot->getChildByName("self");
 	m_pLocalPlayer = CLocalTaxasPlayer::create(pLayerNode,8,m_tGameData.getTaxasPlayerData(0));
+	m_pLocalPlayer->setClickPhotoCallBack(CC_CALLBACK_1(CTaxasPokerScene::onClickPlayerPhoto,this));
 	addChild(m_pLocalPlayer); // just for : when scene delte, the the object can be delete ; addchild here not for display or rending .
 	refreshContent();
 	
@@ -100,7 +101,7 @@ bool CTaxasPokerScene::onMsg(stMsg* pmsg )
 		}
 		break;
 	default:
-		return false;
+		break;
 	}
 
 	if ( m_vAllState[m_eCurState] )
@@ -193,6 +194,7 @@ CTaxasPlayer* CTaxasPokerScene::getTaxasPlayerBySvrIdx(uint8_t nSvrIdx )
 
 	if ( nSvrIdx == getLocalPlayer()->getServerIdx() && getLocalPlayer()->getRoot()->isVisible() )
 	{
+		CCLOG("return me");
 		return getLocalPlayer();
 	}
 
@@ -213,9 +215,9 @@ void CTaxasPokerScene::doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetI
 		return ;
 	}
 
-	float fMoveTime = 0.01 ;
+	float fMoveTime = 0.05 ;
 	uint8_t nCurIdx = pPlayer->getLocalIdx();
-	uint8_t nTargetIdx = nCurIdx + nOffsetIdx ;
+	uint8_t nTargetIdx = nCurIdx + nOffsetIdx ;  
 
 	// if not update , juset updat local idx, infact this will be alwasy true , you shoud not update local index outside the function ;
 	if ( pPlayer->getLocalIdx() != nTargetIdx%MAX_PEERS_IN_TAXAS_ROOM )
@@ -227,13 +229,15 @@ void CTaxasPokerScene::doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetI
 		// infact this will not invoke , because you should update player local index out this function 
 		// here will juset do a check and try to fix ;
 		nCurIdx = (nCurIdx + MAX_PEERS_IN_TAXAS_ROOM - nOffsetIdx  ) % MAX_PEERS_IN_TAXAS_ROOM ;
+		nTargetIdx = nCurIdx + nOffsetIdx ;
 		pPlayer->setPos(m_vPosOfTaxasPlayers[nCurIdx]) ;
 	}
 
 	Vector<FiniteTimeAction*> vAllMove ;
-	for ( uint8_t nMoveIdx = nCurIdx + 1 ; nMoveIdx <= nTargetIdx ; ++nTargetIdx )
+	for ( uint8_t nMoveIdx = nCurIdx + 1 ; nMoveIdx <= nTargetIdx ; ++nMoveIdx )
 	{
-		MoveTo* pto = MoveTo::create(fMoveTime,m_vPosOfTaxasPlayers[nMoveIdx%MAX_PEERS_IN_TAXAS_ROOM] ) ;
+		uint8_t nRIdx = nMoveIdx%MAX_PEERS_IN_TAXAS_ROOM;
+		MoveTo* pto = MoveTo::create(fMoveTime,m_vPosOfTaxasPlayers[nRIdx] ) ;
 		vAllMove.pushBack(pto);
 	}
 
@@ -242,7 +246,7 @@ void CTaxasPokerScene::doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetI
 		pPlayer->getRoot()->runAction(vAllMove.at(0)) ;
 	}
 	else
-	{
+	{ 
 		Sequence* pseq = Sequence::create(vAllMove) ;
 		pPlayer->getRoot()->runAction(pseq) ;
 	}
@@ -454,6 +458,7 @@ void CTaxasPokerScene::goToState(eRoomState eState,stMsg* pmsg )
 			m_vAllState[m_eCurState]->init(this);
 			addChild(m_vAllState[m_eCurState]);
 			m_vAllState[m_eCurState]->release();
+			m_pLocalPlayer->setActCallBack(CC_CALLBACK_3(CTaxasPokerBettingState::onLocalPlayerActCallBack,(CTaxasPokerBettingState*)m_vAllState[m_eCurState]));
 		}
 		break;
 	case eRoomState_TP_OneRoundBetEndResult:
@@ -499,6 +504,9 @@ void CTaxasPokerScene::onClickPlayerPhoto(CTaxasPlayer*pPlayer)
 	if ( pPlayer->isHavePlayer() )
 	{
 		CCLOG("request player detail uid = %d",pPlayer->getPlayerData().nUserUID);
+		stMsgTaxasPlayerStandUp msg ;
+		msg.nRoomID = getPokerData()->nRoomID ;
+		sendMsg(&msg,sizeof(msg));
 	}
 	else
 	{

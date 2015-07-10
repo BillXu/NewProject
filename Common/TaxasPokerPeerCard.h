@@ -31,8 +31,10 @@ public:
 	unsigned char GetPrivateCard(unsigned char nIdx){  if (m_vDefaul.size() > nIdx ) return m_vDefaul[nIdx]->GetCardCompositeNum(); return 0 ;}
 	void Reset();
 	void LogInfo();
-	void GetFinalCard( unsigned char* vMaxCard);
+	void GetFinalCard( unsigned char vMaxCard[5]);
+	void GetHoldCard(unsigned char vHoldeCard[2] );
 	unsigned char GetCardTypeForRobot();
+	void adjustPosForSpecailShunZi();
 protected:
 	void CaculateFinalCard();
 	void ClearVecCard(VEC_CARD& vCards );

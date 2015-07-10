@@ -235,11 +235,11 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			}
 			else if ( 1 == pRet->nCardSeri )
 			{
-				 vPublicCardNums[3] = pRet->vCard[3]; 
+				 vPublicCardNums[3] = pRet->vCard[0]; 
 			}
 			else if ( 2 == pRet->nCardSeri )
 			{
-				vPublicCardNums[4] = pRet->vCard[4]; 
+				vPublicCardNums[4] = pRet->vCard[0]; 
 			}
 		}
 		break;

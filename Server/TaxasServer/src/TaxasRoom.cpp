@@ -51,7 +51,7 @@ bool CTaxasRoom::Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig )
 		m_vAllVicePools[nIdx].Reset();
 	}
 	m_vAllPeers.clear();
-	m_nLittleBlind = pRoomConfig->nBigBlind * 0.2 ;
+	m_nLittleBlind = pRoomConfig->nBigBlind * 0.5 ;
 	m_tPoker.InitTaxasPoker();
 	if ( pRoomConfig->nMaxSeat > MAX_PEERS_IN_TAXAS_ROOM )
 	{
@@ -436,6 +436,7 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 	msgOtherAct.nPlayerIdx = nSeatIdx ;
 	msgOtherAct.nValue = nValue ;
 	SendRoomMsg(&msgOtherAct,sizeof(msgOtherAct)) ;
+	CLogMgr::SharedLogMgr()->PrintLog("player do act") ;
 	return 0 ;
 }
 // logic function 
@@ -504,6 +505,46 @@ void CTaxasRoom::StartGame()
 	msgStart.nBigBlindIdx = m_nBigBlindIdx ;
 	msgStart.nLittleBlindIdx = m_nLittleBlindIdx ;
 	SendRoomMsg(&msgStart,sizeof(msgStart));
+}
+
+void CTaxasRoom::ResetRoomData()
+{
+	// parepare all players ;
+	for ( uint8_t nIdx = 0 ; nIdx < m_stRoomConfig.nMaxSeat ; ++nIdx)
+	{
+		if ( m_vSitDownPlayers[nIdx].IsInvalid() )
+		{
+			continue; 
+		}
+
+		stTaxasPeerData& pData = m_vSitDownPlayers[nIdx] ;
+		pData.nAllBetCoin = 0 ;
+		pData.nBetCoinThisRound = 0 ;
+		pData.nWinCoinThisGame = 0 ;
+		pData.nStateFlag = eRoomPeer_WaitNextGame ;
+		pData.eCurAct = eRoomPeerAction_None ;
+		memset(pData.vHoldCard,0,sizeof(pData.vHoldCard)) ;
+	}
+
+	// prepare running data 
+	m_nCurWaitPlayerActionIdx = -1;
+	m_nCurMainBetPool = 0;
+	m_nMostBetCoinThisRound = 0;
+	memset(m_vPublicCardNums,0,sizeof(m_vPublicCardNums)) ;
+	m_nBetRound = 0 ;
+	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
+	{
+		m_vAllVicePools[nIdx].nIdx = nIdx ;
+		m_vAllVicePools[nIdx].Reset();
+	}
+	m_tPoker.RestAllPoker();
+
+	// init running data 
+	m_nBankerIdx = 0 ;
+	m_nLittleBlindIdx = 0 ;
+	m_nBigBlindIdx = 0 ;
+
+	m_nMostBetCoinThisRound = 0;
 }
 
 void CTaxasRoom::DistributePrivateCard()
@@ -845,6 +886,23 @@ uint64_t CTaxasRoom::GetAllBetCoinThisRound()
 bool CTaxasRoom::IsPublicDistributeFinish()
 {
 	return (m_vPublicCardNums[4] != 0 );
+}
+
+bool CTaxasRoom::isPlayerAlreadySitDown(uint32_t nSessionID )
+{
+	for ( uint8_t nIdx = 0 ; nIdx < m_stRoomConfig.nMaxSeat ; ++nIdx )
+	{
+		if ( m_vSitDownPlayers[nIdx].IsInvalid() )
+		{
+			continue;
+		}
+
+		if ( m_vSitDownPlayers[nIdx].nSessionID == nSessionID  )
+		{
+			return true ;
+		}
+	}
+	return false ;
 }
 
 uint8_t CTaxasRoom::GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate )

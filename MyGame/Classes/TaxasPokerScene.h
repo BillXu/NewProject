@@ -33,8 +33,8 @@ protected:
 	void doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetIdx );
 protected:
 	Sprite* m_vPublicCard[TAXAS_PUBLIC_CARD];
-	Label* m_pMainPool;
-	Label* m_vVicePool[MAX_PEERS_IN_TAXAS_ROOM];
+	ui::Text* m_pMainPool;
+	ui::Text* m_vVicePool[MAX_PEERS_IN_TAXAS_ROOM];
 	
 	CTaxasPlayer* m_vTaxasPlayers[MAX_PEERS_IN_TAXAS_ROOM];
 	Vec2 m_vPosOfTaxasPlayers[MAX_PEERS_IN_TAXAS_ROOM];
