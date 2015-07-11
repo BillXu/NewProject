@@ -12,6 +12,7 @@ public:
 	CREATE_FUNC(CTaxasPokerScene);
 	bool init();
 	bool onMsg(stMsg* pmsg );
+	void onRecievedRoomInfo();
 	void refreshContent();
 	void refreshVicePools();
 	void relayoutPlayerLocalPos( uint8_t nLocalPlayerSvrIdx );
@@ -24,13 +25,13 @@ public:
 	void onPlayersBetCoinArrived( uint8_t nNewVicePoolCnt );
 	void onPlayerGiveupCoinArrived();
 	Vec2 getMainPoolWorldPos();
-	void distributePublicCard(uint8_t nRound ); // invalid value , 1 , 2 ,3 
+	void distributePublicCard(uint8_t nRound ); // invalid value , 0 , 1 ,2
 	void showAllPlayersFinalCard();
 	void winCoinGoToWinners(uint8_t nPoolIdx,uint64_t nCoinPerWinner,uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM],uint8_t nWinnerCnt);
-	void goToState(eRoomState eState,stMsg* pmsg = nullptr );
 	void onClickPlayerPhoto(CTaxasPlayer*pPlayer);
 protected:
 	void doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetIdx );
+	void goToState(eRoomState eState,stMsg* pmsg = nullptr );
 protected:
 	Sprite* m_vPublicCard[TAXAS_PUBLIC_CARD];
 	ui::Text* m_pMainPool;

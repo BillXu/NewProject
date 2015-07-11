@@ -83,7 +83,7 @@ public:
 	void OnPlayerLeaveRoom(uint32_t nPlayerSession );
 	uint8_t GetCurWaitActPlayerIdx(){ return m_nCurWaitPlayerActionIdx ; }
 	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t& nValue );  // return error code , 0 success ;
-
+	stTaxasPeerData* GetSitDownPlayerData(uint8_t nSeatIdx);
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
 	void StartGame();
@@ -107,6 +107,7 @@ protected:
 	stTaxasInRoomPeerData* GetInRoomPlayerDataBySessionID( uint32_t nSessionID );
 
 	friend class CTaxasBaseRoomState ;
+	friend class CTaxasStatePlayerBet ;
 protected:
 	// static data 
 	uint32_t nRoomID ;

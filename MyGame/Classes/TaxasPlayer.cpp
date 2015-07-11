@@ -226,7 +226,7 @@ void CTaxasPlayer::betBlind(uint32_t nValue )
 
 bool CTaxasPlayer::betCoinGoToMainPool(Vec2& ptMainPoolWorldPt, float fAni )
 {
-	if ( m_pBetCoin->getParent()->isVisible() )
+	if ( m_pBetCoin->getParent()->isVisible() == false )
 	{
 		CCLOG("do not bet , so no go pool ani");
 		m_pState->setVisible(false); 
@@ -267,7 +267,7 @@ void CTaxasPlayer::doBetCoinAni()
 	pt = m_pBetCoin->getParent()->convertToWorldSpace(pt);
 	pt = m_pBetCoinAni->getParent()->convertToNodeSpace(pt);
 	m_pBetCoinAni->SetDestPosition(pt);
-	m_pBetCoinAni->Start(CChipGroup::eChipMove_Group2None,0.1);
+	m_pBetCoinAni->Start(CChipGroup::eChipMove_Group2None,TIME_PLAYER_BET_COIN_ANI);
 }
 
 void CTaxasPlayer::refreshCoin(CChipGroup* pGrop)

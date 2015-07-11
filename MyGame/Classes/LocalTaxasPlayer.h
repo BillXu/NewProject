@@ -14,8 +14,10 @@ public:
 	void onPrivateCard(uint8_t nIdx);
 	void bindPlayerData(stTaxasPeerBaseData* tPlayerData );
 	void setActCallBack( std::function<void(CTaxasPlayer* pPlayer ,uint8_t nActValue, uint32_t nValue)> func){ lpfuncLocalAct = func; }
+	void hideActBtns();
 protected:
 	ui::Button *m_vbtnAct[eRoomPeerAction_Max];
 	cocostudio::timeline::ActionTimeline *m_pAction;
 	std::function<void(CTaxasPlayer* pPlayer ,uint8_t nActValue, uint32_t nValue)> lpfuncLocalAct ;
+	bool m_bShowActBtn;
 };

@@ -15,6 +15,7 @@ bool CLocalTaxasPlayer::init(cocos2d::Node* pRoot,int8_t nPosIdx,stTaxasPeerBase
 	m_pAction = CSLoader::getInstance()->createTimeline("res/PlayerSelf.csb");
 	pRoot->runAction(m_pAction);
 	lpfuncLocalAct = nullptr;
+	m_bShowActBtn = false ;
 
 	memset(m_vbtnAct,0,sizeof(m_vbtnAct)) ;
 	m_vbtnAct[eRoomPeerAction_AllIn] = (ui::Button*)pRoot->getChildByName("allIn");
@@ -40,12 +41,13 @@ void CLocalTaxasPlayer::onWaitAction()
 	CTaxasPlayer::onWaitAction();
 	// show btn ;
 	m_pAction->play("showBtn",false);
+	m_bShowActBtn = true ;
 }
 
 void CLocalTaxasPlayer::onAct(uint16_t nAct , uint32_t nValue )
 {
 	CTaxasPlayer::onAct(nAct,nValue);
-	m_pAction->play("hideBtn",false);
+	hideActBtns();
 }
 
 void CLocalTaxasPlayer::onClickBtn(cocos2d::Ref* pBtn)
@@ -66,6 +68,7 @@ void CLocalTaxasPlayer::onClickBtn(cocos2d::Ref* pBtn)
 	}
 
 	m_pAction->play("hideBtn",false);
+	m_bShowActBtn = false ;
 }
 
 void CLocalTaxasPlayer::onPrivateCard(uint8_t nIdx )
@@ -91,4 +94,13 @@ void CLocalTaxasPlayer::onPrivateCard(uint8_t nIdx )
 void CLocalTaxasPlayer::bindPlayerData(stTaxasPeerBaseData* tPlayerData )
 {
 	m_pBindPlayerData = tPlayerData;
+}
+
+void CLocalTaxasPlayer::hideActBtns()
+{
+	if ( m_bShowActBtn )
+	{
+		m_bShowActBtn = false ;
+		m_pAction->play("hideBtn",false);
+	}
 }

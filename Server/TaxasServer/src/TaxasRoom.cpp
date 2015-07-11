@@ -81,6 +81,12 @@ void CTaxasRoom::GoToState( eRoomState eState )
 	}
 
 	m_eCurRoomState = eState ;
+	// send msg to tell client ;
+	stMsgTaxasRoomEnterState msgState ;
+	msgState.fDuringTime = 0;//m_vAllState[m_eCurRoomState]->GetDuringTime() ;
+	msgState.nNewState = m_eCurRoomState ;
+	SendRoomMsg(&msgState,sizeof(msgState));
+
 	if ( m_vAllState[m_eCurRoomState] == NULL )
 	{
 		m_vAllState[m_eCurRoomState] = CreateRoomState(m_eCurRoomState) ;
@@ -94,12 +100,6 @@ void CTaxasRoom::GoToState( eRoomState eState )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("why cur state = %d is null" , m_eCurRoomState) ;
 	}
-
-	// send msg to tell client ;
-	stMsgTaxasRoomEnterState msgState ;
-	msgState.fDuringTime = m_vAllState[m_eCurRoomState]->GetDuringTime() ;
-	msgState.nNewState = m_eCurRoomState ;
-	SendRoomMsg(&msgState,sizeof(msgState));
 }
 
 void CTaxasRoom::Update( float fTimeElpas, unsigned int nTimerID )
@@ -439,6 +439,16 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 	CLogMgr::SharedLogMgr()->PrintLog("player do act") ;
 	return 0 ;
 }
+
+stTaxasPeerData* CTaxasRoom::GetSitDownPlayerData(uint8_t nSeatIdx)
+{
+	if ( nSeatIdx >= MAX_PEERS_IN_TAXAS_ROOM )
+	{
+		return nullptr ;
+	}
+
+	return &m_vSitDownPlayers[nSeatIdx];
+}
 // logic function 
 uint8_t CTaxasRoom::GetPlayerCntWithState(eRoomPeerState eState )
 {
@@ -537,14 +547,6 @@ void CTaxasRoom::ResetRoomData()
 		m_vAllVicePools[nIdx].nIdx = nIdx ;
 		m_vAllVicePools[nIdx].Reset();
 	}
-	m_tPoker.RestAllPoker();
-
-	// init running data 
-	m_nBankerIdx = 0 ;
-	m_nLittleBlindIdx = 0 ;
-	m_nBigBlindIdx = 0 ;
-
-	m_nMostBetCoinThisRound = 0;
 }
 
 void CTaxasRoom::DistributePrivateCard()
@@ -592,6 +594,17 @@ void CTaxasRoom::DistributePrivateCard()
 
 void CTaxasRoom::PreparePlayersForThisRoundBet()
 {
+	if ( m_nCurWaitPlayerActionIdx >= 0 )  // means not first round 
+	{
+		m_nCurWaitPlayerActionIdx = m_nLittleBlindIdx - 1 ; //  little blid begin act   ps: m_nCurWaitPlayerActionIdx = GetFirstInvalidIdxWithState( m_nCurWaitPlayerActionIdx + 1 ,eRoomPeer_CanAct) ;
+		m_nMostBetCoinThisRound = 0 ;
+	}
+	else
+	{ 
+		// first bet round do nothing 
+		return ;
+	}
+
 	for ( uint8_t nIdx = 0 ; nIdx < m_stRoomConfig.nMaxSeat ; ++nIdx)
 	{
 		if ( m_vSitDownPlayers[nIdx].IsInvalid() || ( m_vSitDownPlayers[nIdx].IsHaveState(eRoomPeer_StayThisRound) == false ) )
@@ -602,12 +615,6 @@ void CTaxasRoom::PreparePlayersForThisRoundBet()
 		stTaxasPeerData& pData = m_vSitDownPlayers[nIdx] ;
 		pData.nBetCoinThisRound = 0 ;
 		pData.eCurAct = eRoomPeerAction_None ;
-	}
-	m_nMostBetCoinThisRound = 0 ;
-
-	if ( m_nCurWaitPlayerActionIdx >= 0 )  // means not first round 
-	{
-		m_nCurWaitPlayerActionIdx = m_nLittleBlindIdx - 1 ; //  little blid begin act   ps: m_nCurWaitPlayerActionIdx = GetFirstInvalidIdxWithState( m_nCurWaitPlayerActionIdx + 1 ,eRoomPeer_CanAct) ;
 	}
 }
 
@@ -625,22 +632,24 @@ uint8_t CTaxasRoom::InformPlayerAct()
 	stMsgTaxasRoomWaitPlayerAct msgWait ;
 	msgWait.nActPlayerIdx = m_nCurWaitPlayerActionIdx ;
 	SendRoomMsg(&msgWait,sizeof(msgWait));
-	CLogMgr::SharedLogMgr()->ErrorLog("room id = %d , wait seat idx = %d ",GetRoomID(),m_nCurWaitPlayerActionIdx ) ;
+	CLogMgr::SharedLogMgr()->PrintLog("wait idx = %d act ",GetRoomID(),m_nCurWaitPlayerActionIdx ) ;
 	return m_nCurWaitPlayerActionIdx ;
 }
 
 void CTaxasRoom::OnPlayerActTimeOut()
 {
+	stMsgTaxasPlayerAct msg ;
+	msg.nValue = 0 ;
+	msg.nRoomID = GetRoomID() ;
 	if ( m_nMostBetCoinThisRound == m_vSitDownPlayers[m_nCurWaitPlayerActionIdx].nBetCoinThisRound )
 	{
-		uint64_t nValue = 0 ;
-		OnPlayerAction(m_nCurWaitPlayerActionIdx,eRoomPeerAction_Pass,nValue) ;
+		msg.nPlayerAct = eRoomPeerAction_Pass ;
 	}
 	else
 	{
-		uint64_t nValue = 0 ;
-		OnPlayerAction(m_nCurWaitPlayerActionIdx,eRoomPeerAction_GiveUp,nValue) ;
+		msg.nPlayerAct = eRoomPeerAction_GiveUp ;
 	}
+	OnMessage(&msg,ID_MSG_PORT_CLIENT,m_vSitDownPlayers[m_nCurWaitPlayerActionIdx].nSessionID) ;
 }
 
 bool CTaxasRoom::IsThisRoundBetOK()

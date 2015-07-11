@@ -1,6 +1,7 @@
 #pragma once
 #include "CommonDefine.h"
 #include "cocos2d.h"
+#include "TaxasMessageDefine.h"
 struct stMsg;
 class CTaxasPlayer;
 class CTaxasPokerScene;
@@ -79,8 +80,6 @@ public:
 	void enterState(stMsg* pmsg) ;
 	void leaveState();
 	bool onMsg(stMsg* pmsg );
-protected:
-	uint8_t nPublicRound;  // 0 init state , 1 distribute 3 card , 2 distribute 1 card , 3 d 1 card ;
 };
 
 // game result state
@@ -92,4 +91,7 @@ public:
 	void enterState(stMsg* pmsg) ;
 	bool onMsg(stMsg* pmsg );
 	void leaveState();
+protected:
+	std::vector<stMsgTaxasRoomGameResult> m_vAllResult ;
+	bool m_bCoinFlying ;
 };

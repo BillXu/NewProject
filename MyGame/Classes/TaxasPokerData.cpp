@@ -119,6 +119,7 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 		{
 			stMsgTaxasRoomWaitPlayerAct* pRet = (stMsgTaxasRoomWaitPlayerAct*)pmsg ;
 			nCurWaitPlayerActionIdx = pRet->nActPlayerIdx ;
+			CCLOG("wait act data = %d",nCurWaitPlayerActionIdx);
 		}
 		break;
 	case MSG_TP_ROOM_ACT:
@@ -252,6 +253,7 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 				uint8_t ndx = pRet->vWinnerIdx[nWinCnt] ;
 				if ( ndx >= MAX_PEERS_IN_TAXAS_ROOM || vAllTaxasPlayerData[ndx].nUserUID == 0 )
 				{
+					--nWinCnt ;
 					continue;
 				}
 				vAllTaxasPlayerData[ndx].nTakeInMoney += pRet->nCoinPerWinner ;

@@ -55,8 +55,13 @@ public:
 	void OnStateTimeOut();
 	void Update(float fDelte );
 	bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
+	void ResetStateTime();
+	void PlayerDoActOver();
 protected:
 	uint32_t m_nCurActPlayerIdx ;
+	bool m_bHavePlayerActing ;
+	float m_fLeftActingTime ;
+	bool m_bIsCurActPlayerActing ;
 };
 
 // caculate vice pool

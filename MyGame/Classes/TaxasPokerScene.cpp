@@ -59,6 +59,7 @@ bool CTaxasPokerScene::onMsg(stMsg* pmsg )
 {
 	bool b = IBaseScene::onMsg(pmsg);
 	if ( b )return true ;
+	CCLOG("msg id = %d",pmsg->usMsgType);
 
 	m_tGameData.onMsg(pmsg);
 
@@ -68,38 +69,39 @@ bool CTaxasPokerScene::onMsg(stMsg* pmsg )
 		{
 			stMsgTaxasRoomEnterState* pRet = (stMsgTaxasRoomEnterState*)pmsg ;
 			goToState((eRoomState)pRet->nNewState) ;
+			return true;
 		}
 		break;
-	case MSG_TP_START_ROUND:
-		{
-			goToState(eRoomState_TP_BetBlind) ;
-		}
-		break;
-	case MSG_TP_PRIVATE_CARD:
-		{
-			goToState(eRoomState_TP_PrivateCard);
-		}
-		break;
-	case MSG_TP_WAIT_PLAYER_ACT:
-		{
-			goToState(eRoomState_TP_Beting) ;
-		}
-		break;
-	case MSG_TP_ONE_BET_ROUND_RESULT:
-		{
-			goToState(eRoomState_TP_OneRoundBetEndResult,pmsg);
-		}
-		break;
-	case MSG_TP_GAME_RESULT:
-		{
-			goToState(eRoomState_TP_GameResult,pmsg) ;
-		}
-		break;
-	case MSG_TP_PUBLIC_CARD:
-		{
-			goToState( eRoomState_TP_PublicCard ) ;
-		}
-		break;
+	//case MSG_TP_START_ROUND:
+	//	{
+	//		goToState(eRoomState_TP_BetBlind) ;
+	//	}
+	//	break;
+	//case MSG_TP_PRIVATE_CARD:
+	//	{
+	//		goToState(eRoomState_TP_PrivateCard);
+	//	}
+	//	break;
+	//case MSG_TP_WAIT_PLAYER_ACT:
+	//	{
+	//		goToState(eRoomState_TP_Beting) ;
+	//	}
+	//	break;
+	//case MSG_TP_ONE_BET_ROUND_RESULT:
+	//	{
+	//		goToState(eRoomState_TP_OneRoundBetEndResult,pmsg);
+	//	}
+	//	break;
+	//case MSG_TP_GAME_RESULT:
+	//	{
+	//		goToState(eRoomState_TP_GameResult,pmsg) ;
+	//	}
+	//	break;
+	//case MSG_TP_PUBLIC_CARD:
+	//	{
+	//		goToState( eRoomState_TP_PublicCard ) ;
+	//	}
+	//	break;
 	default:
 		break;
 	}
@@ -110,6 +112,13 @@ bool CTaxasPokerScene::onMsg(stMsg* pmsg )
 	}
 
 	return true ;
+}
+
+void CTaxasPokerScene::onRecievedRoomInfo()
+{
+	refreshContent();
+	// goto target 
+	goToState((eRoomState)getPokerData()->eCurRoomState );
 }
 
 void CTaxasPokerScene::refreshContent()
@@ -265,7 +274,7 @@ void CTaxasPokerScene::distributePrivateCard()
 			CTaxasPlayer* pPlayer = getTaxasPlayerBySvrIdx(nRealIdx);
 			if ( pPlayer->isHaveState(eRoomPeer_CanAct) )
 			{
-				pPlayer->distributeHoldCard(ptOrig,nCardIdx,TIME_TAXAS_ONE_CARD_DISTRIBUTE,fDelay);
+				pPlayer->distributeHoldCard(ptOrig,nCardIdx,TIME_TAXAS_DISTRIBUTE_ONE_HOLD_CARD,fDelay);
 				fDelay += TIME_TAXAS_DISTRIBUTE_HOLD_CARD_DELAY;
 			}
 		}
@@ -309,7 +318,7 @@ void CTaxasPokerScene::onPlayersBetCoinArrived( uint8_t nNewVicePoolCnt )
 	{
 		m_pMainPool->setString(String::createWithFormat("%I64d",m_tGameData.nCurMainBetPool)->getCString());
 	}
-
+	CCLOG("onPlayersBetCoinArrived");
 	// refresh vice pool
 	refreshVicePools();
 }
@@ -337,20 +346,25 @@ void CTaxasPokerScene::distributePublicCard(uint8_t nRound )
 {
 	uint8_t nidx = 0 ;
 	uint8_t nCnt = 0 ;
-	if ( nRound == 1 )
+	if ( nRound == 0 )
 	{
 		nidx = 0 ;
 		nCnt = 3 ;
 	}
-	else if ( 2 == nRound )
+	else if ( 1 == nRound )
 	{
 		 nidx = 3;
 		 nCnt = 1 ;
 	}
-	else if ( 3 == nRound )
+	else if ( 2 == nRound )
 	{
 		nidx = 4 ;
 		nCnt = 1 ; 
+	}
+	else
+	{
+		CCLOG("invalid round value = %d",nRound);
+		return ;
 	}
 
 	for ( uint8_t n = nidx ; n < (nidx + nCnt); ++n )
@@ -409,11 +423,12 @@ void CTaxasPokerScene::winCoinGoToWinners(uint8_t nPoolIdx,uint64_t nCoinPerWinn
 
 void CTaxasPokerScene::goToState(eRoomState eState,stMsg* pmsg )
 {
-	if ( eState == m_eCurState || eState >= eRoomState_TP_MAX )
+	if ( eState >= eRoomState_TP_MAX )
 	{
 		return ;
 	}
 
+	CCLOG("go to state = %d",eState);
 	if ( m_eCurState < eRoomState_TP_MAX && m_vAllState[m_eCurState] )
 	{
 		m_vAllState[m_eCurState]->leaveState();
@@ -497,6 +512,7 @@ void CTaxasPokerScene::goToState(eRoomState eState,stMsg* pmsg )
 	{
 		m_vAllState[m_eCurState]->enterState(pmsg);
 	}
+	CCLOG("enter new state = %d",m_eCurState);
 }
 
 void CTaxasPokerScene::onClickPlayerPhoto(CTaxasPlayer*pPlayer)

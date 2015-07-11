@@ -255,7 +255,9 @@ void CPlayer::OnPlayerDisconnect()
 		stMsgOrderTaxasPlayerLeave msgLeave ;
 		msgLeave.nRoomID = m_nTaxasRoomID ;
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
+		m_nTaxasRoomID = 0 ;
 	}
+	CLogMgr::SharedLogMgr()->ErrorLog("player disconnect should inform other sever");
 }
 
 void CPlayer::PostPlayerEvent(stPlayerEvetArg* pEventArg )
