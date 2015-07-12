@@ -42,7 +42,7 @@ bool CTaxasPokerSceneStateBase::onMsg(stMsg* pmsg )
 				m_pScene->getLocalPlayer()->setServerIdx(MAX_PEERS_IN_TAXAS_ROOM) ;
 			}
 			m_pScene->getTaxasPlayerBySvrIdx(pRet->nSeatIdx)->getRoot()->setVisible(true);
-			m_pScene->getTaxasPlayerBySvrIdx(pRet->nSeatIdx)->refreshContent(m_pScene->getCurRoomState(),m_pScene->getPokerData()->vPublicCardNums);
+			m_pScene->getTaxasPlayerBySvrIdx(pRet->nSeatIdx)->refreshContent(m_pScene);
 		}
 		break;
 	case MSG_TP_PLAYER_SIT_DOWN:
@@ -145,7 +145,7 @@ bool CTaxasPokerSceneStateBase::onMsg(stMsg* pmsg )
 				m_pScene->relayoutPlayerLocalPos(ttPlayerData->nSeatIdx);
 			}
 
-			m_pScene->getTaxasPlayerBySvrIdx(ttPlayerData->nSeatIdx)->refreshContent(m_pScene->getCurRoomState(),m_pScene->getPokerData()->vPublicCardNums);
+			m_pScene->getTaxasPlayerBySvrIdx(ttPlayerData->nSeatIdx)->refreshContent(m_pScene);
 			if ( pmsg->usMsgType == MSG_TP_ROOM_SIT_DOWN )
 			{
 				m_pScene->getTaxasPlayerBySvrIdx(ttPlayerData->nSeatIdx)->refreshForWaitGame();
@@ -367,7 +367,7 @@ void CTaxasPokerOneBetRoundEndResultState::enterState(stMsg* pmsg)
 	CTaxasPokerSceneStateBase::enterState(pmsg);
 	if ( m_pScene->getLocalPlayer()->getRoot()->isVisible() )
 	{
-		m_pScene->getLocalPlayer()->hideActBtns() ;
+		m_pScene->getLocalPlayer()->stopTimeClock() ;
 	}
 }
 

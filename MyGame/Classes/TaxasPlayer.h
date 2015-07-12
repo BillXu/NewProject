@@ -5,6 +5,7 @@
 #include "ui/CocosGUI.h"
 USING_NS_CC ;
 class CChipGroup;
+class CTaxasPokerScene;
 class CTaxasPlayer
 	:public Node  // just for autorelease with render tree , no other meannings ;
 {
@@ -13,7 +14,7 @@ public:
 	virtual bool init(Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerData);
 	void createCoinAni(Node* pSceneLayer ); // coin ani must add to scene layer ,otherwise will be hide by public cards
 	void doLayoutforPos();
-	void refreshContent( uint8_t nRoomCurState,uint8_t vPublicCard[5] );
+	void refreshContent( CTaxasPokerScene* pScene );
 	virtual void onAct(uint16_t nAct , uint32_t nValue );
 	//void bindPlayerData(stTaxasPeerBaseData* tPlayerData );
 	virtual void onWaitAction(uint64_t nCurMostBetCoin );
@@ -42,6 +43,7 @@ protected:
 	void refreshCoin(CChipGroup* pGrop = nullptr );
 	void setBetCoin(uint64_t nBetCoin );
 	void setActState(uint8_t nAct );
+	virtual void stopTimeClock();
 protected:
 	Node* m_pRoot ;
 	stTaxasPeerBaseData* m_pBindPlayerData; // CTaxasPlayer will display and serve for m_pBindPlayerData all life , but will not change m_pBindPlayerData 

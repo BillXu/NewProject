@@ -2,6 +2,7 @@
 #include "ChipGroup.h"
 #include "TaxasPokerPeerCard.h"
 #include "ClientApp.h"
+#include "TaxasPokerScene.h"
 #define SCHEDULE_FUNC_NAME_FOR_TIMER "timeCountDown"
 CTaxasPlayer* CTaxasPlayer::create(Node* pRoot,int8_t nPosIdx,stTaxasPeerBaseData* tPlayerData)
 {
@@ -107,7 +108,7 @@ void CTaxasPlayer::doLayoutforPos()
 	m_pBetCoin->getParent()->setPositionX(pt);
 }
 
-void CTaxasPlayer::refreshContent( uint8_t nRoomCurState ,uint8_t vPublicCard[5] )
+void CTaxasPlayer::refreshContent( CTaxasPokerScene* pScene )
 {
 	refreshForGameEnd();
 	bool bHaveGuy = isHavePlayer();
@@ -130,18 +131,21 @@ void CTaxasPlayer::refreshContent( uint8_t nRoomCurState ,uint8_t vPublicCard[5]
 	m_pCoin->setString(String::createWithFormat("%I64d",tPlayerData.nTakeInMoney)->getCString()) ;
 	m_pName->setString(tPlayerData.cName);
 
-	bool bShowFinalCard = (eRoomState_TP_GameResult == nRoomCurState ) && isHaveState(eRoomPeer_WaitCaculate);
+	bool bShowFinalCard = ((eRoomState_TP_GameResult == pScene->getCurRoomState() ) && isHaveState(eRoomPeer_WaitCaculate) && (pScene->getPlayerCntWithState(eRoomPeer_WaitCaculate) >= 2)) ;
 	if ( bShowFinalCard )
 	{
-		showBestCard(vPublicCard,0) ;
+		showBestCard(pScene->getPokerData()->vPublicCardNums,0) ;
 	}
 	
+	if ( eRoomState_TP_Beting == pScene->getCurRoomState() && pScene->getPokerData()->nCurWaitPlayerActionIdx == getServerIdx() )
+	{
+		onWaitAction(pScene->getPokerData()->nMostBetCoinThisRound) ;
+	}
 }
 
 void CTaxasPlayer::onAct(uint16_t nAct , uint32_t nValue )
 {
-	m_pTime->setVisible(false);
-	Director::getInstance()->getScheduler()->unschedule(SCHEDULE_FUNC_NAME_FOR_TIMER,this);
+	stopTimeClock();
 	bool bDoBet = (nAct != eRoomPeerAction_Pass && eRoomPeerAction_GiveUp != nAct );
 	setActState(nAct);
 	if ( bDoBet )
@@ -152,6 +156,11 @@ void CTaxasPlayer::onAct(uint16_t nAct , uint32_t nValue )
 
 void CTaxasPlayer::onWaitAction(uint64_t nCurMostBetCoin)
 {
+	if ( m_pTime->isVisible() )
+	{
+		return ;
+	}
+
 	Director::getInstance()->getScheduler()->unschedule(SCHEDULE_FUNC_NAME_FOR_TIMER,this);
 	m_pTime->setVisible(true) ;
 	m_nTimeCountDown = TIME_TAXAS_BET ;
@@ -438,6 +447,7 @@ void CTaxasPlayer::refreshForBetRoundEnd()
 {
 	setBetCoin(0);
 	setActState(eRoomPeerAction_None);
+	stopTimeClock();
 }
 
 void CTaxasPlayer::refreshForGameEnd()
@@ -452,6 +462,7 @@ void CTaxasPlayer::refreshForGameEnd()
 	
 	m_pHoldCard[0]->setVisible(false);
 	m_pHoldCard[1]->setVisible(false);
+	stopTimeClock();
 }
 
 void CTaxasPlayer::refreshForGameStart()
@@ -462,4 +473,10 @@ void CTaxasPlayer::refreshForGameStart()
 void CTaxasPlayer::refreshForWaitGame()
 {
 	refreshForGameEnd();
+}
+
+void CTaxasPlayer::stopTimeClock()
+{
+	m_pTime->setVisible(false);
+	Director::getInstance()->getScheduler()->unschedule(SCHEDULE_FUNC_NAME_FOR_TIMER,this);
 }

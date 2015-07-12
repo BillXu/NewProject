@@ -152,13 +152,13 @@ void CTaxasPokerScene::refreshContent()
 	{
 		if ( m_vTaxasPlayers[nIdx]->getRoot()->isVisible() )
 		{
-			m_vTaxasPlayers[nIdx]->refreshContent(m_eCurState,getPokerData()->vPublicCardNums);
+			m_vTaxasPlayers[nIdx]->refreshContent(this);
 		}
 	}
 	
 	if ( m_pLocalPlayer->getRoot()->isVisible() )
 	{
-		m_pLocalPlayer->refreshContent(m_eCurState,getPokerData()->vPublicCardNums);
+		m_pLocalPlayer->refreshContent(this);
 	}
 }
 

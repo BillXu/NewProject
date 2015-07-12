@@ -45,12 +45,6 @@ void CLocalTaxasPlayer::onWaitAction(uint64_t nCurMostBetCoin)
 	showActBtns(nCurMostBetCoin);
 }
 
-void CLocalTaxasPlayer::onAct(uint16_t nAct , uint32_t nValue )
-{
-	CTaxasPlayer::onAct(nAct,nValue);
-	hideActBtns();
-}
-
 void CLocalTaxasPlayer::onClickBtn(cocos2d::Ref* pBtn)
 {
 	Node* ppd = (Node*)pBtn;
@@ -67,7 +61,7 @@ void CLocalTaxasPlayer::onClickBtn(cocos2d::Ref* pBtn)
 	{
 		lpfuncLocalAct(this,act,0);
 	}
-	hideActBtns();
+	stopTimeClock();
 }
 
 void CLocalTaxasPlayer::onPrivateCard(uint8_t nIdx )
@@ -97,6 +91,12 @@ void CLocalTaxasPlayer::onPrivateCard(uint8_t nIdx )
 void CLocalTaxasPlayer::bindPlayerData(stTaxasPeerBaseData* tPlayerData )
 {
 	m_pBindPlayerData = tPlayerData;
+}
+
+void CLocalTaxasPlayer::stopTimeClock()
+{
+	CTaxasPlayer::stopTimeClock();
+	hideActBtns();
 }
 
 void CLocalTaxasPlayer::hideActBtns()
