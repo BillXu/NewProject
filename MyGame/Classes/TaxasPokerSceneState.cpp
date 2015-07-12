@@ -42,7 +42,7 @@ bool CTaxasPokerSceneStateBase::onMsg(stMsg* pmsg )
 				m_pScene->getLocalPlayer()->setServerIdx(MAX_PEERS_IN_TAXAS_ROOM) ;
 			}
 			m_pScene->getTaxasPlayerBySvrIdx(pRet->nSeatIdx)->getRoot()->setVisible(true);
-			m_pScene->getTaxasPlayerBySvrIdx(pRet->nSeatIdx)->refreshContent();
+			m_pScene->getTaxasPlayerBySvrIdx(pRet->nSeatIdx)->refreshContent(m_pScene->getCurRoomState(),m_pScene->getPokerData()->vPublicCardNums);
 		}
 		break;
 	case MSG_TP_PLAYER_SIT_DOWN:
@@ -141,10 +141,15 @@ bool CTaxasPokerSceneStateBase::onMsg(stMsg* pmsg )
 				m_pScene->getLocalPlayer()->setLocalIdx(pPosPlayer->getLocalIdx());
 				m_pScene->getLocalPlayer()->getRoot()->setPosition(pPosPlayer->getRoot()->getPosition());
 				m_pScene->getLocalPlayer()->bindPlayerData(m_pScene->getPokerData()->getTaxasPlayerData(ttPlayerData->nSeatIdx)) ;
-				pPosPlayer->setVisible(false) ;
+				pPosPlayer->getRoot()->setVisible(false) ;
 				m_pScene->relayoutPlayerLocalPos(ttPlayerData->nSeatIdx);
 			}
-			m_pScene->getTaxasPlayerBySvrIdx(ttPlayerData->nSeatIdx)->refreshContent();
+
+			m_pScene->getTaxasPlayerBySvrIdx(ttPlayerData->nSeatIdx)->refreshContent(m_pScene->getCurRoomState(),m_pScene->getPokerData()->vPublicCardNums);
+			if ( pmsg->usMsgType == MSG_TP_ROOM_SIT_DOWN )
+			{
+				m_pScene->getTaxasPlayerBySvrIdx(ttPlayerData->nSeatIdx)->refreshForWaitGame();
+			}
 		}
 		break;
 	default:
@@ -173,8 +178,7 @@ bool CTaxasPokerWaitJoinState::onMsg(stMsg* pmsg )
 void CTaxasPokerWaitJoinState::enterState(stMsg* pmsg) 
 {
 	CTaxasPokerSceneStateBase::enterState(pmsg);
-	m_pScene->getPokerData()->resetRuntimeData();
-	m_pScene->refreshContent();
+	m_pScene->refreshForWaitGame();
 }
 
 // blind bet state
@@ -188,6 +192,7 @@ bool CTaxasPokerBlindBetState::init(CTaxasPokerScene* pScene)
 void CTaxasPokerBlindBetState::enterState(stMsg* pmsg)
 {
 	CTaxasPokerSceneStateBase::enterState(pmsg);
+	m_pScene->refreshForGameStart();
 }
 
 bool CTaxasPokerBlindBetState::onMsg(stMsg* pmsg )
@@ -267,8 +272,7 @@ bool CTaxasPokerBettingState::onMsg(stMsg* pmsg )
 				CCLOG("invalid act player idx = %d\n",pRet->nActPlayerIdx);
 				return true ;
 			}
-			CCLOG("wait act idx = %d ",pRet->nActPlayerIdx);
-			m_pScene->getTaxasPlayerBySvrIdx(pRet->nActPlayerIdx)->onWaitAction();
+			m_pScene->getTaxasPlayerBySvrIdx(pRet->nActPlayerIdx)->onWaitAction(m_pScene->getPokerData()->nMostBetCoinThisRound);
 		}
 		break;
 	case MSG_TP_ROOM_ACT:
@@ -281,10 +285,11 @@ bool CTaxasPokerBettingState::onMsg(stMsg* pmsg )
 			}
 			CTaxasPlayer* pPlayer = m_pScene->getTaxasPlayerBySvrIdx(pret->nPlayerIdx);
 			pPlayer->onAct(pret->nPlayerAct,pret->nValue);
-			if ( pret->nPlayerAct == eRoomPeerAction_GiveUp )
+			if ( pret->nPlayerAct == eRoomPeerAction_GiveUp && pPlayer->getPlayerData().nBetCoinThisRound > 0 )
 			{
-				pPlayer->betCoinGoToMainPool(m_pScene->getMainPoolWorldPos(),TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL);
-				Director::getInstance()->getScheduler()->schedule([=](float ft){ m_pScene->onPlayerGiveupCoinArrived();},this,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,0,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,false,"giveUpCoin");
+				bool bGo = pPlayer->betCoinGoToMainPool(m_pScene->getMainPoolWorldPos(),TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL);
+				if ( bGo )
+					Director::getInstance()->getScheduler()->schedule([=](float ft){ m_pScene->onPlayerGiveupCoinArrived();},this,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,0,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,false,"giveUpCoin");
 			}
 			//pPlayer->refreshContent();
 		}
@@ -329,7 +334,7 @@ void CTaxasPokerBettingState::onLocalPlayerActCallBack(CTaxasPlayer* pPlayer ,ui
 			msgsend.nValue = nupLimit ;
 		}
 
-		if ( msgsend.nValue < nlowLimit )
+		//if ( msgsend.nValue < nlowLimit )
 		{
 			msgsend.nValue = nlowLimit ;
 		}
@@ -342,14 +347,10 @@ void CTaxasPokerBettingState::onLocalPlayerActCallBack(CTaxasPlayer* pPlayer ,ui
 	}
 	else if ( eRoomPeerAction_Follow == nActValue )
 	{
-		uint64_t nBet = m_pScene->getPokerData()->nMostBetCoinThisRound - m_pScene->getPokerData()->getTaxasPlayerData(pPlayer->getServerIdx())->nBetCoinThisRound ;
-		if ( nBet >= m_pScene->getPokerData()->getTaxasPlayerData(pPlayer->getServerIdx())->nTakeInMoney )
-		{
-			msgsend.nPlayerAct = eRoomPeerAction_AllIn ;
-			msgsend.nValue = m_pScene->getPokerData()->getTaxasPlayerData(pPlayer->getServerIdx())->nTakeInMoney ;
-		}
+
 	}
 
+	CCLOG("client send do act = %d value = %I64d",msgsend.nPlayerAct,msgsend.nValue);
 	m_pScene->sendMsg(&msgsend,sizeof(msgsend)) ;
 }
 
@@ -387,6 +388,12 @@ bool CTaxasPokerOneBetRoundEndResultState::onMsg(stMsg* pmsg )
 	}
 
 	return false ;
+}
+
+void CTaxasPokerOneBetRoundEndResultState::leaveState()
+{
+	CTaxasPokerSceneStateBase::leaveState();
+	m_pScene->refreshForBetRoundEnd();
 }
 
 // public card state
@@ -489,8 +496,7 @@ bool CTaxasPokerGameResultState::onMsg(stMsg* pmsg )
 void CTaxasPokerGameResultState::leaveState()
 {
 	CTaxasPokerSceneStateBase::leaveState();
-	m_pScene->getPokerData()->resetRuntimeData();
-	m_pScene->refreshContent();
+	m_pScene->refreshForGameEnd();
 	m_vAllResult.clear();
 	m_bCoinFlying = false ;
 }

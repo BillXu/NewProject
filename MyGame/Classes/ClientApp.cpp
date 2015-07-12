@@ -189,6 +189,7 @@ SpriteFrame* CClientApp::getCardSpriteByCompsiteNum(uint16_t nNum )
 		break;
 	case CCard::eCard_Heart:
 		nType = 2 ;
+		break;
 	case CCard::eCard_Sword:
 		nType = 1 ;
 		break;

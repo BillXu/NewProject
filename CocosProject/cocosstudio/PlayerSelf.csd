@@ -2,147 +2,7 @@
   <PropertyGroup Type="Node" Name="PlayerSelf" ID="280f037d-a4ea-4aa4-902b-f43b3caaa5d9" Version="2.3.0.1" />
   <Content ctype="GameProjectContent">
     <Content>
-      <Animation Duration="55" Speed="1.0000" ActivedAnimationName="showBtn">
-        <Timeline ActionTag="-400838591" Property="Position">
-          <PointFrame FrameIndex="0" X="-4.0145" Y="-1.5744">
-            <EasingData Type="29" />
-          </PointFrame>
-          <PointFrame FrameIndex="29" X="-135.5464" Y="92.6052">
-            <EasingData Type="0" />
-          </PointFrame>
-          <PointFrame FrameIndex="54" X="-4.0143" Y="-1.5743">
-            <EasingData Type="0" />
-          </PointFrame>
-        </Timeline>
-        <Timeline ActionTag="-400838591" Property="Alpha">
-          <IntFrame FrameIndex="0" Value="0">
-            <EasingData Type="29" />
-          </IntFrame>
-          <IntFrame FrameIndex="29" Value="255">
-            <EasingData Type="0" />
-          </IntFrame>
-          <IntFrame FrameIndex="54" Value="0">
-            <EasingData Type="0" />
-          </IntFrame>
-        </Timeline>
-        <Timeline ActionTag="-400838591" Property="VisibleForFrame">
-          <BoolFrame FrameIndex="29" Tween="False" Value="True" />
-          <BoolFrame FrameIndex="54" Tween="False" Value="True" />
-          <BoolFrame FrameIndex="55" Tween="False" Value="False" />
-        </Timeline>
-        <Timeline ActionTag="-813982268" Property="Position">
-          <PointFrame FrameIndex="0" X="-3.0459" Y="-3.6551">
-            <EasingData Type="29" />
-          </PointFrame>
-          <PointFrame FrameIndex="29" X="146.8550" Y="-21.7386">
-            <EasingData Type="0" />
-          </PointFrame>
-          <PointFrame FrameIndex="54" X="-3.0459" Y="-3.6551">
-            <EasingData Type="0" />
-          </PointFrame>
-        </Timeline>
-        <Timeline ActionTag="-813982268" Property="Alpha">
-          <IntFrame FrameIndex="0" Value="0">
-            <EasingData Type="29" />
-          </IntFrame>
-          <IntFrame FrameIndex="29" Value="253">
-            <EasingData Type="0" />
-          </IntFrame>
-          <IntFrame FrameIndex="54" Value="0">
-            <EasingData Type="0" />
-          </IntFrame>
-        </Timeline>
-        <Timeline ActionTag="-813982268" Property="VisibleForFrame">
-          <BoolFrame FrameIndex="54" Tween="False" Value="True" />
-          <BoolFrame FrameIndex="55" Tween="False" Value="False" />
-        </Timeline>
-        <Timeline ActionTag="1261715107" Property="Position">
-          <PointFrame FrameIndex="0" X="-4.0143" Y="-1.5744">
-            <EasingData Type="29" />
-          </PointFrame>
-          <PointFrame FrameIndex="29" X="2.0377" Y="143.5708">
-            <EasingData Type="0" />
-          </PointFrame>
-          <PointFrame FrameIndex="54" X="-4.0143" Y="-1.5744">
-            <EasingData Type="0" />
-          </PointFrame>
-        </Timeline>
-        <Timeline ActionTag="1261715107" Property="Alpha">
-          <IntFrame FrameIndex="0" Value="0">
-            <EasingData Type="29" />
-          </IntFrame>
-          <IntFrame FrameIndex="29" Value="255">
-            <EasingData Type="0" />
-          </IntFrame>
-          <IntFrame FrameIndex="54" Value="0">
-            <EasingData Type="0" />
-          </IntFrame>
-        </Timeline>
-        <Timeline ActionTag="1261715107" Property="VisibleForFrame">
-          <BoolFrame FrameIndex="54" Tween="False" Value="True" />
-          <BoolFrame FrameIndex="55" Tween="False" Value="False" />
-        </Timeline>
-        <Timeline ActionTag="-11547007" Property="Position">
-          <PointFrame FrameIndex="0" X="-4.0143" Y="-1.5743">
-            <EasingData Type="29" />
-          </PointFrame>
-          <PointFrame FrameIndex="29" X="-135.5464" Y="-19.6578">
-            <EasingData Type="0" />
-          </PointFrame>
-          <PointFrame FrameIndex="54" X="-4.0143" Y="-1.5743">
-            <EasingData Type="0" />
-          </PointFrame>
-        </Timeline>
-        <Timeline ActionTag="-11547007" Property="Alpha">
-          <IntFrame FrameIndex="0" Value="0">
-            <EasingData Type="29" />
-          </IntFrame>
-          <IntFrame FrameIndex="29" Value="255">
-            <EasingData Type="0" />
-          </IntFrame>
-          <IntFrame FrameIndex="54" Value="0">
-            <EasingData Type="0" />
-          </IntFrame>
-        </Timeline>
-        <Timeline ActionTag="-11547007" Property="VisibleForFrame">
-          <BoolFrame FrameIndex="54" Tween="False" Value="True" />
-          <BoolFrame FrameIndex="55" Tween="False" Value="False" />
-        </Timeline>
-        <Timeline ActionTag="-449700496" Property="Position">
-          <PointFrame FrameIndex="0" X="-4.0143" Y="-1.5743">
-            <EasingData Type="29" />
-          </PointFrame>
-          <PointFrame FrameIndex="29" X="145.8867" Y="92.6052">
-            <EasingData Type="0" />
-          </PointFrame>
-          <PointFrame FrameIndex="54" X="-4.0143" Y="-1.5743">
-            <EasingData Type="0" />
-          </PointFrame>
-        </Timeline>
-        <Timeline ActionTag="-449700496" Property="Alpha">
-          <IntFrame FrameIndex="0" Value="0">
-            <EasingData Type="29" />
-          </IntFrame>
-          <IntFrame FrameIndex="29" Value="255">
-            <EasingData Type="0" />
-          </IntFrame>
-          <IntFrame FrameIndex="54" Value="0">
-            <EasingData Type="0" />
-          </IntFrame>
-        </Timeline>
-        <Timeline ActionTag="-449700496" Property="VisibleForFrame">
-          <BoolFrame FrameIndex="54" Tween="False" Value="True" />
-          <BoolFrame FrameIndex="55" Tween="False" Value="False" />
-        </Timeline>
-      </Animation>
-      <AnimationList>
-        <AnimationInfo Name="showBtn" StartIndex="0" EndIndex="29">
-          <RenderColor A="255" R="250" G="128" B="114" />
-        </AnimationInfo>
-        <AnimationInfo Name="hideBtn" StartIndex="29" EndIndex="55">
-          <RenderColor A="255" R="176" G="196" B="222" />
-        </AnimationInfo>
-      </AnimationList>
+      <Animation Duration="0" Speed="1.0000" />
       <ObjectData Name="Node" Tag="27" ctype="GameNodeObjectData">
         <Size />
         <Children>
@@ -260,10 +120,10 @@
             <FileData Type="Normal" Path="image/bg-chipin.png" Plist="" />
             <BlendFunc Src="1" Dst="771" />
           </AbstractNodeData>
-          <AbstractNodeData Name="follow" ActionTag="-400838591" Tag="251" Alpha="0" IconVisible="False" LeftMargin="-50.0145" RightMargin="-41.9855" TopMargin="-45.4256" BottomMargin="-48.5744" TouchEnable="True" FontSize="36" ButtonText="跟注" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="72" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
+          <AbstractNodeData Name="follow" ActionTag="-400838591" Tag="251" IconVisible="False" LeftMargin="102.7594" RightMargin="-194.7594" TopMargin="-39.1515" BottomMargin="-54.8485" TouchEnable="True" FontSize="36" ButtonText="跟注" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="72" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
             <Size X="92.0000" Y="94.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-            <Position X="-4.0145" Y="-1.5744" />
+            <Position X="148.7594" Y="-7.8485" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition />
@@ -275,10 +135,10 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="check" ActionTag="-813982268" Tag="252" Alpha="0" IconVisible="False" LeftMargin="-50.0119" RightMargin="-41.9881" TopMargin="-44.4241" BottomMargin="-47.5759" TouchEnable="True" FontSize="14" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="70" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
+          <AbstractNodeData Name="check" ActionTag="-813982268" Tag="252" IconVisible="False" LeftMargin="102.7653" RightMargin="-194.7653" TopMargin="-41.2912" BottomMargin="-50.7088" TouchEnable="True" FontSize="14" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="70" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
             <Size X="92.0000" Y="92.0000" />
             <AnchorPoint ScaleX="0.5105" ScaleY="0.4774" />
-            <Position X="-3.0459" Y="-3.6551" />
+            <Position X="149.7313" Y="-6.7880" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition />
@@ -290,10 +150,10 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="add" ActionTag="1261715107" Tag="253" Alpha="0" IconVisible="False" LeftMargin="-50.0143" RightMargin="-41.9857" TopMargin="-47.4256" BottomMargin="-50.5744" TouchEnable="True" FontSize="14" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="76" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
+          <AbstractNodeData Name="add" ActionTag="1261715107" Tag="253" IconVisible="False" LeftMargin="53.5793" RightMargin="-145.5793" TopMargin="-156.2472" BottomMargin="58.2472" TouchEnable="True" FontSize="14" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="76" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
             <Size X="92.0000" Y="98.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-            <Position X="-4.0143" Y="-1.5744" />
+            <Position X="99.5793" Y="107.2472" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition />
@@ -305,10 +165,10 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="giveUp" ActionTag="-11547007" Tag="254" Alpha="0" IconVisible="False" LeftMargin="-50.0143" RightMargin="-41.9857" TopMargin="-45.4257" BottomMargin="-48.5743" TouchEnable="True" FontSize="36" ButtonText="弃牌" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="72" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
+          <AbstractNodeData Name="giveUp" ActionTag="-11547007" Tag="254" IconVisible="False" LeftMargin="-170.3360" RightMargin="78.3360" TopMargin="-43.3357" BottomMargin="-50.6643" TouchEnable="True" FontSize="36" ButtonText="弃牌" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="72" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
             <Size X="92.0000" Y="94.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-            <Position X="-4.0143" Y="-1.5743" />
+            <Position X="-124.3360" Y="-3.6643" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition />
@@ -320,10 +180,10 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="allIn" ActionTag="-449700496" Tag="255" Alpha="0" IconVisible="False" LeftMargin="-50.0143" RightMargin="-41.9857" TopMargin="-45.4257" BottomMargin="-48.5743" TouchEnable="True" FontSize="36" ButtonText="全下" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="72" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
+          <AbstractNodeData Name="allIn" ActionTag="-449700496" Tag="255" IconVisible="False" LeftMargin="-144.1729" RightMargin="52.1729" TopMargin="-155.2981" BottomMargin="61.2981" TouchEnable="True" FontSize="36" ButtonText="全下" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="62" Scale9Height="72" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="ButtonObjectData">
             <Size X="92.0000" Y="94.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-            <Position X="-4.0143" Y="-1.5743" />
+            <Position X="-98.1729" Y="108.2981" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition />
@@ -332,6 +192,72 @@
             <DisabledFileData Type="Normal" Path="image/call_ch.png" Plist="" />
             <PressedFileData Type="Normal" Path="image/call_ch.png" Plist="" />
             <NormalFileData Type="Normal" Path="image/call_ch.png" Plist="" />
+            <OutlineColor A="255" R="255" G="0" B="0" />
+            <ShadowColor A="255" R="110" G="110" B="110" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard0" Visible="False" ActionTag="-1540898051" Tag="176" IconVisible="False" LeftMargin="-104.0000" RightMargin="26.0000" TopMargin="-17.0000" BottomMargin="-89.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="-65.0000" Y="-36.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard1" Visible="False" ActionTag="-1967502820" Tag="177" IconVisible="False" LeftMargin="-73.0000" RightMargin="-5.0000" TopMargin="-18.0000" BottomMargin="-88.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="-34.0000" Y="-35.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard2" Visible="False" ActionTag="1704029487" Tag="178" IconVisible="False" LeftMargin="-38.0000" RightMargin="-40.0000" TopMargin="-18.0000" BottomMargin="-88.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="1.0000" Y="-35.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard3" Visible="False" ActionTag="967598135" Tag="179" IconVisible="False" LeftMargin="-4.0000" RightMargin="-74.0000" TopMargin="-19.0000" BottomMargin="-87.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="35.0000" Y="-34.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard4" Visible="False" ActionTag="1246030368" Tag="180" IconVisible="False" LeftMargin="27.0000" RightMargin="-105.0000" TopMargin="-18.0000" BottomMargin="-88.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="66.0000" Y="-35.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="cardType" Visible="False" ActionTag="-544598815" Tag="181" IconVisible="False" LeftMargin="-63.0000" RightMargin="-57.0000" TopMargin="53.0000" BottomMargin="-77.0000" FontSize="24" LabelText="Text Label" HorizontalAlignmentType="HT_Center" VerticalAlignmentType="VT_Center" ctype="TextObjectData">
+            <Size X="120.0000" Y="24.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="-3.0000" Y="-65.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="128" G="0" B="128" />
+            <PrePosition />
+            <PreSize />
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>

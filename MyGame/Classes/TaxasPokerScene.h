@@ -29,6 +29,12 @@ public:
 	void showAllPlayersFinalCard();
 	void winCoinGoToWinners(uint8_t nPoolIdx,uint64_t nCoinPerWinner,uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM],uint8_t nWinnerCnt);
 	void onClickPlayerPhoto(CTaxasPlayer*pPlayer);
+	void refreshForBetRoundEnd();
+	void refreshForGameEnd();
+	void refreshForGameStart();
+	void refreshForWaitGame();
+	uint8_t getCurRoomState(){return m_eCurState ;}
+	uint8_t getPlayerCntWithState(eRoomPeerState eS );
 protected:
 	void doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetIdx );
 	void goToState(eRoomState eState,stMsg* pmsg = nullptr );

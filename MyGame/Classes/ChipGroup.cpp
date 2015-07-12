@@ -179,7 +179,7 @@ void CChipGroup::SetGroupCoin( uint64_t nAllCoin  , bool bVisible )
 			Sprite* ps = Sprite::create(StringUtils::format("%d.png",nIdx%2)) ; //Sprite::create(StringUtils::format("%lld.png",nIdx++%2)) ;
 			addChild(ps);
 			//ps->setRotation(random()%360);
-			ps->setScale(0.5);
+			//ps->setScale(0.5);
 			m_vAllSprites.push_back(ps);
 			++nIdx;
 		}

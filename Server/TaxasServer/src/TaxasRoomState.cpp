@@ -169,7 +169,7 @@ void CTaxasStateWaitJoin::Update(float fDelte )
 void CTaxasStateBlindBet::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
-	m_fDuringTime = TIME_BLIND_BET_STATE ;
+	m_fDuringTime = TIME_BLIND_BET_STATE + 1.5;
 	pRoom->StartGame();
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateBlindBet");
 }
@@ -202,6 +202,7 @@ void CTaxasStatePrivateCard::EnterState(CTaxasRoom* pRoom )
 		m_fDuringTime = 0 ;
 		CLogMgr::SharedLogMgr()->ErrorLog("distribute hold card time < 0 peer = %d",m_pRoom->GetPlayerCntWithState(eRoomPeer_CanAct));
 	}
+	m_fDuringTime += 1.5 ;
 	m_pRoom->DistributePrivateCard();
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStatePrivateCard");
 }
@@ -258,12 +259,21 @@ void CTaxasStatePlayerBet::Update(float fDelte )
 		}
 	}
  
-	CTaxasBaseRoomState::Update(fDelte);
+	if ( m_bIsCurActPlayerActing  == false )  // wait player  act . if cur player is acting , need not to timeOut ;
+	{
+		CTaxasBaseRoomState::Update(fDelte);
+	}
 }
 
 void CTaxasStatePlayerBet::OnStateTimeOut()
 {
+	if ( m_bIsCurActPlayerActing )  
+	{
+		return ;
+	}
+
 	m_pRoom->OnPlayerActTimeOut() ;
+	CLogMgr::SharedLogMgr()->PrintLog("wait time out");
 	//if ( m_pRoom->IsThisRoundBetOK() == false )
 	//{
 	//	m_pRoom->InformPlayerAct();
@@ -291,7 +301,7 @@ bool CTaxasStatePlayerBet::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 				return true ;
 			}
 
-			stTaxasPeerData* pData = m_pRoom->GetSitDownPlayerData(nPlayerSessionID);
+			stTaxasPeerData* pData = m_pRoom->GetSitDownPlayerData(nSeatIdx);
 			bool bNedWait = false ;
 			uint64_t nBetCoinThisRound = 0 ;
 			if ( pData != nullptr && pData->IsHaveState(eRoomPeer_WaitCaculate) )
@@ -329,14 +339,14 @@ bool CTaxasStatePlayerBet::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 			msgBack.nRet = m_pRoom->OnPlayerAction( nSeatIdx,(eRoomPeerAction)pAct->nPlayerAct,pAct->nValue) ;
 			if ( msgBack.nRet == 0 )
 			{
-				float nThisActTime = TIME_PLAYER_BET_COIN_ANI ;
+				float nThisActTime = TIME_PLAYER_BET_COIN_ANI + 0.7;
 				if ( pAct->nPlayerAct == eRoomPeerAction_GiveUp  )
 				{
 					nThisActTime = TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL ;
 				}
 				else if ( eRoomPeerAction_Pass == pAct->nPlayerAct )
 				{
-					nThisActTime = 0 ;
+					nThisActTime = nThisActTime * 0.5 ;
 				}
 
 				if ( m_bHavePlayerActing  )
@@ -389,13 +399,14 @@ void CTaxasStateOneRoundBetEndResult::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
 	uint8_t nCnt = m_pRoom->CaculateOneRoundPool() ;
-	if ( m_pRoom->GetAllBetCoinThisRound() <= 0 )
+	if ( m_pRoom->GetAllBetCoinThisRound() <= 0 && nCnt == 0 )
 	{
-		m_fDuringTime = 0 ;
+		m_fDuringTime = 1.2 ;
+		CLogMgr::SharedLogMgr()->PrintLog("not bet just go over");
 	}
 	else
 	{
-		m_fDuringTime = TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL + TIME_TAXAS_MAKE_VICE_POOLS * nCnt + 1 ; // if produced vice pool , need more time ;
+		m_fDuringTime = TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL + TIME_TAXAS_MAKE_VICE_POOLS * nCnt + 1.2 ; // if produced vice pool , need more time ;
 	}
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateOneRoundBetEndResult");
 }
@@ -423,7 +434,7 @@ void CTaxasStateOneRoundBetEndResult::OnStateTimeOut()
 void CTaxasStatePublicCard::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
-	m_fDuringTime = TIME_DISTRIBUTE_ONE_PUBLIC_CARD * m_pRoom->DistributePublicCard() + 1;
+	m_fDuringTime = TIME_DISTRIBUTE_ONE_PUBLIC_CARD * m_pRoom->DistributePublicCard() + 1.2;
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStatePublicCard");
 }
 
@@ -450,7 +461,7 @@ void CTaxasStatePublicCard::OnStateTimeOut()
 void CTaxasStateGameResult::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
-	m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + 2;
+	m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + TIME_TAXAS_SHOW_BEST_CARD + 3;
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateGameResult");
 }
 

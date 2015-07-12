@@ -69,6 +69,7 @@ public:
 	bool init(CTaxasPokerScene* pScene);
 	void enterState(stMsg* pmsg) ;
 	bool onMsg(stMsg* pmsg );
+	void leaveState();
 };	
 
 // public card state

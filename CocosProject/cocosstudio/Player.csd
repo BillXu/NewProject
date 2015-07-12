@@ -50,10 +50,10 @@
             <FileData Type="PlistSubImage" Path="card-back-small.png" Plist="image/cards.plist" />
             <BlendFunc Src="1" Dst="771" />
           </AbstractNodeData>
-          <AbstractNodeData Name="coin" ActionTag="-33430270" Tag="32" IconVisible="False" LeftMargin="-33.1078" RightMargin="-32.8922" TopMargin="52.9249" BottomMargin="-74.9249" FontSize="22" LabelText="303655" HorizontalAlignmentType="HT_Center" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="TextObjectData">
+          <AbstractNodeData Name="coin" ActionTag="-33430270" Tag="32" IconVisible="False" LeftMargin="-33.1078" RightMargin="-32.8922" TopMargin="53.9249" BottomMargin="-75.9249" FontSize="22" LabelText="303655" HorizontalAlignmentType="HT_Center" OutlineSize="0" ShadowOffsetX="0" ShadowOffsetY="0" ctype="TextObjectData">
             <Size X="66.0000" Y="22.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-            <Position X="-0.1078" Y="-63.9249" />
+            <Position X="-0.1078" Y="-64.9249" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="0" />
             <PrePosition />
@@ -119,6 +119,72 @@
             <PreSize />
             <FileData Type="Normal" Path="image/bg-chipin.png" Plist="" />
             <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard0" ActionTag="-1807395471" Tag="170" IconVisible="False" LeftMargin="-104.0000" RightMargin="26.0000" TopMargin="-54.0000" BottomMargin="-52.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="-65.0000" Y="1.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard1" ActionTag="-991075163" Tag="171" IconVisible="False" LeftMargin="-73.0000" RightMargin="-5.0000" TopMargin="-55.0000" BottomMargin="-51.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="-34.0000" Y="2.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard2" ActionTag="-668720914" Tag="172" IconVisible="False" LeftMargin="-38.0000" RightMargin="-40.0000" TopMargin="-55.0000" BottomMargin="-51.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="1.0000" Y="2.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard3" ActionTag="172729916" Tag="173" IconVisible="False" LeftMargin="-4.0000" RightMargin="-74.0000" TopMargin="-56.0000" BottomMargin="-50.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="35.0000" Y="3.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="bestCard4" ActionTag="-1094181333" Tag="174" IconVisible="False" LeftMargin="27.0000" RightMargin="-105.0000" TopMargin="-55.0000" BottomMargin="-51.0000" ctype="SpriteObjectData">
+            <Size X="78.0000" Y="106.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="66.0000" Y="2.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition />
+            <PreSize />
+            <FileData Type="PlistSubImage" Path="card-102.png" Plist="image/cards.plist" />
+            <BlendFunc Src="1" Dst="771" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="cardType" ActionTag="1750111308" Tag="175" IconVisible="False" LeftMargin="-53.0000" RightMargin="-47.0000" TopMargin="18.0000" BottomMargin="-38.0000" FontSize="24" LabelText="Text Label" HorizontalAlignmentType="HT_Center" VerticalAlignmentType="VT_Center" ctype="TextObjectData">
+            <Size X="120.0000" Y="24.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="-3.0000" Y="-28.0000" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="128" G="0" B="128" />
+            <PrePosition />
+            <PreSize />
+            <OutlineColor A="255" R="255" G="0" B="0" />
+            <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
         </Children>
       </ObjectData>
