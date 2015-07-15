@@ -254,6 +254,7 @@ void CPlayer::OnPlayerDisconnect()
 	{
 		stMsgOrderTaxasPlayerLeave msgLeave ;
 		msgLeave.nRoomID = m_nTaxasRoomID ;
+		msgLeave.nUserUID = GetUserUID();
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
 		m_nTaxasRoomID = 0 ;
 	}
@@ -301,6 +302,7 @@ void CPlayer::OnAnotherClientLoginThisPeer(unsigned int nSessionID )
 	{
 		stMsgOrderTaxasPlayerLeave msgLeave ;
 		msgLeave.nRoomID = m_nTaxasRoomID ;
+		msgLeave.nUserUID = GetUserUID();
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
 		m_nTaxasRoomID = 0 ;
 	}
@@ -592,3 +594,10 @@ void CPlayer::OnReactive(uint32_t nSessionID )
 		}
 	}
 }
+
+void CPlayer::playerDoLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned )
+{
+	m_nTaxasRoomID = 0 ;
+	GetBaseData()->caculateMoneyWhenLeaveTaxasRoom(bNormalLave,nTakeInCoin,bDiamoned);
+}
+

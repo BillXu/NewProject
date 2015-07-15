@@ -181,7 +181,6 @@ void CTaxasRoom::SendMsgToPlayer( uint32_t nSessionID, stMsg* pMsg, uint16_t nLe
 
 bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
 {
- 
 	if ( m_vAllState[m_eCurRoomState] )
 	{
 		bool btru = m_vAllState[m_eCurRoomState]->OnMessage(prealMsg,eSenderPort,nPlayerSessionID);
@@ -194,10 +193,10 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 
 }
 
-void CTaxasRoom::AddPlayer( stTaxasInRoomPeerData& nPeerData )
+void CTaxasRoom::AddPlayer( stTaxasInRoomPeerDataExten& nPeerData )
 {
-	stTaxasInRoomPeerData* pData = new stTaxasInRoomPeerData ;
-	memcpy(pData,&nPeerData,sizeof(stTaxasInRoomPeerData));
+	stTaxasInRoomPeerDataExten* pData = new stTaxasInRoomPeerDataExten ;
+	memcpy(pData,&nPeerData,sizeof(stTaxasInRoomPeerDataExten));
 	m_vAllPeers.push_back(pData);
 
 	SendRoomInfoToPlayer(nPeerData.nSessionID);
@@ -224,10 +223,10 @@ void CTaxasRoom::OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID , uint64
 		return ;
 	}
 
-	stTaxasInRoomPeerData* pData = GetInRoomPlayerDataBySessionID(nSessionID) ;
-	if ( pData == NULL )
+	stTaxasInRoomPeerDataExten* pData = GetInRoomPlayerDataBySessionID(nSessionID) ;
+	if ( pData == NULL || pData->IsHaveState(eRoomPeer_WithdrawingCoin) )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("nsession id = %d not in room cannot sit down ",nSessionID) ; 
+		CLogMgr::SharedLogMgr()->ErrorLog("nsession id = %d not in room cannot sit down or just withdrawing money ",nSessionID) ; 
 		return ;
 	}
 
@@ -236,11 +235,34 @@ void CTaxasRoom::OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID , uint64
 	m_vSitDownPlayers[nSeatIdx].nAllBetCoin = 0 ;
 	m_vSitDownPlayers[nSeatIdx].nBetCoinThisRound = 0 ;
 	m_vSitDownPlayers[nSeatIdx].nSeatIdx = nSeatIdx ;
-	m_vSitDownPlayers[nSeatIdx].nStateFlag = eRoomPeer_WaitNextGame ;
-	m_vSitDownPlayers[nSeatIdx].nTakeInMoney = nTakeInMoney ;
 	m_vSitDownPlayers[nSeatIdx].nTotalBuyInThisRoom = 0 ;
 	m_vSitDownPlayers[nSeatIdx].nWinCoinThisGame = 0 ;
 	memset(m_vSitDownPlayers[nSeatIdx].vHoldCard,0,sizeof(m_vSitDownPlayers[nSeatIdx].vHoldCard)) ;
+	pData->nStateFlag &= (~eRoomPeer_StandUp);
+	pData->nStateFlag |= eRoomPeer_SitDown;
+	if ( pData->nCoinInRoom > nTakeInMoney )
+	{
+		m_vSitDownPlayers[nSeatIdx].nStateFlag = eRoomPeer_WaitNextGame ;
+		m_vSitDownPlayers[nSeatIdx].nTakeInMoney = nTakeInMoney ;
+		CLogMgr::SharedLogMgr()->PrintLog("takin coin enough uid = %d" ,pData->nUserUID);
+	}
+	else
+	{
+		m_vSitDownPlayers[nSeatIdx].nStateFlag = (eRoomPeer_WithdrawingCoin | eRoomPeer_SitDown );
+		m_vSitDownPlayers[nSeatIdx].nTakeInMoney = pData->nCoinInRoom ;
+		pData->nStateFlag |= eRoomPeer_WithdrawingCoin ;
+		// not enough , request from data svr
+		stMsgTaxasPlayerRequestCoin msgReq ;
+		msgReq.bIsDiamond = false ;
+		msgReq.nSessionID = nSessionID ;
+		msgReq.nUserUID = pData->nUserUID ;
+		msgReq.nWantMoney = nTakeInMoney - m_vSitDownPlayers[nSeatIdx].nTakeInMoney ;
+		msgReq.nSeatIdx = nSeatIdx ;
+		CTaxasServerApp::SharedGameServerApp()->sendMsg(GetRoomID(),(char*)&msgReq,sizeof(msgReq)) ;
+		CLogMgr::SharedLogMgr()->PrintLog("takin coin not enough request from data svr uid = %d" ,pData->nUserUID);
+	}
+	pData->nCoinInRoom -= m_vSitDownPlayers[nSeatIdx].nTakeInMoney ;
+
 
 	// send msg tell other 
 	stMsgTaxasRoomSitDown msgOther ;
@@ -274,12 +296,25 @@ void CTaxasRoom::OnPlayerStandUp(uint8_t nSeatIdx )
 	SendRoomMsg(&msgOther,sizeof(msgOther)) ;
 
 	// infor data serve the leave ;
-	stMsgInformTaxasPlayerStandUp msgInfom ;
-	msgInfom.nSessionID = m_vSitDownPlayers[nSeatIdx].nSessionID ;
-	msgInfom.nTakeInMoney = m_vSitDownPlayers[nSeatIdx].nTakeInMoney ;
-	msgInfom.nUserUID = m_vSitDownPlayers[nSeatIdx].nUserUID ;
-	msgInfom.bIsDiamond = false ;
-	CTaxasServerApp::SharedGameServerApp()->sendMsg(GetRoomID(),(char*)&msgInfom,sizeof(msgInfom)) ;
+	stTaxasInRoomPeerDataExten* pData = GetInRoomPlayerDataBySessionID(m_vSitDownPlayers[nSeatIdx].nSessionID) ;
+	if ( pData == NULL )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("nsession id = %d will standup player not in room Big error, Big error !!",m_vSitDownPlayers[nSeatIdx].nSessionID ) ; 
+		memset(&m_vSitDownPlayers[nSeatIdx],0,sizeof(m_vSitDownPlayers[nSeatIdx]) ) ;
+		m_vSitDownPlayers[nSeatIdx].nSeatIdx = nSeatIdx ;
+		return ;
+	}
+
+	if ( pData->IsHaveState(eRoomPeer_WithdrawingCoin) )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("you are withdraw coin ,why you standup uid = %d",pData->nUserUID );
+	}
+
+	// store back to CoinInRoom ;
+	pData->nCoinInRoom += m_vSitDownPlayers[nSeatIdx].nTakeInMoney ;
+	pData->nStateFlag |= eRoomPeer_StandUp ;
+	pData->nStateFlag &= (~eRoomPeer_SitDown);
+
 	// remove from seat ;
 	memset(&m_vSitDownPlayers[nSeatIdx],0,sizeof(m_vSitDownPlayers[nSeatIdx]) ) ;
 	m_vSitDownPlayers[nSeatIdx].nSeatIdx = nSeatIdx ;
@@ -317,6 +352,8 @@ void CTaxasRoom::OnPlayerLeaveRoom(uint32_t nPlayerSession )
 	{
 		stMsgInformTaxasPlayerLeave msgLeave ;
 		msgLeave.nUserUID = GetInRoomPlayerDataBySessionID(nPlayerSession)->nUserUID ;
+		msgLeave.nTakeInMoney = GetInRoomPlayerDataBySessionID(nPlayerSession)->nCoinInRoom ;
+		msgLeave.bIsDiamond = false ;
 		CTaxasServerApp::SharedGameServerApp()->sendMsg(GetRoomID(),(char*)&msgLeave,sizeof(msgLeave)) ;
 	}
 
@@ -480,7 +517,11 @@ void CTaxasRoom::StartGame()
 		pData.nAllBetCoin = 0 ;
 		pData.nBetCoinThisRound = 0 ;
 		pData.nWinCoinThisGame = 0 ;
-		pData.nStateFlag = eRoomPeer_CanAct ;
+		if (pData.IsHaveState(eRoomPeer_WaitNextGame) )
+		{
+			pData.nStateFlag = eRoomPeer_CanAct ;
+		}
+
 		pData.eCurAct = eRoomPeerAction_None ;
 		memset(pData.vHoldCard,0,sizeof(pData.vHoldCard)) ;
 		CLogMgr::SharedLogMgr()->PrintLog("player uid = %d , left coin = %I64d",pData.nUserUID,pData.nTakeInMoney);
@@ -530,9 +571,29 @@ void CTaxasRoom::ResetRoomData()
 		pData.nAllBetCoin = 0 ;
 		pData.nBetCoinThisRound = 0 ;
 		pData.nWinCoinThisGame = 0 ;
-		pData.nStateFlag = eRoomPeer_WaitNextGame ;
 		pData.eCurAct = eRoomPeerAction_None ;
 		memset(pData.vHoldCard,0,sizeof(pData.vHoldCard)) ;
+
+		if ( eRoomPeer_LackOfCoin == pData.nStateFlag )
+		{
+			// second time player still have enough coin , should stand up
+			CLogMgr::SharedLogMgr()->PrintLog("player lack of money standup uid = %d",pData.nUserUID);
+			OnPlayerStandUp(nIdx);
+			continue;
+		}
+
+		if (pData.nTakeInMoney < m_nLittleBlind * 2 )
+		{
+			if ( !pData.IsHaveState(eRoomPeer_WithdrawingCoin) )
+			{
+				pData.nStateFlag = eRoomPeer_LackOfCoin ;
+				CLogMgr::SharedLogMgr()->PrintLog("player lack of money uid = %d ",pData.nUserUID);
+			}
+		}
+		else
+		{
+			pData.nStateFlag = eRoomPeer_WaitNextGame ;
+		}
 	}
 
 	// prepare running data 
@@ -1127,7 +1188,7 @@ void CTaxasRoom::SendRoomInfoToPlayer(uint32_t nSessionID )
 	CLogMgr::SharedLogMgr()->PrintLog("send room data to player ");
 }
 
-stTaxasInRoomPeerData* CTaxasRoom::GetInRoomPlayerDataBySessionID( uint32_t nSessionID )
+stTaxasInRoomPeerDataExten* CTaxasRoom::GetInRoomPlayerDataBySessionID( uint32_t nSessionID )
 {
 	VEC_IN_ROOM_PEERS::iterator iter = m_vAllPeers.begin();
 	for ( ; iter != m_vAllPeers.end() ; ++iter )
@@ -1138,4 +1199,10 @@ stTaxasInRoomPeerData* CTaxasRoom::GetInRoomPlayerDataBySessionID( uint32_t nSes
 		}
 	}
 	return NULL;
+}
+
+void CTaxasRoom::syncPlayerDataToDataSvr( uint32_t nSessionID )
+{
+	// if player requesting coin , do not sync data ;
+	/// and just after game result ;
 }

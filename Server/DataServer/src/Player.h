@@ -37,6 +37,7 @@ public:
 	time_t GetDisconnectTime(){ return m_nDisconnectTime ;}
 	void SetStayInTaxasRoomID(uint32_t nRoomID ){ m_nTaxasRoomID = nRoomID ; }
 	uint32_t GetTaxasRoomID(){ return m_nTaxasRoomID ; }
+	void playerDoLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned );
 protected:
 	bool ProcessPublicPlayerMsg( stMsg* pMessage , eMsgPort eSenderPort );
 	void PushTestAPNs();

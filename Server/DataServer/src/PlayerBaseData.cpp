@@ -18,8 +18,8 @@ CPlayerBaseData::CPlayerBaseData(CPlayer* player )
 	:IPlayerComponent(player)
 {
 	m_eType = ePlayerComponent_BaseData ;
-	m_nTakeInDiamoned = 0 ;
-	m_nTakeInCoin = 0 ;
+	m_nTaxasPlayerDiamoned = 0 ;
+	m_nTaxasPlayerCoin = 0 ;
 	memset(&m_stBaseData,0,sizeof(m_stBaseData)) ;
 	m_bGivedLoginReward = false ;
 }
@@ -31,8 +31,8 @@ CPlayerBaseData::~CPlayerBaseData()
 
 void CPlayerBaseData::Init()
 {
-	m_nTakeInDiamoned = 0 ;
-	m_nTakeInCoin = 0 ;
+	m_nTaxasPlayerDiamoned = 0 ;
+	m_nTaxasPlayerCoin = 0 ;
 	memset(&m_stBaseData,0,sizeof(m_stBaseData)) ;
 	m_stBaseData.nUserUID = GetPlayer()->GetUserUID() ;
 	m_bGivedLoginReward = false ;
@@ -47,8 +47,8 @@ void CPlayerBaseData::Init()
 void CPlayerBaseData::Reset()
 {
 	m_bGivedLoginReward = false ;
-	m_nTakeInDiamoned = 0 ;
-	m_nTakeInCoin = 0 ;
+	m_nTaxasPlayerDiamoned = 0 ;
+	m_nTaxasPlayerCoin = 0 ;
 
 	m_bMoneyDataDirty = false;
 	m_bTaxasDataDirty = false;
@@ -353,8 +353,8 @@ void CPlayerBaseData::TimerSave()
 	{
 		m_bMoneyDataDirty = false ;
 		stMsgSavePlayerMoney msgSaveMoney ;
-		msgSaveMoney.nCoin = m_stBaseData.nCoin ;
-		msgSaveMoney.nDiamoned = m_stBaseData.nDiamoned ;
+		msgSaveMoney.nCoin = m_stBaseData.nCoin + m_nTaxasPlayerCoin;
+		msgSaveMoney.nDiamoned = m_stBaseData.nDiamoned + m_nTaxasPlayerDiamoned;
 		msgSaveMoney.nUserUID = GetPlayer()->GetUserUID() ;
 		SendMsg((stMsgSavePlayerMoney*)&msgSaveMoney,sizeof(msgSaveMoney)) ;
 	}
@@ -404,17 +404,16 @@ void CPlayerBaseData::TimerSave()
 	}
 }
 
-bool CPlayerBaseData::SetTakeInCoin(uint64_t nCoinOffset, bool bDiamoned)
+bool CPlayerBaseData::onTaxasPlayerRequestMoney(uint64_t nCoinOffset, bool bDiamoned)
 {
- 	//CaculateTakeInMoney();
  	if ( bDiamoned == false )
  	{
  		if ( nCoinOffset > GetAllCoin() )
 		{
 			return false ;
 		}
- 		m_nTakeInCoin = min(nCoinOffset,GetAllCoin()); 
- 		m_stBaseData.nCoin -= m_nTakeInCoin ;
+ 		//m_nTaxasPlayerCoin += nCoinOffset ;   //add after recieved comfirm msg 
+ 		m_stBaseData.nCoin -= nCoinOffset ;
  	}
  	else
  	{
@@ -422,12 +421,42 @@ bool CPlayerBaseData::SetTakeInCoin(uint64_t nCoinOffset, bool bDiamoned)
 		{
 			return false ;
 		}
- 		m_nTakeInDiamoned = (unsigned int)min(nCoinOffset,GetAllDiamoned()); ;
- 		m_stBaseData.nDiamoned -= (unsigned int)m_nTakeInDiamoned ;
+ 		// m_nTaxasPlayerDiamoned += nCoinOffset; ; //add after recieved comfirm msg 
+ 		m_stBaseData.nDiamoned -= nCoinOffset ;
  	}
-
-	m_bMoneyDataDirty = true ;
 	return true ;
+}
+
+bool CPlayerBaseData::onTaxasPlayerRequestMoneyComfirm( bool bSucess, uint64_t nAddedMoney, bool bDiamoned )
+{
+	if ( bSucess && GetPlayer()->GetTaxasRoomID() ) // when add sucess , and player still in taxas room , 
+	{
+		if (bDiamoned )
+		{
+			m_nTaxasPlayerDiamoned += nAddedMoney; 
+		}
+		else
+		{
+			m_nTaxasPlayerCoin += nAddedMoney ; 
+		}
+	}
+	else
+	{
+		if (bDiamoned )
+		{
+			m_stBaseData.nDiamoned += nAddedMoney; 
+		}
+		else
+		{
+			m_stBaseData.nCoin += nAddedMoney ; 
+		}
+	}
+	return true ;
+}
+
+void CPlayerBaseData::onSyncTaxasPlayerData()
+{
+
 }
 
 bool CPlayerBaseData::ModifyMoney(int64_t nOffset,bool bDiamond  )
@@ -559,18 +588,23 @@ void CPlayerBaseData::OnReactive(uint32_t nSessionID )
 	SendBaseDatToClient();
 }
 
-void CPlayerBaseData::CacluateTaxasRoomMoney(uint64_t nNewTakeIn, bool bDiamond )
+void CPlayerBaseData::caculateMoneyWhenLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned)
 {
-	if ( bDiamond )
+	if ( bNormalLave )
 	{
-		m_stBaseData.nDiamoned += nNewTakeIn ;
-		m_nTakeInDiamoned = 0 ;
-	}
-	else
-	{
-		m_stBaseData.nCoin += nNewTakeIn ;
-		m_nTakeInCoin = 0 ;
+		if ( bDiamoned )
+		{
+			m_nTaxasPlayerDiamoned = nTakeInCoin ;
+		}
+		else
+		{
+			m_nTaxasPlayerCoin = nTakeInCoin ;
+		}
 	}
 
-	m_bMoneyDataDirty = true ;
+	m_stBaseData.nDiamoned += m_nTaxasPlayerDiamoned ;
+	m_nTaxasPlayerDiamoned = 0 ;
+
+	m_stBaseData.nCoin += m_nTaxasPlayerCoin ;
+	m_nTaxasPlayerCoin = 0 ;
 }

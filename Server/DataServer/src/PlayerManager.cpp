@@ -160,6 +160,7 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 				// may have error  order leave 
 				stMsgOrderTaxasPlayerLeave msg ;
 				msg.nRoomID = pPlayer->GetTaxasRoomID() ;
+				msg.nUserUID = pPlayer->GetUserUID();
 				CGameServerApp::SharedGameServerApp()->sendMsg(pPlayer->GetSessionID(),(char*)&msg,sizeof(msg)) ;
 				return true ;
 			}
@@ -175,57 +176,68 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 			pPlayer->SetStayInTaxasRoomID(nRoomID) ;
 		}
 		break;
-	case MSG_TP_REQUEST_TAKE_IN_MONEY:
+	case MSG_TP_REQUEST_MONEY:
 		{
-			stMsgRequestTaxasPlayerTakeInCoin* pRet = (stMsgRequestTaxasPlayerTakeInCoin*)prealMsg ;
-			stMsgRequestTaxasPlayerTakeInCoinRet msgBack ;
-			CPlayer* pPlayer = GetPlayerBySessionID(pRet->nPlayerSessionID ) ;
+			stMsgTaxasPlayerRequestCoin* pRet = (stMsgTaxasPlayerRequestCoin*)prealMsg ;
+			stMsgTaxasPlayerRequestCoinRet msgBack ;
+			msgBack.bIsDiamond = pRet->bIsDiamond ;
+			msgBack.nAddedMoney = pRet->nWantMoney ;
+			msgBack.nRoomID = nRoomID ;
+			msgBack.nSeatIdx = pRet->nSeatIdx ;
+			msgBack.nUserUID = pRet->nUserUID ;
+			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nUserUID,false) ;
 			if ( pPlayer == NULL )
 			{
 				msgBack.nRet = 2 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_REQUEST_TAKE_IN_MONEY why can not find player session from taxas server session id = %d",pRet->nPlayerSessionID ) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				
+				stMsgOrderTaxasPlayerLeave msg ;
+				msg.nRoomID = nRoomID ;
+				msg.nUserUID = pRet->nUserUID;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msg,sizeof(msg)) ;
+
+				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_REQUEST_IMONEY why can not find player session from taxas server session id = %d",pRet->nSessionID ) ;
 				return true ;
 			}
 
-			if ( pPlayer->GetBaseData()->SetTakeInCoin(pRet->nMoneyToTakeIn,pRet->bIsDiamond) )
+			if ( pPlayer->GetBaseData()->onTaxasPlayerRequestMoney(pRet->nWantMoney,pRet->bIsDiamond) )
 			{
 				msgBack.nRet = 0 ;
-				msgBack.nMoneyToTakeIn = pRet->nMoneyToTakeIn ;
-				msgBack.nRoomID = nRoomID ;
-				msgBack.nSeatIdx = pRet->nSeatIdx ;
-				msgBack.bIsDiamond = pRet->bIsDiamond ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			}
 			else
 			{
 				msgBack.nRet = 1 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			}
 		}
 		break;
-	case MSG_TP_INFORM_STAND_UP:
+	case MSG_TP_REQUEST_MONEY_COMFIRM:
 		{
-			stMsgInformTaxasPlayerStandUp* pRet = (stMsgInformTaxasPlayerStandUp*)prealMsg ;
-			CPlayer* pPlayer = NULL ;
-			if ( pRet->nUserUID )
+			stMsgTaxasPlayerRequestCoinComfirm* pRet = (stMsgTaxasPlayerRequestCoinComfirm*)prealMsg ;
+			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nUserUID ) ;
+			if (pPlayer)
 			{
-				pPlayer = GetPlayerByUserUID(pRet->nUserUID ) ;
+				pPlayer->GetBaseData()->onTaxasPlayerRequestMoneyComfirm(pRet->nRet == 0 ,pRet->nWantedMoney,pRet->bDiamond) ;
 			}
 			else
 			{
-				pPlayer = GetPlayerBySessionID(pRet->nSessionID ) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("why request comfirm no player uid = %d",pRet->nUserUID);
 			}
-
-			if ( pPlayer == NULL )
+		}
+		break;
+	case MSG_TP_ORDER_LEAVE:
+		{
+			stMsgOrderTaxasPlayerLeaveRet* pRet = (stMsgOrderTaxasPlayerLeaveRet*)prealMsg ;
+			// if success , we will recived inform leave , if failed just recieved this msg 
+			if ( pRet->nRet )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_INFORM_STAND_UP why can not find player uid from taxas server uid = %d",pRet->nSessionID ) ;
-				return true ;
-			}
-
-			if ( pPlayer )
-			{
-				pPlayer->GetBaseData()->CacluateTaxasRoomMoney(pRet->nTakeInMoney,pRet->bIsDiamond) ;
+				CPlayer* pPlayer = GetPlayerByUserUID(pRet->nUserUID );
+				if ( pPlayer )
+				{
+					pPlayer->playerDoLeaveTaxasRoom(false,0,0 );
+				}
+				CLogMgr::SharedLogMgr()->ErrorLog("order leave failed uid = %d",pRet->nUserUID);
 			}
 		}
 		break;
@@ -238,7 +250,8 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_INFORM_LEAVE why can not find player uid from taxas server uid = %d",pRet->nUserUID ) ;
 				return true ;
 			}
-			pPlayer->SetStayInTaxasRoomID(0) ;
+			pPlayer->playerDoLeaveTaxasRoom(true,pRet->nTakeInMoney,pRet->bIsDiamond);
+			CLogMgr::SharedLogMgr()->PrintLog("be told uid = %d leave taxas room",pRet->nUserUID );
 		}
 		break;
 	default:

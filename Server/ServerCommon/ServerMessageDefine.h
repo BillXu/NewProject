@@ -130,35 +130,47 @@ struct stMsgRequestTaxasPlayerDataRet
 	stTaxasInRoomPeerData tData ;
 };
 
-struct stMsgRequestTaxasPlayerTakeInCoin
+struct stMsgTaxasPlayerRequestCoin
 	:public stMsg
 {
-	stMsgRequestTaxasPlayerTakeInCoin(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_REQUEST_TAKE_IN_MONEY ; }
-	uint32_t nPlayerSessionID ;
-	uint8_t nSeatIdx ;
-	uint64_t nMoneyToTakeIn;
-	bool bIsDiamond ;
-};
-
-struct stMsgRequestTaxasPlayerTakeInCoinRet
-	:public stMsg
-{
-	stMsgRequestTaxasPlayerTakeInCoinRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_REQUEST_TAKE_IN_MONEY ; }
-	uint8_t nRet ; // 0 success , 1 not enough , 2 canot find player 
-	uint32_t nRoomID ;
-	uint8_t nSeatIdx ;
-	uint64_t nMoneyToTakeIn;  // 0 means money not enough ;
-	bool bIsDiamond ;
-};
-
-struct stMsgInformTaxasPlayerStandUp
-	:public stMsg
-{
-	stMsgInformTaxasPlayerStandUp(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_INFORM_STAND_UP ; }
+	stMsgTaxasPlayerRequestCoin(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_REQUEST_MONEY ; }
 	uint32_t nUserUID ;
 	uint32_t nSessionID ;
-	uint64_t nTakeInMoney;
+	uint64_t nWantMoney;
+	uint8_t nSeatIdx ;
 	bool bIsDiamond ;
+};
+
+struct stMsgTaxasPlayerRequestCoinRet
+	:public stMsg
+{
+	stMsgTaxasPlayerRequestCoinRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_REQUEST_MONEY ; }
+	uint8_t nRet ; // 0 success , 1 not enough , 2 canot find player , 3 not in a taxas room 
+	uint32_t nRoomID ;
+	uint32_t nUserUID ;
+	uint8_t nSeatIdx ;
+	uint64_t nAddedMoney;  // 0 means money not enough ;
+	bool bIsDiamond ;
+};
+
+struct stMsgTaxasPlayerRequestCoinComfirm
+	:public stMsg
+{
+	stMsgTaxasPlayerRequestCoinComfirm(){ cSysIdentifer = ID_MSG_PORT_DATA, usMsgType = MSG_TP_REQUEST_MONEY_COMFIRM ; }
+	uint8_t nRet ; // 0 success , 1 failed;
+	bool bDiamond ;
+	uint64_t nWantedMoney ;
+	uint32_t nUserUID ;
+};
+
+struct  stMsgSyncTaxasPlayerData
+	:public stMsg
+{
+	stMsgSyncTaxasPlayerData(){ cSysIdentifer = ID_MSG_PORT_DATA,usMsgType = MSG_TP_SYNC_PLAYER_DATA ; }
+	uint32_t nUserUID ;
+	uint64_t nMoney ;
+	bool bIsDiamond ;
+	// some other data : et , most win single or win times or lose times ;
 };
 
 struct stMsgInformTaxasPlayerLeave
@@ -166,6 +178,8 @@ struct stMsgInformTaxasPlayerLeave
 {
 	stMsgInformTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_INFORM_LEAVE; }
 	uint32_t nUserUID ;
+	uint64_t nTakeInMoney ;
+	bool bIsDiamond ;
 };
 
 struct stMsgOrderTaxasPlayerLeave
@@ -173,6 +187,15 @@ struct stMsgOrderTaxasPlayerLeave
 {
 	stMsgOrderTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_ORDER_LEAVE ; }
 	uint32_t nRoomID ;
+	uint32_t nUserUID ;
+};
+
+struct stMsgOrderTaxasPlayerLeaveRet
+	:public stMsg
+{
+	stMsgOrderTaxasPlayerLeaveRet(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_ORDER_LEAVE ; }
+	uint8_t nRet ; // 0 success , 1 can not find room ;
+	uint32_t nUserUID ;
 };
 
 //----above is new , below is ok---------

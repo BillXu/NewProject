@@ -7,13 +7,26 @@
 class CTaxasBaseRoomState ;
 
 typedef std::vector<uint8_t> VEC_INT8 ;
+struct stTaxasInRoomPeerDataExten
+	:public stTaxasInRoomPeerData
+{
+	// when play stand up, nCoinInRoom is player total coin, 
+	//when player sit down (nCoinInRoom + nTakeInCoin) is player total coin
+	// when player sitdown again (but not leave room ) TakeIn coin first from  nCoinInRoom, if not enough
+	// then rquest from data svr ;
+	// when player standup ,should add 'nTakeInCoin' to  'nCoinInRoom'
+	uint64_t nCoinInRoom ; 
+	uint32_t nStateFlag ;
+	bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; }
+};
 
 struct stTaxasPeerData
 	:public stTaxasPeerBaseData
 {
-	uint64_t nAllBetCoin ;
-	uint64_t nTotalBuyInThisRoom ;
-	uint64_t nWinCoinThisGame ; 
+	uint64_t nAllBetCoin ;  // used for record
+	uint64_t nTotalBuyInThisRoom ; // used for record
+	uint64_t nWinCoinThisGame ;    // used for record
+
 
 	bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; } ;
 	bool IsInvalid(){ return (nSessionID == 0) && (nUserUID == 0);}
@@ -63,7 +76,7 @@ class CTaxasRoom
 	:public CTimerDelegate
 {
 public:
-	typedef std::vector<stTaxasInRoomPeerData*> VEC_IN_ROOM_PEERS ;
+	typedef std::vector<stTaxasInRoomPeerDataExten*> VEC_IN_ROOM_PEERS ;
 public:
 	CTaxasRoom();
 	virtual ~CTaxasRoom();
@@ -74,10 +87,10 @@ public:
 	void SendRoomMsg(stMsg* pMsg, uint16_t nLen );
 	void SendMsgToPlayer( uint32_t nSessionID, stMsg* pMsg, uint16_t nLen  );
 	virtual bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
-	void AddPlayer( stTaxasInRoomPeerData& nPeerData );
+	void AddPlayer( stTaxasInRoomPeerDataExten& nPeerData );
 	uint32_t GetRoomID(){ return nRoomID ;}
 	bool IsPlayerInRoomWithSessionID(uint32_t nSessionID );
-	void OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID , uint64_t nTakeInMoney );
+	void OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID, uint64_t nTakeInCoin );
 	void OnPlayerStandUp(uint8_t nSeatIdx );
 	uint8_t GetSeatIdxBySessionID(uint32_t nSessionID );
 	void OnPlayerLeaveRoom(uint32_t nPlayerSession );
@@ -104,8 +117,8 @@ protected:
 	stVicePool& GetFirstCanUseVicePool();
 	void CaculateVicePool(stVicePool& pPool );
 	void SendRoomInfoToPlayer(uint32_t nSessionID );
-	stTaxasInRoomPeerData* GetInRoomPlayerDataBySessionID( uint32_t nSessionID );
-
+	stTaxasInRoomPeerDataExten* GetInRoomPlayerDataBySessionID( uint32_t nSessionID );
+	void syncPlayerDataToDataSvr( uint32_t nSessionID );
 	friend class CTaxasBaseRoomState ;
 	friend class CTaxasStatePlayerBet ;
 protected:

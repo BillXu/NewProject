@@ -75,8 +75,24 @@ struct stMsgTaxasPlayerSitDownRet
 	:public stMsg
 {
 	stMsgTaxasPlayerSitDownRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_PLAYER_SIT_DOWN ; }
-	uint8_t nRet ; // 0 succsss , 1 pos have peer , 2 invalid session id, not in room   ; 3 invalid take in coin , 4 , money not engouth  
+	uint8_t nRet ; // 0 succsss , 1 pos have peer , 2 invalid session id, not in room   ; 3 invalid take in coin , 4 ,withrawing error, money not engouth  , 6. withdrawing momey please wait 
 	uint8_t nSeatIdx ;
+};
+
+struct stMsgWithdrawingMoneyRet
+	:public stMsg
+{
+	stMsgWithdrawingMoneyRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_WITHDRAWING_MONEY ; }
+	uint8_t nRet ; // 0 success , 1 coin not enough , 3 you are not sit down you pos ;
+};
+
+struct stMsgTaxasRoomUpdatePlayerState
+	:public stMsg
+{
+	stMsgTaxasRoomUpdatePlayerState(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_UPDATE_PLAYER_STATE; }
+	uint8_t nSeatIdx ;
+	uint32_t nStateFlag ;
+	uint64_t nTakeInCoin ;   // if nTakeInCoin is 0 , means withdrawing coin is error , not enough coin ;stand up 
 };
 
 struct stMsgTaxasRoomSitDown

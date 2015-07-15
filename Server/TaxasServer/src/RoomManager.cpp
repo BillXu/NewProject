@@ -91,18 +91,22 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 			return true ;
 		}
 
-		pRoom->AddPlayer(pRet->tData);
+		stTaxasInRoomPeerDataExten tDataExten ;
+		memcpy(&tDataExten,&pRet->tData,sizeof(pRet->tData));
+		tDataExten.nCoinInRoom = 0 ;
+		tDataExten.nStateFlag = eRoomPeer_StandUp ;
+		pRoom->AddPlayer(tDataExten);
 		CLogMgr::SharedLogMgr()->PrintLog("recive player data , do joined to room");
 		return true;
 	}
 
-	if ( MSG_TP_REQUEST_TAKE_IN_MONEY == prealMsg->usMsgType && eSenderPort == ID_MSG_PORT_DATA )
+	if ( MSG_TP_REQUEST_MONEY == prealMsg->usMsgType && eSenderPort == ID_MSG_PORT_DATA )
 	{
-		stMsgRequestTaxasPlayerTakeInCoinRet* pRet = (stMsgRequestTaxasPlayerTakeInCoinRet*)prealMsg ;
+		stMsgTaxasPlayerRequestCoinRet* pRet = (stMsgTaxasPlayerRequestCoinRet*)prealMsg ;
 		CTaxasRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
 		if ( pRoom == NULL )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why not the room id = %d is null can not process msg = %d, session id = %d",pRet->nRoomID,MSG_TP_REQUEST_TAKE_IN_MONEY,nSessionID)  ;
+			CLogMgr::SharedLogMgr()->ErrorLog("Imporssible error , why not the room id = %d is null can not process msg = %d, session id = %d",pRet->nRoomID,MSG_TP_REQUEST_MONEY,nSessionID)  ;
 			return true ;
 		}
 		pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;
@@ -113,9 +117,15 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 	{
 		stMsgOrderTaxasPlayerLeave* pRet = (stMsgOrderTaxasPlayerLeave*)prealMsg ;
 		CTaxasRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
-		if ( pRoom == NULL )
+		if ( pRoom == NULL || pRoom->IsPlayerInRoomWithSessionID(nSessionID) == false )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why not the room id = %d is null can not process msg = %d, session id = %d",pRet->nRoomID,MSG_TP_REQUEST_TAKE_IN_MONEY,nSessionID)  ;
+			CLogMgr::SharedLogMgr()->ErrorLog("why not the room id = %d is null can not process , or you not in target room msg = %d, session id = %d",pRet->nRoomID,MSG_TP_ORDER_LEAVE,nSessionID)  ;
+			
+			// still inform data svr , help it reset room id , then player can enter room agian
+			stMsgOrderTaxasPlayerLeaveRet msgLeave ;
+			msgLeave.nUserUID = pRet->nUserUID;
+			msgLeave.nRet = 1 ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(pRet->nRoomID,(char*)&msgLeave,sizeof(msgLeave)) ;
 			return true ;
 		}
 		pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;

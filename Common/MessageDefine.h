@@ -130,7 +130,7 @@ struct stPlayerBrifData
 	uint8_t nVipLevel ;
 	uint16_t nPhotoID ;
 	uint64_t nCoin ;
-	uint32_t nDiamoned ;
+	uint64_t nDiamoned ;
 	bool bIsOnLine ;
 };
 
