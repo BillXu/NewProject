@@ -208,7 +208,7 @@ void CTaxasStateWaitJoin::EnterState(CTaxasRoom* pRoom )
 
 void CTaxasStateWaitJoin::Update(float fDelte )
 {
-	if ( m_pRoom->GetPlayerCntWithState(eRoomPeer_SitDown) >= 2 )
+	if ( m_pRoom->GetPlayerCntWithState(eRoomPeer_WaitNextGame) >= 2 )
 	{
 		m_pRoom->GoToState(eRoomState_TP_BetBlind) ;
 	}
@@ -522,7 +522,16 @@ void CTaxasStatePublicCard::OnStateTimeOut()
 void CTaxasStateGameResult::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
-	m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + TIME_TAXAS_SHOW_BEST_CARD + 3;
+    uint8_t nWaitCal = m_pRoom->GetPlayerCntWithState(eRoomPeer_WaitCaculate);
+	if ( nWaitCal > 1 )
+	{
+		m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + TIME_TAXAS_SHOW_BEST_CARD + 3;
+	}
+	else
+	{
+		m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + 1.3;
+	}
+	
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateGameResult");
 }
 

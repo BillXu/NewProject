@@ -78,6 +78,16 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			}
 		}
 		break;
+	case MSG_TP_UPDATE_PLAYER_STATE:
+		{
+			stMsgTaxasRoomUpdatePlayerState* pRet = (stMsgTaxasRoomUpdatePlayerState*)pmsg ;
+			if ( pRet->nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
+			{
+				vAllTaxasPlayerData[pRet->nSeatIdx].nStateFlag = pRet->nStateFlag ;
+				vAllTaxasPlayerData[pRet->nSeatIdx].nTakeInMoney = pRet->nTakeInCoin ;
+			}
+		}
+		break;
 	case MSG_TP_ROOM_STAND_UP:
 		{
 			stMsgTaxasRoomStandUp* pRet = (stMsgTaxasRoomStandUp*)pmsg ;
@@ -292,8 +302,18 @@ void stTaxasPokerData::resetRuntimeData()
 		stTaxasPeerBaseData& data = vAllTaxasPlayerData[nIdx] ;
 		data.eCurAct = eRoomPeerAction_None ;
 		data.nBetCoinThisRound = 0 ;
-		data.nStateFlag = eRoomPeer_WaitNextGame ;
 		memset(data.vHoldCard,0,sizeof(data.vHoldCard));
+		if (data.nTakeInMoney <= nLittleBlind * 2 )
+		{
+			if ((data.nStateFlag & eRoomPeer_WithdrawingCoin) != eRoomPeer_WithdrawingCoin )
+			{
+				data.nStateFlag = eRoomPeer_LackOfCoin ;
+			}
+		}
+		else
+		{
+			data.nStateFlag = eRoomPeer_WaitNextGame ;
+		}
 	}
 }
 

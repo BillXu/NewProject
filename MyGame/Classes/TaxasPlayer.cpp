@@ -128,7 +128,14 @@ void CTaxasPlayer::refreshContent( CTaxasPokerScene* pScene )
 		return ;
 	}
 
-	m_pCoin->setString(String::createWithFormat("%I64d",tPlayerData.nTakeInMoney)->getCString()) ;
+	if ( isHaveState(eRoomPeer_WithdrawingCoin) )
+	{
+		m_pCoin->setString("BuyingCoin");
+	}
+	else
+	{
+		m_pCoin->setString(String::createWithFormat("%I64d",tPlayerData.nTakeInMoney)->getCString()) ;
+	}
 	m_pName->setString(tPlayerData.cName);
 
 	bool bShowFinalCard = ((eRoomState_TP_GameResult == pScene->getCurRoomState() ) && isHaveState(eRoomPeer_WaitCaculate) && (pScene->getPlayerCntWithState(eRoomPeer_WaitCaculate) >= 2)) ;
@@ -272,7 +279,14 @@ void CTaxasPlayer::refreshCoin(CChipGroup* pGrop)
 {
 	CCLOG("refreshCoin bet coin this round = %I64d",m_pBindPlayerData->nBetCoinThisRound);
 	setBetCoin(m_pBindPlayerData->nBetCoinThisRound);
-	m_pCoin->setString(String::createWithFormat("%I64d",m_pBindPlayerData->nTakeInMoney)->getCString()) ;
+	if ( isHaveState(eRoomPeer_WithdrawingCoin) )
+	{
+		m_pCoin->setString("BuyingCoin");
+	}
+	else
+	{
+		m_pCoin->setString(String::createWithFormat("%I64d",m_pBindPlayerData->nTakeInMoney)->getCString()) ;
+	}
 }
 
 void CTaxasPlayer::winCoinGoToPlayer( Vec2& ptWinPoolWorldPt, float fAni )

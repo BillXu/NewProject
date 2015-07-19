@@ -240,7 +240,7 @@ void CTaxasRoom::OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID , uint64
 	memset(m_vSitDownPlayers[nSeatIdx].vHoldCard,0,sizeof(m_vSitDownPlayers[nSeatIdx].vHoldCard)) ;
 	pData->nStateFlag &= (~eRoomPeer_StandUp);
 	pData->nStateFlag |= eRoomPeer_SitDown;
-	if ( pData->nCoinInRoom > nTakeInMoney )
+	if ( pData->nCoinInRoom >= nTakeInMoney )
 	{
 		m_vSitDownPlayers[nSeatIdx].nStateFlag = eRoomPeer_WaitNextGame ;
 		m_vSitDownPlayers[nSeatIdx].nTakeInMoney = nTakeInMoney ;
@@ -411,7 +411,8 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 		{
 			if ( pData.nTakeInMoney + pData.nBetCoinThisRound < m_nMostBetCoinThisRound )
 			{
-				return OnPlayerAction(nSeatIdx,eRoomPeerAction_AllIn,pData.nTakeInMoney);
+				nValue = pData.nTakeInMoney ; // when all in must tell what value have allIned 
+				return OnPlayerAction(nSeatIdx,eRoomPeerAction_AllIn,nValue);
 			}
 			pData.eCurAct = act ;
 			pData.BetCoin(m_nMostBetCoinThisRound - pData.nBetCoinThisRound ) ;
@@ -421,7 +422,8 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 		{
 			if ( pData.nTakeInMoney < nValue )
 			{
-				return OnPlayerAction(nSeatIdx,eRoomPeerAction_AllIn,pData.nTakeInMoney);
+				nValue = pData.nTakeInMoney ; // when all in must tell what value have allIned
+				return OnPlayerAction(nSeatIdx,eRoomPeerAction_AllIn,nValue);
 			}
 
 			if ( pData.nBetCoinThisRound + nValue < m_nMostBetCoinThisRound + m_nLittleBlind * 2  )

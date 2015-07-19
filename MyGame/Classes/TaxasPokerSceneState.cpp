@@ -33,6 +33,28 @@ bool CTaxasPokerSceneStateBase::onMsg(stMsg* pmsg )
 			m_pScene->refreshVicePools();
 		}
 		break;
+	case MSG_TP_UPDATE_PLAYER_STATE:
+		{
+			stMsgTaxasRoomUpdatePlayerState* pRet = (stMsgTaxasRoomUpdatePlayerState*)pmsg ;
+			if ( pRet->nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
+			{
+				CTaxasPlayer* pPlayer = m_pScene->getTaxasPlayerBySvrIdx(pRet->nSeatIdx);
+				if (pPlayer)
+				{
+					pPlayer->refreshContent(m_pScene);
+				}
+			}
+		}
+		break;
+	case MSG_TP_WITHDRAWING_MONEY:
+		{
+			stMsgWithdrawingMoneyRet* pRet = (stMsgWithdrawingMoneyRet*)pmsg;
+			if ( pRet->nRet )
+			{
+				cocos2d::MessageBox("coin is not engouth buying coin error","Error");
+			}
+		}
+		break;
 	case MSG_TP_ROOM_STAND_UP:
 		{
 			stMsgTaxasRoomStandUp* pRet = (stMsgTaxasRoomStandUp*)pmsg ;
@@ -289,7 +311,10 @@ bool CTaxasPokerBettingState::onMsg(stMsg* pmsg )
 			{
 				bool bGo = pPlayer->betCoinGoToMainPool(m_pScene->getMainPoolWorldPos(),TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL);
 				if ( bGo )
-					Director::getInstance()->getScheduler()->schedule([=](float ft){ m_pScene->onPlayerGiveupCoinArrived();},this,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,0,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,false,"giveUpCoin");
+				{
+					Director::getInstance()->getScheduler()->schedule([=](float ft){ m_pScene->onPlayerGiveupCoinArrived(); pPlayer->getPlayerData().nBetCoinThisRound = 0 ; pPlayer->getPlayerData().nStateFlag = eRoomPeerAction_GiveUp ; },this,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,0,TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL,false,"giveUpCoin");
+				}
+				pPlayer->getPlayerData().nBetCoinThisRound = 0 ;
 			}
 			//pPlayer->refreshContent();
 		}
