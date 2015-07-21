@@ -93,6 +93,9 @@
     <ClCompile Include="..\Server\ServerCommon\ThreadMod.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
+    <ClCompile Include="src\TaxasRobotAIConfig.cpp">
+      <Filter>RobotConfig</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\BaseData.h">
@@ -166,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\TaxasMessageDefine.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TaxasRobotAIConfig.h">
+      <Filter>RobotConfig</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
