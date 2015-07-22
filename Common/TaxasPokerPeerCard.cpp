@@ -205,32 +205,97 @@ void CTaxasPokerPeerCard::GetHoldCard(unsigned char vHoldeCard[2] )
 	vHoldeCard[1] = m_vDefaul[1]->GetCardCompositeNum();
 }
 
-unsigned char CTaxasPokerPeerCard::GetCardTypeForRobot()
+unsigned char CTaxasPokerPeerCard::GetCardTypeForRobot(unsigned char& nContriButeCnt,unsigned char& nKeyCardFaceNum )
 {
-	if ( m_eType == eCard_YiDui )
+	unsigned char nRobotCardType = 0 ;
+	nKeyCardFaceNum = 0 ;
+	if ( nCardCountWhenCaculate < m_vAllCard.size() )
 	{
-		if ( m_vPairs[0][0]->GetCardFaceNum() >= 9 )
-		{
-			return 10 ;
-		}
-		else
-		{
-			return 11 ;
-		}
+		CaculateFinalCard() ;
 	}
 
 	if ( eCard_GaoPai == m_eType )
 	{
-		if ( m_vFinalCard[m_vFinalCard.size()-1]->GetCardFaceNum() == 1 )
+		// check gao pai 4 tong hua 
+		VEC_CARD vColor[CCard::eCard_Max] ;
+		for ( size_t i = 0 ; i < m_vAllCard.size() ; ++i  )
 		{
-			return 12 ;
+			CCard* pcard = m_vAllCard[i] ;
+			vColor[pcard->GetType()].push_back(pcard) ;
 		}
-		else
+
+		for ( int i = 0 ; i < CCard::eCard_Max ; ++i )
 		{
-			return 13 ;
+			if ( vColor[i].size() == 4 )
+			{
+				nRobotCardType = eCard_Robot_GaoPai4TongHua ;
+				nContriButeCnt = robotGetContribute(vColor[i],m_vDefaul,nKeyCardFaceNum) ;
+				return nRobotCardType ;
+			}
 		}
+
+		// check gaoPia 4 shun zi 
+		VEC_CARD vNewCard ;
+		vNewCard.assign(m_vAllCard.begin(),m_vAllCard.end()) ;
+		VEC_CARD vResult ;
+		CheckShunZi(vNewCard,true,vResult) ;
+		if ( vResult.size() != 4)
+		{
+			CheckShunZi(vNewCard,false,vResult) ;
+		}
+
+		if ( vResult.size() == 4 )
+		{
+			nRobotCardType = eCard_Robot_GaoPai4ShunZi ;
+			nContriButeCnt = robotGetContribute(vResult,m_vDefaul,nKeyCardFaceNum) ;
+			return nRobotCardType ;
+		}
+
 	} 
-	return m_eType ;
+	nRobotCardType = m_eType ;
+	switch (nRobotCardType)
+	{
+	case eCard_HuangJiaTongHuaShun:
+	case eCard_TongHuaShun:
+	case eCard_TongHua:
+	case eCard_ShunZi:
+	case eCard_GaoPai:
+		{
+			nContriButeCnt = robotGetContribute(m_vFinalCard,m_vDefaul,nKeyCardFaceNum) ;
+		}
+		break;
+	case eCard_SiTiao:
+	case eCard_YiDui:
+	case eCard_SanTiao:
+		{
+			nContriButeCnt = robotGetContribute(m_vPairs[0],m_vDefaul,nKeyCardFaceNum) ;
+			if ( nContriButeCnt == 0 )
+			{
+				robotGetContribute(m_vFinalCard,m_vDefaul,nKeyCardFaceNum) ;
+			}
+		}
+		break;
+	case eCard_HuLu:
+	case eCard_LiangDui:
+		{
+			nContriButeCnt = robotGetContribute(m_vPairs[0],m_vDefaul,nKeyCardFaceNum) ;
+			if ( nContriButeCnt == 0 )
+			{
+				nContriButeCnt = robotGetContribute(m_vPairs[1],m_vDefaul,nKeyCardFaceNum) ;
+			}
+
+			if ( nContriButeCnt == 0 )
+			{
+				robotGetContribute(m_vFinalCard,m_vDefaul,nKeyCardFaceNum) ;
+			}
+			
+		}	
+		break;
+	default:
+		nContriButeCnt = robotGetContribute(m_vFinalCard,m_vDefaul,nKeyCardFaceNum) ;
+		return nRobotCardType ;
+	}
+	return nRobotCardType ;
 }
 
 void CTaxasPokerPeerCard::CaculateFinalCard()
@@ -615,3 +680,83 @@ void CTaxasPokerPeerCard::CheckShunZi(VEC_CARD& AllCard , bool bSpecailA, VEC_CA
 	vResultChardOut.clear();
 }
 
+void CTaxasPokerPeerCard::robotCheck4ShunZi( VEC_CARD& AllCard , bool bSpecailA, VEC_CARD& vResultChardOut )
+{
+	CCard* vCard = AllCard[AllCard.size()-1] ;
+	if ( bSpecailA == false ) // only for check A 2 3 4 5 
+	{
+		if (  AllCard[AllCard.size()-1]->GetCardFaceNum() != 1 || AllCard[0]->GetCardFaceNum() != 2 )
+		{
+			vResultChardOut.clear();
+			return ;
+		}
+
+		VEC_CARD::iterator iter = AllCard.end();
+		--iter ;
+		AllCard.erase(iter) ;
+		AllCard.insert(AllCard.begin(),vCard) ;
+	}
+
+	vResultChardOut.clear();
+	unsigned char nShunCount = 0 ;
+	for ( int i = AllCard.size() -1  ; i > 0 ; --i )
+	{
+		if ( AllCard[i]->GetCardFaceNum(bSpecailA) == AllCard[i-1]->GetCardFaceNum(bSpecailA) + 1 )
+		{
+			++nShunCount ;
+			if ( nShunCount == 3 )
+			{
+				for ( size_t j = i - 1 ;j < AllCard.size() ; ++j )
+				{
+					if ( (j+1) < AllCard.size() && AllCard[j]->GetCardFaceNum(bSpecailA) == AllCard[j+1]->GetCardFaceNum(bSpecailA) )
+					{
+						// avoid pairs ;
+						continue;
+					}
+
+					vResultChardOut.push_back(AllCard[j]) ;
+					if ( vResultChardOut.size() == 4 )
+					{
+						return;
+					}
+				}
+			}
+		}
+		else if ( AllCard[i]->GetCardFaceNum(bSpecailA) == AllCard[i-1]->GetCardFaceNum(bSpecailA) )  // may be pair ;
+		{
+			// do nothing 
+		}
+		else
+		{
+			nShunCount = 0 ;
+		}
+	}
+	vResultChardOut.clear();
+}
+
+unsigned char CTaxasPokerPeerCard::robotGetContribute(VEC_CARD& vFinalCard, VEC_CARD& vCheckCard, unsigned char& vOutKeyCardFaceNum )
+{
+	vOutKeyCardFaceNum = 0 ;
+	VEC_CARD vInBothCard ;
+	for ( int nCheckIdx = 0; nCheckIdx < vCheckCard.size() ; ++nCheckIdx )
+	{
+		unsigned char nCompsitNum = vCheckCard[nCheckIdx]->GetCardCompositeNum();
+		for ( int nTargetIdx = 0 ; nTargetIdx < vFinalCard.size() ; ++nTargetIdx )
+		{
+			if ( nCompsitNum == vFinalCard[nTargetIdx]->GetCardCompositeNum() )
+			{
+				vInBothCard.push_back(vFinalCard[nTargetIdx]);
+			}
+		}
+	}
+
+	for ( int nIdx = 0 ;  nIdx < vInBothCard.size() ; ++nIdx )
+	{
+		if ( vInBothCard[nIdx]->GetCardFaceNum(true) > vOutKeyCardFaceNum )
+		{
+			vOutKeyCardFaceNum = vInBothCard[nIdx]->GetCardFaceNum(true) ;
+		}
+	}
+	
+	return vInBothCard.size() ;
+}

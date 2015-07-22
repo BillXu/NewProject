@@ -86,6 +86,11 @@ CTaxasAINode::eAIActionType CTaxasAIBetTimesForAction::getAction(int& addTimesBl
 	eAIActionType eAct = CTaxasAINode::eAIAct_Max ;
 	for ( int idx = 0 ; idx < eAIAct_Max ; ++idx )
 	{
+		if ( vAIActionRate[idx] < 0.00001 )  // = 0 , do not check
+		{
+			continue;
+		}
+
 		fStepCursor += vAIActionRate[idx];
 		if ( nRate <= fStepCursor )
 		{

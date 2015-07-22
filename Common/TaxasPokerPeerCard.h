@@ -18,6 +18,9 @@ public:
 		eCard_YiDui,
 		eCard_GaoPai,
 		eCard_Max,
+		eCard_Robot_GaoPai4TongHua = eCard_Max,
+		eCard_Robot_GaoPai4ShunZi,
+		eCard_Robot_Max,
 	};
 public:
 	typedef std::vector<CCard*> VEC_CARD ;
@@ -33,12 +36,14 @@ public:
 	void LogInfo();
 	void GetFinalCard( unsigned char vMaxCard[5]);
 	void GetHoldCard(unsigned char vHoldeCard[2] );
-	unsigned char GetCardTypeForRobot();
+	unsigned char GetCardTypeForRobot(unsigned char& nContriButeCnt,unsigned char& nKeyCardFaceNum);
 	void adjustPosForSpecailShunZi();
 protected:
 	void CaculateFinalCard();
 	void ClearVecCard(VEC_CARD& vCards );
 	void CheckShunZi(VEC_CARD& AllCard , bool bSpecailA, VEC_CARD& vResultChardOut );
+	void robotCheck4ShunZi( VEC_CARD& AllCard , bool bSpecailA, VEC_CARD& vResultChardOut );
+	unsigned char robotGetContribute(VEC_CARD& vFinalCard, VEC_CARD& vCheckCard, unsigned char& vOutKeyCardFaceNum );
 protected:
 	VEC_CARD m_vDefaul ;
 	VEC_CARD m_vAllCard ;

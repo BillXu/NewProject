@@ -5,10 +5,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="head">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -25,11 +21,11 @@
     <Filter Include="SvrCommon">
       <UniqueIdentifier>{69cdac47-c6ab-49ee-a07c-205ee646209b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="robot">
+      <UniqueIdentifier>{2ed534eb-e651-4d6f-b303-36b514090e07}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\BaseData.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\ConfigReader.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -96,11 +92,20 @@
     <ClCompile Include="src\TaxasRobotAIConfig.cpp">
       <Filter>RobotConfig</Filter>
     </ClCompile>
+    <ClCompile Include="src\robot.cpp">
+      <Filter>robot</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RobotControlTaxas.cpp">
+      <Filter>robot</Filter>
+    </ClCompile>
+    <ClCompile Include="src\robotControl.cpp">
+      <Filter>robot</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TaxasPokerData.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\BaseData.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\CommonDefine.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -119,26 +124,8 @@
     <ClInclude Include="..\Common\Utility.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="src\main.h">
-      <Filter>head</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Client.h">
-      <Filter>head</Filter>
-    </ClInclude>
-    <ClInclude Include="src\IScene.h">
-      <Filter>head</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LoginScene.h">
-      <Filter>head</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PlayerData.h">
-      <Filter>head</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\IConfigFile.h">
       <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="src\RobotConfig.h">
-      <Filter>head</Filter>
     </ClInclude>
     <ClInclude Include="src\RobotAIConfig.h">
       <Filter>RobotConfig</Filter>
@@ -155,9 +142,6 @@
     <ClInclude Include="..\Common\CardPoker.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="src\TaxasPokerScene.h">
-      <Filter>head</Filter>
-    </ClInclude>
     <ClInclude Include="..\Server\ServerCommon\mutex.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
@@ -172,6 +156,39 @@
     </ClInclude>
     <ClInclude Include="src\TaxasRobotAIConfig.h">
       <Filter>RobotConfig</Filter>
+    </ClInclude>
+    <ClInclude Include="src\robot.h">
+      <Filter>robot</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RobotControlTaxas.h">
+      <Filter>robot</Filter>
+    </ClInclude>
+    <ClInclude Include="src\robotControl.h">
+      <Filter>robot</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Client.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IScene.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LoginScene.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\main.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PlayerData.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RobotConfig.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TaxasPokerScene.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TaxasPokerData.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

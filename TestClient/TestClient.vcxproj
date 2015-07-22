@@ -55,7 +55,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT;ROBOT</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../Common;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;../Server/NetworkUtility/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -73,7 +73,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT;ROBOT</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../Common;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;../Server/NetworkUtility/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -86,7 +86,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\BaseData.cpp" />
     <ClCompile Include="..\Common\CardPoker.cpp" />
     <ClCompile Include="..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\Common\IConfigFile.cpp" />
@@ -101,8 +100,12 @@
     <ClCompile Include="src\LoginScene.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\PlayerData.cpp" />
+    <ClCompile Include="src\robot.cpp" />
     <ClCompile Include="src\RobotAIConfig.cpp" />
     <ClCompile Include="src\RobotConfig.cpp" />
+    <ClCompile Include="src\RobotControlTaxas.cpp" />
+    <ClCompile Include="src\robotControl.cpp" />
+    <ClCompile Include="src\TaxasPokerData.cpp" />
     <ClCompile Include="src\TaxasPokerScene.cpp" />
     <ClCompile Include="src\TaxasRobotAIConfig.cpp" />
     <ClCompile Include="src\tinystr.cpp" />
@@ -111,7 +114,6 @@
     <ClCompile Include="src\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\BaseData.h" />
     <ClInclude Include="..\Common\CardPoker.h" />
     <ClInclude Include="..\Common\CommonDefine.h" />
     <ClInclude Include="..\Common\ConfigReader.h" />
@@ -130,8 +132,12 @@
     <ClInclude Include="src\LoginScene.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\PlayerData.h" />
+    <ClInclude Include="src\robot.h" />
     <ClInclude Include="src\RobotAIConfig.h" />
     <ClInclude Include="src\RobotConfig.h" />
+    <ClInclude Include="src\RobotControlTaxas.h" />
+    <ClInclude Include="src\robotControl.h" />
+    <ClInclude Include="src\TaxasPokerData.h" />
     <ClInclude Include="src\TaxasPokerScene.h" />
     <ClInclude Include="src\TaxasRobotAIConfig.h" />
     <ClInclude Include="src\tinystr.h" />

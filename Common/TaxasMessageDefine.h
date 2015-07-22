@@ -219,7 +219,7 @@ struct stMsgTaxasRoomGameResult
 };
 
 
-//------------------------------------------------------before are new --
+//------------------------------------------------------beforear e new --
 
 
 //struct stMsgTaxasPlayerSitDown

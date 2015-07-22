@@ -2,6 +2,7 @@
 #include "IScene.h"
 #include "TaxasPokerPeerCard.h"
 #include "CommonDefine.h"
+#include "TaxasPokerData.h"
 class CTaxasPokerScene
 	:public IScene
 {
@@ -16,7 +17,10 @@ public:
 	void MyAction();
 	void DoMyAction();
 	unsigned short GetCurSitDownPeers();
+	stTaxasPokerData* getPokerData(){ return &m_tData ;}
+	CClientRobot* getClientApp(){ return m_pClient ;}
 protected:
+	stTaxasPokerData m_tData ;
 	unsigned char m_myPrivateCard[2] ;
 	CTaxasPokerPeerCard m_pMyPeerCard ;
 	bool m_bBiggest ;
