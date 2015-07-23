@@ -24,8 +24,8 @@ void CClientRobot::Init()
 	m_pNetWork.SetupNetwork();
 	m_pCurentScene = new CLoginScene(this);
 	m_pCurentScene->OnEnterScene();
-	m_pNetWork.ConnectToServer("127.0.0.1",50001,"123456") ;  // inner net ;-
-	//m_pNetWork.ConnectToServer("203.186.75.131",50003,"123456") ;  // Out net ;
+	//m_pNetWork.ConnectToServer("127.0.0.1",50001,"123456") ;  // inner net ;-
+	m_pNetWork.ConnectToServer("203.186.75.136",50001,"123456") ;  // Out net ;
 	m_pNetWork.AddMessageDelegate(m_pPlayerData) ;
 }
 

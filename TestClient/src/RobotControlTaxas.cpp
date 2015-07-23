@@ -4,16 +4,17 @@
 #include "TaxasMessageDefine.h"
 #include "PlayerData.h"
 #include "Client.h"
-bool CRobotControlTaxas::init(const char* cAiFile)
+bool CRobotControlTaxas::init(const char* cAiFile,CTaxasPokerScene* pScene)
 {
 	CRobotControl::init();
 	if (!m_tAiCore.init(cAiFile))
 	{
 		printf("load ai file error %s",cAiFile);
 	}
-	m_pPlayerData = nullptr ;
 	m_pScene = nullptr ;
 	m_eState = eRobot_WaitPosSitDown ;
+	m_nMySeatIdx = MAX_PEERS_IN_TAXAS_ROOM ;
+	m_pScene = pScene ;
 	return true ;
 }
 
@@ -36,11 +37,15 @@ void CRobotControlTaxas::update(float fdeta )
 	}
 
 	// check lack of coin state 
-	if ( m_eState == eRobot_Playing && m_pPlayerData && m_pPlayerData->nStateFlag == eRoomPeer_LackOfCoin )
+	if ( m_eState == eRobot_Playing && isRobotSitDown() )
 	{
-		standUp();
-		m_eState = eRobot_WaitStandUpReSitDown ;
-		printf("i lack of coin , so standup , then sitdown , retake in coin \n");
+		stTaxasPeerBaseData* playerData = m_pScene->getPokerData()->getTaxasPlayerData(m_nMySeatIdx);
+		if (  playerData->nStateFlag == eRoomPeer_LackOfCoin )
+		{
+			standUp();
+			m_eState = eRobot_WaitStandUpReSitDown ;
+			printf("i lack of coin , so standup , then sitdown , retake in coin \n");
+		}
 	}
 }
 
@@ -51,7 +56,9 @@ void CRobotControlTaxas::doDelayAction(void* pUserData )
 	uint8_t vHoldCard[2] = {0} ;
 
 	memcpy(vPublicCard,pData->vPublicCardNums,sizeof(pData->vPublicCardNums));
-	memcpy(vHoldCard,m_pPlayerData->vHoldCard,sizeof(m_pPlayerData->vHoldCard)); 
+
+	stTaxasPeerBaseData* playerData = pData->getTaxasPlayerData(m_nMySeatIdx);
+	memcpy(vHoldCard,playerData->vHoldCard,sizeof(playerData->vHoldCard)); 
 
 	uint8_t nTimesBlind = float(pData->nMostBetCoinThisRound) / float( pData->nLittleBlind * 2 ) + 0.5;
 
@@ -118,7 +125,8 @@ void CRobotControlTaxas::doDelayAction(void* pUserData )
 
 	stMsgTaxasPlayerAct msg ;
 	msg.nRoomID = pData->nRoomID ;
-	msg.nValue = nOutAddTimesBlindBet*pData->nLittleBlind*2 + pData->getPlayerAddCoinLowLimit(m_pPlayerData->nSeatIdx) ;
+	msg.nValue = nOutAddTimesBlindBet*pData->nLittleBlind*2 + pData->getPlayerAddCoinLowLimit(m_nMySeatIdx) ;
+
 	switch (eAiAct)
 	{
 	case CTaxasAINode::eAIAct_Follow:
@@ -126,30 +134,31 @@ void CRobotControlTaxas::doDelayAction(void* pUserData )
 		break;
 	case CTaxasAINode::eAIAct_Pass:
 		msg.nPlayerAct = eRoomPeerAction_Pass;
-		if ( pData->nMostBetCoinThisRound != m_pPlayerData->nBetCoinThisRound )
+		
+		if ( pData->nMostBetCoinThisRound != playerData->nBetCoinThisRound )
 		{
 			msg.nPlayerAct = eRoomPeerAction_GiveUp ;
 		}
 		break;
 	case CTaxasAINode::eAIAct_Add:
 		msg.nPlayerAct = eRoomPeerAction_Add;
-		if ( msg.nValue >= m_pPlayerData->nTakeInMoney )
+		if ( msg.nValue >= playerData->nTakeInMoney )
 		{
-			msg.nValue = m_pPlayerData->nTakeInMoney ;
+			msg.nValue = playerData->nTakeInMoney ;
 			msg.nPlayerAct = eRoomPeerAction_AllIn;
 			printf("coin too little so , all in , can not add \n");
-			if ( msg.nValue > pData->getPlayerAddCoinUpLimit(m_pPlayerData->nSeatIdx) )
+			if ( msg.nValue > pData->getPlayerAddCoinUpLimit(playerData->nSeatIdx) )
 			{
-				msg.nValue = pData->getPlayerAddCoinUpLimit(m_pPlayerData->nSeatIdx) ;
+				msg.nValue = pData->getPlayerAddCoinUpLimit(playerData->nSeatIdx) ;
 			}
 		}
 		break;
 	case CTaxasAINode::eAIAct_AllIn:
 		msg.nPlayerAct = eRoomPeerAction_AllIn;
-		msg.nValue = m_pPlayerData->nTakeInMoney ;
-		if ( msg.nValue > pData->getPlayerAddCoinUpLimit(m_pPlayerData->nSeatIdx) )
+		msg.nValue = playerData->nTakeInMoney ;
+		if ( msg.nValue > pData->getPlayerAddCoinUpLimit(playerData->nSeatIdx) )
 		{
-			msg.nValue = pData->getPlayerAddCoinUpLimit(m_pPlayerData->nSeatIdx) ;
+			msg.nValue = pData->getPlayerAddCoinUpLimit(playerData->nSeatIdx) ;
 		}
 		break;
 	default:
@@ -176,7 +185,8 @@ void CRobotControlTaxas::waitAction()
 
 void CRobotControlTaxas::onSelfStandUp()
 {
-	m_pPlayerData = nullptr ;
+	m_nMySeatIdx = MAX_PEERS_IN_TAXAS_ROOM ;
+
 	if ( m_eState == eRobot_WaitStandUpReSitDown )
 	{
 		m_eState = eRobot_WaitPosSitDown ;
@@ -195,8 +205,14 @@ void CRobotControlTaxas::onSelfStandUp()
 	}
 }
 
-void CRobotControlTaxas::onSelfSitDown()
+void CRobotControlTaxas::onSelfSitDown(uint8_t nMySeatIdx)
 {
+	if ( m_nMySeatIdx != MAX_PEERS_IN_TAXAS_ROOM  )
+	{
+		printf("i already sitdown why sit twice ? ");
+	}
+
+	m_nMySeatIdx = nMySeatIdx ;
 	m_eState = eRobot_Playing ;
 	printf("sit down success , widthdraw money \n");
 }
@@ -217,18 +233,20 @@ void CRobotControlTaxas::onSitDownFailed( uint8_t nRet )
 
 void CRobotControlTaxas::onSelfGiveUp()
 {
-	if ( m_pPlayerData->nTakeInMoney > m_pScene->getPokerData()->nMaxTakeIn * 4 )
+	if ( isRobotSitDown() == false )
+	{
+		printf("robot do not sitdown , how to give up ? \n");
+		return ;
+	}
+
+	stTaxasPeerBaseData* playerData = m_pScene->getPokerData()->getTaxasPlayerData(m_nMySeatIdx);
+	if ( playerData->nTakeInMoney > m_pScene->getPokerData()->nMaxTakeIn * 4 )
 	{
 		standUp();
 		m_eState = eRobot_WaitStandUpReSitDown ;
 
 		printf("standup for save coin, win too much haha \n");
 	}
-}
-
-void CRobotControlTaxas::bindPlayerData(stTaxasPeerBaseData* pData)
-{
-	m_pPlayerData = pData ;
 }
 
 void CRobotControlTaxas::onWithdrawMoneyFailed()
@@ -242,7 +260,8 @@ void CRobotControlTaxas::standUp()
 	stMsgTaxasPlayerStandUp msg ;
 	msg.nRoomID = m_pScene->getPokerData()->nRoomID ;
 	m_pScene->SendMsg(&msg,sizeof(msg)) ;
-	m_pScene->getClientApp()->GetPlayerData()->OnWinCoin(m_pPlayerData->nTakeInMoney,false);
+	stTaxasPeerBaseData* playerData = m_pScene->getPokerData()->getTaxasPlayerData(m_nMySeatIdx);
+	m_pScene->getClientApp()->GetPlayerData()->OnWinCoin(playerData->nTakeInMoney,false);
 }
 
 void CRobotControlTaxas::TryingSitDown()

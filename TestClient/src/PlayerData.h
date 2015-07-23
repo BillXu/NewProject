@@ -3,17 +3,15 @@
 #include "CommonDefine.h"
 #include <string>
 #include "RobotConfig.h"
+#include "MessageDefine.h"
 class CPlayerData
 	:public CNetMessageDelegate
 {
 public:
-	CPlayerData(){}
+	CPlayerData(){ memset(&stBaseData,0,sizeof(stBaseData)); nSessionID = 0 ; }
 	~CPlayerData(){}
 	void SetLoginConfig( CRobotConfigFile::stRobotItem* pItem ){ pRobotItem = pItem ;}
 	bool OnMessage( Packet* pMsg ) ;
-	const char* GetName(){ return strName.c_str() ;}
-	const char* GetAccount(){ return pRobotItem->strAccount.c_str(); }
-	const char* GetPassword(){ return pRobotItem->strPassword.c_str();}
 	eRoomType GetEnterRoomType(){ return eRoom_TexasPoker ;}
 	unsigned short GetEnterRoomID(){ return 0 ;}
 	void OnWinCoin( int64_t nCoinOffset, bool bDiamoned  );
@@ -21,17 +19,11 @@ public:
 	unsigned int GetSessionID(){ return nSessionID ;}
 	char GetWillEnterRoomLevel(){ return 0 ;}
 	void TakeIn(uint64_t nCoin , bool bDimoned);
-	void BetCoin(bool bDiamoned , int nOffset );
 	bool IsMustWin(bool bDiamoned );
+	const char* GetName(){ return stBaseData.cName ;}
+	unsigned int getUserUID(){ return stBaseData.nUserUID ;}
 public:
-	uint64_t nMyCoin ;
-	unsigned int nDiamoned ;
-	std::string strName ;
-
 	unsigned int nSessionID ;
-
-	unsigned int nTakeInCoin ;
-	unsigned int nTakeInDiamoned ;
-	unsigned int nUserUID ;
+	stCommonBaseData stBaseData ;
 	CRobotConfigFile::stRobotItem* pRobotItem ;
 };

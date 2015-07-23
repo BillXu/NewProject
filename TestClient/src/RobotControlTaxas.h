@@ -1,3 +1,4 @@
+#pragma once
 #include "robotControl.h"
 #include "TaxasRobotAIConfig.h"
 #include "CommonData.h"
@@ -17,18 +18,19 @@ public:
 		eRobot_Max,
 	};
 public:
-	bool init(const char* cAiFile);
+	bool init(const char* cAiFile,CTaxasPokerScene* pScene);
 	void update(float fdeta );
 	void leave();
 	void doDelayAction(void* pUserData );
 	void setScene(CTaxasPokerScene* pScene);
 	void waitAction();
 	void onSelfStandUp();
-	void onSelfSitDown();
+	void onSelfSitDown( uint8_t nMySeatIdx );
 	void onSitDownFailed( uint8_t nRet );
 	void onWithdrawMoneyFailed();
 	void onSelfGiveUp();
-	void bindPlayerData(stTaxasPeerBaseData* pData);
+	uint8_t getMySeatIdx(){ return m_nMySeatIdx ; }
+	bool isRobotSitDown(){ return m_nMySeatIdx != MAX_PEERS_IN_TAXAS_ROOM ; }
 protected:
 	void standUp();
 	void TryingSitDown();
@@ -36,6 +38,6 @@ protected:
 	CTaxasPokerScene* m_pScene ;
 	CTaxasRobotAI m_tAiCore ;
 
-	stTaxasPeerBaseData* m_pPlayerData ;
 	eRobotState m_eState ;
+	uint8_t m_nMySeatIdx ;
 };

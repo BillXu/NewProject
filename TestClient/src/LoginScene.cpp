@@ -6,6 +6,7 @@
 #include "ClientRobot.h"
 #include "TaxasPokerScene.h"
 #include "BacScene.h"
+#include "TaxasMessageDefine.h"
 CLoginScene::CLoginScene(CClientRobot* pNetWork ):IScene(pNetWork)
 { 
 	m_eSceneType = eScene_Login ;
@@ -73,13 +74,13 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 // 			sprintf_s(msg.cOldPassword,"6") ;
 // 			SendMsg(&msg,sizeof(msg)) ;
 
-			stMsgRebindAccount msg ;
-			msg.nCurUserUID = 1198 ;
-			memset(msg.cAccount,0,sizeof(msg.cAccount)) ;
-			memset(msg.cPassword,0,sizeof(msg.cPassword)) ;
-			sprintf_s(msg.cAccount,"2d3") ;
-			sprintf_s(msg.cPassword,"6") ;
-			SendMsg(&msg,sizeof(msg)) ;
+			//stMsgRebindAccount msg ;
+			//msg.nCurUserUID = 1198 ;
+			//memset(msg.cAccount,0,sizeof(msg.cAccount)) ;
+			//memset(msg.cPassword,0,sizeof(msg.cPassword)) ;
+			//sprintf_s(msg.cAccount,"2d3") ;
+			//sprintf_s(msg.cPassword,"6") ;
+			//SendMsg(&msg,sizeof(msg)) ;
 			return true ;
 		}
 		break;
@@ -113,80 +114,17 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			//stMsgRequestRoomList msgRoomList ;
 			//msgRoomList.cRoomType = m_pClient->GetPlayerData()->GetEnterRoomType() ;
 			//SendMsg(&msgRoomList,sizeof(msgRoomList));
-			InformIdle();
+
+			printf("recived base data\n");
+			stMsgTaxasEnterRoom msg ;
+			msg.nRoomID = 1 ;
+			msg.nType = 0 ;
+			msg.nLevel = 0 ;
+			SendMsg(&msg,sizeof(msg));
+			printf("enter room taxas...\n");
 		}
 		break; ;
-	//case MSG_REQUEST_ROOM_LIST:
-	//	{
-	//		stMsgRequestRoomListRet* Ret = (stMsgRequestRoomListRet*)pMsg ;
-	//		stRoomListItem* pRoomList = (stRoomListItem*)(((char*)Ret) + sizeof(stMsgRequestRoomListRet)) ;
-	//		// --target room less in all 
-	//		stRoomListItem* pLestAll = NULL ;
-	//		unsigned short nAllLeftSeat = 0 ;
-	//		//-------target in single level ;
-	//		stRoomListItem* pLestInLevel = NULL ;
-	//		unsigned short nSingleLevelLeft = 0 ;
-	//		// specail room 
-	//		stRoomListItem* pSecailRoom = NULL ;
-
-	//		CLogMgr::SharedLogMgr()->PrintLog("%s: RecieveRoomList Type = %d", m_pClient->GetPlayerData()->GetName(),Ret->cRoomType) ;
-	//		while ( Ret->nRoomCount--)
-	//		{
-	//			// Lest all ;
-	//			if ( pRoomList->nMaxCount - pRoomList->nCurrentCount > nAllLeftSeat )
-	//			{
-	//				pLestAll = pRoomList ;
-	//				nAllLeftSeat = pRoomList->nMaxCount - pRoomList->nCurrentCount ;
-	//			}
-
-	//			// in lest level 
-	//			if ( pRoomList->cRoomLevel == m_pClient->GetPlayerData()->GetWillEnterRoomLevel() )
-	//			{
-	//				if ( pRoomList->nMaxCount - pRoomList->nCurrentCount > nSingleLevelLeft )
-	//				{
-	//					pLestInLevel = pRoomList ;
-	//					nSingleLevelLeft = pRoomList->nMaxCount - pRoomList->nCurrentCount ;
-	//				}
-
-	//				if ( pRoomList->nRoomID == m_pClient->GetPlayerData()->GetEnterRoomID() )
-	//				{
-	//					pSecailRoom = pRoomList ;
-	//				}
-	//			}
-	//			printf("%s: RoomID = %d , RoomLevel=%d , MaxCount =%d  , CurrentCount = %d \n", m_pClient->GetPlayerData()->GetName(), pRoomList->nRoomID,pRoomList->cRoomLevel,pRoomList->nMaxCount,pRoomList->nCurrentCount) ;
-	//			++pRoomList ;
-	//		}
-
-	//		if ( pLestAll == 0 && pLestInLevel == 0 && pSecailRoom == 0 )
-	//		{
-	//			printf("%s: Can not Enter config Room ID = %d , RoomType = %d", m_pClient->GetPlayerData()->GetName(),m_pClient->GetPlayerData()->GetEnterRoomID(),m_pClient->GetPlayerData()->GetEnterRoomID()) ;	
-	//			m_pClient->Stop();
-	//			return true ;
-	//		}
-
-	//		stRoomListItem* pFinal = NULL ;
-	//		if ( m_pClient->GetPlayerData()->GetWillEnterRoomLevel() < 0 )
-	//		{
-	//			pFinal = pLestAll ;
-	//		}
-	//		else if ( m_pClient->GetPlayerData()->GetEnterRoomID() <= 0 )
-	//		{
-	//			pFinal = pLestInLevel ;
-	//		}
-	//		else
-	//		{
-	//			pFinal = pSecailRoom ;
-	//		}
-
-	//		stMsgRoomEnter msgEnterRoom ;
-	//		msgEnterRoom.nRoomID = 0;
-	//		//msgEnterRoom.nRoomType = m_pClient->GetPlayerData()->GetEnterRoomType() ;
-	//		//msgEnterRoom.nRoomLevel = pFinal->cRoomLevel ;
-	//		SendMsg(&msgEnterRoom, sizeof(msgEnterRoom) ) ;
-	//		return true ;
-	//	}
-	//	break; 
-	case MSG_ROOM_ENTER:
+	case MSG_TP_ENTER_ROOM:
 		{
 			// 0 success ; 1 do not meet room condition , 2 aready in room ; 3  unknown error ; 4 waiting last game settlement ;
 			stMsgRoomEnterRet* pRetMsg = (stMsgRoomEnterRet*)pMsg ;
@@ -199,7 +137,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 				break; 
 			case 1 :
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("%s do not meet room condition !",m_pClient->GetPlayerData()->GetName()) ;
+					CLogMgr::SharedLogMgr()->ErrorLog("%s ivalid session id  !",m_pClient->GetPlayerData()->stBaseData.cName) ;
 					InformIdle();
 				}
 				break ;
@@ -210,7 +148,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 				break; 
 			case 3:
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("%s unknown error !",m_pClient->GetPlayerData()->GetName()) ;
+					CLogMgr::SharedLogMgr()->ErrorLog("%s room id error !",m_pClient->GetPlayerData()->GetName()) ;
 					InformIdle();
 				}
 				break; 
@@ -232,7 +170,9 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 	case MSG_TP_ROOM_BASE_INFO:
 		{
 			// change room scene and push this msg;
-			IScene*pScene = new CTaxasPokerScene(m_pClient) ;
+			printf("recieved taxas room info...\n");
+			CTaxasPokerScene* pScene = new CTaxasPokerScene(m_pClient) ;
+			pScene->init("../ConfigFile/RobotAIConfig - new.xml");
 			m_pClient->ChangeScene(pScene) ;
 			pScene->OnMessage(pPacket) ;
 			return true ;
@@ -241,7 +181,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 	case MSG_ROBOT_ADD_MONEY:
 		{
 			stMsgRobotAddMoneyRet* pRet = (stMsgRobotAddMoneyRet*)pMsg ;
-			m_pClient->GetPlayerData()->nMyCoin = pRet->nFinalCoin ;
+			m_pClient->GetPlayerData()->stBaseData.nCoin = pRet->nFinalCoin ;
 			printf("received add coin !\n") ;
 			stMsgRobotInformIdle msg ;
 			SendMsg((char*)&msg,sizeof(msg)) ;
@@ -259,8 +199,8 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 
 void CLoginScene::Verifyed()
 {
-	Register("hello name","23s","6",1);
-	//Login("23","6");
+	//Register("hello name","23s","6",1);
+	Login("test1","1");
 }
 
 void CLoginScene::Login( const char* pAccound , const char* pPassword )
@@ -275,6 +215,7 @@ void CLoginScene::Login( const char* pAccound , const char* pPassword )
 
 void CLoginScene::InformIdle()
 {
+	return ;
 	if ( m_pClient->GetPlayerData()->GetCoin(false) < 200000 )
 	{
 		stMsgRobotAddMoney msg ;
