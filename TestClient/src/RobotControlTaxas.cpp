@@ -131,6 +131,10 @@ void CRobotControlTaxas::doDelayAction(void* pUserData )
 	{
 	case CTaxasAINode::eAIAct_Follow:
 		msg.nPlayerAct = eRoomPeerAction_Follow;
+		if ( pData->nMostBetCoinThisRound == playerData->nBetCoinThisRound )
+		{
+			msg.nPlayerAct = eRoomPeerAction_Pass ;
+		}
 		break;
 	case CTaxasAINode::eAIAct_Pass:
 		msg.nPlayerAct = eRoomPeerAction_Pass;
@@ -177,7 +181,7 @@ void CRobotControlTaxas::setScene(CTaxasPokerScene* pScene)
 void CRobotControlTaxas::waitAction()
 {
 	float nRate = (float)rand() / float(RAND_MAX);
-	nRate = 1.0f + nRate * 14.0f ;
+	nRate = 1.0f + nRate * 8.0f ;
 	fireDelayAction(nRate,nullptr);
 
 	printf("wait me action \n");

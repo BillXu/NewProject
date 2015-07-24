@@ -10,7 +10,7 @@ class CClientRobot
 public:
 	CClientRobot();
 	~CClientRobot();
-	void Init();
+	bool Init(const char* pIPString, unsigned short nPort = 50001 );
 	virtual void __run(){ Run();delete this ;}
 	void Run();
 	CPlayerData* GetPlayerData(){return m_pPlayerData ;}
@@ -19,8 +19,6 @@ public:
 	unsigned int GetSessionID(){ return m_pPlayerData->GetSessionID(); }
 	void SetSessionID( unsigned int nSeseID){ nSessionID = nSeseID;}
 	CNetWorkMgr* GetNetWork(){ return &m_pNetWork ;}
-	stRobotAI* GetRobotAI(){ return m_pRobotAI ;}
-	bool SetRobotAI(stRobotAI* pRobotAi );
 protected:
 	CNetWorkMgr m_pNetWork ;
 	CPlayerData* m_pPlayerData ;
@@ -28,4 +26,5 @@ protected:
 	IScene* m_pLastScene ;
 	unsigned int nSessionID ;
 	stRobotAI* m_pRobotAI ;
+	std::string m_strAiFile ,m_strPassword, m_strAccount;
 };

@@ -3,10 +3,11 @@
 #include "LogManager.h"
 #include "PaiJiuMessageDefine.h"
 #include "PaiJiuScene.h"
-#include "ClientRobot.h"
+ 
 #include "TaxasPokerScene.h"
 #include "BacScene.h"
 #include "TaxasMessageDefine.h"
+#include "Client.h"
 CLoginScene::CLoginScene(CClientRobot* pNetWork ):IScene(pNetWork)
 { 
 	m_eSceneType = eScene_Login ;
@@ -172,7 +173,10 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			// change room scene and push this msg;
 			printf("recieved taxas room info...\n");
 			CTaxasPokerScene* pScene = new CTaxasPokerScene(m_pClient) ;
-			pScene->init("../ConfigFile/RobotAIConfig - new.xml");
+			//pScene->init("../ConfigFile/RobotAIConfig - new.xml");
+			char pBuffer[255] = { 0 };
+			sprintf_s(pBuffer,"../ConfigFile/%s",m_pClient->GetPlayerData()->pRobotItem->strAiFileName.c_str());
+			pScene->init(pBuffer);
 			m_pClient->ChangeScene(pScene) ;
 			pScene->OnMessage(pPacket) ;
 			return true ;
@@ -199,8 +203,10 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 
 void CLoginScene::Verifyed()
 {
+	srand(m_pClient->GetPlayerData()->pRobotItem->nRobotID);
 	//Register("hello name","23s","6",1);
-	Login("test1","1");
+	Login(m_pClient->GetPlayerData()->pRobotItem->strAccount.c_str(),m_pClient->GetPlayerData()->pRobotItem->strPassword.c_str());
+	//Register("name",m_pClient->GetPlayerData()->pRobotItem->strAccount.c_str(),m_pClient->GetPlayerData()->pRobotItem->strPassword.c_str(),1);
 }
 
 void CLoginScene::Login( const char* pAccound , const char* pPassword )

@@ -1,6 +1,6 @@
 #include "IScene.h"
 #include "MessageDefine.h"
-#include "ClientRobot.h"
+#include "Client.h"
 #include "LogManager.h"
 void IScene::OnEnterScene()
 {

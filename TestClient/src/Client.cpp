@@ -19,14 +19,15 @@ CClientRobot::~CClientRobot()
 	}
 }
 
-void CClientRobot::Init()
+bool CClientRobot::Init(const char* pIPString, unsigned short nPort )
 {
 	m_pNetWork.SetupNetwork();
 	m_pCurentScene = new CLoginScene(this);
 	m_pCurentScene->OnEnterScene();
-	//m_pNetWork.ConnectToServer("127.0.0.1",50001,"123456") ;  // inner net ;-
-	m_pNetWork.ConnectToServer("203.186.75.136",50001,"123456") ;  // Out net ;
+	m_pNetWork.ConnectToServer(pIPString,nPort,"123456") ;  // inner net ;-
+	//m_pNetWork.ConnectToServer("203.186.75.136",50001,"123456") ;  // Out net ;
 	m_pNetWork.AddMessageDelegate(m_pPlayerData) ;
+	return true ;
 }
 
 void CClientRobot::Run()
@@ -61,15 +62,4 @@ void CClientRobot::ChangeScene(IScene* pTargetScene )
 	}
 	pTargetScene->OnEnterScene() ;
 	m_pCurentScene = pTargetScene ;
-}
-
-bool CClientRobot::SetRobotAI(stRobotAI* pRobotAi )
-{
-	if ( pRobotAi == NULL )
-	{
-		printf( "Robot AI Is NULL\n" ) ;
-		return false;
-	}
-	m_pRobotAI = pRobotAi ;
-	return true ;
 }

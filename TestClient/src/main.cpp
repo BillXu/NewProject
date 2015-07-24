@@ -1,12 +1,13 @@
 #include "main.h"
 #include "MessageDefine.h"
 #include <iostream>
-#include "ClientRobot.h"
+#include "Client.h"
 #include "RobotConfig.h"
 #include "LogManager.h"
 #include "RobotAIConfig.h"
 #include <crtdbg.h>
-
+#define GATE_IP "127.0.0.1"
+//#define GATE_IP "203.186.75.136"
 BOOL WINAPI ConsoleHandler(DWORD msgType)
 {    
 
@@ -33,10 +34,6 @@ int main()
 	SetConsoleCtrlHandler(ConsoleHandler, TRUE); 
 	CClientRobot* pClient = NULL;
 
-	// read robot ai config
-	CRobotAIManager nRobotAIConfig ;
-	nRobotAIConfig.LoadFile("../ConfigFile/RobotAIConfig.xml");
-
 	CRobotConfigFile nRobotConfige ;
 	//CLogMgr::SharedLogMgr()->SetDisablePrint(false) ;
 	CConfigReader::s_SkillRow = 1 ;
@@ -44,18 +41,17 @@ int main()
 	CConfigReader::s_SkillRow = 0 ;
 	int i = 0 ;
 	CRobotConfigFile::stRobotItem* pitem = NULL ;
-	int nCount = 1 ;
+	int nCount = 5 ;
 	while ( (pitem = nRobotConfige.EnumConfigItem() ) && nCount-- > 0 )
 	{
 		pClient = new CClientRobot ;
+		bool bR = pClient->Init(GATE_IP);
 		pClient->GetPlayerData()->SetLoginConfig(pitem) ;
-		bool bR = pClient->SetRobotAI(nRobotAIConfig.GetRobotAIBy(pitem->nAIConfigID));
 		if ( !bR )
 		{
 			delete pClient ;
 			continue; 
 		}
-		pClient->Init() ;
 		pClient->Start() ;
 		Sleep(10);
 	}

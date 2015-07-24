@@ -10,7 +10,7 @@ public:
 		unsigned short nRobotID ;
 		std::string strAccount ;
 		std::string strPassword ;
-		unsigned short nAIConfigID ;
+		std::string strAiFileName;
 		unsigned int  nMinLeftCoin ;
 		unsigned int nMinLeftDiamond ;
 		float fMustWinRate ; // 100 percent ;

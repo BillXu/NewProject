@@ -18,12 +18,12 @@ bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
 	stRobotItem* pItem = new stRobotItem ;
 	pItem->nRobotID = refReaderRow["RobotID"]->IntValue();
 	pItem->fMustWinRate = refReaderRow["MustWinRate"]->FloatValue();
-	pItem->nAIConfigID = refReaderRow["AIConfigID"]->IntValue();
 	pItem->nApplyLeaveWhenPeerCount = refReaderRow["LeaveWhenPlayerCount"]->IntValue();
 	pItem->nMinLeftDiamond = refReaderRow["MinLeftDiamoned"]->IntValue();
 	pItem->nMinLeftCoin = refReaderRow["MinLeftCoin"]->IntValue();
 	pItem->strAccount = refReaderRow["RobotAccount"]->StringValue();
 	pItem->strPassword = refReaderRow["RobotPassword"]->StringValue();
+	pItem->strAiFileName = refReaderRow["AiFileName"]->StringValue();
 	pItem->fActDelayBegin = refReaderRow["ActDelayBegin"]->FloatValue();
 	pItem->fActDelayEnd = refReaderRow["ActDelayEnd"]->FloatValue() ;
 	pItem->fActDelayBegin = pItem->fActDelayBegin < pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
