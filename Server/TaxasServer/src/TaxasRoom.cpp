@@ -1059,7 +1059,7 @@ void CTaxasRoom::CaculateVicePool(stVicePool& pPool )
 	CTaxasPokerPeerCard cardWinner ;
 	for ( uint8_t nIdx = 0 ; nIdx < pPool.vInPoolPlayerIdx.size(); ++nIdx )
 	{
-		uint8_t nPeerIdx = pPool.vInPoolPlayerIdx[0] ;
+		uint8_t nPeerIdx = pPool.vInPoolPlayerIdx[nIdx] ;
 		stTaxasPeerData& pData = m_vSitDownPlayers[nPeerIdx];
 		if ( pData.IsInvalid() )
 		{
