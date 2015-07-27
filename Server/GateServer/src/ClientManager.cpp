@@ -7,7 +7,7 @@
 #include "GateServer.h"
 #include "ServerMessageDefine.h"
 #include "ServerNetwork.h"
-#define TIME_WAIT_FOR_RECONNECTE 60
+#define TIME_WAIT_FOR_RECONNECTE 6
 CGateClientMgr::CGateClientMgr()
 {
 	m_vNetWorkIDGateClientIdx.clear();
@@ -145,7 +145,8 @@ void CGateClientMgr::OnServerMsg( const char* pRealMsgData, uint16_t nDataLen,ui
 
 	if ( pClient->tTimeForRemove )
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("client is waiting for reconnected") ;
+		stMsg* pReal = (stMsg*)pRealMsgData ;
+		CLogMgr::SharedLogMgr()->SystemLog("client is waiting for reconnected session id = %d, msg = %d",uTargetSessionID,pReal->usMsgType) ;
 		return ;
 	}
 

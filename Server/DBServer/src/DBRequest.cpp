@@ -64,6 +64,14 @@ void CDBRequestQueue::PushReserveRequest(VEC_DBREQUEST& vRequest )
 	}
 	mReserveQuestLock.Unlock();
 }
+
+void CDBRequestQueue::PushReserveRequest(stDBRequest* request )
+{
+	mReserveQuestLock.Lock() ;
+	m_vReserveRequest.push_back(request);
+	mReserveQuestLock.Unlock();
+}
+
 void CDBRequestQueue::PushResult(VEC_DBRESULT& vResult )
 {
 	mResultLock.Lock();

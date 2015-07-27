@@ -214,11 +214,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 	case MSG_DISCONNECT_CLIENT:
 		{
 			stMsgClientDisconnect* pRet = (stMsgClientDisconnect*)pMsg;
-			if ( !pRet->bIsForClientReconnect )
-			{
-				// send disconnect to server ;
-				SendClientDisconnectMsg(pRet->nSeesionID) ;
-			}
+			SendClientDisconnectMsg(pRet->nSeesionID) ;
 
 			stGateInfo* pGateInfo = GetGateInfoByNetworkID(pData->_connectID);
 			if ( pGateInfo == NULL )
@@ -424,6 +420,7 @@ void CCenterServerApp::SendClientDisconnectMsg(uint32_t nSessionID )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("data svr is disconnected") ;
 	}
+	CLogMgr::SharedLogMgr()->PrintLog("send dis connect msg session id = %d",nSessionID);
 }
 eServerType CCenterServerApp::GetServerTypeByMsgTarget(uint16_t nTarget)
 {

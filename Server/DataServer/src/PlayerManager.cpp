@@ -42,6 +42,10 @@ bool CPlayerManager::OnMessage( stMsg* pMessage , eMsgPort eSenderPort , uint32_
 	CPlayer* pTargetPlayer = GetPlayerBySessionID(nSessionID,true );
 	if ( pTargetPlayer && pTargetPlayer->OnMessage(pMessage,eSenderPort ) )
 	{
+		if (pTargetPlayer->IsState(CPlayer::ePlayerState_Offline) )
+		{
+			pTargetPlayer->OnTimerSave(0,0);
+		}
 		return true  ;
 	}
 	else
@@ -107,6 +111,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 		if ( pPlayer )
 		{
 			// post online event ;
+			CLogMgr::SharedLogMgr()->PrintLog("player disconnect session id = %d",nSessionID);
 			OnPlayerOffline(pPlayer) ;
 		}
 		else
@@ -219,11 +224,17 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 			if (pPlayer)
 			{
 				pPlayer->GetBaseData()->onTaxasPlayerRequestMoneyComfirm(pRet->nRet == 0 ,pRet->nWantedMoney,pRet->bDiamond) ;
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %d request takin coin = %I64d",pRet->nUserUID,pRet->nWantedMoney);
+				if (pPlayer->IsState(CPlayer::ePlayerState_Offline) )
+				{
+					pPlayer->OnTimerSave(0,0);
+				}
 			}
 			else
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("why request comfirm no player uid = %d",pRet->nUserUID);
 			}
+
 		}
 		break;
 	case MSG_TP_ORDER_LEAVE:
@@ -236,6 +247,10 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 				if ( pPlayer )
 				{
 					pPlayer->playerDoLeaveTaxasRoom(false,0,0 );
+					if (pPlayer->IsState(CPlayer::ePlayerState_Offline) )
+					{
+						pPlayer->OnTimerSave(0,0);
+					}
 				}
 				CLogMgr::SharedLogMgr()->ErrorLog("order leave failed uid = %d",pRet->nUserUID);
 			}
@@ -251,7 +266,11 @@ bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPo
 				return true ;
 			}
 			pPlayer->playerDoLeaveTaxasRoom(true,pRet->nTakeInMoney,pRet->bIsDiamond);
-			CLogMgr::SharedLogMgr()->PrintLog("be told uid = %d leave taxas room",pRet->nUserUID );
+			if (pPlayer->IsState(CPlayer::ePlayerState_Offline) )
+			{
+				pPlayer->OnTimerSave(0,0);
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("be told uid = %d leave taxas room coin = %I64d",pRet->nUserUID,pRet->nTakeInMoney );
 		}
 		break;
 	default:

@@ -66,6 +66,12 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			}
 			
 			pdata->nExtenArg1 = pLoginRegister->cRegisterType ;
+			if ( strlen(pLoginRegister->cAccount) >= MAX_LEN_ACCOUNT || strlen(pLoginRegister->cPassword) >= MAX_LEN_PASSWORD )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("pLoginRegister password or account len is too long ");
+				m_vReserverArgData.push_back(pdata) ;
+				break; 
+			}
 
 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
 			pRequest->cOrder = eReq_Order_Super ;
@@ -81,6 +87,13 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 		{
 			stMsgLogin* pLoginCheck = (stMsgLogin*)pmsg ;
 			pdata->nSessionID = nSessionID ;
+			// must end with \0
+			if ( strlen(pLoginCheck->cAccount) >= MAX_LEN_ACCOUNT || strlen(pLoginCheck->cPassword) >= MAX_LEN_PASSWORD )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("password or account len is too long ");
+				m_vReserverArgData.push_back(pdata) ;
+				break; 
+			}
 
 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
 			pRequest->cOrder = eReq_Order_High ;
@@ -97,6 +110,12 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgRebindAccount* pMsgRet = (stMsgRebindAccount*)pmsg ;
 			pdata->nSessionID = nSessionID ;
 			pdata->nExtenArg1 = pMsgRet->nCurUserUID ;
+			if ( strlen(pMsgRet->cAccount) >= MAX_LEN_ACCOUNT || strlen(pMsgRet->cPassword) >= MAX_LEN_PASSWORD )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("MSG_PLAYER_BIND_ACCOUNT password or account len is too long ");
+				m_vReserverArgData.push_back(pdata) ;
+				break; 
+			}
 
 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
 			pRequest->cOrder = eReq_Order_Super ;
@@ -112,6 +131,12 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgModifyPassword* pMsgRet = (stMsgModifyPassword*)pmsg ;
 			pdata->nSessionID = nSessionID ;
 			pdata->nExtenArg1 = pMsgRet->nUserUID ;
+			if ( strlen(pMsgRet->cOldPassword) >= MAX_LEN_PASSWORD || strlen(pMsgRet->cNewPassword) >= MAX_LEN_PASSWORD )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("MSG_MODIFY_PASSWORD password or account len is too long ");
+				m_vReserverArgData.push_back(pdata) ;
+				break; 
+			}
 
 			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
 			pRequest->cOrder = eReq_Order_Super ;

@@ -96,6 +96,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->eType = eRequestType_Update ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"UPDATE playerbasedata SET coin = '%I64d', diamond = '%d' WHERE userUID = '%d'",pRet->nCoin,pRet->nDiamoned,pRet->nUserUID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("save player coin = %I64d uid = %d",pRet->nCoin,pRet->nUserUID);
 		}
 		break;
 	case MSG_SAVE_PLAYER_TAXAS_DATA:

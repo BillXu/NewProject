@@ -23,7 +23,7 @@ struct stMsgClientDisconnect
 public:
 	stMsgClientDisconnect(){ cSysIdentifer = ID_MSG_PORT_CENTER ;  usMsgType = MSG_DISCONNECT_CLIENT ; }
 	uint32_t nSeesionID ;
-	bool bIsForClientReconnect ; 
+	//bool bIsForClientReconnect ; 
 };
 
 struct stMsgNewClientConnected

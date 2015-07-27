@@ -181,7 +181,7 @@ void CRobotControlTaxas::setScene(CTaxasPokerScene* pScene)
 void CRobotControlTaxas::waitAction()
 {
 	float nRate = (float)rand() / float(RAND_MAX);
-	nRate = 1.0f + nRate * 8.0f ;
+	nRate = 1.0f + nRate * 3.0f ;
 	fireDelayAction(nRate,nullptr);
 
 	printf("wait me action \n");

@@ -160,9 +160,9 @@ struct stCommonBaseData
 struct stServerBaseData
 	:public stCommonBaseData
 {
-	unsigned int nContinueDays ;
-	unsigned int tLastLoginTime;
-	unsigned int tLastTakeCharityCoinTime ;
+	uint32_t nContinueDays ;
+	uint32_t tLastLoginTime;
+	uint32_t tLastTakeCharityCoinTime ;
 };
 
 struct stMsgPlayerBaseData

@@ -52,7 +52,7 @@ void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
 	m_vAllComponents[ePlayerComponent_BaseData] = new CPlayerBaseData(this) ;
 	m_vAllComponents[ePlayerComponent_Mail] = new CPlayerMailComponent(this);
 	//m_vAllComponents[ePlayerComponent_PlayerItemMgr] = new CPlayerItemComponent(this);
-	m_vAllComponents[ePlayerComponent_PlayerMission] = new CPlayerMission(this);
+	//m_vAllComponents[ePlayerComponent_PlayerMission] = new CPlayerMission(this);
 	//m_vAllComponents[ePlayerComponent_PlayerShop] = new CPlayerShop(this);
 	m_nTaxasRoomID = 0 ;
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
@@ -275,7 +275,8 @@ void CPlayer::PostPlayerEvent(stPlayerEvetArg* pEventArg )
 
 void CPlayer::SendMsgToClient(const char* pBuffer, unsigned short nLen,bool bBrocat )
 {
-	if ( IsState(ePlayerState_Online)  )
+	stMsg* pmsg = (stMsg*)pBuffer ;
+	if ( IsState(ePlayerState_Online) || pmsg->cSysIdentifer != ID_MSG_PORT_CLIENT  )
 	{
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),pBuffer,nLen,bBrocat) ;
 		return ;

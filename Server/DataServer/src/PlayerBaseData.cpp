@@ -342,7 +342,6 @@ void CPlayerBaseData::OnProcessContinueLogin()
 
 void CPlayerBaseData::OnPlayerDisconnect()
 {
-	m_bCommonLogicDataDirty = true ;
 	TimerSave();
 	CEventCenter::SharedEventCenter()->RemoveEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
 }
@@ -357,6 +356,7 @@ void CPlayerBaseData::TimerSave()
 		msgSaveMoney.nDiamoned = m_stBaseData.nDiamoned + m_nTaxasPlayerDiamoned;
 		msgSaveMoney.nUserUID = GetPlayer()->GetUserUID() ;
 		SendMsg((stMsgSavePlayerMoney*)&msgSaveMoney,sizeof(msgSaveMoney)) ;
+		CLogMgr::SharedLogMgr()->PrintLog("player do time save coin uid = %d coin = %I64d",msgSaveMoney.nUserUID,msgSaveMoney.nCoin );
 	}
 	
 	if ( m_bTaxasDataDirty )
@@ -607,4 +607,5 @@ void CPlayerBaseData::caculateMoneyWhenLeaveTaxasRoom(bool bNormalLave , uint64_
 
 	m_stBaseData.nCoin += m_nTaxasPlayerCoin ;
 	m_nTaxasPlayerCoin = 0 ;
+	m_bMoneyDataDirty = true ;
 }
