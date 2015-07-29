@@ -27,8 +27,9 @@
           <FilePathData Path="login.csd" />
           <FilePathData Path="PlayerSelf.csd" />
           <FilePathData Path="Player.csd" />
+          <FilePathData Path="MainScene.csd" />
         </OpenedDocuments>
-        <ActiveDocument Path="Player.csd" />
+        <ActiveDocument Path="MainScene.csd" />
       </Value>
     </Item>
     <Item Key="CocosRecentOperation">

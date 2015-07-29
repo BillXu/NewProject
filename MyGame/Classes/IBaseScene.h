@@ -10,9 +10,9 @@ class IBaseScene
 	:public Node,public CNetMessageDelegate
 {
 public:
-	virtual bool OnMessage( Packet* pMsg ){ return onMsg((stMsg*)pMsg->_orgdata) ;} ;
+	virtual bool OnMessage( stMsg* pMsg )final{ return onMsg(pMsg) ;} ;
 	virtual bool onMsg(stMsg* pmsg );
-	virtual bool OnLostSever(Packet* pMsg);
+	virtual bool OnLostSever();
 	virtual void onEnter();
 	virtual void onExit();
 	void sendMsg(stMsg* pmsg, uint16_t nLen );

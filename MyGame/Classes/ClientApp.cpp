@@ -24,7 +24,6 @@ void CClientApp::destroyInstance()
 CClientApp::CClientApp()
 {
 	m_pNetwork = NULL ;
-	m_pConnectID = INVALID_CONNECT_ID ;
 }
 
 CClientApp::~CClientApp()
@@ -94,31 +93,29 @@ void CClientApp::disconnectFromSvr()
 {
 	if ( m_pNetwork )
 	{
-		m_pNetwork->DisconnectServer(m_pConnectID);
+		m_pNetwork->DisconnectServer();
 		m_pNetwork->ShutDown();
 	}
 	m_eNetState = CNetWorkMgr::eConnectType_None ;
 }
 
 // net delegate 
-bool CClientApp::OnMessage( Packet* pMsg )
+bool CClientApp::OnMessage( stMsg* pMsg )
 {
 	return false ;
 }
 
-bool CClientApp::OnLostSever(Packet* pMsg)
+bool CClientApp::OnLostSever()
 {
-	m_pConnectID = INVALID_CONNECT_ID ;
 	m_eNetState = CNetWorkMgr::eConnectType_Disconnectd ;
 	CCLOG("svr disconnect");
 	return false ;
 }
 
-bool CClientApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
+bool CClientApp::OnConnectStateChanged( eConnectState eSate)
 {
 	if ( eSate == CNetMessageDelegate::eConnect_Accepted )
 	{
-		m_pConnectID = pMsg->_connectID ;
 		m_eNetState = CNetWorkMgr::eConnectType_Connected ;
 		stMsg msgVerify ;
 		msgVerify.cSysIdentifer = ID_MSG_VERIFY ;
@@ -138,7 +135,7 @@ bool CClientApp::sendMsg(stMsg* pMsg , uint16_t nLen )
 {
 	if ( isConnecting() )
 	{
-		return m_pNetwork->SendMsg((char*)pMsg,nLen,m_pConnectID ) ;
+		return m_pNetwork->SendMsg((char*)pMsg,nLen) ;
 	}
 	else
 	{
@@ -149,7 +146,7 @@ bool CClientApp::sendMsg(stMsg* pMsg , uint16_t nLen )
 
 bool CClientApp::isConnecting()
 {
-	return (m_pConnectID != INVALID_CONNECT_ID ) && m_eNetState == CNetWorkMgr::eConnectType_Connected ;
+	return m_eNetState == CNetWorkMgr::eConnectType_Connected ;
 }
 
 

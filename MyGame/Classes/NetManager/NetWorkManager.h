@@ -9,7 +9,7 @@
 #ifndef God_NetWorkManager_h
 #define God_NetWorkManager_h
 #include <list>
-#include "ClientNetworkImp.h"
+#include "ClientNetork.h"
 class CNetWorkMgr ;
 struct stMsg ;
 
@@ -28,14 +28,9 @@ public:
 public:
 	CNetMessageDelegate(){ m_pNetWorkMgr = NULL ;m_nPriority =0 ;};
 	virtual ~CNetMessageDelegate(){} ;
-	// svr use
-	virtual bool OnMessage( Packet* pMsg ){ stMsg* preal = (stMsg*)pMsg->_orgdata ; if ( OnMessage(preal)) return true ; return false ; };
-	virtual bool OnLostSever(Packet* pMsg){ if (OnLostSever())return true ; return  false; };
-	virtual bool OnConnectStateChanged( eConnectState eSate, Packet* pMsg){ if(OnConnectStateChanged(eSate))return true ; return false ;}
-	// client use 
-	virtual bool OnMessage( stMsg* pMsg ){ return false ; }   // client please use this function ;
+	virtual bool OnMessage( stMsg* pMsg ) = 0 ;
 	virtual bool OnLostSever(){ return  false; };
-	virtual bool OnConnectStateChanged( eConnectState eSate){ return false ;}
+	virtual bool OnConnectStateChanged( eConnectState eSate ){ return false ;}
 	void SetPriority( unsigned int nPriority  );
 	unsigned GetPriority(){ return m_nPriority ;}
 	void SetNetWorkMgr(CNetWorkMgr* pNetWork ) { m_pNetWorkMgr = pNetWork ;}
@@ -61,26 +56,21 @@ public:
 public:
     CNetWorkMgr();
     ~CNetWorkMgr();
-   // static CNetWorkMgr* SharedNetWorkMgr();
     void SetupNetwork( int nIntendServerCount = 1 );
     bool ConnectToServer( const char* pSeverIP, unsigned short nPort , const char* pPassword = NULL );
     void ReciveMessage();
-	void ReciveOneMessage();
+    void ReciveOneMessage();
     bool SendMsg( const char* pbuffer , int iSize );
-	bool SendMsg( const char* pbuffer , int iSize,CONNECT_ID& nServerNetUID );
     
 	void AddMessageDelegate(CNetMessageDelegate * pDelegate, unsigned short nPrio );
 	void AddMessageDelegate(CNetMessageDelegate *pDelegate) ;
 	void RemoveMessageDelegate(CNetMessageDelegate* pDelegate);
 	void RemoveAllDelegate();
-	void EnumDeleagte( CNetWorkMgr* pTarget, lpfunc pFunc, void* pData );
-	void DisconnectServer( CONNECT_ID& nServerNetUID );
-	void DisconnectServer();
-    char* GetIPStringByConnectID(CONNECT_ID id ){ return m_pNetPeer->GetIPStringByConnectID(id);}
     void ShutDown();
 public:
     static int s_nCurrentDataSize ;
 protected:
+    void EnumDeleagte( CNetWorkMgr* pTarget, lpfunc pFunc, void* pData );
 	bool OnLostServer( CNetMessageDelegate* pDeleate,void* pData );
 	bool OnReciveLogicMessage( CNetMessageDelegate* pDeleate,void* pData );
 	bool OnConnectSateChanged( CNetMessageDelegate* pDeleate,void* pData );
@@ -91,7 +81,6 @@ protected:
     LIST_DELEGATE m_vWillAddDelegate;
     LIST_DELEGATE m_vWillRemoveDelegate ;
     CClientNetwork* m_pNetPeer;
-    CONNECT_ID m_nCurrentServer ;  // the newest accepted Server ; 
 	short m_nConnectedTo ;
 	short m_nMaxConnectTo ;
 };

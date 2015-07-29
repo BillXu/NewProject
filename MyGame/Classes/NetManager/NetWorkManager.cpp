@@ -8,7 +8,7 @@
 #include "NetWorkManager.h"
 //#include "LogManager.h"
 //#include "MessageDefine.h"
-#include "header.h"
+#include "cocos2d.h"
 int CNetWorkMgr::s_nCurrentDataSize = 0 ;
 void CNetMessageDelegate::SetPriority( unsigned int nPriority )
 {
@@ -22,16 +22,13 @@ CNetWorkMgr::CNetWorkMgr()
     m_pNetPeer = NULL ;
 	m_nMaxConnectTo = 0;
 	m_nConnectedTo = 0 ;
-
-	//zsummer::log4z::ILog4zManager::GetInstance()->Config("client.cfg");
-	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
 }
 
 CNetWorkMgr::~CNetWorkMgr()
 {
 	if ( m_pNetPeer )
 	{
-		m_pNetPeer->Stop();
+        m_pNetPeer->Shutdown();
 		delete m_pNetPeer;
 		m_pNetPeer = NULL ;
 	}
@@ -42,10 +39,7 @@ void CNetWorkMgr::ShutDown()
 {
     if ( m_pNetPeer )
     {
-        m_pNetPeer->CloseConnection(m_nCurrentServer);
-		m_pNetPeer->Stop();
-        //delete m_pNetPeer;
-        m_pNetPeer = NULL ;
+        m_pNetPeer->Shutdown();
     }
 }
 
@@ -61,7 +55,7 @@ void CNetWorkMgr::SetupNetwork( int nIntendServerCount )
 	{
 		m_nMaxConnectTo = nIntendServerCount ;
 		m_pNetPeer =  new CClientNetwork ;
-		m_pNetPeer->Start();
+        m_pNetPeer->Init();
 	}
 }
 
@@ -70,14 +64,14 @@ bool CNetWorkMgr::ConnectToServer(const char *pSeverIP, unsigned short nPort , c
 	assert(m_pNetPeer && "Pls SetupNetwork() first! " );
     if ( !m_pNetPeer )
 	{
-		LOGE("m_pNetPeer is null , please setup network first ");
+		//CLogMgr::SharedLogMgr()->ErrorLog("m_pNetPeer is null , please setup network first ");
 		return false ;
 	}
 
 	assert(m_nConnectedTo < m_nMaxConnectTo && "no more slot for new coming server" );
 	if ( m_nMaxConnectTo <= m_nConnectedTo )
 	{
-		LOGFMTE("no more slot for new coming server, so can not connected to the server: %s , port: %d",pSeverIP, nPort );
+		//CLogMgr::SharedLogMgr()->ErrorLog("no more slot for new coming server, so can not connected to the server: %s , port: %d",pSeverIP, nPort );
 		return false ;
 	}
 
@@ -91,7 +85,7 @@ bool CNetWorkMgr::ConnectToServer(const char *pSeverIP, unsigned short nPort , c
 		pPassword = NULL ;
 	}
 
-	return  INVALID_CONNECT_ID != m_pNetPeer->ConnectToServer(pSeverIP, nPort) ;
+	return  m_pNetPeer->ConnectToServer(pSeverIP, nPort) ;
 }
 
 void CNetWorkMgr::ReciveMessage()
@@ -100,101 +94,74 @@ void CNetWorkMgr::ReciveMessage()
 	if ( m_pNetPeer == NULL )
 		return ;
 	
-	INetwork::VEC_PACKET vPacket ;
-	if ( !m_pNetPeer->GetAllPacket(vPacket) )
-	{
-		return ;
-	}
-
-	INetwork::VEC_PACKET::iterator iter = vPacket.begin();
-	for ( ; iter != vPacket.end(); ++iter )
-	{
-		Packet* packet = *iter ;
-		if ( packet->_packetType == _PACKET_TYPE_CONNECTED )
-		{
-			m_nCurrentServer = packet->_connectID;
-			EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),packet) ;
-		}
-		else if ( _PACKET_TYPE_DISCONNECT == packet->_packetType )
-		{
-			if ( packet->_connectID == m_nCurrentServer )
-			{
-				m_nCurrentServer = INVALID_CONNECT_ID ;
-			}
-
-			EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnLostServer),packet) ;
-		}
-		else if ( _PACKET_TYPE_MSG == packet->_packetType )
-		{
-			ProcessDelegateAddRemove();
-			s_nCurrentDataSize = packet->_len ;
-			EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnReciveLogicMessage),packet) ;
-		}
-		else if ( _PACKET_TYPE_CONNECT_FAILED == packet->_packetType )
-		{
-			EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),packet) ;
-		}
-		delete packet;
-	}
+    Packet* NetPacket = NULL;
+    while ( ( NetPacket = m_pNetPeer->GetNetPacket() ))
+    {
+        if ( _PACKET_TYPE_CONNECTED == NetPacket->cPacketType )
+        {
+//            printf("_PACKET_TYPE_CONNECTED == NetPacket->cPacketType\n");
+            EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),NetPacket) ;
+        }
+        else if ( _PACKET_TYPE_DISCONNECTED == NetPacket->cPacketType )
+        {
+            EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnLostServer),NetPacket) ;
+        }
+        else if ( _PACKET_TYPE_CONNECT_FAILED == NetPacket->cPacketType )
+        {
+            EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),NetPacket) ;
+        }
+        else if ( _PACKET_TYPE_MSG == NetPacket->cPacketType )
+        {
+            ProcessDelegateAddRemove();
+            s_nCurrentDataSize = NetPacket->nLen ;
+            EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnReciveLogicMessage),NetPacket) ;
+        }
+     
+        delete NetPacket;
+    }
 }
 
 void CNetWorkMgr::ReciveOneMessage()
 {
-	ProcessDelegateAddRemove();
-	if ( m_pNetPeer == NULL )
-		return ;
-	Packet* packet = nullptr ;
-	
-	if ( m_pNetPeer->GetFirstPacket(&packet) == false )
-	{
-		return ;
-	}
-
-	if (packet == nullptr )
-	{
-		return ;
-	}
-
-	if ( packet->_packetType == _PACKET_TYPE_CONNECTED )
-	{
-		m_nCurrentServer = packet->_connectID;
-		EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),packet) ;
-	}
-	else if ( _PACKET_TYPE_DISCONNECT == packet->_packetType )
-	{
-		if ( packet->_connectID == m_nCurrentServer )
-		{
-			m_nCurrentServer = INVALID_CONNECT_ID ;
-		}
-
-		EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnLostServer),packet) ;
-	}
-	else if ( _PACKET_TYPE_MSG == packet->_packetType )
-	{
-		ProcessDelegateAddRemove();
-		s_nCurrentDataSize = packet->_len ;
-		EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnReciveLogicMessage),packet) ;
-	}
-	else if ( _PACKET_TYPE_CONNECT_FAILED == packet->_packetType )
-	{
-		EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),packet) ;
-	}
-	delete packet;
+    ProcessDelegateAddRemove();
+    if ( m_pNetPeer == NULL )
+        return ;
+    
+    Packet* NetPacket = NetPacket = m_pNetPeer->GetNetPacket();
+    if (NetPacket == nullptr )
+    {
+        return ;
+    }
+    
+    if ( _PACKET_TYPE_CONNECTED == NetPacket->cPacketType )
+    {
+        //            printf("_PACKET_TYPE_CONNECTED == NetPacket->cPacketType\n");
+        EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),NetPacket) ;
+    }
+    else if ( _PACKET_TYPE_DISCONNECTED == NetPacket->cPacketType )
+    {
+        EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnLostServer),NetPacket) ;
+    }
+    else if ( _PACKET_TYPE_CONNECT_FAILED == NetPacket->cPacketType )
+    {
+        EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnConnectSateChanged),NetPacket) ;
+    }
+    else if ( _PACKET_TYPE_MSG == NetPacket->cPacketType )
+    {
+        ProcessDelegateAddRemove();
+        s_nCurrentDataSize = NetPacket->nLen ;
+        EnumDeleagte(this, (lpfunc)(&CNetWorkMgr::OnReciveLogicMessage),NetPacket) ;
+    }
+    
+    delete NetPacket;
 }
 
 bool CNetWorkMgr::SendMsg(const char *pbuffer, int iSize)
 {
     if ( m_pNetPeer == NULL )
         return false ;
-	return m_pNetPeer->SendMsg((unsigned char*)pbuffer, iSize, m_nCurrentServer, false) ;
-}
-
-bool CNetWorkMgr::SendMsg( const char* pbuffer , int iSize,CONNECT_ID& nServerNetUID )
-{
-	if ( m_pNetPeer == NULL || nServerNetUID == INVALID_CONNECT_ID )
-		return false ;
-	m_pNetPeer->SendMsg((unsigned char*)pbuffer, iSize, nServerNetUID, false) ;
-	return true;
+	m_pNetPeer->SendMsg(pbuffer, iSize);
+    return true ;
 }
 
 void CNetWorkMgr::AddMessageDelegate(CNetMessageDelegate *pDelegate, unsigned short nPrio )
@@ -228,16 +195,19 @@ void CNetWorkMgr::RemoveMessageDelegate(CNetMessageDelegate *pDelegate)
 
 bool CNetWorkMgr::OnLostServer( CNetMessageDelegate* pDeleate,void* pData )
 {
-    return pDeleate->OnLostSever((Packet*)pData) ;
+    return pDeleate->OnLostSever() ;
 }
 
 bool CNetWorkMgr::OnReciveLogicMessage( CNetMessageDelegate* pDeleate,void* pData )
 {
-    return pDeleate->OnMessage((Packet*)pData);
+    Packet* packet = (Packet*)pData ;
+    stMsg* pmsg = (stMsg*)packet->Data();
+    return pDeleate->OnMessage(pmsg);
 }
 
 void CNetWorkMgr::EnumDeleagte( CNetWorkMgr* pTarget, lpfunc pFunc, void* pData )
 {
+    //printf("have accpeted state EnumDeleagte delegate cnt %lu \n",m_vAllDelegate.size());
     LIST_DELEGATE::iterator iter = m_vAllDelegate.begin() ;
     for ( ; iter != m_vAllDelegate.end(); ++iter )
     {
@@ -246,33 +216,17 @@ void CNetWorkMgr::EnumDeleagte( CNetWorkMgr* pTarget, lpfunc pFunc, void* pData 
     }
 }
 
-void CNetWorkMgr::DisconnectServer( CONNECT_ID& nServerNetUID )
-{
-	if ( nServerNetUID == INVALID_CONNECT_ID )
-	{
-		return ;
-	}
-    //if ( IsConnected() )
-    {
-        m_pNetPeer->CloseConnection(nServerNetUID) ;
-    }
-}
-
-void CNetWorkMgr::DisconnectServer()
-{
-	m_pNetPeer->CloseConnection(m_nCurrentServer) ;
-}
-
 bool CNetWorkMgr::OnConnectSateChanged( CNetMessageDelegate* pDeleate,void* pData )
 {
 	Packet* packet = (Packet*)pData ;
     //unsigned char nMessageID = packet->data[0];
     CNetMessageDelegate::eConnectState eSate = CNetMessageDelegate::eConnect_Accepted;
-     switch (packet->_packetType)
+     switch (packet->cPacketType)
      {
          case _PACKET_TYPE_CONNECTED:
          {
              eSate = CNetMessageDelegate::eConnect_Accepted;
+//             printf("have accpeted state OnConnectSateChanged\n");
          }
              break ;
          case _PACKET_TYPE_CONNECT_FAILED:
@@ -280,25 +234,10 @@ bool CNetWorkMgr::OnConnectSateChanged( CNetMessageDelegate* pDeleate,void* pDat
             eSate = CNetMessageDelegate::eConnect_Failed;
          }
              break ;
-//         case ID_NO_FREE_INCOMING_CONNECTIONS:
-//         {
-//             eSate = CNetMessageDelegate::eConnect_SeverFull;
-//         }
-//             break ;
-//         case ID_CONNECTION_BANNED:
-//         {
-//             eSate = CNetMessageDelegate::eConnect_Banned;
-//         }
-//             break ;
-// 		case ID_ALREADY_CONNECTED:
-// 		{
-// 			eSate = CNetMessageDelegate::eConnect_AlreadyConnected;
-// 		}
-// 			break;
          default:
              return true ;
      }
-	 return pDeleate->OnConnectStateChanged(eSate,packet) ;
+	return pDeleate->OnConnectStateChanged(eSate) ;
 }
 
 void CNetWorkMgr::ProcessDelegateAddRemove()

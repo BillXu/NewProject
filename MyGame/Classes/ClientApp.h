@@ -21,9 +21,9 @@ public:
 	void disconnectFromSvr();
 
 	// net delegate 
-	virtual bool OnMessage( Packet* pMsg );
-	virtual bool OnLostSever(Packet* pMsg);
-	virtual bool OnConnectStateChanged( eConnectState eSate, Packet* pMsg);
+	virtual bool OnMessage( stMsg* pMsg );
+	virtual bool OnLostSever();
+	virtual bool OnConnectStateChanged( eConnectState eSate);
 	bool sendMsg(stMsg* pMsg , uint16_t nLen );
 	bool isConnecting();
 	void update(float fDeta );
@@ -36,7 +36,6 @@ public:
 protected:
 	static CClientApp* s_ClientApp;
 	CNetWorkMgr* m_pNetwork ;
-	CONNECT_ID m_pConnectID ;
 	CNetWorkMgr::eConnectType m_eNetState;
 protected:
 	stCommonBaseData m_tPlayerData ;

@@ -368,3 +368,5 @@ CocosProject/runtime/
 MyPoker/cocos2d/
 *.udf
 *.udf
+MyGame/proj.win32/include/
+MyGame/proj.win32/lib/
