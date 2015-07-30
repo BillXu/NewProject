@@ -16,8 +16,10 @@ CVerifyApp::~CVerifyApp()
 	}
 }
 
-void CVerifyApp::MainLoop()
+void CVerifyApp::update(float fDeta )
 {
+	IServerApp::update(fDeta);
+
 	if ( m_pNetwork )
 	{
 		m_pNetwork->RecieveMsg() ;
@@ -62,13 +64,20 @@ void CVerifyApp::MainLoop()
 	vOutAppleResult.clear() ;
 }
 
-void CVerifyApp::Init()
+bool CVerifyApp::init()
 {
+	IServerApp::init();
 	CLogMgr::SharedLogMgr()->SetOutputFile("VerifySvr");
-	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
-	m_pNetwork = new CServerNetwork ;
-	m_pNetwork->StartupNetwork(m_stSvrConfigMgr.GetServerConfig(eSvrType_Verify)->nPort,5,m_stSvrConfigMgr.GetServerConfig(eSvrType_Verify)->strPassword) ;
-	m_pNetwork->AddDelegate(this);
+
+	CSeverConfigMgr stSvrConfigMgr ;
+	stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
+	stServerConfig* pConfig = stSvrConfigMgr.GetServerConfig(eSvrType_Center) ;
+	if ( pConfig == NULL )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null , so can not connected to !") ;
+		return false;
+	}
+	setConnectServerConfig(pConfig);
 
 	m_AppleVerifyMgr.Init() ;
 	m_DBVerifyMgr.Init();
@@ -91,6 +100,7 @@ stVerifyRequest* CVerifyApp::GetRequestToUse()
 	memset(request->pBufferVerifyID,0,sizeof(request->pBufferVerifyID)) ;
 	request->pUserData = NULL;
 	request->nShopItemID = 0 ;
+	request->nSessionID = 0 ;
 	return request ;
 }
 
@@ -106,7 +116,7 @@ void CVerifyApp::FinishVerifyRequest(stVerifyRequest* pRequest)
 	msg.nRet = pRequest->eResult ;
 	msg.nBuyerPlayerUserUID = pRequest->nFromPlayerUserUID ;
 	msg.nBuyForPlayerUserUID = pRequest->nBuyedForPlayerUserUID ;
-	m_pNetwork->SendMsg((char*)&msg,sizeof(msg),pRequest->nFromNetID,false) ;
+	sendMsg(pRequest->nSessionID,(char*)&msg,sizeof(msg));
 	CLogMgr::SharedLogMgr()->SystemLog( "finish verify transfaction shopid = %d ,uid = %d ret = %d",msg.nShopItemID,msg.nBuyerPlayerUserUID,msg.nRet ) ;
 }
 
@@ -156,53 +166,36 @@ std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_
 
 }  
 
-bool CVerifyApp::OnMessage( Packet* pData )
+bool CVerifyApp::onLogicMsg( stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSessionID )
 {
-	stMsg* pMsg = (stMsg*)pData->_orgdata ;
+	if ( IServerApp::onLogicMsg(pMsg,eSenderPort,nSessionID) )
+	{
+		return true ;
+	}
+
 	if ( pMsg->usMsgType == MSG_VERIFY_TANSACTION )
 	{
 		stMsgToVerifyServer* pReal = (stMsgToVerifyServer*)pMsg ;
 		stVerifyRequest* pRequest = GetRequestToUse() ;
-		pRequest->nFromNetID = pData->_connectID ;
 		pRequest->nFromPlayerUserUID = pReal->nBuyerPlayerUserUID ;
 		pRequest->nShopItemID = pReal->nShopItemID;
 		pRequest->nBuyedForPlayerUserUID = pReal->nBuyForPlayerUserUID ;
 		pRequest->nRequestType = 0 ;  // now just apple ;
+		pRequest->nSessionID = nSessionID ;
 		std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
 		//std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),20);
 		memcpy(pRequest->pBufferVerifyID,str.c_str(),strlen(str.c_str()));
 		m_AppleVerifyMgr.AddRequest(pRequest) ;
 		printf("recived a transfaction need to verify shop id = %d useruid = %d\n",pReal->nShopItemID,pReal->nBuyerPlayerUserUID);
 	}
-	else if ( pMsg->cSysIdentifer == ID_MSG_VERIFY )
-	{
-
-	}
 	else
 	{
-		printf("unknown msg type = %d,%s, close connection",pMsg->usMsgType,m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
-		m_pNetwork->ClosePeerConnection(pData->_connectID);
+		printf("unknown msg type = %d,%d, close connection",pMsg->usMsgType,eSenderPort) ;
 	}
 	return true ;
 }
 
-void CVerifyApp::OnNewPeerConnected(CONNECT_ID nNewPeer, ConnectInfo* IpInfo )
+uint16_t CVerifyApp::getLocalSvrMsgPortType()
 {
-	stMsg msg ;
-	msg.cSysIdentifer = ID_MSG_VERIFY ;
-	msg.usMsgType = MSG_VERIFY_VERIYF ;
-	m_pNetwork->SendMsg((char*)&msg,sizeof(msg),nNewPeer,false) ;
-	CLogMgr::SharedLogMgr()->SystemLog("a peer connected ip: %s port = %d",IpInfo->strAddress,IpInfo->nPort);
-}
-
-void CVerifyApp::OnPeerDisconnected(CONNECT_ID nPeerDisconnected, ConnectInfo* IpInfo )
-{
-	if ( IpInfo )
-	{
-		CLogMgr::SharedLogMgr()->SystemLog("a peer disconnected ip: %s port = %d",IpInfo->strAddress,IpInfo->nPort);
-	}
-	else
-	{
-		CLogMgr::SharedLogMgr()->SystemLog("a peer disconnected");
-	}
+	return ID_MSG_PORT_VERIFY ;
 }

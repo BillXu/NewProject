@@ -198,7 +198,29 @@ struct stMsgOrderTaxasPlayerLeaveRet
 	uint32_t nUserUID ;
 };
 
-//----above is new , below is ok---------
+// other with Verify Server ;
+struct stMsgToVerifyServer
+	:public stMsg
+{
+	stMsgToVerifyServer(){ cSysIdentifer = ID_MSG_PORT_VERIFY ; usMsgType = MSG_VERIFY_TANSACTION ; }
+	unsigned int nBuyerPlayerUserUID ; 
+	unsigned int nBuyForPlayerUserUID ;
+	unsigned short nShopItemID ; // for mutilp need to verify ;
+	unsigned short nTranscationIDLen ;
+	char* ptransactionID ;   // base64 ed ;
+};
+
+struct stMsgFromVerifyServer
+	:public stMsg
+{
+	stMsgFromVerifyServer(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_VERIFY_TANSACTION ; }
+	unsigned int nBuyerPlayerUserUID ; 
+	unsigned int nBuyForPlayerUserUID ;
+	unsigned short nShopItemID ; // for mutilp need to verify ;
+	unsigned char nRet ; // 0 apple check error iap free crack ,2 duplicate tansactionid  , 4 Success ;
+};
+
+//----above is new , below is old---------
 
 //--------------------------------------------
 // message between DB and Gamesever ;
@@ -524,28 +546,6 @@ struct stMsgTransferData
 	uint32_t nSessionID ;
 	bool bBroadCast ;
 	char pData[0] ;
-};
-
-// other with Verify Server ;
-struct stMsgToVerifyServer
-	:public stMsg
-{
-	stMsgToVerifyServer(){ cSysIdentifer = ID_MSG_TO_VERIFY_SERVER ; usMsgType = MSG_VERIFY_TANSACTION ; }
-	unsigned int nBuyerPlayerUserUID ; 
-	unsigned int nBuyForPlayerUserUID ;
-	unsigned short nShopItemID ; // for mutilp need to verify ;
-	unsigned short nTranscationIDLen ;
-	char* ptransactionID ;   // base64 ed ;
-};
-
-struct stMsgFromVerifyServer
-	:public stMsg
-{
-	stMsgFromVerifyServer(){ cSysIdentifer = ID_MSG_FROM_VERIFY_SERVER ; usMsgType = MSG_VERIFY_TANSACTION ; }
-	unsigned int nBuyerPlayerUserUID ; 
-	unsigned int nBuyForPlayerUserUID ;
-	unsigned short nShopItemID ; // for mutilp need to verify ;
-	unsigned char nRet ; // 0 apple check error iap free crack ,2 duplicate tansactionid  , 4 Success ;
 };
 
 // push server message 

@@ -130,35 +130,34 @@ bool CClientNetwork::DoConnectToServer()
     
     m_pTCPConnect = new TCPClient;
     
-    
+    bool bSuccess = true ;
     if (!m_pTCPConnect->connect( m_strIP.c_str(),m_nPort, NET_CONNECT_TIMEOUT))
     {
         delete m_pTCPConnect ;
         m_pTCPConnect = NULL ;
         printf("connected failed no no \n");
         //m_tMsgQueue.push_back(msg);
-        return false ;
+		bSuccess = false ;
     }
     
     
-    if (!ACTIVE_CONNECTION(m_pTCPConnect))
+    if ( bSuccess && !ACTIVE_CONNECTION(m_pTCPConnect))
     {
         delete m_pTCPConnect ;
         m_pTCPConnect = NULL ;
         printf("connected failed no no 222 \n");
         //m_tMsgQueue.push_back(msg);
-        return false ;
+       bSuccess = false ;
     }
     
     nullmsg* msg = new nullmsg(0) ;
     msg->size = 0 ; // specail event ;
-    msg->cmd = _PACKET_TYPE_CONNECT_FAILED;
-    msg->cmd = _PACKET_TYPE_CONNECTED;
+    msg->cmd = bSuccess ? _PACKET_TYPE_CONNECTED : _PACKET_TYPE_CONNECT_FAILED;
     m_nNextSendHeatBet = time(NULL) + CLIENT_HEATBET_INTERVAL ;
-    printf("connected haha\n");
+    printf("connected result\n");
     m_nHeatBetTimeOut = time(NULL) + HEATBET_TIME_OUT ;
     m_tMsgQueue.push_back(msg);
-    return true ;
+    return bSuccess ;
 }
 
 
@@ -282,6 +281,10 @@ void CClientNetwork::ProcessNetwork()
         {
             m_nNetState = _NET_STATE_CONNECTED ;
         }
+		else
+		{
+			m_nNetState = _NET_STATE_DISCONNECT ;
+		}
         return ;
     }
     

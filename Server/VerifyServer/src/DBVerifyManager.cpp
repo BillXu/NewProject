@@ -17,7 +17,7 @@ CDBVerifyManager::~CDBVerifyManager()
 void CDBVerifyManager::Init()
 {
 	m_pDBThead = new CDataBaseThread ;
-	m_pDBThead->InitDataBase("203.186.75.134",3306,"root","kf-idc","gamedbbj");
+	m_pDBThead->InitDataBase("127.0.0.1",3306,"root","123456","taxpokerdb");
 	m_pDBThead->Start();
 }
 

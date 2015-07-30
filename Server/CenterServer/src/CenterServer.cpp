@@ -110,6 +110,18 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			CLogMgr::SharedLogMgr()->SystemLog("apns server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
 		}
 		break;
+	case MSG_VERIFY_VERIYF:
+		{
+			if ( m_vTargetServers[eSvrType_Verify] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Verify close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_APNS]);
+			}
+
+			m_vTargetServers[eSvrType_Verify] = pData->_connectID;
+			CLogMgr::SharedLogMgr()->SystemLog("verify server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+		}
+		break;
 	case MSG_VERIFY_LOGIN:
 		{
 			if ( m_vTargetServers[eSvrType_Login] != INVALID_CONNECT_ID )

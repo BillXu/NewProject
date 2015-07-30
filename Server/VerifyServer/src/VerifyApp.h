@@ -4,27 +4,23 @@
 #include "DBVerifyManager.h"
 #include "ServerNetwork.h"
 #include "ServerConfig.h"
+#include "ISeverApp.h"
 class CVerifyApp
-	:public CServerNetworkDelegate
+	:public IServerApp
 {
 public:
 	CVerifyApp();
 	~CVerifyApp();
-	void MainLoop();
-	void Init();
+	void update(float fDeta );
+	bool init();
 	stVerifyRequest* GetRequestToUse();
 	void PushVerifyRequestToReuse(stVerifyRequest* pRequest );
 	void FinishVerifyRequest(stVerifyRequest* pRequest);
-
-	//---
-	virtual bool OnMessage( Packet* pData );
-	virtual void OnNewPeerConnected(CONNECT_ID nNewPeer, ConnectInfo* IpInfo );
-	virtual void OnPeerDisconnected(CONNECT_ID nPeerDisconnected, ConnectInfo* IpInfo );
+	virtual bool onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
+	uint16_t getLocalSvrMsgPortType();
 protected:
 	LIST_VERIFY_REQUEST m_vListRequest ;
 	CServerNetwork* m_pNetwork ;
 	CAppleVerifyManager m_AppleVerifyMgr ;
 	CDBVerifyManager m_DBVerifyMgr ;
-
-	CSeverConfigMgr m_stSvrConfigMgr ;
 };

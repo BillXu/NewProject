@@ -26,7 +26,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN-
  * THE SOFTWARE.
  * 
  * ===============================================================================
@@ -255,6 +255,30 @@ bool CTcpAccept::OnIOCPMessage(BOOL bSuccess)
 	else
 	{
 		LCW("Accept Fail,  retry doAccept ... ip=" << m_ip << ", port=" << m_port);
+
+		//if failed we should go on accept , otherwise , failed one , failed forever . ps by bill xu ;2015/7/30
+		memset(&m_handle, 0, sizeof(m_handle));
+		m_handle._type = tagReqHandle::HANDLE_ACCEPT;
+		m_socket = INVALID_SOCKET;
+		memset(m_recvBuf, 0, sizeof(m_recvBuf));
+		m_recvLen = 0;
+
+		m_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP,  NULL, 0, WSA_FLAG_OVERLAPPED);
+		if (m_socket == INVALID_SOCKET)
+		{
+			LCF("create client socket err! ERRCODE=" << WSAGetLastError() << " ip=" << m_ip << ", port=" << m_port);
+			return false;
+		}
+
+		if (!AcceptEx(m_server, m_socket, m_recvBuf, 0, sizeof(SOCKADDR_IN)+16, sizeof(SOCKADDR_IN)+16, &m_recvLen, &m_handle._overlapped))
+		{
+			if (WSAGetLastError() != ERROR_IO_PENDING)
+			{
+				LCE("do AcceptEx err, ERRCODE=" << WSAGetLastError() << " ip=" << m_ip << ", port=" << m_port);
+				return false;
+			}
+		}
+		m_nAcceptCount++;
 	}
 	return true;
 }

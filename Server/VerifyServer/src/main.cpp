@@ -5,11 +5,15 @@ int main()
 	zsummer::log4z::ILog4zManager::GetInstance()->Start();
 
 	CVerifyApp theApp ;
-	theApp.Init() ;
-	while ( true )
+	bool bok = theApp.init() ;
+	if ( !bok )
 	{
-		theApp.MainLoop() ;
-		Sleep(5);
+		printf("init svr error\n");
+		char c ;
+		scanf("%c",&c);
+		return 0 ;
 	}
+	theApp.run();
+	theApp.onExit();
 	return 0 ;
 }

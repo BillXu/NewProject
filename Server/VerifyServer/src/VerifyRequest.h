@@ -1,6 +1,6 @@
 #pragma once
 #include <list>
-#include "ServerNetwork.h"
+#include "NativeTypes.h"
 //#include "RakNetTypes.h"
 #define MAX_VERIFY_STR_LEN 1024*4
 enum eVerifiy_Result
@@ -14,13 +14,13 @@ enum eVerifiy_Result
 };
 struct stVerifyRequest
 {
-	CONNECT_ID nFromNetID ;
 	unsigned int nFromPlayerUserUID ;
 	unsigned int nBuyedForPlayerUserUID ;  
 	char pBufferVerifyID[MAX_VERIFY_STR_LEN] ;  // base64 from cliend , or tranfaction_id from apple server ;
 	unsigned char nRequestType ; // 0 apple store ;
 	eVerifiy_Result eResult ;  // eVerifiy_Result
 	unsigned short nShopItemID ;  // for mutilp need to verify ;
+	uint32_t nSessionID ;
 	void* pUserData ;
 };
 
