@@ -20,6 +20,7 @@ struct stTaxasPokerData
 	uint8_t vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
 	uint64_t vVicePool[MAX_PEERS_IN_TAXAS_ROOM] ;
 	stTaxasPeerBaseData vAllTaxasPlayerData[MAX_PEERS_IN_TAXAS_ROOM] ;
+	uint32_t nChatRoomID ;
 public:
 	uint8_t getVicePoolCnt();
 	void resetRuntimeData();

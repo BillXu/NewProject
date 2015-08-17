@@ -14,6 +14,33 @@ BOOL WINAPI ConsoleHandler(DWORD msgType)
 	return TRUE;
 } 
 
+class  TestC
+{
+public:
+	TestC( int t)
+	{
+		a = 3 ;
+		//printf("ctor of test C, %d\n",t);
+	}
+public:
+	int a ;
+	char p[32];
+};
+
+class  Test
+{
+public:
+	Test( int t)
+	{
+		a = 3 ;
+		//printf("ctor of test C, %d\n",t);
+	}
+public:
+	int a ;
+	char p[40];
+};
+
+#include "MemoryManager.h"
 int main()
 {
 	/*//---temp
@@ -28,7 +55,80 @@ int main()
 		scanf("%u",&tS) ;
 	}
 	return 0;
+	
+	int nN = 1 ;
+	void* pt = malloc(2);
+	int address = (int)pt ;
+	void* pt2 = ((char*)pt + nN ) ;
+	int address2 = (int)pt2 ;
+	printf("elasps = %d\n",address2 - address );
 	*///----
+//	char* pv = new char[10] ;
+//	delete[] pv ;
+//	TestC* p = new TestC(3);
+//	CMemoryMgr::getInstance()->debugInfo();
+//	clock_t s = clock();
+//#define  CNT 91960
+//	TestC* vList[CNT] = {0} ;
+//	int nCnt = CNT ;
+//	while ( nCnt )
+//	{
+//		TestC* p = new TestC(3);
+//		vList[--nCnt] = p;
+//		p = new TestC(3);
+//		p = new TestC(3);
+// 		if ( nCnt == 11620 )
+// 		{
+// 			CMemoryMgr::getInstance()->debugInfo();
+// 		}
+// 		if ( nCnt == 11586 )
+// 		{
+// 			CMemoryMgr::getInstance()->debugInfo();
+// 		}
+	//}
+	//
+	//clock_t e = clock();
+	//float dw = float(e-s)/CLOCKS_PER_SEC ;
+	//printf( "befor new time = %f\n",dw ) ;
+	//e = clock();
+	//s = e ;
+	//for each( TestC* pt in vList ) 
+	//{
+	//	if ( pt )
+	//	{
+	//		delete pt ;
+	//	}
+	//	//e = clock();
+	//	//dw = float(e-s)/CLOCKS_PER_SEC ;
+	//	//printf( "time = %f\n",dw ) ;
+	//	//e = clock();
+	//	//s = e ;
+	//	
+	//}
+
+	//e = clock();
+	//dw = float(e-s)/CLOCKS_PER_SEC ;
+	//printf( "delete  time = %f\n",dw ) ;
+	//s = e ;
+	//nCnt = 99000 ;
+	//while ( nCnt-- )
+	//{
+	//	Test* p = new Test(3);
+	//	if ( nCnt == 1 )
+	//	{
+	//		//CMemoryMgr::getInstance()->debugInfo();
+	//	}
+	//	if ( nCnt == 2 )
+	//	{
+	//		//CMemoryMgr::getInstance()->debugInfo();
+	//	}
+	//}
+
+	// e = clock();
+	// dw = float(e-s)/CLOCKS_PER_SEC ;
+	//printf( "usd time = %f\n",dw ) ;
+	//CMemoryMgr::getInstance()->debugInfo();
+	//return 0 ;
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG )|_CRTDBG_LEAK_CHECK_DF) ;
 	//_CrtSetBreakAlloc(133);
 	SetConsoleCtrlHandler(ConsoleHandler, TRUE); 

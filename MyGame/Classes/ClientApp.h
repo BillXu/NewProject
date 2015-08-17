@@ -1,6 +1,8 @@
 #pragma once
 #include "NetWorkManager.h"
 #include "MessageDefine.h"
+#include "GotyeDelegate.h"
+USING_NS_GOTYEAPI;
 namespace cocos2d
 {
 	class SpriteFrame ;
@@ -8,6 +10,7 @@ namespace cocos2d
 
 class CClientApp
 	:public CNetMessageDelegate
+	,public gotyeapi::GotyeDelegate
 {
 public:
 	static CClientApp* getInstance();

@@ -16,6 +16,12 @@
     <Filter Include="src\poker">
       <UniqueIdentifier>{838bbc86-8cad-486f-85d4-ccdab5bc833d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="depend">
+      <UniqueIdentifier>{ba8fc377-6d3c-43ed-aca6-4d29a2467c3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="depend\socail">
+      <UniqueIdentifier>{2f43e7a4-8cc2-4b43-a5b2-ec85d548858b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -76,6 +82,9 @@
       <Filter>src\poker</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\ChipGroup.cpp">
+      <Filter>src\poker</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\chatLayer.cpp">
       <Filter>src\poker</Filter>
     </ClCompile>
   </ItemGroup>
@@ -156,6 +165,39 @@
       <Filter>src\poker</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\ChipGroup.h">
+      <Filter>src\poker</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\Gotye.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeAPI.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeChatTarget.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeDelegate.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeGroupMsgConfig.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeMedia.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeMessage.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeNotify.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeStatusCode.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\depend\socail\include\GotyeWhineMode.h">
+      <Filter>depend\socail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\chatLayer.h">
       <Filter>src\poker</Filter>
     </ClInclude>
   </ItemGroup>

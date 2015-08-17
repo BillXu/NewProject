@@ -2,6 +2,7 @@
 #include "ClientApp.h"
 #include "TaxasMessageDefine.h"
 #include "TaxasPokerScene.h"
+#include "GotyeAPI.h"
 cocos2d::Scene* CMainScene::createScene()
 {
 	auto pScene = Scene::create();

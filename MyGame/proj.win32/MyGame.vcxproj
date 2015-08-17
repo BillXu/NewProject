@@ -73,7 +73,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineRoot)cocos\audio\include;$(EngineRoot)external;$(EngineRoot)external\chipmunk\include\chipmunk;$(EngineRoot)extensions;include;..\Classes;..;%(AdditionalIncludeDirectories);$(_COCOS_HEADER_WIN32_BEGIN);$(_COCOS_HEADER_WIN32_END);../../Server/NetworkUtility/src;../../Common</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineRoot)cocos\audio\include;$(EngineRoot)external;$(EngineRoot)external\chipmunk\include\chipmunk;$(EngineRoot)extensions;include;../depend/socail/include;..\Classes;..;%(AdditionalIncludeDirectories);$(_COCOS_HEADER_WIN32_BEGIN);$(_COCOS_HEADER_WIN32_END);../../Server/NetworkUtility/src;../../Common;$(EngineRoot)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USE_MATH_DEFINES;GL_GLEXT_PROTOTYPES;CC_ENABLE_CHIPMUNK_INTEGRATION=0;COCOS2D_DEBUG=1;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;ROBOT;_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -86,9 +86,9 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);$(_COCOS_LIB_WIN32_BEGIN);$(_COCOS_LIB_WIN32_END);NetworkUtilityD.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);$(_COCOS_LIB_WIN32_BEGIN);$(_COCOS_LIB_WIN32_END);NetworkUtilityD.lib;libGotyeWin32_DBG_v110.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories);$(_COCOS_LIB_PATH_WIN32_BEGIN);$(_COCOS_LIB_PATH_WIN32_END);../../Server/Bin/Lib;./lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories);$(_COCOS_LIB_PATH_WIN32_BEGIN);$(_COCOS_LIB_PATH_WIN32_END);../../Server/Bin/Lib;./lib;../depend/socail/win32/ide_v110</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
@@ -147,6 +147,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y</Command>
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
+    <ClCompile Include="..\Classes\chatLayer.cpp" />
     <ClCompile Include="..\Classes\ChipGroup.cpp" />
     <ClCompile Include="..\Classes\ClientApp.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
@@ -175,6 +176,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y</Command>
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\Classes\AppDelegate.h" />
+    <ClInclude Include="..\Classes\chatLayer.h" />
     <ClInclude Include="..\Classes\ChipGroup.h" />
     <ClInclude Include="..\Classes\ClientApp.h" />
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
@@ -186,6 +188,16 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)" /D /E /I /F /Y</Command>
     <ClInclude Include="..\Classes\TaxasPokerData.h" />
     <ClInclude Include="..\Classes\TaxasPokerScene.h" />
     <ClInclude Include="..\Classes\TaxasPokerSceneState.h" />
+    <ClInclude Include="..\depend\socail\include\Gotye.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeAPI.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeChatTarget.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeDelegate.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeGroupMsgConfig.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeMedia.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeMessage.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeNotify.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeStatusCode.h" />
+    <ClInclude Include="..\depend\socail\include\GotyeWhineMode.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>

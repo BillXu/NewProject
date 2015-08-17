@@ -104,6 +104,9 @@
     <ClCompile Include="src\TaxasPokerData.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\MemoryManager.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\CommonDefine.h">
@@ -189,6 +192,9 @@
     </ClInclude>
     <ClInclude Include="src\TaxasPokerData.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\MemoryManager.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

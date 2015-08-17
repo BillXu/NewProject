@@ -4,6 +4,8 @@
 class CTaxasPlayer;
 class CLocalTaxasPlayer;
 class CTaxasPokerSceneStateBase ;
+class  CChatLayer ;
+ 
 class CTaxasPokerScene
 	:public IBaseScene
 {
@@ -35,10 +37,19 @@ public:
 	void refreshForWaitGame();
 	uint8_t getCurRoomState(){return m_eCurState ;}
 	uint8_t getPlayerCntWithState(eRoomPeerState eS );
+
+	void chatInputCallBack(int nContentType , const char* pContent );
+	virtual void onEnterRoom(GotyeStatusCode code, GotyeRoom& room);
+	void onReceiveMessage(const GotyeMessage& message, bool* downloadMediaIfNeed);
+	void onDownloadMediaInMessage(GotyeStatusCode code, const GotyeMessage& message);
+	void onReconnecting(GotyeStatusCode code, const GotyeLoginUser& user);
+	void onExit();
 protected:
 	void doLayoutTaxasPlayer(CTaxasPlayer*pPlayer,uint8_t nOffsetIdx );
 	void goToState(eRoomState eState,stMsg* pmsg = nullptr );
+	void enterChatRoom();
 protected:
+	CChatLayer* m_pChatLayer ;
 	Sprite* m_vPublicCard[TAXAS_PUBLIC_CARD];
 	ui::Text* m_pMainPool;
 	ui::Text* m_vVicePool[MAX_PEERS_IN_TAXAS_ROOM];

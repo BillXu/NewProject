@@ -90,6 +90,7 @@
     <ClCompile Include="..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\Common\LogManager.cpp" />
+    <ClCompile Include="..\Common\MemoryManager.cpp" />
     <ClCompile Include="..\Common\TaxasPokerPeerCard.cpp" />
     <ClCompile Include="..\Common\Utility.cpp" />
     <ClCompile Include="..\Server\ServerCommon\mutex.cpp" />
@@ -119,6 +120,7 @@
     <ClInclude Include="..\Common\ConfigReader.h" />
     <ClInclude Include="..\Common\IConfigFile.h" />
     <ClInclude Include="..\Common\LogManager.h" />
+    <ClInclude Include="..\Common\MemoryManager.h" />
     <ClInclude Include="..\Common\MessageDefine.h" />
     <ClInclude Include="..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\Common\TaxasMessageDefine.h" />

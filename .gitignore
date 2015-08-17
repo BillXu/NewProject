@@ -370,3 +370,7 @@ MyPoker/cocos2d/
 *.udf
 MyGame/proj.win32/include/
 MyGame/proj.win32/lib/
+*.a
+*.dll
+*.so
+*.lib

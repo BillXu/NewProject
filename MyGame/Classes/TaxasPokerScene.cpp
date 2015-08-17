@@ -3,6 +3,8 @@
 #include "ClientApp.h"
 #include "TaxasMessageDefine.h"
 #include "TaxasPokerSceneState.h"
+#include "chatLayer.h"
+#include "GotyeAPI.h"
 Scene* CTaxasPokerScene::createScene()
 {
 	auto scn = Scene::create();
@@ -53,6 +55,10 @@ bool CTaxasPokerScene::init()
 	m_pLocalPlayer->getRoot()->setVisible(false);
 	m_pLocalPlayer->createCoinAni(pRoot);
 	refreshContent();
+
+	m_pChatLayer = CChatLayer::create();
+	addChild(m_pChatLayer);
+	m_pChatLayer->setCallBack(CC_CALLBACK_2(CTaxasPokerScene::chatInputCallBack,this));
 	
 	goToState(eRoomState_TP_WaitJoin); 
 	return true ;
@@ -119,9 +125,21 @@ bool CTaxasPokerScene::onMsg(stMsg* pmsg )
 
 void CTaxasPokerScene::onRecievedRoomInfo()
 {
+	CCLOG("temp code here set for chat room id");
+	getPokerData()->nChatRoomID = 14361018 ;
+	enterChatRoom();
 	refreshContent();
 	// goto target 
 	goToState((eRoomState)getPokerData()->eCurRoomState );
+}
+
+void CTaxasPokerScene::enterChatRoom()
+{
+	GotyeRoom room (getPokerData()->nChatRoomID);
+	if ( GotyeAPI::getInstance()->isInRoom(room) == false )
+	{
+		GotyeAPI::getInstance()->enterRoom(room);
+	}
 }
 
 void CTaxasPokerScene::refreshContent()
@@ -615,4 +633,58 @@ uint8_t CTaxasPokerScene::getPlayerCntWithState(eRoomPeerState eS )
 		}
 	}
 	return nCnt ;
+}
+
+void CTaxasPokerScene::onEnterRoom(GotyeStatusCode code, GotyeRoom& room)
+{
+	CCLOG("enter chat room ret = %d",code);
+}
+
+void CTaxasPokerScene::chatInputCallBack(int nContentType , const char* pContent )
+{
+	GotyeRoom room (14361018);
+	GotyeMessage msg = GotyeMessage::createTextMessage(room,pContent) ;
+	GotyeAPI::getInstance()->sendMessage(msg);
+		
+	bool b ;
+	onReceiveMessage(msg,&b);
+}
+                      
+void CTaxasPokerScene::onReceiveMessage(const GotyeMessage& message, bool* downloadMediaIfNeed)
+{
+	if ( message.hasMedia() )
+	{
+		*downloadMediaIfNeed = true ;
+		return ;
+	}
+
+	stChatItem* pItem = new stChatItem ;
+	pItem->strName = message.sender.name ;
+	pItem->strContent = message.text ;
+	m_pChatLayer->pushChatItem(pItem);
+}
+
+void CTaxasPokerScene::onDownloadMediaInMessage(GotyeStatusCode code, const GotyeMessage& message)
+{
+	GotyeAPI::getInstance()->playMessage(message);
+	stChatItem* pItem = new stChatItem ;
+	pItem->strName = message.sender.name ;
+	pItem->strContent = "Audio" ;
+	m_pChatLayer->pushChatItem(pItem);
+}
+
+void CTaxasPokerScene::onReconnecting(GotyeStatusCode code, const GotyeLoginUser& user)
+{
+	if ( code == GotyeStatusCodeOK )
+	{
+		enterChatRoom() ; 
+	}
+	CCLOG("reconnect chat svr ret = %d ",code);
+}
+
+void CTaxasPokerScene::onExit()
+{
+	IBaseScene::onExit() ;
+	GotyeRoom room (getPokerData()->nChatRoomID);
+	GotyeAPI::getInstance()->leaveRoom(room);
 }

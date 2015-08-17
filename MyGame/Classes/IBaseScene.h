@@ -4,10 +4,12 @@
 #include "CommonDefine.h"
 #include "cocostudio/CocoStudio.h"
 #include "ui/CocosGUI.h"
+#include "GotyeDelegate.h"
+USING_NS_GOTYEAPI;
 USING_NS_CC ;
 struct stMsg ;
 class IBaseScene
-	:public Node,public CNetMessageDelegate
+	:public Node,public CNetMessageDelegate,public GotyeDelegate
 {
 public:
 	virtual bool OnMessage( stMsg* pMsg )final{ return onMsg(pMsg) ;} ;
@@ -16,4 +18,8 @@ public:
 	virtual void onEnter();
 	virtual void onExit();
 	void sendMsg(stMsg* pmsg, uint16_t nLen );
+
+	// socail delegate
+	void onLogin(GotyeStatusCode code, const GotyeLoginUser& user);
+	void onLogout(GotyeStatusCode code);
 };

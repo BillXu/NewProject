@@ -2,6 +2,8 @@
 #include "MessageDefine.h"
 #include "ClientApp.h"
 #include "MainScene.h"
+#include "GotyeAPI.h"
+USING_NS_GOTYEAPI ;
 cocos2d::Scene* CLoginScene::createLoginScene()
 {
 	auto scene = Scene::create();
@@ -134,6 +136,12 @@ bool CLoginScene::onMsg(stMsg* pmsg )
 			CClientApp::getInstance()->setPlayerData(&pRet->stBaseData) ;
 			auto scene = CMainScene::createScene();
 			Director::getInstance()->replaceScene(scene);
+
+			bool bOk = GotyeAPI::getInstance()->isOnline();
+
+			string strPas = "123456";
+			GotyeAPI::getInstance()->login(String::createWithFormat("%d",pRet->stBaseData.nUserUID)->getCString(),&strPas);
+			
 		}
 		break;
 	default:
@@ -146,3 +154,4 @@ void CLoginScene::editBoxReturn(ui::EditBox* editBox)
 {
 
 }
+
