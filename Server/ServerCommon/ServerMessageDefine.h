@@ -220,6 +220,26 @@ struct stMsgFromVerifyServer
 	unsigned char nRet ; // 0 apple check error iap free crack ,2 duplicate tansactionid  , 4 Success ;
 };
 
+// request ipAddress ;
+struct stMsgLoginSvrInformGateSaveLog
+	:stMsg
+{
+	stMsgLoginSvrInformGateSaveLog(){ cSysIdentifer = ID_MSG_PORT_GATE ; usMsgType = MSG_LOGIN_INFORM_GATE_SAVE_LOG ; }
+	uint32_t nUserUID ;
+	uint16_t nlogType ;
+};
+
+struct stMsgSaveLog
+	:public stMsg
+{
+	stMsgSaveLog(){ cSysIdentifer = ID_MSG_PORT_LOG,usMsgType = MSG_SAVE_LOG; nJsonExtnerLen = 0 ; }
+	uint16_t nLogType ;
+	uint32_t nTargetID ;
+	int64_t vArg[LOG_ARG_CNT];
+	uint16_t nJsonExtnerLen ;
+	char pJsonString[0] ;
+};
+
 //----above is new , below is old---------
 
 //--------------------------------------------

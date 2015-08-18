@@ -1,5 +1,4 @@
 #pragma once
-#include "RakNetTypes.h"
 #include "ServerMessageDefine.h"
 #include <list>
 #include <map>
@@ -14,7 +13,7 @@ class CDBManager
 public:
 	struct stArgData
 	{
-		RakNet::RakNetGUID m_nReqrestFromAdd ;
+		eMsgPort eFromPort;
 		unsigned int nSessionID ; // always , refer to client session with serveper , used in GameServer and LoginServer , to rresent a Player ;
 		unsigned int nExtenArg1 ; // reserver argument , for later use ;
 		unsigned int nExtenArg2 ; // reserver argument , for later use ;
@@ -24,13 +23,12 @@ public:
 	};
 	typedef std::list<stArgData*> LIST_ARG_DATA ;
 public:
-	CDBManager(CDBServerApp* theApp);
+	CDBManager();
 	~CDBManager();
 	void Init();
-	void OnMessage(RakNet::Packet* packet);
+	void OnMessage(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
 	void OnDBResult(stDBResult* pResult);
 	stArgData* GetReserverArgData();
 protected:
 	LIST_ARG_DATA m_vReserverArgData ;
-	CDBServerApp* m_pTheApp ;
 };

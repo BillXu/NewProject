@@ -22,7 +22,7 @@ public:
 	uint32_t GenerateSessionID();
 	void onExit();
 protected:
-	void OnMsgFromOtherSrvToGate(stMsg* pmsg, uint16_t eSendPort );
+	void OnMsgFromOtherSrvToGate(stMsg* pmsg, uint16_t eSendPort , uint32_t nSessioniD );
 protected:
 	static CGateServer* s_GateServer ;
 	CServerNetwork* m_pNetWorkForClients ;

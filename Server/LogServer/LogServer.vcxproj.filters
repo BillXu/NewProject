@@ -24,9 +24,6 @@
     <ClCompile Include="src\DataBaseThread.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\DBApp.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\DBManager.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -63,8 +60,11 @@
     <ClCompile Include="..\ServerCommon\Timer.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
-    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp">
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
       <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LogSvr.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -78,9 +78,6 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="src\DataBaseThread.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DBApp.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\DBManager.h">
@@ -119,14 +116,17 @@
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerNetwork.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\ServerCommon\ThreadMod.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCommon\Timer.h">
       <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISeverApp.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LogSvrApp.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

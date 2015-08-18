@@ -1,4 +1,4 @@
-#include "DBApp.h"
+#include "LogSvrApp.h"
 #include <Dbghelp.h>
 #include <iostream>
 #include "ThreadMod.h"
@@ -15,7 +15,7 @@
 //#include "DBPlayerManager.h"
 
 
-CDBServerApp theApp ;
+CLogSvrApp theApp ;
 class CGetInput
 	:public CThreadT
 {
@@ -27,7 +27,7 @@ class CGetInput
 			c = getchar();
 			if ( c == 'q' || c == 'Q')
 			{
-				theApp.Stop();
+				theApp.stop();
 				break; 
 			}
 			Sleep(10);
@@ -51,16 +51,12 @@ LONG WINAPI MyUnhandledExceptionFilter( struct _EXCEPTION_POINTERS* ExceptionInf
 }
 
 
-void RunFunc ( CDBServerApp* pApp )
+void RunFunc ( CLogSvrApp* pApp )
 {
 	// exception 
 	__try
 	{
-		while (  pApp->IsRunning() )
-		{
-			pApp->MainLoop() ;
-			Sleep(5);
-		}
+		pApp->run();
 	}
 	__except(MyUnhandledExceptionFilter(GetExceptionInformation()))
 	{
@@ -72,17 +68,13 @@ int main()
 	//SetConsoleCtrlHandler(ConsoleHandler, TRUE); 
 	CGetInput input ;
 	input.Start();
-	theApp.Init();
+	theApp.init();
 #ifdef NDEBUG
 	RunFunc(&theApp) ;
 #else
-	while (  theApp.IsRunning() )
-	{
-		theApp.MainLoop() ;
-		Sleep(5);
-	}
+	theApp.run();
 #endif
-	theApp.OnExit();
+	theApp.onExit();
 	Sleep(3000) ; // wait other thread finish work ;
 	return 0 ; 
 }

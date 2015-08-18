@@ -12,7 +12,9 @@ bool CDataBaseThread::InitDataBase( const char* pIP,unsigned pPort , const char*
 	// connect to data base ;
 	// init my_sql ;
 	m_pMySql = mysql_init(NULL);
-	if ( !mysql_real_connect(m_pMySql,pIP,pUserName,pPassword,pDBName,pPort,NULL,0) )
+	char bReconnect = 1 ;
+	mysql_options(m_pMySql,MYSQL_OPT_RECONNECT,&bReconnect);
+	if ( !mysql_real_connect(m_pMySql,pIP,pUserName,pPassword,pDBName,pPort,NULL,CLIENT_MULTI_STATEMENTS) )
 	{
 		fprintf(stderr, "Failed to connect to database: Error: %s\\n",  mysql_error(m_pMySql));
 		m_bRunning = false ;
@@ -20,10 +22,15 @@ bool CDataBaseThread::InitDataBase( const char* pIP,unsigned pPort , const char*
 		m_pMySql = NULL ;
 		return false ;
 	}
+
+	if (!mysql_set_character_set(m_pMySql, "utf8"))
+	{
+		printf("New client character set: %s\n",
+			mysql_character_set_name(m_pMySql));
+	}
+
 	m_bRunning = true ;
-	char bReconnect = 1 ;
-	mysql_options(m_pMySql,MYSQL_OPT_RECONNECT,&bReconnect);
-	mysql_set_server_option( m_pMySql, MYSQL_OPTION_MULTI_STATEMENTS_ON ); 
+	//mysql_set_server_option( m_pMySql, MYSQL_OPTION_MULTI_STATEMENTS_ON ); s
 	m_tNextMysqlPingTime = time(NULL) + MYSQL_PING_TIME;
 	return true ;
 }
@@ -49,7 +56,17 @@ void CDataBaseThread::__run()
 
 		if ( time(NULL) >= m_tNextMysqlPingTime )
 		{
+			unsigned long id = mysql_thread_id(m_pMySql);
 			mysql_ping(m_pMySql);
+			if ( id != mysql_thread_id(m_pMySql) )
+			{
+				// reconnected ;
+				if (!mysql_set_character_set(m_pMySql, "utf8"))
+				{
+					printf("Reconnect !!! New client character set: %s\n",
+						mysql_character_set_name(m_pMySql));
+				}
+			}
 			m_tNextMysqlPingTime = time(NULL) + MYSQL_PING_TIME;
 		}
 	}
@@ -87,6 +104,7 @@ bool CDataBaseThread::ProcessRequest()
 		vProcessedResult.push_back(pResult);
 		pResult->nRequestUID = pRequest->nRequestUID ;
 		pResult->pUserData = pRequest->pUserData ;
+		pResult->nAffectRow = 0 ;
 		if ( mysql_real_query(m_pMySql,pRequest->pSqlBuffer,pRequest->nSqlBufferLen) )
 		{
 			printf("query DB Error Info , Operate UID = %d : %s \n", pRequest->nRequestUID, mysql_error(m_pMySql));
@@ -103,18 +121,32 @@ bool CDataBaseThread::ProcessRequest()
 			case eRequestType_Update:
 				{
 					pResult->nAffectRow = (unsigned int)mysql_affected_rows(m_pMySql);
+					msqlResult = mysql_store_result( m_pMySql ); 
+					mysql_free_result(msqlResult); 
 				}
 				break;
 			case eRequestType_Select:
 				{
 					msqlResult = mysql_store_result(m_pMySql);
+
 					if ( msqlResult == NULL )
 					{
-						printf("mysql_store_result Error Info , Operate UID = %d : %s \n", pRequest->nRequestUID, mysql_error(m_pMySql));
-						pResult->nAffectRow = 0 ;
+						mysql_free_result(msqlResult);
 						continue;
 					}
-					pResult->nAffectRow = (unsigned int)mysql_num_rows(msqlResult);
+
+					if ( pResult->nAffectRow >= 1 )
+					{
+						if ( msqlResult != NULL )
+						{
+							printf("mysql_store_result Error Info , Operate UID = %d : %s why have more than one result type  result \n", pRequest->nRequestUID, mysql_error(m_pMySql));
+						}
+						//pResult->nAffectRow = 0 ;
+						mysql_free_result(msqlResult);
+						continue;
+					}
+
+					pResult->nAffectRow += (unsigned int)mysql_num_rows(msqlResult);
 					// process row ;
 					int nNumFiled = mysql_num_fields(msqlResult);
 					while ( msqlrow = mysql_fetch_row(msqlResult))
@@ -143,6 +175,10 @@ bool CDataBaseThread::ProcessRequest()
 							case MYSQL_TYPE_BLOB: // binary 
 							case MYSQL_TYPE_VAR_STRING:  // string 
 							case MYSQL_TYPE_INT24:
+								{
+									bValide = true;
+								}
+								break;
 							default:
 								{
 									bValide = false ;
@@ -159,6 +195,7 @@ bool CDataBaseThread::ProcessRequest()
 							else
 							{
 								delete pField ;
+								printf("not support data type from db") ;
 								assert(0&&"why support type not !");
 								continue; 
 							}

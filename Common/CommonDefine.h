@@ -17,6 +17,7 @@
 #define MAX_TAXAS_HOLD_CARD 5
 #define MAX_UPLOAD_PIC 4
 #define MAX_JOINED_CLUB_CNT 10
+#define LOG_ARG_CNT 6
 
 #define COIN_CONDITION_TO_GET_CHARITY 1000
 #define TIME_GET_CHARITY_ELAPS 60*60*2   // 2 HOURE
@@ -81,6 +82,16 @@ enum eRoomState
 	eRoomState_BC_AddBankerCard,
 	eRoomState_BC_Caculate,
 	eRoomState_Max,
+};
+
+enum  eLogType
+{
+	eLog_Register, // externString, {ip:"ipdizhi"}
+	eLog_Login,  // externString, {ip:"ipdizhi"}
+	eLog_BindAccount, // externString, {ip:"ipdizhi"}
+	eLog_Logout, 
+	eLog_ModifyPwd, // externString, {ip:"ipdizhi"}
+	eLog_Max,
 };
 // ROOM TIME BY SECOND 
 #define TIME_ROOM_WAIT_READY 5

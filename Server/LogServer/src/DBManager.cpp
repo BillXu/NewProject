@@ -3,12 +3,10 @@
 #include "LogManager.h"
 #include "DBRequest.h"
 #include "ServerMessageDefine.h"
-#include "DBApp.h"
 #include "DataBaseThread.h"
-CDBManager::CDBManager(CDBServerApp* theApp )
+CDBManager::CDBManager( )
 {
 	m_vReserverArgData.clear();
-	m_pTheApp = theApp ;
 }
 
 CDBManager::~CDBManager()
@@ -37,149 +35,102 @@ void CDBManager::Init()
 	//CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
 }
 
-void CDBManager::OnMessage(RakNet::Packet* packet)
+void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessionID )
 {
 	// construct sql
-	stMsg* pmsg = (stMsg*)packet->data ;
-	if ( pmsg->usMsgType != MSG_SAVE_DB_LOG )
+	stArgData* pdata = GetReserverArgData() ;
+	if ( pdata == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("unknown message") ;
-		return ;
+		pdata = new stArgData ;
 	}
 
-	stDBLog* pLog = (stDBLog*)(((char*)pmsg) + sizeof(stMsgToLogDBServer));
-	unsigned int nCurNow = (unsigned int)time(NULL) ;
-	switch ( pLog->eLogType )
+	pdata->eFromPort = eSenderPort ;
+	pdata->nSessionID = nSessionID ;
+
+	stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+	pRequest->cOrder = eReq_Order_Normal ;
+	pRequest->nRequestUID = pmsg->usMsgType ;
+	pRequest->pUserData = pdata;
+	pRequest->eType = eRequestType_Max ;
+	pRequest->nSqlBufferLen = 0 ;
+
+	switch( pmsg->usMsgType )
 	{
-	case eDBLog_Login:
+	case MSG_SAVE_LOG:
 		{
-			stPlayerLoginDBLog* pLoginLog = (stPlayerLoginDBLog*)pLog;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			// format sql String ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO`log_login` (`userUID`, `playerName`, `loginTime`, `logoutTime`, `onlineTime`,`coin`, `diamoned`) \
-																	 VALUES ('%u', '%s', '%u', '%u', '%u', '%I64d', '%u');",pLoginLog->nUserUID,pLoginLog->cPlayerName,pLoginLog->nLoginTime,nCurNow,nCurNow - pLoginLog->nLoginTime,pLoginLog->nCurCoin,pLoginLog->nCurDiamond ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case eDBLog_Impawn:
-		{
-			stPlayerImpawnDBLog* pPawnLog = (stPlayerImpawnDBLog*)pLog;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			// format sql String ;
+			stMsgSaveLog* pCreate = (stMsgSaveLog*)pmsg ;
+			pdata->nExtenArg1 = pCreate->nTargetID ;
+			char* pStrBuffer = new char[pCreate->nJsonExtnerLen+1];
+			memset(pStrBuffer,0,pCreate->nJsonExtnerLen+1);
+			char* pS = (char*)&pCreate->nJsonExtnerLen ;
+			pS += sizeof(pCreate->nJsonExtnerLen);
+			memcpy(pStrBuffer,pS,pCreate->nJsonExtnerLen);
+			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"INSERT INTO`log_impawn` (`userUID`, `playerName`, `impawnItemID`, `itemCount`, `impawnCoin`, `impawnDiamoned`,`coin`, `diamoned`, `logTime`) VALUES ('%u', '%s', '%u', '%u', '%I64d','%u', '%I64d', '%u','%u');",
-			 pPawnLog->nUserUID,pPawnLog->cPlayerName,pPawnLog->nImpawnItemID,pPawnLog->nItemCount,pPawnLog->nImpawnCoin,pPawnLog->nImpawnDiamoned,pPawnLog->nCurCoin,pPawnLog->nCurDiamond,nCurNow ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case eDBLog_MissionReward:
-		{
-			stPlayerGetMissionRewardDBlog* pRealLog = (stPlayerGetMissionRewardDBlog*)pLog;
+				"call saveLog(%d,'%d','%s'",pCreate->nLogType,pCreate->nTargetID,pStrBuffer) ;
+			for ( uint8_t nIdx = 0 ; nIdx < LOG_ARG_CNT; ++nIdx )
+			{
+				pRequest->nSqlBufferLen += sprintf((char*)(pRequest->pSqlBuffer + pRequest->nSqlBufferLen),
+					",'%I64d'",pCreate->vArg[nIdx]) ;
+			}
 
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			// format sql String ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"INSERT INTO`log_mission` (`userUID`, `playerName`, `missionID`, `rewardCoin`,`coin`, `diamoned`, `logTime`) VALUES ('%u', '%s', '%u', '%u', '%I64d','%u','%u');",
-				pRealLog->nUserUID,pRealLog->cPlayerName,pRealLog->nMissionID,pRealLog->nGetCoin,pRealLog->nCurCoin,pRealLog->nCurDiamond,nCurNow ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case eDBLog_Shop:
-		{
-			stPlayShopDBLog* pRealLog = (stPlayShopDBLog*)pLog;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			// format sql String ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"INSERT INTO`log_shop` (`userUID`, `playerName`, `moneyType`, `spendMoney`, `channel`, `shopItemID`, `shopItemCount`,`coin`, `diamoned`, `logTime`) VALUES ('%u', '%s', '%u', '%u','%u','%u','%I64d','%u','%u');",
-				pRealLog->nUserUID,pRealLog->cPlayerName,pRealLog->nMoneyType,pRealLog->nSpendMoney,pRealLog->cChannel,pRealLog->nShopID,pRealLog->nShopCnt,pRealLog->nCurCoin,pRealLog->nCurDiamond,nCurNow ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case eDBLog_OtherMoneyOffset:
-		{
-			stPlayerOtherMoneyActDBLog* pRealLog = (stPlayerOtherMoneyActDBLog*)pLog;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			// format sql String ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"INSERT INTO`log_moneyoffsetotheraction` (`userUID`, `playerName`, `actionType`, `coinOffset`, `diamonedOffset`,`coin`, `diamoned`, `logTime`) VALUES ('%u', '%s', '%u', '%I64d','%d','%I64d','%u','%u');",
-				pRealLog->nUserUID,pRealLog->cPlayerName,pRealLog->cActType,pRealLog->nCoinOffset,pRealLog->nDiamondOffset,pRealLog->nCurCoin,pRealLog->nCurDiamond,nCurNow ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case eDBLog_StayInRoom:
-		{
-			stPlayerInRoomDBLog* pRealLog = (stPlayerInRoomDBLog*)pLog;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			// format sql String ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"INSERT INTO`log_playinroom` (`userUID`, `playerName`, `enterRoomTime`, `coinBeforEnter`, `coinExit`, `exitRoomTime`, `roomID`,`stayInRoomTime`) VALUES ('%u', '%s', '%u', '%I64d','%I64d','%u','%u','%u');",
-				pRealLog->nUserUID,pRealLog->cPlayerName,pRealLog->nEnterRoomTime,pRealLog->nCoinBeforEnterRoom,pRealLog->nCurCoin,nCurNow,pRealLog->nRoomID,nCurNow - pRealLog->nEnterRoomTime) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-		break;
-	case eDBLog_PresentAsset:
-		{
-			stPlayerPresentAssertDBLog* pRealLog = (stPlayerPresentAssertDBLog*)pLog;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			// format sql String ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"INSERT INTO`log_presentasset` (`userUID`, `playerName`, `targetPlayerUID`, `assetItemID`, `assetCount`, `presentReason`,`coin`, `diamoned`, `logTime`) VALUES ('%u', '%s', '%u', '%u','%u','%u','%I64d','%u','%u');",
-				pRealLog->nUserUID,pRealLog->cPlayerName,pRealLog->nTargetPlayerUID,pRealLog->nAssertID,pRealLog->nAssetCount,pRealLog->nPresentReason,pRealLog->nCurCoin,pRealLog->nCurDiamond,nCurNow ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
-		}
-	case eDBLog_RobotCoin:
-		{
-			stRobotCoinDBLog* pRealLog = (stRobotCoinDBLog*)pLog;
-
-			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
-			pRequest->cOrder = eReq_Order_Normal ;
-			pRequest->eType = eRequestType_Add ;
-			pRequest->nRequestUID = pmsg->usMsgType ;
-			// format sql String ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"INSERT INTO`log_robotcoin` (`robotZoneOffset1`, `robotZoneOffset2`, `robotZoneOffset3`, `robotZoneOffset4`, `robotTotalOffset`,`logTime`) VALUES ('%I64d', '%I64d', '%I64d', '%I64d','%I64d','%u');",
-				pRealLog->vRoomLevelRobotOffset[0],pRealLog->vRoomLevelRobotOffset[1],pRealLog->vRoomLevelRobotOffset[2],pRealLog->vRoomLevelRobotOffset[3],pRealLog->vAllRobotOffset,nCurNow ) ;
-			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+			pRequest->nSqlBufferLen += sprintf((char*)(pRequest->pSqlBuffer + pRequest->nSqlBufferLen),
+				")") ;
+			delete[] pStrBuffer ;
+			pStrBuffer = nullptr;
 		}
 		break;
 	default:
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("unknown log type = %d",pLog->eLogType ) ;
+			m_vReserverArgData.push_back(pdata) ;
+			CLogMgr::SharedLogMgr()->ErrorLog("unknown msg type = %d",pmsg->usMsgType ) ;
 		}
-		break;
+	}
+
+	if ( pRequest->nSqlBufferLen == 0 || pRequest->eType == eRequestType_Max )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("a request sql len = 0 , msg = %d" , pRequest->nRequestUID ) ;
+		
+		CDBRequestQueue::VEC_DBREQUEST v ;
+		v.push_back(pRequest) ;
+		CDBRequestQueue::SharedDBRequestQueue()->PushReserveRequest(v);
+	}
+	else
+	{
+		CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
 	}
 }
 
 void CDBManager::OnDBResult(stDBResult* pResult)
 {
-
+	stArgData*pdata = (stArgData*)pResult->pUserData ;
+	switch ( pResult->nRequestUID )
+	{
+	case MSG_SAVE_LOG:
+		{
+			if ( pResult->nAffectRow != 1 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("save log error",pdata->nExtenArg1) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("save log success");
+			}
+		}
+		break;
+	default:
+		{
+			if ( pResult->nAffectRow <= 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("unprocessed db result msg id = %d , row cnt = %d  ", pResult->nRequestUID,pResult->nAffectRow );
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->SystemLog("unprocessed db result msg id = %d , row cnt = %d  ", pResult->nRequestUID,pResult->nAffectRow );
+			}
+		}
+	}
+	m_vReserverArgData.push_back(pdata) ;
 }
 
 CDBManager::stArgData* CDBManager::GetReserverArgData()

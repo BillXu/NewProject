@@ -105,7 +105,7 @@ bool CGateServer::OnMessage( Packet* pPacket )
 		}
 		else if ( ID_MSG_PORT_GATE == pReal->cSysIdentifer )
 		{
-			OnMsgFromOtherSrvToGate(pReal,pData->nSenderPort);
+			OnMsgFromOtherSrvToGate(pReal,pData->nSenderPort,pData->nSessionID);
 		}
 		else
 		{
@@ -140,9 +140,32 @@ bool CGateServer::OnMessage( Packet* pPacket )
 	return true ;
 }
 
-void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort )
+void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort , uint32_t uTargetSessionID )
 {
+	if ( pmsg->usMsgType == MSG_LOGIN_INFORM_GATE_SAVE_LOG )
+	{
+		stGateClient* pClient = m_pGateManager->GetGateClientBySessionID(uTargetSessionID) ;
+		stMsgLoginSvrInformGateSaveLog* preal = (stMsgLoginSvrInformGateSaveLog*)pmsg ;
+		if ( NULL == pClient )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("big error !!!! can not send msg to session id = %d , client is null , msg = %d",uTargetSessionID,preal->usMsgType  ) ;
+			return  ;
+		}
 
+		stMsgSaveLog msg ;
+		memset(msg.vArg,0,sizeof(msg.vArg));
+		msg.nLogType = preal->nlogType ;
+		msg.nTargetID = preal->nUserUID ;
+		msg.nJsonExtnerLen = strlen(pClient->strIPAddress.c_str());
+
+		uint16_t nLen = sizeof(stMsgSaveLog) + msg.nJsonExtnerLen ;
+		char* pBuffer = new char[nLen];
+		memset(pBuffer,0,nLen);
+		memcpy(pBuffer,&msg,sizeof(msg));
+		memcpy(pBuffer + sizeof(msg),pClient->strIPAddress.c_str(),msg.nJsonExtnerLen);
+		sendMsg(pClient->nSessionId,pBuffer,nLen);
+		delete[] pBuffer ;
+	}
 }
 
 uint32_t CGateServer::GenerateSessionID()

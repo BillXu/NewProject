@@ -14,6 +14,8 @@ BOOL WINAPI ConsoleHandler(DWORD msgType)
 	return TRUE;
 } 
 
+#define cal(a,b) a##b
+#define toSt(a) #a 
 class  TestC
 {
 public:
@@ -22,10 +24,33 @@ public:
 		a = 3 ;
 		//printf("ctor of test C, %d\n",t);
 	}
+	template<bool b> void hello()
+	{ 
+		if (b) 
+			printf(" TestC ok\n");
+		else
+		{
+			printf("TestC ok2\n");
+		}
+	
+	}
 public:
 	int a ;
 	char p[32];
 };
+
+template<bool b,typename A > 
+void hello( A* a )
+{ 
+	a->hello<b>();
+	if (b == true)
+	 printf("ok\n"); 
+	else
+	{
+		printf("ok2\n"); 
+	}
+	
+}
 
 class  Test
 {
@@ -35,14 +60,32 @@ public:
 		a = 3 ;
 		//printf("ctor of test C, %d\n",t);
 	}
+
+
 public:
 	int a ;
 	char p[40];
 };
 
+
+template<typename A>
+A gmin(A a,A b)
+{
+	return a < b ? a : b ;
+}
+
 #include "MemoryManager.h"
 int main()
 {
+	TestC t (3);
+	hello<true,TestC>(&t);
+	t.hello<false>();
+	Test tt(3) ;
+	int a = 35 ;
+	int b = 33 ;
+	auto ts = gmin<int>(33,2);
+	cal(Te,stC) ttt(3);
+	ttt.hello<false>();
 	/*//---temp
 	time_t tS = 0  ;
 	scanf("%d\n",&tS) ;

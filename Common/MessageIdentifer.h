@@ -61,6 +61,8 @@ enum eMsgType
 	MSG_VERIFY_TANSACTION,
 	MSG_APNS_INFO,   // send push notification ;
 	MSG_PUSH_APNS_TOKEN,  // used for apns ; APPLE remote push notification ;
+	MSG_SAVE_LOG,
+	MSG_LOGIN_INFORM_GATE_SAVE_LOG,
 	// msg title used between server and client ;
 	MSG_RECONNECT,   // client with gate 
 	MSG_SAVE_PLAYER_MONEY, // send to DB ;

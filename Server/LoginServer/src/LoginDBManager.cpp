@@ -196,6 +196,11 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			// tell client the success register result ;
 			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet));
 			CLogMgr::SharedLogMgr()->PrintLog("register success account = %s",pRow["strAccount"]->CStringValue() );
+
+			stMsgLoginSvrInformGateSaveLog msglog ;
+			msglog.nlogType = eLog_Register ;
+			msglog.nUserUID = msgCreateData.nUserUID ;
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msglog,sizeof(msglog)) ;
 		}
 		break;
 	case MSG_PLAYER_LOGIN:
@@ -223,6 +228,11 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				stMsgOnPlayerLogin msgData ;
 				msgData.nUserUID =  nUserUID;
 				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgData,sizeof(msgData) ) ;
+
+				stMsgLoginSvrInformGateSaveLog msglog ;
+				msglog.nlogType = eLog_Login ;
+				msglog.nUserUID = nUserUID ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msglog,sizeof(msglog)) ;
 			}
 		}
 		break;
@@ -242,6 +252,14 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)); 
 			CLogMgr::SharedLogMgr()->PrintLog("rebind account ret = %d , userUID = %d",msgBack.nRet,pdata->nExtenArg1 ) ;
+
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgLoginSvrInformGateSaveLog msglog ;
+				msglog.nlogType = eLog_BindAccount ;
+				msglog.nUserUID = pdata->nExtenArg1 ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msglog,sizeof(msglog)) ;
+			}
 		}
 		break;
 	case MSG_MODIFY_PASSWORD:
@@ -260,6 +278,14 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d modify password ret = %d",pdata->nExtenArg1,msgBack.nRet ) ;
 			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)); 
+
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgLoginSvrInformGateSaveLog msglog ;
+				msglog.nlogType = eLog_ModifyPwd ;
+				msglog.nUserUID = pdata->nExtenArg1 ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msglog,sizeof(msglog)) ;
+			}
 		}
 		break;
 	default:

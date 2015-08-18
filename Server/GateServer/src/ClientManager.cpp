@@ -136,20 +136,18 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 void CGateClientMgr::OnServerMsg( const char* pRealMsgData, uint16_t nDataLen,uint32_t uTargetSessionID )
 {
 	stGateClient* pClient = GetGateClientBySessionID(uTargetSessionID) ;
+	stMsg* pReal = (stMsg*)pRealMsgData ;
 	if ( NULL == pClient )
 	{
-		stMsg* pReal = (stMsg*)pRealMsgData ;
 		CLogMgr::SharedLogMgr()->ErrorLog("big error !!!! can not send msg to session id = %d , client is null , msg = %d",uTargetSessionID,pReal->usMsgType  ) ;
 		return  ;
 	}
 
 	if ( pClient->tTimeForRemove )
 	{
-		stMsg* pReal = (stMsg*)pRealMsgData ;
 		CLogMgr::SharedLogMgr()->SystemLog("client is waiting for reconnected session id = %d, msg = %d",uTargetSessionID,pReal->usMsgType) ;
 		return ;
 	}
-
 	CGateServer::SharedGateServer()->SendMsgToClient(pRealMsgData,nDataLen,pClient->nNetWorkID ) ;
 }
 
