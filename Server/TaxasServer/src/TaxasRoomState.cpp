@@ -66,14 +66,6 @@ bool CTaxasBaseRoomState::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 				return true ;
 			}
 
-			if ( pData->IsHaveState(eRoomPeer_WithdrawingCoin) )
-			{
-				msgBack.nRet = 6;
-				m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
-				CLogMgr::SharedLogMgr()->ErrorLog("withdrawing coin shouldn't do this session id = %d",nPlayerSessionID);
-				return true ;
-			}
-
 			m_pRoom->OnPlayerSitDown(pRet->nSeatIdx,nPlayerSessionID,pRet->nTakeInMoney) ;
 			CLogMgr::SharedLogMgr()->PrintLog("player seat idx = %d sit down want takein coin = %I64d",pRet->nSeatIdx,pRet->nTakeInMoney) ;
 			return true ;
@@ -82,11 +74,11 @@ bool CTaxasBaseRoomState::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 	case MSG_TP_REQUEST_MONEY:
 		{
 			stTaxasInRoomPeerDataExten* pPlayrInRoomData = m_pRoom->GetInRoomPlayerDataBySessionID(nPlayerSessionID);
-			if ( pPlayrInRoomData )
-			{
-				// as withdrawing coin come back , so remove the drawing coin state ;
-				pPlayrInRoomData->nStateFlag &= (~eRoomPeer_WithdrawingCoin) ;
-			}
+			//if ( pPlayrInRoomData )
+			//{
+			//	// as withdrawing coin come back , so remove the drawing coin state ;
+			//	pPlayrInRoomData->nStateFlag &= (~eRoomPeer_WithdrawingCoin) ;
+			//}
 			
 			stMsgTaxasPlayerRequestCoinRet* pRet = (stMsgTaxasPlayerRequestCoinRet*)prealMsg ;
 			stMsgTaxasRoomUpdatePlayerState msgNewState ;
@@ -132,6 +124,7 @@ bool CTaxasBaseRoomState::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 				{
 					m_pRoom->m_vSitDownPlayers[pRet->nSeatIdx].nStateFlag = eRoomPeer_WaitNextGame ;
 					m_pRoom->m_vSitDownPlayers[pRet->nSeatIdx].nTakeInMoney += pRet->nAddedMoney ;
+					m_pRoom->m_vSitDownPlayers[pRet->nSeatIdx].nTotalBuyInThisRoom += pRet->nAddedMoney ;
 
 					msgNewState.nSeatIdx = pRet->nSeatIdx ;
 					msgNewState.nStateFlag = eRoomPeer_WaitNextGame ;

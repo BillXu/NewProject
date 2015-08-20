@@ -178,8 +178,8 @@ struct stMsgInformTaxasPlayerLeave
 {
 	stMsgInformTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_INFORM_LEAVE; }
 	uint32_t nUserUID ;
-	uint64_t nTakeInMoney ;
-	bool bIsDiamond ;
+	//uint64_t nTakeInMoney ;
+	//bool bIsDiamond ;
 };
 
 struct stMsgOrderTaxasPlayerLeave

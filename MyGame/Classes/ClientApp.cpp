@@ -91,7 +91,7 @@ void CClientApp::connectToSvr()
 	{
 		m_pNetwork->SetupNetwork(1) ;
 		//m_pNetwork->ConnectToServer("203.186.75.136",50001);
-		m_pNetwork->ConnectToServer("127.0.0.1",50001);
+		m_pNetwork->ConnectToServer("10.0.0.103",50001);
 	}
 	m_eNetState = CNetWorkMgr::eConnectType_Connecting ;
 	CCLOG("start to connectting tosvr");

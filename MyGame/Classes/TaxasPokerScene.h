@@ -13,7 +13,7 @@ public:
 	static Scene* createScene();
 	CREATE_FUNC(CTaxasPokerScene);
 	bool init();
-	bool onMsg(stMsg* pmsg );
+	bool onMsg(stMsg* pmsg ); 
 	void onRecievedRoomInfo();
 	void refreshContent();
 	void refreshVicePools();

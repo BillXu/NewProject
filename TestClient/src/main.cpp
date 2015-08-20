@@ -6,6 +6,9 @@
 #include "LogManager.h"
 #include "RobotAIConfig.h"
 #include <crtdbg.h>
+#define JSON_DLL
+#include <json/json.h>
+#pragma comment(lib,"JsonDll.lib")
 #define GATE_IP "127.0.0.1"
 //#define GATE_IP "203.186.75.136"
 BOOL WINAPI ConsoleHandler(DWORD msgType)
@@ -75,17 +78,80 @@ A gmin(A a,A b)
 }
 
 #include "MemoryManager.h"
+
+//{
+	//filename:function_partial_order.cpp 
+	//wirtten by saturnman #include<iostream> usingnamespacestd; 
+	//function template partial order feature 
+	template<typename T> 
+	void func1(T t) 
+	{ 
+		cout<<"func1 1"<<endl; 
+	} 
+
+	template<typename T> 
+	void func1(T* t)
+	{
+		cout<<"func1 2"<<endl;
+	} 
+	
+	template<typename T>
+	void func2(T t) 
+	{ 
+		cout<<"func2"<<endl;
+	} 
+
+	int hmain() {
+		//test function template partial order 
+		cout<<"test function template partial order."<<endl; 
+		int param1 =10; int* param2 =NULL; 
+		func1(param1); 
+		func1(param2); 
+		func2(param1); 
+		func2(param2);
+
+		Json::Value obj , obj2;
+		//obj["hello"] = "value" ;
+		Json::StyledWriter write ;
+		
+		obj[0u] = 31 ;
+		obj[1u] = "v2" ;
+		obj2["s"] = 12;
+		obj2["ob"] = obj ;
+		obj[2u] = obj ;
+
+		std::string str = "h";
+		str = write.write(obj2) ; 
+		printf("%s",str.c_str());
+
+		uint64_t left = 10 ;
+		uint64_t right = 20 ;
+		int nVal = left - right ;
+		printf("result = %I64d, nv = %d \n",left - right,nVal );
+		if ( (left - right) < -1 )
+		{
+			printf("ok");
+		}
+		else
+		{
+			printf("error") ;
+		}
+		return 0;
+	}
+//}
 int main()
 {
-	TestC t (3);
-	hello<true,TestC>(&t);
-	t.hello<false>();
-	Test tt(3) ;
-	int a = 35 ;
-	int b = 33 ;
-	auto ts = gmin<int>(33,2);
-	cal(Te,stC) ttt(3);
-	ttt.hello<false>();
+	hmain();
+	return 0;
+	//TestC t (3);
+	//hello<true,TestC>(&t);
+	//t.hello<false>();
+	//Test tt(3) ;
+	//int a = 35 ;
+	//int b = 33 ;
+	//auto ts = gmin<int>(33,2);
+	//cal(Te,stC) ttt(3);
+	//ttt.hello<false>();
 	/*//---temp
 	time_t tS = 0  ;
 	scanf("%d\n",&tS) ;
@@ -199,4 +265,5 @@ int main()
 		Sleep(10);
 	}
 	getchar();
+	return 0 ;
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "CommonData.h"
-#include <vector>
+#include "MessageDefine.h"
 struct stMsg ;
 class CRoomBaseData
 {

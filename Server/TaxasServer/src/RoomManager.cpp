@@ -55,6 +55,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 			return true ;
 		}
 		
+		CLogMgr::SharedLogMgr()->ErrorLog("playdata already in room , do not rquest");
 		stMsgRequestTaxasPlayerData msg ;
 		msg.nSessionID = nSessionID ;
 		SendMsg(&msg,sizeof(msg),pRoom->GetRoomID()) ;
@@ -92,9 +93,11 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		}
 
 		stTaxasInRoomPeerDataExten tDataExten ;
+		memset(&tDataExten,0,sizeof(tDataExten));
 		memcpy(&tDataExten,&pRet->tData,sizeof(pRet->tData));
-		tDataExten.nCoinInRoom = 0 ;
-		tDataExten.nStateFlag = eRoomPeer_StandUp ;
+		//tDataExten.nCoinInRoom = 0 ;
+		//tDataExten.nStateFlag = eRoomPeer_StandUp ;
+		
 		pRoom->AddPlayer(tDataExten);
 		CLogMgr::SharedLogMgr()->PrintLog("recive player data , do joined to room");
 		return true;

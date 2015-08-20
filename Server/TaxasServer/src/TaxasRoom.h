@@ -15,9 +15,13 @@ struct stTaxasInRoomPeerDataExten
 	// when player sitdown again (but not leave room ) TakeIn coin first from  nCoinInRoom, if not enough
 	// then rquest from data svr ;
 	// when player standup ,should add 'nTakeInCoin' to  'nCoinInRoom'
-	uint64_t nCoinInRoom ; 
-	uint32_t nStateFlag ;
-	bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; }
+	//uint64_t nCoinInRoom ; 
+	//uint32_t nStateFlag ;
+	uint64_t nTotalBuyInThisRoom ; // not real coin , just for record
+	uint64_t nFinalLeftInThisRoom ;   // not real coin , just for record
+	uint32_t nWinTimesInThisRoom ;
+	uint32_t nPlayeTimesInThisRoom ;
+	//bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; }
 };
 
 struct stTaxasPeerData
@@ -26,6 +30,8 @@ struct stTaxasPeerData
 	uint64_t nAllBetCoin ;  // used for record
 	uint64_t nTotalBuyInThisRoom ; // used for record
 	uint64_t nWinCoinThisGame ;    // used for record
+	uint32_t nWinTimes ;
+	uint32_t nPlayTimes ;
 
 
 	bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; } ;
@@ -118,7 +124,7 @@ protected:
 	void CaculateVicePool(stVicePool& pPool );
 	void SendRoomInfoToPlayer(uint32_t nSessionID );
 	stTaxasInRoomPeerDataExten* GetInRoomPlayerDataBySessionID( uint32_t nSessionID );
-	void syncPlayerDataToDataSvr( uint32_t nSessionID );
+	void syncPlayerDataToDataSvr( stTaxasPeerData& pPlayerData );
 	friend class CTaxasBaseRoomState ;
 	friend class CTaxasStatePlayerBet ;
 protected:
