@@ -96,6 +96,7 @@ public:
 	void AddPlayer( stTaxasInRoomPeerDataExten& nPeerData );
 	uint32_t GetRoomID(){ return nRoomID ;}
 	bool IsPlayerInRoomWithSessionID(uint32_t nSessionID );
+
 	void OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID, uint64_t nTakeInCoin );
 	void OnPlayerStandUp(uint8_t nSeatIdx );
 	uint8_t GetSeatIdxBySessionID(uint32_t nSessionID );
@@ -118,11 +119,12 @@ public:
 	uint64_t GetAllBetCoinThisRound();
 	bool IsPublicDistributeFinish();
 	bool isPlayerAlreadySitDown(uint32_t nSessionID );
+	stTaxasInRoomPeerDataExten* GetInRoomPlayerDataByUID( uint32_t nUID );
+	void SendRoomInfoToPlayer(uint32_t nSessionID );
 protected:
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 	stVicePool& GetFirstCanUseVicePool();
 	void CaculateVicePool(stVicePool& pPool );
-	void SendRoomInfoToPlayer(uint32_t nSessionID );
 	stTaxasInRoomPeerDataExten* GetInRoomPlayerDataBySessionID( uint32_t nSessionID );
 	void syncPlayerDataToDataSvr( stTaxasPeerData& pPlayerData );
 	friend class CTaxasBaseRoomState ;

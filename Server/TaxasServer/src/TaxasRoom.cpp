@@ -198,8 +198,6 @@ void CTaxasRoom::AddPlayer( stTaxasInRoomPeerDataExten& nPeerData )
 	stTaxasInRoomPeerDataExten* pData = new stTaxasInRoomPeerDataExten ;
 	memcpy(pData,&nPeerData,sizeof(stTaxasInRoomPeerDataExten));
 	m_vAllPeers.push_back(pData);
-
-	SendRoomInfoToPlayer(nPeerData.nSessionID);
 }
 
 bool CTaxasRoom::IsPlayerInRoomWithSessionID(uint32_t nSessionID )
@@ -387,9 +385,10 @@ void CTaxasRoom::OnPlayerLeaveRoom(uint32_t nPlayerSession )
 	{
 		if ( (*iter)->nSessionID == nPlayerSession )
 		{
-			delete (*iter) ;
-			(*iter) = NULL ;
-			m_vAllPeers.erase(iter) ;
+			//delete (*iter) ;
+			//(*iter) = NULL ;
+			//m_vAllPeers.erase(iter) ;
+			(*iter)->nSessionID = 0 ;  // mark for not in this room , but have foot print for record
 			break; 
 		}
 	}
@@ -1226,6 +1225,19 @@ stTaxasInRoomPeerDataExten* CTaxasRoom::GetInRoomPlayerDataBySessionID( uint32_t
 	for ( ; iter != m_vAllPeers.end() ; ++iter )
 	{
 		if ( (*iter) && (*iter)->nSessionID == nSessionID  )
+		{
+			return (*iter) ;
+		}
+	}
+	return NULL;
+}
+
+stTaxasInRoomPeerDataExten* CTaxasRoom::GetInRoomPlayerDataByUID( uint32_t nUID )
+{
+	VEC_IN_ROOM_PEERS::iterator iter = m_vAllPeers.begin();
+	for ( ; iter != m_vAllPeers.end() ; ++iter )
+	{
+		if ( (*iter) && (*iter)->nUserUID == nUID  )
 		{
 			return (*iter) ;
 		}
