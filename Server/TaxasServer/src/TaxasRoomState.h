@@ -19,6 +19,15 @@ protected:
 	eRoomState m_eState ;
 };
 
+// dead state 
+class CTaxasStateDead
+	:public CTaxasBaseRoomState
+{
+public:
+	virtual void EnterState(CTaxasRoom* pRoom );
+	void Update(float fDelte );
+};
+
 // wait join state 
 class CTaxasStateWaitJoin
 	:public CTaxasBaseRoomState

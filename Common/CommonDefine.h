@@ -4,10 +4,12 @@
 #define  MAX_LEN_PASSWORD 25 // can not big then unsigned char max = 255
 #define MAX_LEN_CHARACTER_NAME 25 // can not big then unsigned char  max = 255
 #define MAX_LEN_SIGURE 60   // can not big then unsigned char  max = 255
+#define MAX_LEN_ROOM_NAME 20
+#define MAX_LEN_ROOM_DESC 60  // can not big then unsigned char max = 255
+#define MAX_LEN_ROOM_INFORM 500  
 #define MAX_LEN_EMAIL 50
 #define MAX_LEN_SPEAK_WORDS 200  
 #define MAX_MSG_BUFFER_LEN 2048*3
-#define MAX_LEN_ROOM_NAME 25
 #define RESEVER_GAME_SERVER_PLAYERS 100 
 #define PEER_CARD_COUNT 3
 #define GOLDEN_PEER_CARD 3
@@ -25,7 +27,7 @@
 #define GOLDEN_ROOM_COIN_LEVEL_CNT 4
 #define GOLDEN_PK_ROUND 2
 
-#ifndef GAME_SERVER
+#ifndef SERVER
 #define PIEXL_TO_POINT(px) (px)/CC_CONTENT_SCALE_FACTOR()
 #define FOINT_NAME "Helvetica"
 #endif
@@ -54,6 +56,7 @@ enum eRoomState
 	eRoomState_TP_OneRoundBetEndResult,
 	eRoomState_TP_PublicCard,
 	eRoomState_TP_GameResult,
+	eRoomState_TP_Dead,
 	eRoomState_TP_MAX,
 	// state for golden 
 	eRoomState_Golden_WaitPeerToJoin = eRoomState_None,

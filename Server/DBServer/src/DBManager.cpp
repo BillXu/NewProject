@@ -105,7 +105,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->eType = eRequestType_Update ;
 			std::string strMaxcard = stMysqlField::UnIntArraryToString(pRet->vMaxCards,MAX_TAXAS_HOLD_CARD) ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE playerbasedata SET winTimes = '%d', loseTimes = '%d', singleWinMost = '%I64d', maxCard = '%s' WHERE userUID = '%d'",pRet->nWinTimes,pRet->nLoseTimes,pRet->nSingleWinMost,strMaxcard.c_str(),pRet->nUserUID) ;
+				"UPDATE playerbasedata SET winTimes = '%d', loseTimes = '%d', singleWinMost = '%I64d', maxCard = '%s' WHERE userUID = '%d'",pRet->nWinTimes,pRet->nPlayTimes,pRet->nSingleWinMost,strMaxcard.c_str(),pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_COMMON_LOGIC_DATA:
@@ -1025,7 +1025,7 @@ void CDBManager::GetPlayerDetailData(stPlayerDetailData* pData, CMysqlRow&prow)
 	pData->nMostCoinEver = prow["mostCoinEver"]->IntValue64();
 	pData->dfLatidue = prow["latitude"]->FloatValue();
 	pData->dfLongitude = prow["longitude"]->FloatValue();
-	pData->nLoseTimes = prow["loseTimes"]->IntValue();
+	pData->nPlayTimes = prow["loseTimes"]->IntValue();
 	pData->nWinTimes = prow["winTimes"]->IntValue();
 	pData->nSingleWinMost = prow["singleWinMost"]->IntValue64();
 	time_t tLastOffline = prow["offlineTime"]->IntValue();

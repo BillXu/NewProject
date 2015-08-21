@@ -20,8 +20,10 @@ bool CRoomManager::Init()
 	if ( pconfig )
 	{
 		CTaxasRoom* pRoom = new CTaxasRoom ;
-		pRoom->Init(1,(stTaxasRoomConfig*)pconfig) ;
+		pRoom->Init(m_vRooms.size()+1,(stTaxasRoomConfig*)pconfig) ;
 		m_vRooms[pRoom->GetRoomID()] = pRoom ;
+		pRoom->setRoomName("System");
+		pRoom->setRoomDesc("I want you !");
 	}
 	return true ;
 }
@@ -34,13 +36,75 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		return false ;
 	}
 
+	if ( MSG_TP_CREATE_ROOM == prealMsg->usMsgType )
+	{
+		stMsgCreateTaxasRoomRet msgBack ;
+		stMsgCreateTaxasRoom* pRet = (stMsgCreateTaxasRoom*)prealMsg ;
+		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,pRet->nConfigID);
+		if ( pRoomConfig == nullptr )
+		{
+			msgBack.nRet = 1 ;
+			msgBack.nRoomID = 0 ;
+			SendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
+			return true ;
+		}
+		else
+		{
+			stMsgPlayerRequestCoin msgReqMoney ;
+			msgReqMoney.bIsDiamond = false ;
+			msgReqMoney.nAtLeast = 0 ;
+			msgReqMoney.nWantMoney = pRoomConfig->nCreateFee ;
+			msgReqMoney.nSessionID = nSessionID ;
+			msgReqMoney.nReqType = eReqMoney_CreateRoom;
+			msgReqMoney.nUserUID = 1 ;
+			msgReqMoney.nBackArg[0] = nSessionID ;
+			msgReqMoney.nBackArg[1] = pRet->nConfigID ;
+			SendMsg(&msgReqMoney,sizeof(msgReqMoney),nSessionID) ;
+		}
+	}
+
+	if ( MSG_REQUEST_MONEY == prealMsg->usMsgType && eSenderPort == ID_MSG_PORT_DATA )
+	{
+		stMsgPlayerRequestCoinRet* pRet = (stMsgPlayerRequestCoinRet*)prealMsg ;
+		if ( eReqMoney_TaxasTakeIn == pRet->nReqType )
+		{
+			CTaxasRoom* pRoom = GetRoomByID(pRet->nBackArg[0]) ;
+			if ( pRoom == NULL )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("Imporssible error , why not the room id = %d is null can not process msg = %d, session id = %d",pRet->nBackArg[0],MSG_REQUEST_MONEY,nSessionID)  ;
+				return true ;
+			}
+			pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;
+		}
+		else if ( eReqMoney_CreateRoom == pRet->nReqType )
+		{
+			stMsgCreateTaxasRoomRet msgBack ;
+			msgBack.nRoomID = 0 ;
+			msgBack.nRet = pRet->nRet;
+			if ( pRet->nRet == 0 )
+			{
+				stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,pRet->nBackArg[1]);
+				CTaxasRoom* pRoom = new CTaxasRoom ;
+				pRoom->Init( m_vRooms.size() + 1,(stTaxasRoomConfig*)pRoomConfig) ;
+				m_vRooms[pRoom->GetRoomID()] = pRoom ;
+				pRoom->onCreateByPlayer(pRet->nUserUID);
+				pRoom->setRoomName("HappyPoker");
+				pRoom->setRoomDesc("I want you !");
+				msgBack.nRoomID = pRoom->GetRoomID() ;
+			}
+			SendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
+		}
+
+		return true ;
+	}
+
 	if ( MSG_TP_ENTER_ROOM == prealMsg->usMsgType )
 	{
 		stMsgTaxasEnterRoom* pRel = (stMsgTaxasEnterRoom*)prealMsg ;
 		CTaxasRoom* pRoom = GetRoomByID(pRel->nRoomID) ;
 		if ( !pRoom )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d , type = %d , level = %d",pRel->nRoomID,pRel->nType,pRel->nLevel );
+			CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d",pRel->nRoomID );
 			stMsgTaxasEnterRoomRet msgBack ;
 			msgBack.nRet = 1 ;
 			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
@@ -109,19 +173,6 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		}
 		pRoom->SendRoomInfoToPlayer(pRet->tData.nSessionID);
 		return true;
-	}
-
-	if ( MSG_TP_REQUEST_MONEY == prealMsg->usMsgType && eSenderPort == ID_MSG_PORT_DATA )
-	{
-		stMsgTaxasPlayerRequestCoinRet* pRet = (stMsgTaxasPlayerRequestCoinRet*)prealMsg ;
-		CTaxasRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
-		if ( pRoom == NULL )
-		{
-			CLogMgr::SharedLogMgr()->ErrorLog("Imporssible error , why not the room id = %d is null can not process msg = %d, session id = %d",pRet->nRoomID,MSG_TP_REQUEST_MONEY,nSessionID)  ;
-			return true ;
-		}
-		pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;
-		return true ;
 	}
 
 	if ( MSG_TP_ORDER_LEAVE == prealMsg->usMsgType && eSenderPort == ID_MSG_PORT_DATA )

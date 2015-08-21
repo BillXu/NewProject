@@ -23,7 +23,7 @@ public:
 	void OnPlayerDisconnect();
 	virtual void TimerSave();
 	uint64_t GetAllCoin(){ return m_stBaseData.nCoin;}
-	unsigned int GetAllDiamoned(){ return m_stBaseData.nDiamoned;}
+	uint64_t GetAllDiamoned(){ return m_stBaseData.nDiamoned;}
 	bool ModifyMoney(int64_t nOffset,bool bDiamond = false );
 	bool OnPlayerEvent(stPlayerEvetArg* pArg);
 	//void AddWinTimes(){ ++m_stBaseData.nWinTimes;}
@@ -43,10 +43,10 @@ public:
 	uint16_t GetPhotoID(){ return m_stBaseData.nPhotoID ;}
 
 	// taxas data ;
-	void caculateMoneyWhenLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned);
-	bool onTaxasPlayerRequestMoney( uint64_t nWantMoney, bool bDiamoned = false);
-	bool onTaxasPlayerRequestMoneyComfirm( bool bSucess, uint64_t nWantMoney, bool bDiamoned = false);
-	void onSyncTaxasPlayerData();
+	//void caculateMoneyWhenLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned);
+	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
+	bool onPlayerRequestMoneyComfirm( bool bSucess, uint64_t nWantMoney, bool bDiamoned = false);
+	void onSyncTaxasPlayerData(uint64_t nMoney, bool bDiamond,uint32_t nWinTimes , uint32_t nPlayTimes,uint64_t nSingleWinMost );
 public:
 	friend class CPlayerOnlineBox ;
 protected:
@@ -56,8 +56,6 @@ private:
 	stServerBaseData m_stBaseData ;
 	// not store in db 
 	bool m_bGivedLoginReward ;
-	uint64_t m_nTaxasPlayerDiamoned   ;
-	uint64_t m_nTaxasPlayerCoin  ;
 
 	bool m_bMoneyDataDirty;
 	bool m_bTaxasDataDirty;

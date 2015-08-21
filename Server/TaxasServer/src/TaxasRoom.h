@@ -17,6 +17,7 @@ struct stTaxasInRoomPeerDataExten
 	// when player standup ,should add 'nTakeInCoin' to  'nCoinInRoom'
 	//uint64_t nCoinInRoom ; 
 	//uint32_t nStateFlag ;
+	bool bReadNewInform ;
 	uint64_t nTotalBuyInThisRoom ; // not real coin , just for record
 	uint64_t nFinalLeftInThisRoom ;   // not real coin , just for record
 	uint32_t nWinTimesInThisRoom ;
@@ -32,7 +33,7 @@ struct stTaxasPeerData
 	uint64_t nWinCoinThisGame ;    // used for record
 	uint32_t nWinTimes ;
 	uint32_t nPlayTimes ;
-
+	uint64_t nSingleWinMost ;
 
 	bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; } ;
 	bool IsInvalid(){ return (nSessionID == 0) && (nUserUID == 0);}
@@ -104,6 +105,19 @@ public:
 	uint8_t GetCurWaitActPlayerIdx(){ return m_nCurWaitPlayerActionIdx ; }
 	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t& nValue );  // return error code , 0 success ;
 	stTaxasPeerData* GetSitDownPlayerData(uint8_t nSeatIdx);
+
+	// room life and attribute
+	void onCreateByPlayer(uint32_t nUserUID );
+	void setOwnerUID(uint32_t nCreatorUID );
+	void addLiftTime(uint32_t nDays );
+	void setDeadTime(uint32_t nDeadTime);
+	void setAvataID(uint32_t nAvaID );
+	void setRoomName(const char* pRoomName);
+	void setRoomDesc(const char* pRoomDesc );
+	void setRoomInform(const char* pRoomInform );
+	bool isRoomAlive();
+	void setProfit(uint64_t nProfit );
+
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
 	void StartGame();
@@ -135,6 +149,16 @@ protected:
 	stTaxasRoomConfig m_stRoomConfig ;
 	uint32_t m_nLittleBlind;
 	CTaxasBaseRoomState* m_vAllState[eRoomState_TP_MAX];
+
+	// creator info 
+	uint32_t m_nRoomOwnerUID ;
+	uint32_t m_nCreateTime ;
+	uint32_t m_nDeadTime ;
+	uint16_t m_nAvataID ;
+	char m_vRoomName[MAX_LEN_ROOM_NAME] ;
+	std::string m_strRoomDesc;
+	std::string m_strRoomInForm ;
+	uint64_t m_nRoomProfit;
 
 	// running members ;
 	eRoomState m_eCurRoomState ; // eRoomState ;

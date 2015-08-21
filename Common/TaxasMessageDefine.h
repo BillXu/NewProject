@@ -1,6 +1,7 @@
 #pragma once
 #pragma pack(push)
 #pragma pack(1)
+#pragma warning(disable:4200)
 #include "MessageDefine.h"
 #include "CommonData.h"
 
@@ -11,12 +12,104 @@ struct stMsgToRoom
 	uint32_t nRoomID ;
 };
 
+struct stMsgCreateTaxasRoom
+	:public stMsg
+{
+	stMsgCreateTaxasRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_CREATE_ROOM ; }
+	uint16_t nConfigID ;
+};
+
+struct stMsgCreateTaxasRoomRet
+	:public stMsg
+{
+	stMsgCreateTaxasRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CREATE_ROOM ; }
+	uint8_t nRet ;
+	uint32_t nRoomID ; 
+};
+
+struct stMsgModifyTaxasRoomName
+	:public stMsgToRoom
+{
+	stMsgModifyTaxasRoomName(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_MODIFY_ROOM_NAME ; }
+	char vNewRoomName[MAX_LEN_ROOM_NAME] ;
+};
+
+struct stMsgModifyTaxasRoomNameRet
+	:public stMsg
+{
+	stMsgModifyTaxasRoomNameRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_MODIFY_ROOM_NAME ; }
+	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 room is dead , please pay rent fee 3 , you are not in room;
+};
+
+struct  stMsgModifyTaxasRoomDesc
+	:public stMsgToRoom
+{
+	stMsgModifyTaxasRoomDesc(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_MODIFY_ROOM_DESC ; }
+	uint8_t nLen ;
+	PLACE_HOLDER(char* pNewName);
+};
+
+struct stMsgModifyTaxasRoomDescRet
+	:public stMsg
+{
+	stMsgModifyTaxasRoomDescRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_MODIFY_ROOM_DESC ; }
+	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 room is dead , please pay rent fee ; 3 , you are not in room, 4 desc is too long;
+};
+
+struct  stMsgModifyTaxasInform
+	:public stMsgToRoom
+{
+	stMsgModifyTaxasInform(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_MODIFY_ROOM_INFORM ; }
+	uint8_t nLen ;
+	PLACE_HOLDER(char* pNewInfom);
+};
+
+struct stMsgModifyTaxasInformRet
+	:public stMsg
+{
+	stMsgModifyTaxasInformRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_MODIFY_ROOM_INFORM ; }
+	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 room is dead , please pay rent fee ; 3 , you are not in room;
+};
+
+struct stMsgCaculateTaxasRoomProfit
+	:public stMsgToRoom
+{
+	stMsgCaculateTaxasRoomProfit(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
+};
+
+struct stMsgCaculateTaxasRoomProfitRet
+	:public stMsg
+{
+	stMsgCaculateTaxasRoomProfitRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
+	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 room is dead , please pay rent fee,  3 , you are not in room,4 coin too few ;
+	bool bDiamond ;
+	uint64_t nProfitMoney;
+};
+
+struct stMsgRemindTaxasRoomNewInform
+	:public stMsg
+{
+	stMsgRemindTaxasRoomNewInform(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_REMIND_NEW_ROOM_INFORM ; }
+};
+
+struct stMsgRequestTaxasRoomInform
+	:public stMsgToRoom
+{
+	stMsgRequestTaxasRoomInform(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_REQUEST_ROOM_INFORM ; }
+};
+
+struct  stMsgRequestTaxasRoomInformRet
+	:public stMsg
+{
+	stMsgRequestTaxasRoomInformRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_REQUEST_ROOM_INFORM ; }
+	uint16_t nLen ;
+	PLACE_HOLDER(char* pInform);
+};
+
 struct stMsgTaxasEnterRoom
 	:public stMsg
 {
 	stMsgTaxasEnterRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_ENTER_ROOM ; }
-	uint8_t nType ;
-	uint8_t nLevel ;
 	uint32_t nRoomID ;
 };
 
@@ -32,6 +125,9 @@ struct stMsgTaxasRoomInfoBase
 {
 	stMsgTaxasRoomInfoBase(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_ROOM_BASE_INFO; }
 	uint32_t nRoomID ;
+	uint32_t nOwnerUID ;
+	uint16_t nAvataID ;
+	uint16_t vRoomName[MAX_LEN_ROOM_NAME];
 	uint8_t nMaxSeat;
 	uint32_t nLittleBlind;
 	uint32_t nMiniTakeIn ;
@@ -44,6 +140,7 @@ struct stMsgTaxasRoomInfoBase
 	int8_t nCurWaitPlayerActionIdx ;
 	uint64_t  nCurMainBetPool ;
 	uint64_t  nMostBetCoinThisRound;
+	uint32_t nDeskFee;
 	uint8_t vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
 };
 

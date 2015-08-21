@@ -18,8 +18,6 @@ CPlayerBaseData::CPlayerBaseData(CPlayer* player )
 	:IPlayerComponent(player)
 {
 	m_eType = ePlayerComponent_BaseData ;
-	m_nTaxasPlayerDiamoned = 0 ;
-	m_nTaxasPlayerCoin = 0 ;
 	memset(&m_stBaseData,0,sizeof(m_stBaseData)) ;
 	m_bGivedLoginReward = false ;
 }
@@ -31,8 +29,6 @@ CPlayerBaseData::~CPlayerBaseData()
 
 void CPlayerBaseData::Init()
 {
-	m_nTaxasPlayerDiamoned = 0 ;
-	m_nTaxasPlayerCoin = 0 ;
 	memset(&m_stBaseData,0,sizeof(m_stBaseData)) ;
 	m_stBaseData.nUserUID = GetPlayer()->GetUserUID() ;
 	m_bGivedLoginReward = false ;
@@ -47,8 +43,6 @@ void CPlayerBaseData::Init()
 void CPlayerBaseData::Reset()
 {
 	m_bGivedLoginReward = false ;
-	m_nTaxasPlayerDiamoned = 0 ;
-	m_nTaxasPlayerCoin = 0 ;
 
 	m_bMoneyDataDirty = false;
 	m_bTaxasDataDirty = false;
@@ -352,8 +346,8 @@ void CPlayerBaseData::TimerSave()
 	{
 		m_bMoneyDataDirty = false ;
 		stMsgSavePlayerMoney msgSaveMoney ;
-		msgSaveMoney.nCoin = m_stBaseData.nCoin + m_nTaxasPlayerCoin;
-		msgSaveMoney.nDiamoned = m_stBaseData.nDiamoned + m_nTaxasPlayerDiamoned;
+		msgSaveMoney.nCoin = m_stBaseData.nCoin;
+		msgSaveMoney.nDiamoned = m_stBaseData.nDiamoned;
 		msgSaveMoney.nUserUID = GetPlayer()->GetUserUID() ;
 		SendMsg((stMsgSavePlayerMoney*)&msgSaveMoney,sizeof(msgSaveMoney)) ;
 		CLogMgr::SharedLogMgr()->PrintLog("player do time save coin uid = %d coin = %I64d",msgSaveMoney.nUserUID,msgSaveMoney.nCoin );
@@ -363,7 +357,7 @@ void CPlayerBaseData::TimerSave()
 	{
 		m_bTaxasDataDirty = false ;
 		stMsgSavePlayerTaxaPokerData msgSavePokerData ;
-		msgSavePokerData.nLoseTimes = m_stBaseData.nLoseTimes ;
+		msgSavePokerData.nPlayTimes = m_stBaseData.nPlayTimes ;
 		msgSavePokerData.nSingleWinMost = m_stBaseData.nSingleWinMost ;
 		msgSavePokerData.nWinTimes = m_stBaseData.nWinTimes ;
 		memcpy(msgSavePokerData.vMaxCards,m_stBaseData.vMaxCards,sizeof(msgSavePokerData.vMaxCards));
@@ -404,12 +398,21 @@ void CPlayerBaseData::TimerSave()
 	}
 }
 
-bool CPlayerBaseData::onTaxasPlayerRequestMoney(uint64_t nCoinOffset, bool bDiamoned)
+bool CPlayerBaseData::onPlayerRequestMoney(uint64_t& nCoinOffset,uint64_t nAtLeast, bool bDiamoned)
 {
+	uint64_t nNeedMoney = nCoinOffset ;
+	bool invalidAtLeast = (nAtLeast != 0 && nAtLeast < nCoinOffset );
+
  	if ( bDiamoned == false )
  	{
  		if ( nCoinOffset > GetAllCoin() )
 		{
+			if ( invalidAtLeast && GetAllCoin() >= nAtLeast )
+			{
+				nCoinOffset = nAtLeast ;
+				m_stBaseData.nCoin -= nCoinOffset ;
+				return true ;
+			}
 			return false ;
 		}
  		//m_nTaxasPlayerCoin += nCoinOffset ;   //add after recieved comfirm msg 
@@ -419,6 +422,13 @@ bool CPlayerBaseData::onTaxasPlayerRequestMoney(uint64_t nCoinOffset, bool bDiam
  	{
 		if ( nCoinOffset > GetAllDiamoned() )
 		{
+			if ( invalidAtLeast && GetAllDiamoned() >= nAtLeast )
+			{
+				nCoinOffset = nAtLeast ;
+				m_stBaseData.nDiamoned -= nCoinOffset ;
+				return true ;
+			}
+
 			return false ;
 		}
  		// m_nTaxasPlayerDiamoned += nCoinOffset; ; //add after recieved comfirm msg 
@@ -427,18 +437,11 @@ bool CPlayerBaseData::onTaxasPlayerRequestMoney(uint64_t nCoinOffset, bool bDiam
 	return true ;
 }
 
-bool CPlayerBaseData::onTaxasPlayerRequestMoneyComfirm( bool bSucess, uint64_t nAddedMoney, bool bDiamoned )
+bool CPlayerBaseData::onPlayerRequestMoneyComfirm( bool bSucess, uint64_t nAddedMoney, bool bDiamoned )
 {
 	if ( bSucess && GetPlayer()->GetTaxasRoomID() ) // when add sucess , and player still in taxas room , 
 	{
-		if (bDiamoned )
-		{
-			m_nTaxasPlayerDiamoned += nAddedMoney; 
-		}
-		else
-		{
-			m_nTaxasPlayerCoin += nAddedMoney ; 
-		}
+
 	}
 	else
 	{
@@ -454,9 +457,28 @@ bool CPlayerBaseData::onTaxasPlayerRequestMoneyComfirm( bool bSucess, uint64_t n
 	return true ;
 }
 
-void CPlayerBaseData::onSyncTaxasPlayerData()
+void CPlayerBaseData::onSyncTaxasPlayerData( uint64_t nMoney, bool bDiamond,uint32_t nWinTimes , uint32_t nPlayTimes,uint64_t nSingleWinMost )
 {
+	if ( bDiamond )
+	{
+		m_stBaseData.nDiamoned += nMoney ;
+	}
+	else
+	{
+		m_stBaseData.nCoin += nMoney ;
+	}
+	
+	if ( nMoney > 0 )
+	{
+		m_bMoneyDataDirty = true ;
+	}
 
+	m_stBaseData.nWinTimes += nWinTimes ;
+	m_stBaseData.nPlayTimes += nPlayTimes ;
+	if ( m_stBaseData.nSingleWinMost < nSingleWinMost )
+	{
+		m_stBaseData.nSingleWinMost = nSingleWinMost ;
+	}
 }
 
 bool CPlayerBaseData::ModifyMoney(int64_t nOffset,bool bDiamond  )
@@ -588,24 +610,7 @@ void CPlayerBaseData::OnReactive(uint32_t nSessionID )
 	SendBaseDatToClient();
 }
 
-void CPlayerBaseData::caculateMoneyWhenLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned)
-{
-	if ( bNormalLave )
-	{
-		if ( bDiamoned )
-		{
-			m_nTaxasPlayerDiamoned = nTakeInCoin ;
-		}
-		else
-		{
-			m_nTaxasPlayerCoin = nTakeInCoin ;
-		}
-	}
-
-	m_stBaseData.nDiamoned += m_nTaxasPlayerDiamoned ;
-	m_nTaxasPlayerDiamoned = 0 ;
-
-	m_stBaseData.nCoin += m_nTaxasPlayerCoin ;
-	m_nTaxasPlayerCoin = 0 ;
-	m_bMoneyDataDirty = true ;
-}
+//void CPlayerBaseData::caculateMoneyWhenLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned)
+//{
+//
+//}

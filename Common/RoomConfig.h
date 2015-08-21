@@ -13,6 +13,7 @@ struct stBaseRoomConfig
 	unsigned int nMinNeedToEnter ;
 	unsigned char nWaitOperateTime ; // second ;
 	unsigned int nCreateCount ;
+	uint32_t nCreateFee ;
 };
 
 struct stPaiJiurRoomConfig
@@ -26,6 +27,8 @@ struct stTaxasRoomConfig
 {
 	uint64_t nMaxTakeInCoin ;
 	uint64_t nBigBlind ;
+	uint32_t nRentFeeOneMonth;
+	uint32_t nDeskFee;
 };
 
 struct stGoldenRoomConfig

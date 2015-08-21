@@ -5,6 +5,7 @@
 #include "MessageIdentifer.h"
 #include "CommonDefine.h"
 #include "NativeTypes.h"
+#define PLACE_HOLDER(X)
 // WARNNING:变长字符串，我们不包括终结符 \0 ;
 struct stMsg
 {
@@ -141,7 +142,7 @@ struct stPlayerDetailData
 	uint64_t nSingleWinMost ;
 	uint64_t nMostCoinEver;
 	uint32_t nWinTimes ;
-	uint32_t nLoseTimes ;
+	uint32_t nPlayTimes ;
 	double dfLongitude;
 	double dfLatidue;
 	uint32_t tOfflineTime ;  // last offline time ;

@@ -2,6 +2,7 @@
 #pragma pack(push)
 #pragma pack(1)
 // Define message , used between Servers ;mainly DBServer and GameServer 
+#pragma warning(disable:4200)
 #include "MessageDefine.h"
 #include "BaseData.h"
 #include "CommonData.h"
@@ -90,7 +91,7 @@ struct stMsgSavePlayerTaxaPokerData
 	stMsgSavePlayerTaxaPokerData(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_TAXAS_DATA ; }
 	uint32_t nUserUID ;
 	uint32_t nWinTimes ;
-	uint32_t nLoseTimes ;
+	uint32_t nPlayTimes ;
 	uint64_t nSingleWinMost ;
 	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
 };
@@ -130,33 +131,43 @@ struct stMsgRequestTaxasPlayerDataRet
 	stTaxasInRoomPeerData tData ;
 };
 
-struct stMsgTaxasPlayerRequestCoin
-	:public stMsg
+enum  eReqMoneyType
 {
-	stMsgTaxasPlayerRequestCoin(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_REQUEST_MONEY ; }
-	uint32_t nUserUID ;
-	uint32_t nSessionID ;
-	uint64_t nWantMoney;
-	uint8_t nSeatIdx ;
-	bool bIsDiamond ;
+	eReqMoney_TaxasTakeIn,// backArg[0] = roomID , backArg[1] = seatIdx ;
+	eReqMoney_CreateRoom,  // backArg[0] = sessionID backArg[1] = ConfigID;
+	eReqMoney_Max,
+	eReqMoneyArgCnt = 3 ,
 };
 
-struct stMsgTaxasPlayerRequestCoinRet
+struct stMsgPlayerRequestCoin
 	:public stMsg
 {
-	stMsgTaxasPlayerRequestCoinRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_REQUEST_MONEY ; }
+	stMsgPlayerRequestCoin(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_REQUEST_MONEY ; nAtLeast = 0; }
+	uint8_t nReqType ;  // eReqMoneyType
+	uint32_t nUserUID ;  // if do not known , mark it 1 ;
+	uint32_t nSessionID ;
+	uint64_t nWantMoney;
+	uint64_t nAtLeast;
+	bool bIsDiamond ;
+	int32_t nBackArg[eReqMoneyArgCnt] ;
+};
+
+struct stMsgPlayerRequestCoinRet
+	:public stMsg
+{
+	stMsgPlayerRequestCoinRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_REQUEST_MONEY ; }
 	uint8_t nRet ; // 0 success , 1 not enough , 2 canot find player , 3 not in a taxas room 
-	uint32_t nRoomID ;
+	uint8_t nReqType ; // eReqMoneyType
 	uint32_t nUserUID ;
-	uint8_t nSeatIdx ;
 	uint64_t nAddedMoney;  // 0 means money not enough ;
 	bool bIsDiamond ;
+	int32_t nBackArg[eReqMoneyArgCnt] ;
 };
 
 struct stMsgTaxasPlayerRequestCoinComfirm
 	:public stMsg
 {
-	stMsgTaxasPlayerRequestCoinComfirm(){ cSysIdentifer = ID_MSG_PORT_DATA, usMsgType = MSG_TP_REQUEST_MONEY_COMFIRM ; }
+	stMsgTaxasPlayerRequestCoinComfirm(){ cSysIdentifer = ID_MSG_PORT_DATA, usMsgType = MSG_REQUEST_MONEY_COMFIRM ; }
 	uint8_t nRet ; // 0 success , 1 failed;
 	bool bDiamond ;
 	uint64_t nWantedMoney ;
@@ -170,7 +181,9 @@ struct  stMsgSyncTaxasPlayerData
 	uint32_t nUserUID ;
 	uint64_t nMoney ;
 	bool bIsDiamond ;
-	// some other data : et , most win single or win times or lose times ;
+	uint32_t nWinTimes ;
+	uint32_t nPlayTimes ;
+	uint64_t nSingleWinMost ;
 };
 
 struct stMsgInformTaxasPlayerLeave

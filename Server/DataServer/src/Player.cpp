@@ -596,9 +596,8 @@ void CPlayer::OnReactive(uint32_t nSessionID )
 	}
 }
 
-void CPlayer::playerDoLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned )
+void CPlayer::playerDoLeaveTaxasRoom()
 {
 	m_nTaxasRoomID = 0 ;
-	GetBaseData()->caculateMoneyWhenLeaveTaxasRoom(bNormalLave,nTakeInCoin,bDiamoned);
 }
 
