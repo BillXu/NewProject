@@ -1,5 +1,6 @@
-Server/Bin/
+Server/Bin/ServerBin/
 Server/Bin/ServerBin/*.*
+Server/Bin/ServerRelease/
 Common/src/
 PokerClient/DeZhouPoker/
 #################
