@@ -11,6 +11,21 @@ IPlayerComponent::~IPlayerComponent()
 
 }
 
+bool IPlayerComponent::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
+{
+	return false ;
+}
+
+bool IPlayerComponent::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eMsgPort eSenderPort,Json::Value* vJsValue )
+{
+	return false ;
+}
+
+bool IPlayerComponent::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue )
+{
+	return false ;
+}
+
 void IPlayerComponent::SendMsg(stMsg* pbuffer , unsigned short nLen , bool bBrocast  )
 {
 	m_pPlayer->SendMsgToClient((char*)pbuffer,nLen,bBrocast);

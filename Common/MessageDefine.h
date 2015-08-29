@@ -3,8 +3,7 @@
 #pragma pack(1)
 // define message struct , used between Server and Client ;
 #include "MessageIdentifer.h"
-#include "CommonDefine.h"
-#include "NativeTypes.h"
+#include "CommonData.h"
 #define PLACE_HOLDER(X)
 // WARNNING:变长字符串，我们不包括终结符 \0 ;
 struct stMsg
@@ -12,7 +11,7 @@ struct stMsg
 	unsigned char cSysIdentifer ;  // msg target eServerType
 	unsigned short usMsgType ;
 public:
-	stMsg():cSysIdentifer( eSvrType_Max  ),usMsgType(MSG_NONE){}
+	stMsg():cSysIdentifer( ID_MSG_PORT_NONE  ),usMsgType(MSG_NONE){}
 };
 
 // client reconnect ;
@@ -122,49 +121,7 @@ struct stMsgPlayerOtherLogin
 	stMsgPlayerOtherLogin(){cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_OTHER_LOGIN ;}
 };
 
-// base data about 
-struct stPlayerBrifData
-{
-	char cName[MAX_LEN_CHARACTER_NAME];
-	uint32_t nUserUID ;
-	uint8_t nSex ; // eSex ;
-	uint8_t nVipLevel ;
-	uint16_t nPhotoID ;
-	uint64_t nCoin ;
-	uint64_t nDiamoned ;
-	bool bIsOnLine ;
-};
 
-struct stPlayerDetailData
-	:public stPlayerBrifData
-{
-	char cSignature[MAX_LEN_SIGURE] ;
-	uint64_t nSingleWinMost ;
-	uint64_t nMostCoinEver;
-	uint32_t nWinTimes ;
-	uint32_t nPlayTimes ;
-	double dfLongitude;
-	double dfLatidue;
-	uint32_t tOfflineTime ;  // last offline time ;
-	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
-	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
-	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
-};
-
-struct stCommonBaseData
-	:public stPlayerDetailData
-{
-	int64_t nYesterdayCoinOffset ;
-	int64_t nTodayCoinOffset ;
-};
-
-struct stServerBaseData
-	:public stCommonBaseData
-{
-	uint32_t nContinueDays ;
-	uint32_t tLastLoginTime;
-	uint32_t tLastTakeCharityCoinTime ;
-};
 
 struct stMsgPlayerBaseData
 	:public stMsg

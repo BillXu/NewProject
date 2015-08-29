@@ -1,6 +1,7 @@
 #pragma once 
 #include "NetWorkManager.h"
-#include "MessageDefine.h"
+#include "ServerMessageDefine.h"
+#include <json/json.h>
 #include <map>
 #include <list>
 class CPlayer ;
@@ -22,7 +23,8 @@ public:
 protected:
 	void OnPlayerOffline(CPlayer* pOfflinePlayer);
 	bool ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
-	bool ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID  );
+	bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
+	bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 	void AddPlayer(CPlayer*);
 	void LogState();
 	bool ProcessIsAlreadyLogin(unsigned int nUserID ,unsigned nSessionID ) ;

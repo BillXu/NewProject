@@ -119,8 +119,8 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			printf("recived base data\n");
 			stMsgTaxasEnterRoom msg ;
 			msg.nRoomID = 1 ;
-			msg.nType = 0 ;
-			msg.nLevel = 0 ;
+			///msg.nType = 0 ;
+			///msg.nLevel = 0 ;
 			SendMsg(&msg,sizeof(msg));
 			printf("enter room taxas...\n");
 		}

@@ -1,9 +1,10 @@
 #pragma once
-#include "MessageDefine.h"
+#include "ServerMessageDefine.h"
 #include "RoomConfig.h"
 #include "CommonData.h"
 #include "CardPoker.h"
 #include "Timer.h"
+#include <json/json.h>
 class CTaxasBaseRoomState ;
 
 typedef std::vector<uint8_t> VEC_INT8 ;
@@ -94,6 +95,8 @@ public:
 	void SendRoomMsg(stMsg* pMsg, uint16_t nLen );
 	void SendMsgToPlayer( uint32_t nSessionID, stMsg* pMsg, uint16_t nLen  );
 	virtual bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
+	bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
+	bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 	void AddPlayer( stTaxasInRoomPeerDataExten& nPeerData );
 	uint32_t GetRoomID(){ return nRoomID ;}
 	bool IsPlayerInRoomWithSessionID(uint32_t nSessionID );
@@ -135,6 +138,9 @@ public:
 	bool isPlayerAlreadySitDown(uint32_t nSessionID );
 	stTaxasInRoomPeerDataExten* GetInRoomPlayerDataByUID( uint32_t nUID );
 	void SendRoomInfoToPlayer(uint32_t nSessionID );
+
+	// debug info ;
+	void debugPlayerHistory();
 protected:
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 	stVicePool& GetFirstCanUseVicePool();

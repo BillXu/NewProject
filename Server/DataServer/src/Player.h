@@ -35,9 +35,8 @@ public:
 	void OnTimerSave(float fTimeElaps,unsigned int nTimerID );
 	void OnReactive(uint32_t nSessionID );
 	time_t GetDisconnectTime(){ return m_nDisconnectTime ;}
-	void SetStayInTaxasRoomID(uint32_t nRoomID ){ m_nTaxasRoomID = nRoomID ; }
-	uint32_t GetTaxasRoomID(){ return m_nTaxasRoomID ; }
-	void playerDoLeaveTaxasRoom();
+	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest, eMsgPort eSenderPort,Json::Value* vJsValue = nullptr );
+	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 protected:
 	bool ProcessPublicPlayerMsg( stMsg* pMessage , eMsgPort eSenderPort );
 	void PushTestAPNs();
@@ -48,5 +47,4 @@ protected:
 	ePlayerState m_eSate ;
 	CTimer* m_pTimerSave ;
 	time_t m_nDisconnectTime ;
-	uint32_t m_nTaxasRoomID ;
 }; 

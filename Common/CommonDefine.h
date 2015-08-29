@@ -10,7 +10,7 @@
 #define MAX_LEN_EMAIL 50
 #define MAX_LEN_SPEAK_WORDS 200  
 #define MAX_MSG_BUFFER_LEN 2048*3
-#define RESEVER_GAME_SERVER_PLAYERS 100 
+
 #define PEER_CARD_COUNT 3
 #define GOLDEN_PEER_CARD 3
 #define TAXAS_PEER_CARD 2
@@ -19,7 +19,7 @@
 #define MAX_TAXAS_HOLD_CARD 5
 #define MAX_UPLOAD_PIC 4
 #define MAX_JOINED_CLUB_CNT 10
-#define LOG_ARG_CNT 6
+
 
 #define COIN_CONDITION_TO_GET_CHARITY 1000
 #define TIME_GET_CHARITY_ELAPS 60*60*2   // 2 HOURE
@@ -87,15 +87,7 @@ enum eRoomState
 	eRoomState_Max,
 };
 
-enum  eLogType
-{
-	eLog_Register, // externString, {ip:"ipdizhi"}
-	eLog_Login,  // externString, {ip:"ipdizhi"}
-	eLog_BindAccount, // externString, {ip:"ipdizhi"}
-	eLog_Logout, 
-	eLog_ModifyPwd, // externString, {ip:"ipdizhi"}
-	eLog_Max,
-};
+
 // ROOM TIME BY SECOND 
 #define TIME_ROOM_WAIT_READY 5
 #define TIME_ROOM_DISTRIBUTE 5
@@ -112,14 +104,7 @@ enum  eLogType
 
 static unsigned char s_vChangeCardDimonedNeed[GOLDEN_PEER_CARD] = {0,4,8} ;
 
-enum eDBAct
-{
-	eDBAct_Add,
-	eDBAct_Delete,
-	eDBAct_Update,
-	eDBAct_Select,
-	eDBAct_Max,
-};
+
 
 enum eSpeed
 {
@@ -161,22 +146,6 @@ enum eRoomPeerState
 	eRoomPeer_Max,
 };
 
-enum eServerType
-{
-	eSvrType_Gate,
-	eSvrType_Login,
-	eSvrType_DB,
-	eSvrType_Game,
-	eSvrType_Verify,
-	eSvrType_DataBase,
-	eSvrType_APNS,
-	eSvrType_Log,
-	eSvrType_LogDataBase,
-	eSvrType_Center,
-	eSvrType_Data,
-	eSvrType_Taxas,
-	eSvrType_Max,
-};
 
 enum eSex
 {
@@ -222,23 +191,7 @@ enum eRoomFlag
 
  
 
-#define CHECK_MSG_SIZE(CHECK_MSG,nLen) \
-{\
-	if (sizeof(CHECK_MSG) > (nLen) ) \
-	{\
-		CLogMgr::SharedLogMgr()->ErrorLog("Msg Size Unlegal msg") ;	\
-		return false; \
-	}\
-}
 
-#define CHECK_MSG_SIZE_VOID(CHECK_MSG,nLen) \
-{\
-	if (sizeof(CHECK_MSG) > (nLen) ) \
-{\
-	CLogMgr::SharedLogMgr()->ErrorLog("Msg Size Unlegal msg") ;	\
-	return; \
-	}\
-}
 // mail Module 
 #define MAX_KEEP_MAIL_COUNT 50
 enum eMailType
@@ -305,18 +258,18 @@ enum eRoomLevel
 };
 
 // texas poker timer measus by second
-#define TIME_TAXAS_FILP_CARD 0.2
-#define TIME_PLAYER_BET_COIN_ANI 0.3
+#define TIME_TAXAS_FILP_CARD 0.2f
+#define TIME_PLAYER_BET_COIN_ANI 0.3f
 #define TIME_BLIND_BET_STATE (TIME_PLAYER_BET_COIN_ANI + 1) 
 #define TIME_TAXAS_BET 15
 #define TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL 1.2f
 #define TIME_TAXAS_MAKE_VICE_POOLS 0.8f
-#define TIME_TAXAS_DISTRIBUTE_ONE_HOLD_CARD (TIME_TAXAS_FILP_CARD + 0.2)
-#define TIME_TAXAS_DISTRIBUTE_HOLD_CARD_DELAY ( 0.65 * TIME_TAXAS_DISTRIBUTE_ONE_HOLD_CARD )
-#define TIME_DISTRIBUTE_ONE_PUBLIC_CARD 0.5
+#define TIME_TAXAS_DISTRIBUTE_ONE_HOLD_CARD (TIME_TAXAS_FILP_CARD + 0.2f)
+#define TIME_TAXAS_DISTRIBUTE_HOLD_CARD_DELAY ( 0.65f * TIME_TAXAS_DISTRIBUTE_ONE_HOLD_CARD )
+#define TIME_DISTRIBUTE_ONE_PUBLIC_CARD 0.5f
 #define TIME_TAXAS_WIN_COIN_GOTO_PLAYER TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL
 #define TIME_TAXAS_CACULATE_PER_BET_POOL TIME_TAXAS_WIN_COIN_GOTO_PLAYER
-#define TIME_TAXAS_SHOW_BEST_CARD 0.7
+#define TIME_TAXAS_SHOW_BEST_CARD 0.7f
 
 #define MIN_PEERS_IN_ROOM_ROBOT 6
 #define MAX_PEERS_IN_TAXAS_ROOM 9

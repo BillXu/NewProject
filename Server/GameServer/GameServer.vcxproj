@@ -56,7 +56,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;JSON_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -74,7 +74,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;JSON_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -119,7 +119,9 @@
     <ClInclude Include="..\DataServer\src\PlayerMail.h" />
     <ClInclude Include="..\DataServer\src\PlayerManager.h" />
     <ClInclude Include="..\DataServer\src\PlayerMission.h" />
+    <ClInclude Include="..\DataServer\src\PlayerTaxas.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
+    <ClInclude Include="..\ServerCommon\ServerCommon.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
@@ -149,6 +151,7 @@
     <ClCompile Include="..\DataServer\src\PlayerMail.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerManager.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerMission.cpp" />
+    <ClCompile Include="..\DataServer\src\PlayerTaxas.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />

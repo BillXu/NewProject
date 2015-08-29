@@ -1,6 +1,6 @@
 #ifndef CPPTL_JSON_READER_H_INCLUDED
 # define CPPTL_JSON_READER_H_INCLUDED
-
+#pragma warning(disable:4251)
 # include "features.h"
 # include "value.h"
 # include <deque>

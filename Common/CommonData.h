@@ -2,6 +2,53 @@
 #pragma pack(push)
 #pragma pack(1)
 #include "CommonDefine.h"
+// base data about 
+struct stPlayerBrifData
+{
+	char cName[MAX_LEN_CHARACTER_NAME];
+	uint32_t nUserUID ;
+	uint8_t nSex ; // eSex ;
+	uint8_t nVipLevel ;
+	uint16_t nPhotoID ;
+	uint64_t nCoin ;
+	uint64_t nDiamoned ;
+	bool bIsOnLine ;
+};
+
+struct stPlayerDetailData
+	:public stPlayerBrifData
+{
+	char cSignature[MAX_LEN_SIGURE] ;
+	uint64_t nMostCoinEver;
+	double dfLongitude;
+	double dfLatidue;
+	uint32_t tOfflineTime ;  // last offline time ;
+	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
+	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
+};
+
+struct stCommonBaseData
+	:public stPlayerDetailData
+{
+	int64_t nYesterdayCoinOffset ;
+	int64_t nTodayCoinOffset ;
+};
+
+struct stServerBaseData
+	:public stCommonBaseData
+{
+	uint32_t nContinueDays ;
+	uint32_t tLastLoginTime;
+	uint32_t tLastTakeCharityCoinTime ;
+};
+
+struct stPlayerTaxasData
+{
+	uint32_t nWinTimes ;
+	uint32_t nPlayTimes ;
+	uint64_t nSingleWinMost ;
+	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
+};
 
 struct stTaxasInRoomPeerData
 {

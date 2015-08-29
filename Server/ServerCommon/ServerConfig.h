@@ -1,6 +1,6 @@
 #pragma once
 #include "IConfigFile.h"
-#include "CommonDefine.h"
+#include "ServerCommon.h"
 #include <vector>
 struct stServerConfig
 {

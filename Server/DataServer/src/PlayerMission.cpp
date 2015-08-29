@@ -122,6 +122,11 @@ void stPlayerMissionSate::Reset()
 
 bool CPlayerMission::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 {
+	if ( IPlayerComponent::OnMessage(pMsg,eSenderPort) )
+	{
+		return true ;
+	}
+
 	switch ( pMsg->usMsgType )
 	{
 	case MSG_PLAYER_REQUEST_MISSION_LIST:

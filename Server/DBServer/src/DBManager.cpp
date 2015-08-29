@@ -1025,9 +1025,9 @@ void CDBManager::GetPlayerDetailData(stPlayerDetailData* pData, CMysqlRow&prow)
 	pData->nMostCoinEver = prow["mostCoinEver"]->IntValue64();
 	pData->dfLatidue = prow["latitude"]->FloatValue();
 	pData->dfLongitude = prow["longitude"]->FloatValue();
-	pData->nPlayTimes = prow["loseTimes"]->IntValue();
-	pData->nWinTimes = prow["winTimes"]->IntValue();
-	pData->nSingleWinMost = prow["singleWinMost"]->IntValue64();
+	//pData->nPlayTimes = prow["loseTimes"]->IntValue();
+	//pData->nWinTimes = prow["winTimes"]->IntValue();
+	//pData->nSingleWinMost = prow["singleWinMost"]->IntValue64();
 	time_t tLastOffline = prow["offlineTime"]->IntValue();
 	pData->tOfflineTime = tLastOffline ;
 	
@@ -1035,13 +1035,13 @@ void CDBManager::GetPlayerDetailData(stPlayerDetailData* pData, CMysqlRow&prow)
 	vInt.clear();
 	// read max card ;
 	prow["maxCard"]->VecInt(vInt);
-	memset(pData->vMaxCards,0,sizeof(pData->vMaxCards)) ;
+	//memset(pData->vMaxCards,0,sizeof(pData->vMaxCards)) ;
 	CLogMgr::SharedLogMgr()->PrintLog("max card size = %d uid = %d",vInt.size(),pData->nUserUID ) ;
 	if ( vInt.size() == MAX_TAXAS_HOLD_CARD )
 	{
 		for ( uint8_t nIdx = 0 ; nIdx < MAX_TAXAS_HOLD_CARD ; ++nIdx )
 		{
-			pData->vMaxCards[nIdx] = vInt[nIdx] ;
+			///pData->vMaxCards[nIdx] = vInt[nIdx] ;
 		}
 	}
 

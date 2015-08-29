@@ -3,6 +3,7 @@
 #include <WinDef.h>
 #include <Dbghelp.h>
 #pragma comment( lib, "DbgHelp" )
+#pragma comment(lib,"JsonDll.lib")
 
 DWORD WINAPI ThreadProc(LPVOID lpParam)
 {

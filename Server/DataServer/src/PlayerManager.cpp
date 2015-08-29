@@ -66,6 +66,62 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 {
 	switch ( prealMsg->usMsgType )
 	{
+	case MSG_CROSS_SERVER_REQUEST:
+		{
+			stMsgCrossServerRequest* pRet = (stMsgCrossServerRequest*)prealMsg ;
+
+			Json::Value* pJsValue = nullptr ;
+			Json::Value rootValue ;
+			if ( pRet->nJsonsLen )
+			{
+				Json::Reader reader;
+				char* pstr = ((char*)&pRet->nJsonsLen) + sizeof(pRet->nJsonsLen) ;
+				reader.parse(pstr,pstr + pRet->nJsonsLen,rootValue,false);
+				pJsValue = &rootValue ;
+			}
+
+			if ( onCrossServerRequest(pRet,eSenderPort,pJsValue) == false )
+			{
+				CPlayer* pPlayer = GetPlayerByUserUID(pRet->nTargetID);
+				assert(pPlayer&&"this request no one to process or target id error");
+				if ( pPlayer->onCrossServerRequest(pRet,eSenderPort,pJsValue) )
+				{
+					return true ;
+				}
+				CLogMgr::SharedLogMgr()->ErrorLog("cross request type = %d , subType = %d ,unprocessed",pRet->nRequestType,pRet->nRequestSubType);
+				return false;
+			}
+
+			return true ;
+		}
+		break;
+	case MSG_CROSS_SERVER_REQUEST_RET:
+		{
+			stMsgCrossServerRequestRet* pRet = (stMsgCrossServerRequestRet*)prealMsg ;
+			Json::Value* pJsValue = nullptr ;
+			Json::Value rootValue ;
+			if ( pRet->nJsonsLen )
+			{
+				Json::Reader reader;
+				char* pstr = ((char*)&pRet->nJsonsLen) + sizeof(pRet->nJsonsLen) ;
+				reader.parse(pstr,pstr + pRet->nJsonsLen,rootValue,false);
+				pJsValue = &rootValue ;
+			}
+
+			if ( onCrossServerRequestRet(pRet,pJsValue) == false )
+			{
+				CPlayer* pPlayer = GetPlayerByUserUID(pRet->nTargetID);
+				assert(pPlayer&&"this request no one to process or target id error");
+				if ( pPlayer->onCrossServerRequestRet(pRet,pJsValue) )
+				{
+					return true ;
+				}
+				CLogMgr::SharedLogMgr()->ErrorLog("cross request result type = %d , subType = %d ,unprocessed",pRet->nRequestType,pRet->nRequestSubType);
+				return false;
+			}
+			return true ;
+		}
+		break;
 	case MSG_PLAYER_LOGIN:
 		{
 			stMsgOnPlayerLogin* pmsgenter = (stMsgOnPlayerLogin*)prealMsg ;
@@ -123,192 +179,52 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			//#endif
 		}
 		break;
-	case MSG_REQUEST_MONEY:
-		{
-			stMsgPlayerRequestCoin* pRet = (stMsgPlayerRequestCoin*)prealMsg ;
-			stMsgPlayerRequestCoinRet msgBack ;
-			msgBack.cSysIdentifer = eSenderPort ;
-			msgBack.nReqType = pRet->nReqType ;
-			msgBack.bIsDiamond = pRet->bIsDiamond ;
-			msgBack.nAddedMoney = pRet->nWantMoney ;
-			memcpy(msgBack.nBackArg,pRet->nBackArg,sizeof(pRet->nBackArg));
-			msgBack.nUserUID = pRet->nUserUID ;
-			CPlayer* pPlayer = nullptr ;
-			if ( 1 == pRet->nUserUID )  // system marked
-			{
-				pPlayer = GetPlayerBySessionID(nSessionID);
-				if ( pPlayer )
-				{
-					pRet->nUserUID = pPlayer->GetUserUID() ;
-				}
-			}
-			else
-			{
-				pPlayer = GetPlayerByUserUID(pRet->nUserUID,false) ;
-			}
-
-			if ( pPlayer == NULL )
-			{
-				msgBack.nRet = 2 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-
-				if ( pRet->nReqType == eReqMoney_TaxasTakeIn )
-				{
-					stMsgOrderTaxasPlayerLeave msg ;
-					msg.nRoomID = pRet->nBackArg[0] ;
-					msg.nUserUID = pRet->nUserUID;
-					CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msg,sizeof(msg)) ;
-				}
-
-				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_REQUEST_IMONEY why can not find player session from taxas server session id = %d",pRet->nSessionID ) ;
-				return true ;
-			}
-
-			if ( pPlayer->GetBaseData()->onPlayerRequestMoney(pRet->nWantMoney,pRet->nAtLeast,pRet->bIsDiamond) )
-			{
-				msgBack.nAddedMoney = pRet->nWantMoney ; // pRet->nWantMoney may modify by onPlayerRequestMoney() , really give money may be pRet->nAtLeast
-				msgBack.nRet = 0 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-			}
-			else
-			{
-				msgBack.nRet = 1 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-			}
-		}
-		break;
-	case MSG_REQUEST_MONEY_COMFIRM:
-		{
-			stMsgTaxasPlayerRequestCoinComfirm* pRet = (stMsgTaxasPlayerRequestCoinComfirm*)prealMsg ;
-			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nUserUID ) ;
-			if (pPlayer)
-			{
-				pPlayer->GetBaseData()->onPlayerRequestMoneyComfirm(pRet->nRet == 0 ,pRet->nWantedMoney,pRet->bDiamond) ;
-				CLogMgr::SharedLogMgr()->PrintLog("uid = %d request takin coin = %I64d",pRet->nUserUID,pRet->nWantedMoney);
-				if (pPlayer->IsState(CPlayer::ePlayerState_Offline) )
-				{
-					pPlayer->OnTimerSave(0,0);
-				}
-			}
-			else
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("why request comfirm no player uid = %d",pRet->nUserUID);
-			}
-		}
-		break;
-	default:
-		return ProcessTaxasServerMsg(prealMsg,eSenderPort,nSessionID);
-	}
-
-	return true ;
-}
-
-bool CPlayerManager::ProcessTaxasServerMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nRoomID  )
-{
-	if ( eSenderPort != ID_MSG_PORT_TAXAS )
-	{
-		return false ;
-	}
-
-	switch ( prealMsg->usMsgType )
-	{
-	case MSG_TP_REQUEST_PLAYER_DATA:
-		{
-			stMsgRequestTaxasPlayerData* pData = (stMsgRequestTaxasPlayerData*)prealMsg;
-			stMsgRequestTaxasPlayerDataRet msgBack ;
-			msgBack.nRoomID = nRoomID ;
-			msgBack.nRet = 0 ;
-			CPlayer* pPlayer = GetPlayerBySessionID(pData->nSessionID) ;
-			if ( pPlayer == NULL )
-			{
-				msgBack.nRet = 1 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-				CLogMgr::SharedLogMgr()->ErrorLog("why can not find player session from taxas server session id = %d",pData->nSessionID ) ;
-				return true ;
-			}
-
-			if ( pPlayer->GetTaxasRoomID() )
-			{
-				msgBack.nRet = 2 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-				CLogMgr::SharedLogMgr()->ErrorLog("can not enter room already in other room id = %d  session id = %d",pPlayer->GetTaxasRoomID(),pData->nSessionID ) ;
-
-				// may have error  order leave 
-				stMsgOrderTaxasPlayerLeave msg ;
-				msg.nRoomID = pPlayer->GetTaxasRoomID() ;
-				msg.nUserUID = pPlayer->GetUserUID();
-				CGameServerApp::SharedGameServerApp()->sendMsg(pPlayer->GetSessionID(),(char*)&msg,sizeof(msg)) ;
-				return true ;
-			}
-
-			msgBack.tData.nPhotoID = pPlayer->GetBaseData()->GetPhotoID();
-			memset(msgBack.tData.cName,0,sizeof(msgBack.tData.cName) );
-			sprintf_s(msgBack.tData.cName,sizeof(msgBack.tData.cName),"%s",pPlayer->GetBaseData()->GetPlayerName()) ;
-			msgBack.tData.nSessionID = pData->nSessionID ;
-			msgBack.tData.nSex = pPlayer->GetBaseData()->GetSex();
-			msgBack.tData.nUserUID = pPlayer->GetUserUID();
-			msgBack.tData.nVipLevel = pPlayer->GetBaseData()->GetVipLevel() ;
-			CGameServerApp::SharedGameServerApp()->sendMsg(pData->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-			pPlayer->SetStayInTaxasRoomID(nRoomID) ;
-		}
-		break;
 	case MSG_TP_ORDER_LEAVE:
 		{
 			stMsgOrderTaxasPlayerLeaveRet* pRet = (stMsgOrderTaxasPlayerLeaveRet*)prealMsg ;
-			// if success , we will recived inform leave , if failed just recieved this msg 
-			if ( pRet->nRet )
+			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
+			if (!pp)
 			{
-				CPlayer* pPlayer = GetPlayerByUserUID(pRet->nUserUID );
-				if ( pPlayer )
-				{
-					pPlayer->playerDoLeaveTaxasRoom();
-					if (pPlayer->IsState(CPlayer::ePlayerState_Offline) )
-					{
-						pPlayer->OnTimerSave(0,0);
-					}
-				}
-				CLogMgr::SharedLogMgr()->ErrorLog("order leave failed uid = %d",pRet->nUserUID);
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not inform leave",pRet->nUserUID);
+			}
+			else
+			{
+				pp->OnMessage(prealMsg,eSenderPort);
 			}
 		}
 		break;
 	case MSG_TP_INFORM_LEAVE:
 		{
 			stMsgInformTaxasPlayerLeave* pRet = (stMsgInformTaxasPlayerLeave*)prealMsg ;
-			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nUserUID) ;
-			if ( pPlayer == NULL )
+			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
+			if (!pp)
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_INFORM_LEAVE why can not find player uid from taxas server uid = %d",pRet->nUserUID ) ;
-				return true ;
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not inform leave",pRet->nUserUID);
 			}
-
-			pPlayer->playerDoLeaveTaxasRoom();
-			if (pPlayer->IsState(CPlayer::ePlayerState_Offline) )
+			else
 			{
-				pPlayer->OnTimerSave(0,0);
+				pp->OnMessage(prealMsg,eSenderPort);
 			}
-			CLogMgr::SharedLogMgr()->PrintLog("be told uid = %d leave taxas room ",pRet->nUserUID);
 		}
 		break;
 	case MSG_TP_SYNC_PLAYER_DATA:
 		{
 			stMsgSyncTaxasPlayerData* pRet = (stMsgSyncTaxasPlayerData*)prealMsg ;
-			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nUserUID) ;
-			if ( pPlayer == NULL )
+			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
+			if (!pp)
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_SYNC_PLAYER_DATA why can not find player uid from taxas server uid = %d",pRet->nUserUID ) ;
-				return true ;
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not sys data",pRet->nUserUID);
 			}
-			pPlayer->GetBaseData()->onSyncTaxasPlayerData(pRet->nMoney,pRet->bIsDiamond,pRet->nWinTimes,pRet->nPlayTimes,pRet->nSingleWinMost);
-			if (pPlayer->IsState(CPlayer::ePlayerState_Offline) )
+			else
 			{
-				pPlayer->OnTimerSave(0,0);
+				pp->OnMessage(prealMsg,eSenderPort);
 			}
-			CLogMgr::SharedLogMgr()->PrintLog("be told uid = %d sys player data ",pRet->nUserUID);
 		}
 		break;
 	default:
-		return false ;
+		return false;
 	}
+
 	return true ;
 }
 
@@ -456,5 +372,15 @@ bool CPlayerManager::ProcessIsAlreadyLogin(unsigned int nUserID ,unsigned nSessi
 			return true ;
 		}
 	}
+	return false ;
+}
+
+bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
+{
+	return false ;
+}
+
+bool CPlayerManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue)
+{
 	return false ;
 }

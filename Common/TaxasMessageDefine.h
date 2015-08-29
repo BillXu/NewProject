@@ -15,7 +15,7 @@ struct stMsgToRoom
 struct stMsgCreateTaxasRoom
 	:public stMsg
 {
-	stMsgCreateTaxasRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_CREATE_ROOM ; }
+	stMsgCreateTaxasRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_CREATE_ROOM ; }
 	uint16_t nConfigID ;
 };
 
@@ -23,7 +23,7 @@ struct stMsgCreateTaxasRoomRet
 	:public stMsg
 {
 	stMsgCreateTaxasRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CREATE_ROOM ; }
-	uint8_t nRet ;
+	uint8_t nRet ; // 0 success , 1 config error , 2 coin not enough 
 	uint32_t nRoomID ; 
 };
 

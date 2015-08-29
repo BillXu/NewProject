@@ -4,8 +4,8 @@
 // Define message , used between Servers ;mainly DBServer and GameServer 
 #pragma warning(disable:4200)
 #include "MessageDefine.h"
-#include "BaseData.h"
-#include "CommonData.h"
+#include "ServerCommon.h"
+#include "TaxasMessageDefine.h"
 #define DBServer_PORT 5001
 // WARNNING:变长字符串，我们不包括终结符 \0 ;
 
@@ -118,7 +118,7 @@ struct stMsgSavePlayerCommonLoginData
 struct stMsgRequestTaxasPlayerData
 	:public stMsg
 {
-	uint32_t nSessionID ;
+	uint32_t nRoomID ;
 	stMsgRequestTaxasPlayerData(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_REQUEST_PLAYER_DATA ; }
 };
 
@@ -126,61 +126,52 @@ struct stMsgRequestTaxasPlayerDataRet
 	:public stMsg
 {
 	stMsgRequestTaxasPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_REQUEST_PLAYER_DATA ; }
-	uint32_t nRoomID ;
 	uint8_t nRet ; // 0 succes , 1 not find player data , 2 already in another taxas room ;
 	stTaxasInRoomPeerData tData ;
 };
 
-enum  eReqMoneyType
-{
-	eReqMoney_TaxasTakeIn,// backArg[0] = roomID , backArg[1] = seatIdx ;
-	eReqMoney_CreateRoom,  // backArg[0] = sessionID backArg[1] = ConfigID;
-	eReqMoney_Max,
-	eReqMoneyArgCnt = 3 ,
-};
 
-struct stMsgPlayerRequestCoin
-	:public stMsg
-{
-	stMsgPlayerRequestCoin(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_REQUEST_MONEY ; nAtLeast = 0; }
-	uint8_t nReqType ;  // eReqMoneyType
-	uint32_t nUserUID ;  // if do not known , mark it 1 ;
-	uint32_t nSessionID ;
-	uint64_t nWantMoney;
-	uint64_t nAtLeast;
-	bool bIsDiamond ;
-	int32_t nBackArg[eReqMoneyArgCnt] ;
-};
 
-struct stMsgPlayerRequestCoinRet
-	:public stMsg
-{
-	stMsgPlayerRequestCoinRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_REQUEST_MONEY ; }
-	uint8_t nRet ; // 0 success , 1 not enough , 2 canot find player , 3 not in a taxas room 
-	uint8_t nReqType ; // eReqMoneyType
-	uint32_t nUserUID ;
-	uint64_t nAddedMoney;  // 0 means money not enough ;
-	bool bIsDiamond ;
-	int32_t nBackArg[eReqMoneyArgCnt] ;
-};
-
-struct stMsgTaxasPlayerRequestCoinComfirm
-	:public stMsg
-{
-	stMsgTaxasPlayerRequestCoinComfirm(){ cSysIdentifer = ID_MSG_PORT_DATA, usMsgType = MSG_REQUEST_MONEY_COMFIRM ; }
-	uint8_t nRet ; // 0 success , 1 failed;
-	bool bDiamond ;
-	uint64_t nWantedMoney ;
-	uint32_t nUserUID ;
-};
+//struct stMsgPlayerRequestCoin
+//	:public stMsg
+//{
+//	stMsgPlayerRequestCoin(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_REQUEST_MONEY ; nAtLeast = 0; }
+//	uint8_t nReqType ;  // eReqMoneyType
+//	uint32_t nUserUID ;  // if do not known , mark it 1 ;
+//	uint32_t nSessionID ;
+//	uint64_t nWantMoney;
+//	uint64_t nAtLeast;
+//	bool bIsDiamond ;
+//	int32_t nBackArg[eReqMoneyArgCnt] ;
+//};
+//
+//struct stMsgPlayerRequestCoinRet
+//	:public stMsg
+//{
+//	stMsgPlayerRequestCoinRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_REQUEST_MONEY ; }
+//	uint8_t nRet ; // 0 success , 1 not enough , 2 canot find player , 3 not in a taxas room 
+//	uint8_t nReqType ; // eReqMoneyType
+//	uint32_t nUserUID ;
+//	uint64_t nAddedMoney;  // 0 means money not enough ;
+//	bool bIsDiamond ;
+//	int32_t nBackArg[eReqMoneyArgCnt] ;
+//};
+//
+//struct stMsgTaxasPlayerRequestCoinComfirm
+//	:public stMsg
+//{
+//	stMsgTaxasPlayerRequestCoinComfirm(){ cSysIdentifer = ID_MSG_PORT_DATA, usMsgType = MSG_REQUEST_MONEY_COMFIRM ; }
+//	uint8_t nRet ; // 0 success , 1 failed;
+//	bool bDiamond ;
+//	uint64_t nWantedMoney ;
+//	uint32_t nUserUID ;
+//};
 
 struct  stMsgSyncTaxasPlayerData
 	:public stMsg
 {
 	stMsgSyncTaxasPlayerData(){ cSysIdentifer = ID_MSG_PORT_DATA,usMsgType = MSG_TP_SYNC_PLAYER_DATA ; }
 	uint32_t nUserUID ;
-	uint64_t nMoney ;
-	bool bIsDiamond ;
 	uint32_t nWinTimes ;
 	uint32_t nPlayTimes ;
 	uint64_t nSingleWinMost ;
@@ -196,10 +187,10 @@ struct stMsgInformTaxasPlayerLeave
 };
 
 struct stMsgOrderTaxasPlayerLeave
-	:public stMsg
+	:public stMsgToRoom
 {
 	stMsgOrderTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_ORDER_LEAVE ; }
-	uint32_t nRoomID ;
+	uint32_t nSessionID ;
 	uint32_t nUserUID ;
 };
 
@@ -207,8 +198,8 @@ struct stMsgOrderTaxasPlayerLeaveRet
 	:public stMsg
 {
 	stMsgOrderTaxasPlayerLeaveRet(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_ORDER_LEAVE ; }
-	uint8_t nRet ; // 0 success , 1 can not find room ;
 	uint32_t nUserUID ;
+	uint8_t nRet ; // 0 success , 1 can not find room ;
 };
 
 // other with Verify Server ;
@@ -251,6 +242,41 @@ struct stMsgSaveLog
 	int64_t vArg[LOG_ARG_CNT];
 	uint16_t nJsonExtnerLen ;
 	char pJsonString[0] ;
+};
+
+// cross server request 
+struct stMsgCrossServerRequest
+	:public stMsg
+{
+	stMsgCrossServerRequest(){ cSysIdentifer = ID_MSG_PORT_NONE; usMsgType = MSG_CROSS_SERVER_REQUEST ; nJsonsLen = 0 ;}
+	uint32_t nTargetID ; // when represent for player , it is UID ;
+	uint32_t nReqOrigID ; // when represent for player , it is UID ;
+	uint16_t nRequestType ;
+	uint16_t nRequestSubType ;
+	int64_t vArg[CROSS_SVR_REQ_ARG];
+	uint16_t nJsonsLen ;
+	PLACE_HOLDER(char* pJsonString);
+};
+
+#define CON_REQ_MSG_JSON(msgCrossReq,jsonArg,autoBuf)  Json::StyledWriter jsWrite ;\
+	std::string str = jsWrite.write(jsonArg) ; \
+	msgCrossReq.nJsonsLen = strlen(str.c_str()); \
+	CAutoBuffer autoBuf(sizeof(msgCrossReq) + msgCrossReq.nJsonsLen ); \
+	autoBuf.addContent((char*)&msgCrossReq,sizeof(msgCrossReq)); \
+	autoBuf.addContent(str.c_str(),msgCrossReq.nJsonsLen ) ;
+
+struct stMsgCrossServerRequestRet
+	:public stMsg
+{
+	stMsgCrossServerRequestRet(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_CROSS_SERVER_REQUEST_RET ; nJsonsLen = 0 ;}
+	uint8_t nRet ;
+	uint32_t nTargetID ; // when represent for player , it is UID ;
+	uint32_t nReqOrigID ; // when represent for player , it is UID ;
+	uint16_t nRequestType ;
+	uint16_t nRequestSubType ;
+	int64_t vArg[CROSS_SVR_REQ_ARG];
+	uint16_t nJsonsLen ;
+	PLACE_HOLDER(char* pJsonString);
 };
 
 //----above is new , below is old---------

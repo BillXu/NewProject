@@ -14,6 +14,8 @@ public:
 	CPlayerBaseData(CPlayer*);
 	~CPlayerBaseData();
 	void Init();
+	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest, eMsgPort eSenderPort,Json::Value* vJsValue = nullptr );
+	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 	bool OnMessage( stMsg* pMessage , eMsgPort eSenderPort );
 	void SendBaseDatToClient();
 	void Reset();
@@ -41,12 +43,8 @@ public:
 	stServerBaseData* GetData(){ return &m_stBaseData ;}
 	virtual void OnReactive(uint32_t nSessionID );
 	uint16_t GetPhotoID(){ return m_stBaseData.nPhotoID ;}
-
-	// taxas data ;
-	//void caculateMoneyWhenLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned);
+protected:
 	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
-	bool onPlayerRequestMoneyComfirm( bool bSucess, uint64_t nWantMoney, bool bDiamoned = false);
-	void onSyncTaxasPlayerData(uint64_t nMoney, bool bDiamond,uint32_t nWinTimes , uint32_t nPlayTimes,uint64_t nSingleWinMost );
 public:
 	friend class CPlayerOnlineBox ;
 protected:
@@ -58,7 +56,6 @@ private:
 	bool m_bGivedLoginReward ;
 
 	bool m_bMoneyDataDirty;
-	bool m_bTaxasDataDirty;
 	bool m_bCommonLogicDataDirty ;
 	bool m_bPlayerInfoDataDirty;
 };

@@ -10,6 +10,7 @@
 #include "PlayerShop.h"
 #include "ServerMessageDefine.h"
 #include "RobotManager.h"
+#include "PlayerTaxas.h"
 #define TIME_SAVE 60*20
 CPlayer::CPlayer( )
 {
@@ -51,10 +52,10 @@ void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
 	/// new components ;here ;
 	m_vAllComponents[ePlayerComponent_BaseData] = new CPlayerBaseData(this) ;
 	m_vAllComponents[ePlayerComponent_Mail] = new CPlayerMailComponent(this);
+	m_vAllComponents[ePlayerComponent_PlayerTaxas] = new CPlayerTaxas(this);
 	//m_vAllComponents[ePlayerComponent_PlayerItemMgr] = new CPlayerItemComponent(this);
 	//m_vAllComponents[ePlayerComponent_PlayerMission] = new CPlayerMission(this);
 	//m_vAllComponents[ePlayerComponent_PlayerShop] = new CPlayerShop(this);
-	m_nTaxasRoomID = 0 ;
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
 		IPlayerComponent* p = m_vAllComponents[i] ;
@@ -78,7 +79,6 @@ void CPlayer::Reset(unsigned int nUserUID, unsigned int nSessionID )
 	m_nDisconnectTime = 0 ;
 	m_nSessionID = nSessionID ;
 	m_nUserUID = nUserUID ;
-	m_nTaxasRoomID = 0 ;
 	m_eSate = ePlayerState_Online ;
 	// inform components;
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
@@ -249,15 +249,6 @@ void CPlayer::OnPlayerDisconnect()
 	
 	m_nDisconnectTime = time(NULL) ;
 	SetState(ePlayerState_Offline) ;
-
-	if ( m_nTaxasRoomID != 0 )  // order to leave 
-	{
-		stMsgOrderTaxasPlayerLeave msgLeave ;
-		msgLeave.nRoomID = m_nTaxasRoomID ;
-		msgLeave.nUserUID = GetUserUID();
-		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
-		m_nTaxasRoomID = 0 ;
-	}
 	CLogMgr::SharedLogMgr()->ErrorLog("player disconnect should inform other sever");
 }
 
@@ -298,15 +289,6 @@ void CPlayer::OnAnotherClientLoginThisPeer(unsigned int nSessionID )
 	// tell prelogin client to disconnect ;
 	stMsgPlayerOtherLogin msg ;
 	SendMsgToClient((char*)&msg,sizeof(msg)) ;
-
-	if ( m_nTaxasRoomID != 0 )  // order to leave 
-	{
-		stMsgOrderTaxasPlayerLeave msgLeave ;
-		msgLeave.nRoomID = m_nTaxasRoomID ;
-		msgLeave.nUserUID = GetUserUID();
-		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),(char*)&msgLeave,sizeof(msgLeave) ) ;
-		m_nTaxasRoomID = 0 ;
-	}
 
 	CLogMgr::SharedLogMgr()->ErrorLog("pls remember inform other server this envent OnAnotherClientLoginThisPeer ") ;
 
@@ -596,8 +578,30 @@ void CPlayer::OnReactive(uint32_t nSessionID )
 	}
 }
 
-void CPlayer::playerDoLeaveTaxasRoom()
+bool CPlayer::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
 {
-	m_nTaxasRoomID = 0 ;
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p && p->onCrossServerRequest(pRequest,eSenderPort,vJsValue) )
+		{
+			return true ;
+		}
+	}
+	return false ;
 }
+
+bool CPlayer::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue)
+{
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p && p->onCrossServerRequestRet(pResult,vJsValue) )
+		{
+			return true;
+		}
+	}
+	return false ;
+}
+
 

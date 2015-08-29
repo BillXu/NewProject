@@ -15,7 +15,7 @@ void stSpeedRoomConfigs::AddConfig(stTaxasRoomConfig* pConfig)
 		pVec = &m_vPlayerCountRoom[eSeatCount_9];
 	}
 
-	for ( int i = 0; i < pVec->size(); ++i )
+	for ( uint32_t i = 0; i < pVec->size(); ++i )
 	{
 		if ( pConfig->nBigBlind == (*pVec)[i]->nBigBlind )
 		{
@@ -46,6 +46,7 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 			pConfig->nBigBlind = refReaderRow["BigBlind"]->IntValue();
 			pConfig->nMaxTakeInCoin = refReaderRow["MaxCoin"]->IntValue() ;
 			pConfig->nRentFeeOneMonth = 20;
+			pConfig->nDeskFee = 1 ;
 			pRoomConfig = pConfig ;
 		}
 		break;

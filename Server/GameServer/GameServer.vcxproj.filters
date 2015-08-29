@@ -136,6 +136,12 @@
     <ClInclude Include="..\ServerCommon\ISeverApp.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerCommon.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DataServer\src\PlayerTaxas.h">
+      <Filter>src\Player</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
@@ -218,6 +224,9 @@
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\PlayerTaxas.cpp">
+      <Filter>src\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

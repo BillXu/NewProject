@@ -12,6 +12,7 @@
 #include "PlayerManager.h"
 #include "EventCenter.h"
 #include "InformConfig.h"
+#include "AutoBuffer.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
 CPlayerBaseData::CPlayerBaseData(CPlayer* player )
@@ -34,7 +35,6 @@ void CPlayerBaseData::Init()
 	m_bGivedLoginReward = false ;
 
 	m_bMoneyDataDirty = false;
-	m_bTaxasDataDirty = false;
 	m_bCommonLogicDataDirty = false;
 	m_bPlayerInfoDataDirty = false;
 	Reset();
@@ -45,7 +45,6 @@ void CPlayerBaseData::Reset()
 	m_bGivedLoginReward = false ;
 
 	m_bMoneyDataDirty = false;
-	m_bTaxasDataDirty = false;
 	m_bCommonLogicDataDirty = false;
 	m_bPlayerInfoDataDirty = false;
 
@@ -62,6 +61,11 @@ void CPlayerBaseData::Reset()
 
 bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 {
+	if ( IPlayerComponent::OnMessage(pMsg,eSenderPort) )
+	{
+		return true ;
+	}
+
 	switch( pMsg->usMsgType )
 	{
 	case MSG_PLAYER_BASE_DATA:   // from db server ;
@@ -262,6 +266,82 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 	return true ;
 }
 
+bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eMsgPort eSenderPort,Json::Value* vJsValue )
+{
+	if ( IPlayerComponent::onCrossServerRequest(pRequest,eSenderPort,vJsValue) )
+	{
+		return true ;
+	}
+
+	switch ( pRequest->nRequestType )
+	{
+	case eCrossSvrReq_DeductionMoney:
+		{
+			assert(vJsValue&& "must not null") ;
+			assert(pRequest->nTargetID == GetPlayer()->GetUserUID() && "different object");
+			bool bDiamoned = !pRequest->vArg[0];
+			if ( pRequest->vArg[1] < 0 || pRequest->vArg[2] < 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("why arg is < 0 , for cross deduction uid = %d",GetPlayer()->GetUserUID());
+				return true ;
+			}
+			uint64_t nNeedMoney = pRequest->vArg[1] ;
+			int64_t nAtLeast = pRequest->vArg[2];
+
+			bool bRet = onPlayerRequestMoney(nNeedMoney,nAtLeast,bDiamoned) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do deduction coin cross rquest , final diamond = %I64d, coin = %I64d ret = %b",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin ,bRet );
+			stMsgCrossServerRequestRet msgRet ;
+			msgRet.cSysIdentifer = eSenderPort ;
+			msgRet.nRet = bRet ? 0 : 1 ;
+			msgRet.nRequestType = pRequest->nRequestType ;
+			msgRet.nRequestSubType = pRequest->nRequestSubType;
+			msgRet.nTargetID = pRequest->nReqOrigID ;
+			msgRet.nReqOrigID = GetPlayer()->GetUserUID() ;
+			msgRet.vArg[0] = pRequest->vArg[0];
+			msgRet.vArg[1] = nNeedMoney ;
+
+			if ( vJsValue )
+			{
+				Json::Value& retValue = *vJsValue ;
+				CON_REQ_MSG_JSON(msgRet,retValue,autoBuf) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRequest->nReqOrigID,autoBuf.getBufferPtr(),autoBuf.getContentSize());
+			}
+			else
+			{
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRequest->nReqOrigID,(char*)&msgRet,sizeof(msgRet));
+			}
+		}
+		break;
+	case eCrossSvrReq_AddMoney:
+		{
+			bool bDiamoned = !pRequest->vArg[0];
+			int64_t nAddCoin = pRequest->vArg[1] ;
+			if ( nAddCoin < 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("why add coin is < 0  uid = %d",GetPlayer()->GetUserUID());
+				return true ;
+			}
+
+			uint64_t& nAddTarget = bDiamoned ? m_stBaseData.nDiamoned : m_stBaseData.nCoin ; 
+			nAddTarget += nAddCoin ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do add coin cross rquest , final diamond = %I64d, coin = %I64d",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin );
+		}
+		break;
+	default:
+		return false;
+	}
+	return true ;
+}
+
+bool CPlayerBaseData::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue )
+{
+	if ( IPlayerComponent::onCrossServerRequestRet(pResult,vJsValue) )
+	{
+		return true ;
+	}
+	return false ;
+}
+
 void CPlayerBaseData::SendBaseDatToClient()
 {
 	stMsgPlayerBaseData msg ;
@@ -352,18 +432,6 @@ void CPlayerBaseData::TimerSave()
 		SendMsg((stMsgSavePlayerMoney*)&msgSaveMoney,sizeof(msgSaveMoney)) ;
 		CLogMgr::SharedLogMgr()->PrintLog("player do time save coin uid = %d coin = %I64d",msgSaveMoney.nUserUID,msgSaveMoney.nCoin );
 	}
-	
-	if ( m_bTaxasDataDirty )
-	{
-		m_bTaxasDataDirty = false ;
-		stMsgSavePlayerTaxaPokerData msgSavePokerData ;
-		msgSavePokerData.nPlayTimes = m_stBaseData.nPlayTimes ;
-		msgSavePokerData.nSingleWinMost = m_stBaseData.nSingleWinMost ;
-		msgSavePokerData.nWinTimes = m_stBaseData.nWinTimes ;
-		memcpy(msgSavePokerData.vMaxCards,m_stBaseData.vMaxCards,sizeof(msgSavePokerData.vMaxCards));
-		msgSavePokerData.nUserUID = GetPlayer()->GetUserUID() ;
-		SendMsg((stMsgSavePlayerMoney*)&msgSavePokerData,sizeof(msgSavePokerData)) ;
-	}
 
 	if ( m_bCommonLogicDataDirty )
 	{
@@ -400,7 +468,6 @@ void CPlayerBaseData::TimerSave()
 
 bool CPlayerBaseData::onPlayerRequestMoney(uint64_t& nCoinOffset,uint64_t nAtLeast, bool bDiamoned)
 {
-	uint64_t nNeedMoney = nCoinOffset ;
 	bool invalidAtLeast = (nAtLeast != 0 && nAtLeast < nCoinOffset );
 
  	if ( bDiamoned == false )
@@ -437,50 +504,6 @@ bool CPlayerBaseData::onPlayerRequestMoney(uint64_t& nCoinOffset,uint64_t nAtLea
 	return true ;
 }
 
-bool CPlayerBaseData::onPlayerRequestMoneyComfirm( bool bSucess, uint64_t nAddedMoney, bool bDiamoned )
-{
-	if ( bSucess && GetPlayer()->GetTaxasRoomID() ) // when add sucess , and player still in taxas room , 
-	{
-
-	}
-	else
-	{
-		if (bDiamoned )
-		{
-			m_stBaseData.nDiamoned += nAddedMoney; 
-		}
-		else
-		{
-			m_stBaseData.nCoin += nAddedMoney ; 
-		}
-	}
-	return true ;
-}
-
-void CPlayerBaseData::onSyncTaxasPlayerData( uint64_t nMoney, bool bDiamond,uint32_t nWinTimes , uint32_t nPlayTimes,uint64_t nSingleWinMost )
-{
-	if ( bDiamond )
-	{
-		m_stBaseData.nDiamoned += nMoney ;
-	}
-	else
-	{
-		m_stBaseData.nCoin += nMoney ;
-	}
-	
-	if ( nMoney > 0 )
-	{
-		m_bMoneyDataDirty = true ;
-	}
-
-	m_stBaseData.nWinTimes += nWinTimes ;
-	m_stBaseData.nPlayTimes += nPlayTimes ;
-	if ( m_stBaseData.nSingleWinMost < nSingleWinMost )
-	{
-		m_stBaseData.nSingleWinMost = nSingleWinMost ;
-	}
-}
-
 bool CPlayerBaseData::ModifyMoney(int64_t nOffset,bool bDiamond  )
 {
 	if ( bDiamond )
@@ -504,69 +527,8 @@ bool CPlayerBaseData::ModifyMoney(int64_t nOffset,bool bDiamond  )
 	return true ;
 }
 
-//bool CPlayerBaseData::ModifyTakeInMoney(int64_t nOffset,bool bDiamond )
-//{
-// 	if ( bDiamond )
-// 	{
-// 		if ( nOffset < 0 && (-1*nOffset) > m_nTakeInDiamoned )
-// 		{
-// 			return false ;
-// 		}
-// 
-// 		m_nTakeInDiamoned += (int)nOffset ;
-// 	}
-// 	else
-// 	{
-// 		if ( nOffset < 0 && (-1*nOffset) > m_nTakeInCoin )
-// 		{
-// 			return false ;
-// 		}
-// 		m_nTakeInCoin += nOffset ;
-// 	}
-//	return true ;
-//}
-
-//void CPlayerBaseData::CaculateTakeInMoney()
-//{
-//	m_stBaseData.nDiamoned += m_nTakeInDiamoned;
-//	m_stBaseData.nCoin += m_nTakeInCoin ;
-//	m_nTakeInCoin = 0;
-//	m_nTakeInDiamoned = 0 ;
-//}
-
 bool CPlayerBaseData::OnPlayerEvent(stPlayerEvetArg* pArg)
 {
-// 	if ( pArg->eEventType == ePlayerEvent_ReadDBOK )
-// 	{
-// 		SendBaseDatToClient();
-// 		OnProcessContinueLogin();
-// 		// send new notice inform 
-// 		CInformConfig* pConfig = (CInformConfig*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Informs) ;
-// 		if ( pConfig->GetMaxInformID() > m_stBaseData.nNoticeID )
-// 		{
-// 			stMsgInformNewNotices msgInfom ;
-// 			msgInfom.cNewNoticeCount = pConfig->GetMaxInformID() - m_stBaseData.nNoticeID ;
-// 			msgInfom.cNewNoticeCount = min(msgInfom.cNewNoticeCount,pConfig->GetInformCount());
-// 			SendMsgToClient((char*)&msgInfom,sizeof(msgInfom)) ;
-// 		}
-// 		// post online event ;
-// 		CEventCenter::SharedEventCenter()->PostEvent(eEvent_PlayerOnline,this->GetPlayer()) ;
-// 	}
-// 	else if ( pArg->eEventType == ePlayerEvent_Recharge )
-// 	{
-// 		//stPlayerEventArgRecharge* pA = (stPlayerEventArgRecharge*)pArg ;
-// 		//nTotalSpendRMB += pA->nRMB ;
-// 		//unsigned char nLevel = nVipLevel ;
-// 		//CheckVipValid();
-// 		//if ( nVipLevel > nLevel )
-// 		//{
-// 		//	stMsgPlayerUpdateVipLevel msg ;
-// 		//	msg.nCurVIPLevel = nVipLevel ;
-// 		//	SendMsgToClient((char*)&msg,sizeof(msg)) ;
-// 		//}
-// 		CLogMgr::SharedLogMgr()->SystemLog("recharge event happened") ;
-// 		++m_stBaseData.nRechargeTimes;
-// 	}
 	return false ;
 }
 
@@ -590,8 +552,6 @@ void CPlayerBaseData::GetPlayerDetailData(stPlayerDetailData* pData )
 
 bool CPlayerBaseData::EventFunc(void* pUserData,stEventArg* pArg)
 {
-// 	CPlayerBaseData* pBaseData = (CPlayerBaseData*)pUserData ;
-// 	pBaseData->OnNewDay(pArg);
 	return false ;
 }
 
@@ -610,7 +570,3 @@ void CPlayerBaseData::OnReactive(uint32_t nSessionID )
 	SendBaseDatToClient();
 }
 
-//void CPlayerBaseData::caculateMoneyWhenLeaveTaxasRoom(bool bNormalLave , uint64_t nTakeInCoin , bool bDiamoned)
-//{
-//
-//}

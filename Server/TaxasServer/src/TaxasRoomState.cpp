@@ -71,77 +71,77 @@ bool CTaxasBaseRoomState::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 			return true ;
 		}
 		break;
-	case MSG_REQUEST_MONEY:
-		{
-			stTaxasInRoomPeerDataExten* pPlayrInRoomData = m_pRoom->GetInRoomPlayerDataBySessionID(nPlayerSessionID);
-			//if ( pPlayrInRoomData )
-			//{
-			//	// as withdrawing coin come back , so remove the drawing coin state ;
-			//	pPlayrInRoomData->nStateFlag &= (~eRoomPeer_WithdrawingCoin) ;
-			//}
-			
-			stMsgPlayerRequestCoinRet* pRet = (stMsgPlayerRequestCoinRet*)prealMsg ;
-			int8_t nSeatIdx = pRet->nBackArg[1];
-			stMsgTaxasRoomUpdatePlayerState msgNewState ;
-			if ( pRet->nRet )
-			{
-				// player still at seat when money arrived ;
-				if ( nSeatIdx < m_pRoom->m_stRoomConfig.nMaxSeat && m_pRoom->m_vSitDownPlayers[nSeatIdx].IsInvalid() == false && m_pRoom->m_vSitDownPlayers[nSeatIdx].nUserUID == pRet->nUserUID  )
-				{
-					m_pRoom->OnPlayerStandUp(nSeatIdx);
-				}
-				CLogMgr::SharedLogMgr()->PrintLog(" withdrawing coin erro  = %d , uid = %d",pRet->nRet,pRet->nUserUID) ;
-				
-				if ( pPlayrInRoomData )
-				{
-					// still in room inform sit ret ;
-					stMsgWithdrawingMoneyRet msgRet ;
-					msgRet.nRet = 1 ;
-					m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgRet,sizeof(msgRet)) ;
-				}
-			}
-			else
-			{
-				// need tell data svr the result ;
-				stMsgTaxasPlayerRequestCoinComfirm msgDataSvrBack ;
-				msgDataSvrBack.bDiamond = pRet->bIsDiamond ;
-				msgDataSvrBack.nUserUID = pRet->nUserUID ;
-				msgDataSvrBack.nWantedMoney = pRet->nAddedMoney ;
-				msgDataSvrBack.nRet = 0 ;
-				
-				if ( nSeatIdx > m_pRoom->m_stRoomConfig.nMaxSeat || m_pRoom->m_vSitDownPlayers[nSeatIdx].IsInvalid() || m_pRoom->m_vSitDownPlayers[nSeatIdx].nUserUID != pRet->nUserUID  )
-				{
-					msgDataSvrBack.nRet = 1 ;
-					CLogMgr::SharedLogMgr()->ErrorLog("money arrived ,but you have gone standup = %d",nPlayerSessionID ) ;
-					if ( pPlayrInRoomData )
-					{
-						// still in room inform sit ret ;
-						stMsgWithdrawingMoneyRet msgRet ;
-						msgRet.nRet = 2 ;
-						m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgRet,sizeof(msgRet)) ;
-					}
-				}
-				else
-				{
-					m_pRoom->m_vSitDownPlayers[nSeatIdx].nStateFlag = eRoomPeer_WaitNextGame ;
-					m_pRoom->m_vSitDownPlayers[nSeatIdx].nTakeInMoney += pRet->nAddedMoney ;
-					m_pRoom->m_vSitDownPlayers[nSeatIdx].nTotalBuyInThisRoom += pRet->nAddedMoney ;
+	//case MSG_REQUEST_MONEY:
+	//	{
+	//		stTaxasInRoomPeerDataExten* pPlayrInRoomData = m_pRoom->GetInRoomPlayerDataBySessionID(nPlayerSessionID);
+	//		//if ( pPlayrInRoomData )
+	//		//{
+	//		//	// as withdrawing coin come back , so remove the drawing coin state ;
+	//		//	pPlayrInRoomData->nStateFlag &= (~eRoomPeer_WithdrawingCoin) ;
+	//		//}
+	//		
+	//		stMsgPlayerRequestCoinRet* pRet = (stMsgPlayerRequestCoinRet*)prealMsg ;
+	//		int8_t nSeatIdx = pRet->nBackArg[1];
+	//		stMsgTaxasRoomUpdatePlayerState msgNewState ;
+	//		if ( pRet->nRet )
+	//		{
+	//			// player still at seat when money arrived ;
+	//			if ( nSeatIdx < m_pRoom->m_stRoomConfig.nMaxSeat && m_pRoom->m_vSitDownPlayers[nSeatIdx].IsInvalid() == false && m_pRoom->m_vSitDownPlayers[nSeatIdx].nUserUID == pRet->nUserUID  )
+	//			{
+	//				m_pRoom->OnPlayerStandUp(nSeatIdx);
+	//			}
+	//			CLogMgr::SharedLogMgr()->PrintLog(" withdrawing coin erro  = %d , uid = %d",pRet->nRet,pRet->nUserUID) ;
+	//			
+	//			if ( pPlayrInRoomData )
+	//			{
+	//				// still in room inform sit ret ;
+	//				stMsgWithdrawingMoneyRet msgRet ;
+	//				msgRet.nRet = 1 ;
+	//				m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgRet,sizeof(msgRet)) ;
+	//			}
+	//		}
+	//		else
+	//		{
+	//			// need tell data svr the result ;
+	//			stMsgTaxasPlayerRequestCoinComfirm msgDataSvrBack ;
+	//			msgDataSvrBack.bDiamond = pRet->bIsDiamond ;
+	//			msgDataSvrBack.nUserUID = pRet->nUserUID ;
+	//			msgDataSvrBack.nWantedMoney = pRet->nAddedMoney ;
+	//			msgDataSvrBack.nRet = 0 ;
+	//			
+	//			if ( nSeatIdx > m_pRoom->m_stRoomConfig.nMaxSeat || m_pRoom->m_vSitDownPlayers[nSeatIdx].IsInvalid() || m_pRoom->m_vSitDownPlayers[nSeatIdx].nUserUID != pRet->nUserUID  )
+	//			{
+	//				msgDataSvrBack.nRet = 1 ;
+	//				CLogMgr::SharedLogMgr()->ErrorLog("money arrived ,but you have gone standup = %d",nPlayerSessionID ) ;
+	//				if ( pPlayrInRoomData )
+	//				{
+	//					// still in room inform sit ret ;
+	//					stMsgWithdrawingMoneyRet msgRet ;
+	//					msgRet.nRet = 2 ;
+	//					m_pRoom->SendMsgToPlayer(nPlayerSessionID,&msgRet,sizeof(msgRet)) ;
+	//				}
+	//			}
+	//			else
+	//			{
+	//				m_pRoom->m_vSitDownPlayers[nSeatIdx].nStateFlag = eRoomPeer_WaitNextGame ;
+	//				m_pRoom->m_vSitDownPlayers[nSeatIdx].nTakeInMoney += pRet->nAddedMoney ;
+	//				m_pRoom->m_vSitDownPlayers[nSeatIdx].nTotalBuyInThisRoom += pRet->nAddedMoney ;
 
-					msgNewState.nSeatIdx = nSeatIdx ;
-					msgNewState.nStateFlag = eRoomPeer_WaitNextGame ;
-					msgNewState.nTakeInCoin = m_pRoom->m_vSitDownPlayers[nSeatIdx].nTakeInMoney ;
-		
-					m_pRoom->SendRoomMsg(&msgNewState,sizeof(msgNewState));
+	//				msgNewState.nSeatIdx = nSeatIdx ;
+	//				msgNewState.nStateFlag = eRoomPeer_WaitNextGame ;
+	//				msgNewState.nTakeInCoin = m_pRoom->m_vSitDownPlayers[nSeatIdx].nTakeInMoney ;
+	//	
+	//				m_pRoom->SendRoomMsg(&msgNewState,sizeof(msgNewState));
 
-					CLogMgr::SharedLogMgr()->PrintLog("withdraw coin ok uid = %d coin = %I64d",pRet->nUserUID,msgNewState.nTakeInCoin );
-				}
-				 // tell data server ;
-				CLogMgr::SharedLogMgr()->ErrorLog("tell data svr request comfirm uid = %d",pRet->nUserUID);
-				CTaxasServerApp::SharedGameServerApp()->sendMsg(m_pRoom->GetRoomID(),(char*)&msgDataSvrBack,sizeof(msgDataSvrBack)) ;
-				return true ;
-			}
-		}
-		break;
+	//				CLogMgr::SharedLogMgr()->PrintLog("withdraw coin ok uid = %d coin = %I64d",pRet->nUserUID,msgNewState.nTakeInCoin );
+	//			}
+	//			 // tell data server ;
+	//			CLogMgr::SharedLogMgr()->ErrorLog("tell data svr request comfirm uid = %d",pRet->nUserUID);
+	//			CTaxasServerApp::SharedGameServerApp()->sendMsg(m_pRoom->GetRoomID(),(char*)&msgDataSvrBack,sizeof(msgDataSvrBack)) ;
+	//			return true ;
+	//		}
+	//	}
+	//	break;
 	case MSG_TP_PLAYER_STAND_UP:
 		{
 			uint8_t nSeatIdx = m_pRoom->GetSeatIdxBySessionID(nPlayerSessionID);
@@ -211,6 +211,7 @@ void CTaxasStateWaitJoin::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
 	m_pRoom->ResetRoomData() ;
+	m_pRoom->debugPlayerHistory();
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateWaitJoin");
 }
 
@@ -232,7 +233,7 @@ void CTaxasStateWaitJoin::Update(float fDelte )
 void CTaxasStateBlindBet::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
-	m_fDuringTime = TIME_BLIND_BET_STATE + 1.5;
+	m_fDuringTime = TIME_BLIND_BET_STATE + 1.5f;
 	pRoom->StartGame();
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateBlindBet");
 }
@@ -402,14 +403,14 @@ bool CTaxasStatePlayerBet::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 			msgBack.nRet = m_pRoom->OnPlayerAction( nSeatIdx,(eRoomPeerAction)pAct->nPlayerAct,pAct->nValue) ;
 			if ( msgBack.nRet == 0 )
 			{
-				float nThisActTime = TIME_PLAYER_BET_COIN_ANI + 0.7;
+				float nThisActTime = TIME_PLAYER_BET_COIN_ANI + 0.7f;
 				if ( pAct->nPlayerAct == eRoomPeerAction_GiveUp  )
 				{
 					nThisActTime = TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL ;
 				}
 				else if ( eRoomPeerAction_Pass == pAct->nPlayerAct )
 				{
-					nThisActTime = nThisActTime * 0.5 ;
+					nThisActTime = nThisActTime * 0.5f ;
 				}
 
 				if ( m_bHavePlayerActing  )
@@ -464,12 +465,12 @@ void CTaxasStateOneRoundBetEndResult::EnterState(CTaxasRoom* pRoom )
 	uint8_t nCnt = m_pRoom->CaculateOneRoundPool() ;
 	if ( m_pRoom->GetAllBetCoinThisRound() <= 0 && nCnt == 0 )
 	{
-		m_fDuringTime = 1.2 ;
+		m_fDuringTime = 1.2f ;
 		CLogMgr::SharedLogMgr()->PrintLog("not bet just go over");
 	}
 	else
 	{
-		m_fDuringTime = TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL + TIME_TAXAS_MAKE_VICE_POOLS * nCnt + 1.2 ; // if produced vice pool , need more time ;
+		m_fDuringTime = TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL + TIME_TAXAS_MAKE_VICE_POOLS * nCnt + 1.2f ; // if produced vice pool , need more time ;
 	}
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateOneRoundBetEndResult");
 }
@@ -502,7 +503,7 @@ void CTaxasStateOneRoundBetEndResult::OnStateTimeOut()
 void CTaxasStatePublicCard::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
-	m_fDuringTime = TIME_DISTRIBUTE_ONE_PUBLIC_CARD * m_pRoom->DistributePublicCard() + 1.2;
+	m_fDuringTime = TIME_DISTRIBUTE_ONE_PUBLIC_CARD * m_pRoom->DistributePublicCard() + 1.2f;
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStatePublicCard");
 }
 
@@ -543,7 +544,7 @@ void CTaxasStateGameResult::EnterState(CTaxasRoom* pRoom )
 	}
 	else
 	{
-		m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + 1.3;
+		m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + 1.3f;
 	}
 	
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateGameResult");

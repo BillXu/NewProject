@@ -54,7 +54,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;TAXAS_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;JSON_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;TAXAS_SERVER</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -72,7 +72,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;SERVER;TAXAS_SERVER;%(PreprocessorDefinitions);SERVER;TAXAS_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;JSON_DLL;NDEBUG;_CONSOLE;SERVER;TAXAS_SERVER;%(PreprocessorDefinitions);SERVER;TAXAS_SERVER</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -97,7 +97,9 @@
     <ClInclude Include="..\..\Common\TaxasMessageDefine.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
+    <ClInclude Include="..\ServerCommon\ServerCommon.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />

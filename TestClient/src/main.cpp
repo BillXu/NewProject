@@ -128,6 +128,7 @@ A gmin(A a,A b)
 		uint64_t right = 20 ;
 		int nVal = left - right ;
 		printf("result = %I64d, nv = %d \n",left - right,nVal );
+		//printf("obj = %s obj2 = %s \n",obj.asCString(),obj2.asCString() );
 		if ( (left - right) < -1 )
 		{
 			printf("ok");

@@ -30,72 +30,18 @@ bool CRoomManager::Init()
 
 bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
 {
+	if ( eSenderPort != ID_MSG_PORT_CLIENT )
+	{
+		if ( OnMsgFromOtherSvr(prealMsg,eSenderPort,nSessionID) )
+		{
+			return true ;
+		}
+	}
+
 	if ( prealMsg->usMsgType <= MSG_TP_BEGIN || MSG_TP_END <= prealMsg->usMsgType )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("why this msg send here msg = %d ",prealMsg->usMsgType ) ;
 		return false ;
-	}
-
-	if ( MSG_TP_CREATE_ROOM == prealMsg->usMsgType )
-	{
-		stMsgCreateTaxasRoomRet msgBack ;
-		stMsgCreateTaxasRoom* pRet = (stMsgCreateTaxasRoom*)prealMsg ;
-		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,pRet->nConfigID);
-		if ( pRoomConfig == nullptr )
-		{
-			msgBack.nRet = 1 ;
-			msgBack.nRoomID = 0 ;
-			SendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
-			return true ;
-		}
-		else
-		{
-			stMsgPlayerRequestCoin msgReqMoney ;
-			msgReqMoney.bIsDiamond = false ;
-			msgReqMoney.nAtLeast = 0 ;
-			msgReqMoney.nWantMoney = pRoomConfig->nCreateFee ;
-			msgReqMoney.nSessionID = nSessionID ;
-			msgReqMoney.nReqType = eReqMoney_CreateRoom;
-			msgReqMoney.nUserUID = 1 ;
-			msgReqMoney.nBackArg[0] = nSessionID ;
-			msgReqMoney.nBackArg[1] = pRet->nConfigID ;
-			SendMsg(&msgReqMoney,sizeof(msgReqMoney),nSessionID) ;
-		}
-	}
-
-	if ( MSG_REQUEST_MONEY == prealMsg->usMsgType && eSenderPort == ID_MSG_PORT_DATA )
-	{
-		stMsgPlayerRequestCoinRet* pRet = (stMsgPlayerRequestCoinRet*)prealMsg ;
-		if ( eReqMoney_TaxasTakeIn == pRet->nReqType )
-		{
-			CTaxasRoom* pRoom = GetRoomByID(pRet->nBackArg[0]) ;
-			if ( pRoom == NULL )
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("Imporssible error , why not the room id = %d is null can not process msg = %d, session id = %d",pRet->nBackArg[0],MSG_REQUEST_MONEY,nSessionID)  ;
-				return true ;
-			}
-			pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;
-		}
-		else if ( eReqMoney_CreateRoom == pRet->nReqType )
-		{
-			stMsgCreateTaxasRoomRet msgBack ;
-			msgBack.nRoomID = 0 ;
-			msgBack.nRet = pRet->nRet;
-			if ( pRet->nRet == 0 )
-			{
-				stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,pRet->nBackArg[1]);
-				CTaxasRoom* pRoom = new CTaxasRoom ;
-				pRoom->Init( m_vRooms.size() + 1,(stTaxasRoomConfig*)pRoomConfig) ;
-				m_vRooms[pRoom->GetRoomID()] = pRoom ;
-				pRoom->onCreateByPlayer(pRet->nUserUID);
-				pRoom->setRoomName("HappyPoker");
-				pRoom->setRoomDesc("I want you !");
-				msgBack.nRoomID = pRoom->GetRoomID() ;
-			}
-			SendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
-		}
-
-		return true ;
 	}
 
 	if ( MSG_TP_ENTER_ROOM == prealMsg->usMsgType )
@@ -120,9 +66,69 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		}
 		
 		stMsgRequestTaxasPlayerData msg ;
-		msg.nSessionID = nSessionID ;
-		SendMsg(&msg,sizeof(msg),pRoom->GetRoomID()) ;
+		msg.nRoomID = pRel->nRoomID ;
+		SendMsg(&msg,sizeof(msg),nSessionID ) ;
 		CLogMgr::SharedLogMgr()->PrintLog("rquest player data for room ");
+		return true ;
+	}
+
+	// msg give to room process 
+	stMsgToRoom* pRoomMsg = (stMsgToRoom*)prealMsg;
+	CTaxasRoom* pRoom = GetRoomByID(pRoomMsg->nRoomID) ;
+	if ( pRoom == NULL )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("can not find room to process id = %d ,from = %d",prealMsg->usMsgType,eSenderPort ) ;
+		return  false ;
+	}
+
+	return pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;
+}
+
+bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nRoomID )
+{
+	if ( MSG_CROSS_SERVER_REQUEST == prealMsg->usMsgType )
+	{
+		stMsgCrossServerRequest* pRet = (stMsgCrossServerRequest*)prealMsg ;
+
+		Json::Value* pJsValue = nullptr ;
+		Json::Value rootValue ;
+		if ( pRet->nJsonsLen )
+		{
+			Json::Reader reader;
+			char* pstr = ((char*)&pRet->nJsonsLen) + sizeof(pRet->nJsonsLen) ;
+			reader.parse(pstr,pstr + pRet->nJsonsLen,rootValue,false);
+			pJsValue = &rootValue ;
+		}
+
+		if ( onCrossServerRequest(pRet,eSenderPort,pJsValue) == false )
+		{
+			CTaxasRoom* pRoom = GetRoomByID(pRet->nTargetID);
+			assert(pRoom&&"this request no one to process or target id error");
+			return pRoom->onCrossServerRequest(pRet,eSenderPort,pJsValue);
+		}
+
+		return true ;
+	}
+
+	if ( MSG_CROSS_SERVER_REQUEST_RET == prealMsg->usMsgType )
+	{
+		stMsgCrossServerRequestRet* pRet = (stMsgCrossServerRequestRet*)prealMsg ;
+		Json::Value* pJsValue = nullptr ;
+		Json::Value rootValue ;
+		if ( pRet->nJsonsLen )
+		{
+			Json::Reader reader;
+			char* pstr = ((char*)&pRet->nJsonsLen) + sizeof(pRet->nJsonsLen) ;
+			reader.parse(pstr,pstr + pRet->nJsonsLen,rootValue,false);
+			pJsValue = &rootValue ;
+		}
+
+		if ( onCrossServerRequestRet(pRet,pJsValue) == false )
+		{
+			CTaxasRoom* pRoom = GetRoomByID(pRet->nTargetID);
+			assert(pRoom&&"this request no one to process or target id error");
+			return pRoom->onCrossServerRequestRet(pRet,pJsValue);
+		}
 		return true ;
 	}
 
@@ -139,19 +145,19 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		{
 			stMsgTaxasEnterRoomRet msgBack ;
 			msgBack.nRet = pRet->nRet ;
-			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-			CLogMgr::SharedLogMgr()->SystemLog("invalid session id = %d can not get player data ret = %d ", nSessionID,pRet->nRet ) ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(pRet->tData.nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("invalid session id = %d can not get player data ret = %d ", pRet->tData.nSessionID,pRet->nRet ) ;
 			return true ;
 		}
 
-		CTaxasRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
+		CTaxasRoom* pRoom = GetRoomByID(nRoomID) ;
 		if ( pRoom == NULL )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why room is null server error room id = %d",pRet->nRoomID ) ;
+			CLogMgr::SharedLogMgr()->ErrorLog("why room is null server error room id = %d",nRoomID ) ;
 
 			stMsgTaxasEnterRoomRet msgBack ;
 			msgBack.nRet = 3;
-			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(pRet->tData.nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			return true ;
 		}
 
@@ -179,31 +185,23 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 	{
 		stMsgOrderTaxasPlayerLeave* pRet = (stMsgOrderTaxasPlayerLeave*)prealMsg ;
 		CTaxasRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
-		if ( pRoom == NULL || pRoom->IsPlayerInRoomWithSessionID(nSessionID) == false )
+		if ( pRoom == NULL || pRoom->IsPlayerInRoomWithSessionID(pRet->nSessionID) == false )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why not the room id = %d is null can not process , or you not in target room msg = %d, session id = %d",pRet->nRoomID,MSG_TP_ORDER_LEAVE,nSessionID)  ;
-			
+			CLogMgr::SharedLogMgr()->ErrorLog("why not the room id = %d is null can not process , or you not in target room msg = %d, session id = %d",pRet->nRoomID,MSG_TP_ORDER_LEAVE,pRet->nSessionID)  ;
+
 			// still inform data svr , help it reset room id , then player can enter room agian
 			stMsgOrderTaxasPlayerLeaveRet msgLeave ;
-			msgLeave.nUserUID = pRet->nUserUID;
 			msgLeave.nRet = 1 ;
-			CTaxasServerApp::SharedGameServerApp()->sendMsg(pRet->nRoomID,(char*)&msgLeave,sizeof(msgLeave)) ;
+			msgLeave.nUserUID = pRet->nUserUID;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(pRet->nSessionID,(char*)&msgLeave,sizeof(msgLeave)) ;
 			return true ;
 		}
-		pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;
+		pRoom->OnMessage(prealMsg,eSenderPort,pRet->nSessionID) ;
+		CLogMgr::SharedLogMgr()->PrintLog("order player leave uid %d",pRet->nSessionID);
 		return true ;
 	}
 
-	// msg give to room process 
-	stMsgToRoom* pRoomMsg = (stMsgToRoom*)prealMsg;
-	CTaxasRoom* pRoom = GetRoomByID(pRoomMsg->nRoomID) ;
-	if ( pRoom == NULL )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("can not find room to process id = %d ,from = %d",prealMsg->usMsgType,eSenderPort ) ;
-		return  false ;
-	}
-
-	return pRoom->OnMessage(prealMsg,eSenderPort,nSessionID) ;
+	return false ;
 }
 
 CTaxasRoom*CRoomManager::GetRoomByID(uint32_t nRoomID )
@@ -219,4 +217,47 @@ CTaxasRoom*CRoomManager::GetRoomByID(uint32_t nRoomID )
 void CRoomManager::SendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID )
 {
 	CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)pmsg,nLen) ;
+}
+
+bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
+{
+	if ( eCrossSvrReq_CreateTaxasRoom == pRequest->nRequestType )
+	{
+		uint16_t nConfigID = pRequest->vArg[0];
+		assert(vJsValue&&"must not be null");
+		std::string strName = (*vJsValue)["roonName"].asCString();
+
+		stMsgCrossServerRequestRet msgRet ;
+		msgRet.cSysIdentifer = eSenderPort ;
+		msgRet.nReqOrigID = pRequest->nTargetID ;
+		msgRet.nTargetID = pRequest->nReqOrigID ;
+		msgRet.nRequestType = pRequest->nRequestType ;
+		msgRet.nRequestSubType = pRequest->nRequestSubType ;
+		msgRet.nRet = 0 ;
+		msgRet.vArg[0] = 0 ;
+
+		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,nConfigID);
+		if ( pRoomConfig == nullptr )
+		{
+			msgRet.nRet = 1;
+			SendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
+			return true ;
+		}
+
+		CTaxasRoom* pRoom = new CTaxasRoom ;
+		pRoom->Init( m_vRooms.size() + 1,(stTaxasRoomConfig*)pRoomConfig) ;
+		m_vRooms[pRoom->GetRoomID()] = pRoom ;
+		pRoom->onCreateByPlayer(pRequest->nReqOrigID);
+		pRoom->setRoomName(strName.c_str());
+		pRoom->setRoomDesc("I want you !");
+		msgRet.vArg[0] = pRoom->GetRoomID() ;
+		SendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
+		return true ;
+	}
+	return false ;
+}
+
+bool CRoomManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue)
+{
+	return false ;
 }

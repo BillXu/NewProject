@@ -78,10 +78,12 @@ enum eMsgType
 	MSG_PLAYER_BIND_ACCOUNT, //  a quick enter player need to bind a real account and password ;
 	MSG_MODIFY_PASSWORD,
 	MSG_PLAYER_OTHER_LOGIN,  // more than one place login , prelogin need disconnect ; client recived must disconnect from server
+	MSG_CROSS_SERVER_REQUEST,
+	MSG_CROSS_SERVER_REQUEST_RET,
 	MSG_PLAYER_BASE_DATA = 250,
 	MSG_PLAYER_SAVE_PLAYER_INFO,
-	MSG_REQUEST_MONEY,
-	MSG_REQUEST_MONEY_COMFIRM,
+	//MSG_REQUEST_MONEY,
+	//MSG_REQUEST_MONEY_COMFIRM,
 
 	// message id for taxas poker
 	MSG_TP_BEGIN = 300,

@@ -28,9 +28,9 @@ bool CMainScene::init()
 	pBtn->addClickEventListener([=](Ref*){
 		//cocos2d::MessageBox("send enter room msg","tip");
 		stMsgTaxasEnterRoom msgEnterRoom ;
-		msgEnterRoom.nLevel = 0 ;
+		//msgEnterRoom.nLevel = 0 ;
 		msgEnterRoom.nRoomID = 1 ;
-		msgEnterRoom.nType = 0 ;
+		//msgEnterRoom.nType = 0 ;
 		sendMsg(&msgEnterRoom,sizeof(msgEnterRoom)) ;
 	});
 
