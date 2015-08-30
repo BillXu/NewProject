@@ -46,7 +46,7 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 			pConfig->nBigBlind = refReaderRow["BigBlind"]->IntValue();
 			pConfig->nMaxTakeInCoin = refReaderRow["MaxCoin"]->IntValue() ;
 			pConfig->nRentFeeOneMonth = 20;
-			pConfig->nDeskFee = 1 ;
+			pConfig->nDeskFee = 0 ;
 			pRoomConfig = pConfig ;
 		}
 		break;

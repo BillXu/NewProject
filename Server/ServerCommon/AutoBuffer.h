@@ -11,7 +11,7 @@ public:
 		}
 		nAllSize = nSize ;
 		pInnerBuffer = new char[nAllSize];
-		
+		memset(pInnerBuffer,0,nAllSize);
 		nContentSize = 0 ;
 	}
 
@@ -23,6 +23,11 @@ public:
 
 	int addContent(const char* pData, int nLen )
 	{
+		if ( nLen <= 0 )
+		{
+			return 0 ;
+		}
+
 		if ( nLen + nContentSize > nAllSize )
 		{
 			nAllSize = nLen + nContentSize;
@@ -40,6 +45,20 @@ public:
 	int getContentSize()
 	{
 		return nContentSize ;
+	}
+
+	void resetContentSize()
+	{
+		nContentSize = 0 ;
+	}
+
+	void clearBuffer()
+	{
+		if ( nAllSize > 0 )
+		{
+			memset(pInnerBuffer,0,nAllSize);
+			nContentSize = 0 ;
+		}
 	}
 
 	const char* getBufferPtr()

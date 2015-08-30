@@ -90,10 +90,31 @@ struct stMsgSavePlayerTaxaPokerData
 {
 	stMsgSavePlayerTaxaPokerData(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_TAXAS_DATA ; }
 	uint32_t nUserUID ;
-	uint32_t nWinTimes ;
-	uint32_t nPlayTimes ;
-	uint64_t nSingleWinMost ;
-	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
+	stPlayerTaxasData tData ;
+	uint32_t nFollowedRoomsStrLen ;
+	PLACE_HOLDER(char* pFollowedRoomsJsonStr);
+	uint32_t nMyOwnRoomsStrLen ;
+	PLACE_HOLDER(char* pMyOwnRooms);
+};
+
+struct stMsgReadPlayerTaxasData
+	:public stMsg
+{
+	stMsgReadPlayerTaxasData(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_PLAYER_TAXAS_DATA ; }
+	uint32_t nUserUID ;
+};
+
+struct stMsgReadPlayerTaxasDataRet
+	:public stMsg
+{
+	stMsgReadPlayerTaxasDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_PLAYER_TAXAS_DATA ; }
+	uint8_t nRet ;
+	uint32_t nUserUID ;
+	stPlayerTaxasData tData ;
+	uint32_t nFollowedRoomsStrLen ;
+	PLACE_HOLDER(char* pFollowedRoomsJsonStr);
+	uint32_t nMyOwnRoomsStrLen ;
+	PLACE_HOLDER(char* pMyOwnRooms);
 };
 
 struct stMsgSavePlayerCommonLoginData

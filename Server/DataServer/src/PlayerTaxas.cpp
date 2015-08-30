@@ -11,6 +11,12 @@ void CPlayerTaxas::Reset()
 	m_nCurTaxasRoomID = 0 ;
 	m_bDirty = false ;
 	memset(&m_tData,0,sizeof(m_tData));
+	m_vMyOwnRooms.clear();
+	m_vFollowedRooms.clear();
+
+	stMsgReadPlayerTaxasData msg ;
+	msg.nUserUID = GetPlayer()->GetUserUID() ;
+	SendMsg(&msg,sizeof(msg)) ;
 }
 
 void CPlayerTaxas::Init()
@@ -20,6 +26,13 @@ void CPlayerTaxas::Init()
 	m_nCurTaxasRoomID = 0 ;
 	m_bDirty = false ;
 	memset(&m_tData,0,sizeof(m_tData));
+	m_vMyOwnRooms.clear();
+	m_vFollowedRooms.clear();
+
+	stMsgReadPlayerTaxasData msg ;
+	msg.nUserUID = GetPlayer()->GetUserUID() ;
+	SendMsg(&msg,sizeof(msg)) ;
+	CLogMgr::SharedLogMgr()->PrintLog("requesting player taxas data for uid = %d",msg.nUserUID);
 }
 
 bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
@@ -31,6 +44,45 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 
 	switch (pMessage->usMsgType)
 	{
+	case MSG_READ_PLAYER_TAXAS_DATA:
+		{
+			stMsgReadPlayerTaxasDataRet* pRet = (stMsgReadPlayerTaxasDataRet*)pMessage ;
+			if ( pRet->nRet )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d read taxas data error",pRet->nUserUID);
+				return true ;
+			}
+
+			memcpy(&m_tData,&pRet->tData,sizeof(m_tData));
+			char* pBuffer = (char*)pRet ;
+			pBuffer += sizeof(stMsgReadPlayerTaxasDataRet);
+			if ( pRet->nFollowedRoomsStrLen > 0 )
+			{
+				Json::Reader reader ;
+				Json::Value arrayValue ;
+				reader.parse(pBuffer,pBuffer + pRet->nFollowedRoomsStrLen,arrayValue,false);
+				for ( uint16_t nIdx = 0 ; nIdx < arrayValue.size(); ++nIdx )
+				{
+					m_vFollowedRooms.insert(arrayValue[nIdx].asUInt());
+				}
+			}
+
+			pBuffer += pRet->nFollowedRoomsStrLen ;
+			
+			if ( pRet->nMyOwnRoomsStrLen > 0 )
+			{
+				Json::Reader reader ;
+				Json::Value arrayValue ;
+				reader.parse(pBuffer,pBuffer + pRet->nMyOwnRoomsStrLen,arrayValue,false);
+				for ( uint16_t nIdx = 0 ; nIdx < arrayValue.size(); ++nIdx )
+				{
+					m_vMyOwnRooms.insert(arrayValue[nIdx].asUInt());
+				}
+			}
+			
+			CLogMgr::SharedLogMgr()->PrintLog("uid taxas data followed rooms = %d , owner rooms = %d",m_vFollowedRooms.size(),m_vMyOwnRooms.size());
+		}
+		break;
 	case MSG_TP_REQUEST_PLAYER_DATA:
 		{
 			stMsgRequestTaxasPlayerData* pData = (stMsgRequestTaxasPlayerData*)pMessage;
@@ -159,6 +211,7 @@ bool CPlayerTaxas::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 		msgBack.nRet = pResult->nRet ;
 		msgBack.nRoomID = pResult->vArg[0];
 		SendMsg(&msgBack,sizeof(msgBack)) ;
+		m_vMyOwnRooms.insert(msgBack.nRoomID);
 		CLogMgr::SharedLogMgr()->PrintLog("uid = %d create room ret = %d",GetPlayer()->GetSessionID(),msgBack.nRet);
 		return true ;
 	}
@@ -204,10 +257,60 @@ void CPlayerTaxas::TimerSave()
 	m_bDirty = false ;
 
 	stMsgSavePlayerTaxaPokerData msgSavePokerData ;
-	msgSavePokerData.nPlayTimes = m_tData.nPlayTimes ;
-	msgSavePokerData.nSingleWinMost = m_tData.nSingleWinMost ;
-	msgSavePokerData.nWinTimes = m_tData.nWinTimes ;
-	memcpy(msgSavePokerData.vMaxCards,m_tData.vMaxCards,sizeof(m_tData.vMaxCards));
 	msgSavePokerData.nUserUID = GetPlayer()->GetUserUID() ;
-	SendMsg((stMsgSavePlayerMoney*)&msgSavePokerData,sizeof(msgSavePokerData)) ;
+	memcpy(&msgSavePokerData.tData,&m_tData,sizeof(m_tData));
+	msgSavePokerData.nUserUID = GetPlayer()->GetUserUID() ;
+	msgSavePokerData.nFollowedRoomsStrLen = 0 ;
+	msgSavePokerData.nMyOwnRoomsStrLen = 0 ;
+	if ( m_vFollowedRooms.empty() && m_vMyOwnRooms.empty() )
+	{
+		SendMsg((stMsgSavePlayerMoney*)&msgSavePokerData,sizeof(msgSavePokerData)) ;
+		return ;
+	}
+
+	std::string strFollow = "";
+	std::string strMyOwn = "";
+	if ( !m_vFollowedRooms.empty() )
+	{
+		Json::Value followArray ;
+		Json::StyledWriter writeFollow ;
+
+		SET_ROOM_ID::iterator iter = m_vFollowedRooms.begin() ;
+		uint16_t nIdx = 0 ;
+		for ( ; iter != m_vFollowedRooms.end(); ++iter ,++nIdx)
+		{
+			followArray[nIdx] = *iter ;
+		}
+		strFollow = writeFollow.write(followArray) ;
+	}
+
+	if ( !m_vMyOwnRooms.empty() )
+	{
+		Json::Value ownArray ;
+		Json::StyledWriter writeOwn ;
+
+		SET_ROOM_ID::iterator iter = m_vMyOwnRooms.begin() ;
+		uint16_t nIdx = 0 ;
+		for ( ; iter != m_vMyOwnRooms.end(); ++iter ,++nIdx)
+		{
+			ownArray[nIdx] = *iter ;
+		}
+		strMyOwn = writeOwn.write(ownArray) ;
+	}
+	msgSavePokerData.nFollowedRoomsStrLen = strlen(strFollow.c_str()) ;
+	msgSavePokerData.nMyOwnRoomsStrLen = strlen(strMyOwn.c_str()) ;
+
+	CAutoBuffer writeBuffer(sizeof(msgSavePokerData) + msgSavePokerData.nFollowedRoomsStrLen + msgSavePokerData.nMyOwnRoomsStrLen ) ;
+	writeBuffer.addContent((char*)&msgSavePokerData,sizeof(strMyOwn));
+	if ( msgSavePokerData.nFollowedRoomsStrLen > 0 )
+	{
+		writeBuffer.addContent(strFollow.c_str(),msgSavePokerData.nFollowedRoomsStrLen) ;
+	}
+
+	if ( msgSavePokerData.nMyOwnRoomsStrLen > 0 )
+	{
+		writeBuffer.addContent(strMyOwn.c_str(),msgSavePokerData.nMyOwnRoomsStrLen) ;
+	}
+
+	CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),writeBuffer.getBufferPtr(),writeBuffer.getContentSize());
 }

@@ -5,6 +5,7 @@
 #include "CardPoker.h"
 #include "Timer.h"
 #include <json/json.h>
+#include <cassert>
 class CTaxasBaseRoomState ;
 
 typedef std::vector<uint8_t> VEC_INT8 ;
@@ -29,19 +30,22 @@ struct stTaxasInRoomPeerDataExten
 struct stTaxasPeerData
 	:public stTaxasPeerBaseData
 {
-	uint64_t nAllBetCoin ;  // used for record
+	uint64_t nAllBetCoin ;  // used for tell win or lose
 	uint64_t nTotalBuyInThisRoom ; // used for record
-	uint64_t nWinCoinThisGame ;    // used for record
+	uint64_t nWinCoinThisGame ;    // used for tell win or lose
 	uint32_t nWinTimes ;
 	uint32_t nPlayTimes ;
 	uint64_t nSingleWinMost ;
+	stTaxasInRoomPeerDataExten* pHistoryData;
 
 	bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; } ;
 	bool IsInvalid(){ return (nSessionID == 0) && (nUserUID == 0);}
 	bool BetCoin( uint64_t nBetCoin )
 	{ 
+		assert(pHistoryData&&"must not null");
 		if ( nTakeInMoney >= nBetCoin )
 		{
+			pHistoryData->nFinalLeftInThisRoom -= nBetCoin ;
 			nTakeInMoney -= nBetCoin ;
 			nAllBetCoin += nBetCoin ;
 			nBetCoinThisRound += nBetCoin ;
@@ -108,6 +112,7 @@ public:
 	uint8_t GetCurWaitActPlayerIdx(){ return m_nCurWaitPlayerActionIdx ; }
 	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t& nValue );  // return error code , 0 success ;
 	stTaxasPeerData* GetSitDownPlayerData(uint8_t nSeatIdx);
+	stTaxasPeerData* GetSitDownPlayerDataByUID(uint32_t nUserUID);
 
 	// room life and attribute
 	void onCreateByPlayer(uint32_t nUserUID );

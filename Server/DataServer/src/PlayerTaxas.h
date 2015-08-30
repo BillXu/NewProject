@@ -1,8 +1,11 @@
 #pragma once
 #include "IPlayerComponent.h"
+#include <set>
 class CPlayerTaxas
 	:public IPlayerComponent
 {
+public:
+	typedef std::set<uint32_t> SET_ROOM_ID ;
 public:
 	CPlayerTaxas(CPlayer* pPlayer):IPlayerComponent(pPlayer){ m_eType = ePlayerComponent_PlayerTaxas ; }
 	virtual void Reset();
@@ -17,4 +20,6 @@ protected:
 	uint32_t m_nCurTaxasRoomID ;
 	bool m_bDirty ;
 	stPlayerTaxasData m_tData ;
+	SET_ROOM_ID m_vMyOwnRooms;
+	SET_ROOM_ID m_vFollowedRooms ;
 };

@@ -5,6 +5,7 @@
 #include "ServerMessageDefine.h"
 #include "DBApp.h"
 #include "DataBaseThread.h"
+#include "AutoBuffer.h"
 #define PLAYER_BRIF_DATA "playerName,userUID,sex,vipLevel,photoID,coin,diamond"
 #define PLAYER_BRIF_DATA_DETAIL_EXT ",signature,singleWinMost,mostCoinEver,vUploadedPic,winTimes,loseTimes,longitude,latitude,offlineTime,maxCard,vJoinedClubID"
 CDBManager::CDBManager(CDBServerApp* theApp )
@@ -81,6 +82,15 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				"SELECT * FROM playerbasedata WHERE userUID = '%d'",pRet->nUserUID) ;
 		}
 		break;
+	case MSG_READ_PLAYER_TAXAS_DATA:
+		{
+			stMsgDataServerGetBaseData* pRet = (stMsgDataServerGetBaseData*)pmsg ;
+			pdata->nExtenArg1 = pRet->nUserUID ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM playertaxasdata WHERE userUID = '%d'",pRet->nUserUID) ;
+		}
+		break;
 	case MSG_PLAYER_SAVE_PLAYER_INFO:
 		{
 			stMsgSavePlayerInfo* pRet = (stMsgSavePlayerInfo*)pmsg ;
@@ -103,9 +113,16 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 		{
 			stMsgSavePlayerTaxaPokerData* pRet = (stMsgSavePlayerTaxaPokerData*)pmsg ;
 			pRequest->eType = eRequestType_Update ;
-			std::string strMaxcard = stMysqlField::UnIntArraryToString(pRet->vMaxCards,MAX_TAXAS_HOLD_CARD) ;
+
+			CAutoBuffer FollowedRooms(pRet->nFollowedRoomsStrLen + 1 );
+			FollowedRooms.addContent(((char*)pRet)+ sizeof(stMsgSavePlayerTaxaPokerData),pRet->nFollowedRoomsStrLen );
+
+			CAutoBuffer myOwnRooms(pRet->nMyOwnRoomsStrLen + 1 );
+			myOwnRooms.addContent(((char*)pRet)+ sizeof(stMsgSavePlayerTaxaPokerData) + pRet->nFollowedRoomsStrLen,pRet->nMyOwnRoomsStrLen );
+
+			std::string strMaxcard = stMysqlField::UnIntArraryToString(pRet->tData.vMaxCards,MAX_TAXAS_HOLD_CARD) ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE playerbasedata SET winTimes = '%d', loseTimes = '%d', singleWinMost = '%I64d', maxCard = '%s' WHERE userUID = '%d'",pRet->nWinTimes,pRet->nPlayTimes,pRet->nSingleWinMost,strMaxcard.c_str(),pRet->nUserUID) ;
+				"UPDATE playertaxasdata SET winTimes = '%d', playTimes = '%d', singleWinMost = '%I64d', maxCard = '%s',myOwnRooms = '%s',followedRooms = '%s' WHERE userUID = '%d'",pRet->tData.nWinTimes,pRet->tData.nPlayTimes,pRet->tData.nSingleWinMost,strMaxcard.c_str(),myOwnRooms.getBufferPtr(),FollowedRooms.getBufferPtr(),pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_COMMON_LOGIC_DATA:
@@ -593,6 +610,64 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
+	case MSG_READ_PLAYER_TAXAS_DATA:
+		{
+			stArgData* pdata = (stArgData*)pResult->pUserData ;
+			stMsgReadPlayerTaxasDataRet msg ;
+			msg.nRet = 0 ;
+			if ( pResult->nAffectRow <= 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find base data with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
+				msg.nRet = 1 ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
+			}
+			else
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[0] ;
+				msg.tData.nPlayTimes = pRow["playTimes"]->IntValue();
+				msg.tData.nWinTimes = pRow["winTimes"]->IntValue();
+				msg.tData.nSingleWinMost = pRow["singleWinMost"]->IntValue64();
+				msg.nUserUID = pdata->nExtenArg1 ;
+
+				std::vector<int> vInt ;
+				vInt.clear();
+				// read max card ;
+				pRow["maxCard"]->VecInt(vInt);
+				memset(msg.tData.vMaxCards,0,sizeof(msg.tData.vMaxCards)) ;
+				if ( vInt.size() == MAX_TAXAS_HOLD_CARD )
+				{
+					for ( uint8_t nIdx = 0 ; nIdx < MAX_TAXAS_HOLD_CARD ; ++nIdx )
+					{
+						msg.tData.vMaxCards[nIdx] = vInt[nIdx] ;
+					}
+				}
+
+				msg.nFollowedRoomsStrLen = pRow["followedRooms"]->nBufferLen ;
+				msg.nMyOwnRoomsStrLen = pRow["myOwnRooms"]->nBufferLen;
+				if ( msg.nFollowedRoomsStrLen <= 0 && msg.nMyOwnRoomsStrLen <= 0 )
+				{
+					m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
+				}
+				else
+				{
+					CAutoBuffer sendBuffer(sizeof(msg) + msg.nFollowedRoomsStrLen + msg.nMyOwnRoomsStrLen );
+					sendBuffer.addContent((char*)&msg,sizeof(msg)) ;
+					if ( msg.nFollowedRoomsStrLen > 0 )
+					{
+						sendBuffer.addContent(pRow["followedRooms"]->BufferData(),msg.nFollowedRoomsStrLen);
+					}
+
+					if ( msg.nMyOwnRoomsStrLen > 0 )
+					{
+						sendBuffer.addContent(pRow["myOwnRooms"]->BufferData(),msg.nMyOwnRoomsStrLen);
+					}
+
+					m_pTheApp->sendMsg(pdata->nSessionID,sendBuffer.getBufferPtr(),sendBuffer.getContentSize()) ;
+				}
+				
+			}
+		}
+		break;
 //	case MSG_PLAYER_SAVE_BASE_DATA:
 //		{
 //			if ( pResult->nAffectRow > 0 )
@@ -1025,26 +1100,12 @@ void CDBManager::GetPlayerDetailData(stPlayerDetailData* pData, CMysqlRow&prow)
 	pData->nMostCoinEver = prow["mostCoinEver"]->IntValue64();
 	pData->dfLatidue = prow["latitude"]->FloatValue();
 	pData->dfLongitude = prow["longitude"]->FloatValue();
-	//pData->nPlayTimes = prow["loseTimes"]->IntValue();
-	//pData->nWinTimes = prow["winTimes"]->IntValue();
-	//pData->nSingleWinMost = prow["singleWinMost"]->IntValue64();
+
 	time_t tLastOffline = prow["offlineTime"]->IntValue();
 	pData->tOfflineTime = tLastOffline ;
 	
 	std::vector<int> vInt ;
 	vInt.clear();
-	// read max card ;
-	prow["maxCard"]->VecInt(vInt);
-	//memset(pData->vMaxCards,0,sizeof(pData->vMaxCards)) ;
-	CLogMgr::SharedLogMgr()->PrintLog("max card size = %d uid = %d",vInt.size(),pData->nUserUID ) ;
-	if ( vInt.size() == MAX_TAXAS_HOLD_CARD )
-	{
-		for ( uint8_t nIdx = 0 ; nIdx < MAX_TAXAS_HOLD_CARD ; ++nIdx )
-		{
-			///pData->vMaxCards[nIdx] = vInt[nIdx] ;
-		}
-	}
-
 	//read upload pic 
 	vInt.clear();
 	prow["vUploadedPic"]->VecInt(vInt);

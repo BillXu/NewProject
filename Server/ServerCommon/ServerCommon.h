@@ -61,6 +61,7 @@ enum eCrossSvrReqSubType
 	eCrossSvrReqSub_TaxasSitDown, // ps: json arg: seatIdx , result: json arg just back 
 	eCrossSvrReqSub_TaxasSitDownFailed,
 	eCrossSvrReqSub_TaxasStandUp,
+	eCrossSvrReqSub_TaxasRoomProfit,
 	eCrossSvrReqSub_Max,
 };
 
