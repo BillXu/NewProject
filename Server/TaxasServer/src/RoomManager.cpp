@@ -4,6 +4,7 @@
 #include "TaxasRoom.h"
 #include "ServerMessageDefine.h"
 #include "RoomConfig.h"
+#include "AutoBuffer.h"
 CRoomManager::CRoomManager()
 {
 
@@ -201,6 +202,43 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 		return true ;
 	}
 
+	if ( MSG_READ_TAXAS_ROOM_INFO == prealMsg->usMsgType )
+	{
+		stMsgReadTaxasRoomInfoRet* pRet = (stMsgReadTaxasRoomInfoRet*)prealMsg ;
+		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,pRet->nConfigID);
+		assert(pRoomConfig&&"why config is null");
+		CTaxasRoom* pRoom = new CTaxasRoom ;
+		pRoom->Init( pRet->nRoomID,(stTaxasRoomConfig*)pRoomConfig) ;
+		m_vRooms[pRoom->GetRoomID()] = pRoom ;
+		pRoom->setOwnerUID(pRet->nRoomOwnerUID);
+		pRoom->setRoomName(pRet->vRoomName);
+		pRoom->setRoomDesc(pRet->vRoomDesc);
+		pRoom->setDeadTime(pRet->nDeadTime);
+		pRoom->setProfit(pRet->nRoomProfit);
+		pRoom->setAvataID(pRet->nAvataID);
+		pRoom->setCreateTime(pRet->nCreateTime);
+		pRoom->setInformSieral(pRet->nInformSerial);
+		if ( pRet->nInformLen )
+		{
+			CAutoBuffer auBufo (pRet->nInformLen + 1 );
+			auBufo.addContent( ((char*)&pRet->nInformLen) + sizeof(pRet->nInformLen),pRet->nInformLen);
+			pRoom->setRoomInform(auBufo.getBufferPtr()) ;
+		}
+	}
+
+	if ( MSG_READ_TAXAS_ROOM_PLAYERS == prealMsg->usMsgType )
+	{
+		stMsgToRoom* pRoomMsg = (stMsgToRoom*)prealMsg;
+		CTaxasRoom* pRoom = GetRoomByID(pRoomMsg->nRoomID) ;
+		if ( pRoom == NULL )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("can not find room to process id = %d ,from = %d",prealMsg->usMsgType,eSenderPort ) ;
+			return  false ;
+		}
+
+		return pRoom->OnMessage(prealMsg,eSenderPort,0) ;
+	}
+
 	return false ;
 }
 
@@ -252,6 +290,16 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		pRoom->setRoomDesc("I want you !");
 		msgRet.vArg[0] = pRoom->GetRoomID() ;
 		SendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
+
+		stMsgSaveCreateTaxasRoomInfo msgCreateInfo ;
+		msgCreateInfo.nCreateTime = time(nullptr);
+		msgCreateInfo.nConfigID = nConfigID ;
+		msgCreateInfo.nRoomID = pRoom->GetRoomID();
+		msgCreateInfo.nRoomOwnerUID = pRequest->nReqOrigID ;
+		SendMsg(&msgCreateInfo,sizeof(msgCreateInfo),pRoom->GetRoomID());
+
+		pRoom->forceDirytInfo();
+		pRoom->saveUpdateRoomInfo();
 		return true ;
 	}
 	return false ;
@@ -260,4 +308,14 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 bool CRoomManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue)
 {
 	return false ;
+}
+
+void CRoomManager::onConnectedToSvr()
+{
+	if ( m_vRooms.empty() )
+	{
+		stMsgReadTaxasRoomInfo msg ;
+		SendMsg(&msg,sizeof(msg),0) ;
+		CLogMgr::SharedLogMgr()->ErrorLog("request taxas rooms");
+	}
 }

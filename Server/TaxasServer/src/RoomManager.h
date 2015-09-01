@@ -18,6 +18,7 @@ public:
 	void SendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID );
 	bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
 	bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
+	void onConnectedToSvr();
 protected:
 	MAP_ID_ROOM m_vRooms ;
 };

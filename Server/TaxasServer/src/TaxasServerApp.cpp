@@ -74,3 +74,11 @@ bool CTaxasServerApp::ProcessPublicMsg( stMsg* prealMsg , eMsgPort eSenderPort ,
 {
 	return false ;
 }
+
+void CTaxasServerApp::onConnectedToSvr()
+{
+	if ( m_pRoomMgr )
+	{
+		m_pRoomMgr->onConnectedToSvr()
+	}
+}

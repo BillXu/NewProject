@@ -19,11 +19,12 @@ struct stTaxasInRoomPeerDataExten
 	// when player standup ,should add 'nTakeInCoin' to  'nCoinInRoom'
 	//uint64_t nCoinInRoom ; 
 	//uint32_t nStateFlag ;
-	bool bReadNewInform ;
+	uint32_t m_nReadedInformSerial; 
 	uint64_t nTotalBuyInThisRoom ; // not real coin , just for record
 	uint64_t nFinalLeftInThisRoom ;   // not real coin , just for record
 	uint32_t nWinTimesInThisRoom ;
 	uint32_t nPlayeTimesInThisRoom ;
+	bool bDataDirty ;
 	//bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; }
 };
 
@@ -125,6 +126,8 @@ public:
 	void setRoomInform(const char* pRoomInform );
 	bool isRoomAlive();
 	void setProfit(uint64_t nProfit );
+	void setCreateTime(uint32_t nTime);
+	void setInformSieral(uint32_t nSieaial);
 
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
@@ -146,6 +149,10 @@ public:
 
 	// debug info ;
 	void debugPlayerHistory();
+
+	void saveUpdateRoomInfo();
+	void forceDirytInfo(){ m_bRoomInfoDirty = true ;}
+	void removeTaxasPlayersHistory();
 protected:
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 	stVicePool& GetFirstCanUseVicePool();
@@ -155,6 +162,8 @@ protected:
 	friend class CTaxasBaseRoomState ;
 	friend class CTaxasStatePlayerBet ;
 protected:
+	bool m_bRoomInfoDirty ;
+	float m_TimeSaveTicket ;
 	// static data 
 	uint32_t nRoomID ;
 	stTaxasRoomConfig m_stRoomConfig ;
@@ -169,6 +178,7 @@ protected:
 	char m_vRoomName[MAX_LEN_ROOM_NAME] ;
 	std::string m_strRoomDesc;
 	std::string m_strRoomInForm ;
+	uint32_t m_nInformSerial;
 	uint64_t m_nRoomProfit;
 
 	// running members ;

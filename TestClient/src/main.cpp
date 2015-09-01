@@ -102,6 +102,15 @@ A gmin(A a,A b)
 	} 
 
 	int hmain() {
+		char pBuffer[10] = {"1234567"} ;
+		std::string strt = "";
+		bool b = strt.empty();
+		printf("size = %d len = %d, s = %s\n",strt.size(),strlen(strt.c_str()),pBuffer);
+
+		strt = "1234";
+		pBuffer[3] = '0' ;
+		bool bE = 0 == '\0';
+		printf("size = %d len = %d s = %s",strt.size(),strlen(strt.c_str()),pBuffer);
 		//test function template partial order 
 		cout<<"test function template partial order."<<endl; 
 		int param1 =10; int* param2 =NULL; 

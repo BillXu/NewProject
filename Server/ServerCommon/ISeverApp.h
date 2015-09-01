@@ -27,6 +27,7 @@ public:
 	void setConnectServerConfig(stServerConfig* pConfig );
 	CTimerManager* getTimerMgr(){ return m_pTimerMgr ; }
 	virtual void onExit(){};
+	virtual void onConnectedToSvr(){};
 protected:
 	void doConnectToTargetSvr();
 	uint16_t getVerifyType(); // et:MSG_VERIFY_DATA ,MSG_VERIFY_TAXAS,MSG_VERIFY_LOGIN

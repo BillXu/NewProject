@@ -117,6 +117,96 @@ struct stMsgReadPlayerTaxasDataRet
 	PLACE_HOLDER(char* pMyOwnRooms);
 };
 
+struct stMsgSaveCreateTaxasRoomInfo
+	:public stMsg
+{
+	stMsgSaveCreateTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_CREATE_TAXAS_ROOM_INFO; }
+	uint32_t nRoomID ;
+	uint16_t nConfigID ;
+	uint32_t nRoomOwnerUID ;
+	uint32_t nCreateTime ;
+};
+
+struct stMsgSaveUpdateTaxasRoomInfo
+	:public stMsg
+{
+	stMsgSaveUpdateTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_UPDATE_TAXAS_ROOM_INFO ;}
+	uint32_t nRoomID ;
+	uint32_t nDeadTime ;
+	uint16_t nAvataID ;
+	uint32_t nInformSerial;
+	uint64_t nRoomProfit;
+	char vRoomName[MAX_LEN_ROOM_NAME];
+	char vRoomDesc[MAX_LEN_ROOM_DESC];
+	uint16_t nInformLen ;
+	PLACE_HOLDER(char* pRoomInfom);
+};
+
+struct stMsgReadTaxasRoomInfo
+	:public stMsg
+{
+	stMsgReadTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_TAXAS_ROOM_INFO ; }
+};
+
+struct stMsgReadTaxasRoomInfoRet
+	:public stMsg
+{
+	stMsgReadTaxasRoomInfoRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_READ_TAXAS_ROOM_INFO ; }
+	uint32_t nRoomID ;
+	uint16_t nConfigID ;
+	uint32_t nRoomOwnerUID ;
+	uint32_t nCreateTime ;
+	uint32_t nDeadTime ;
+	uint16_t nAvataID ;
+	uint32_t nInformSerial;
+	uint64_t nRoomProfit;
+	char vRoomName[MAX_LEN_ROOM_NAME];
+	char vRoomDesc[MAX_LEN_ROOM_DESC];
+	uint16_t nInformLen ;
+	PLACE_HOLDER(char* pRoomInfom);
+};
+
+struct stMsgSaveTaxasRoomPlayer
+	:public stMsg
+{
+	stMsgSaveTaxasRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_TAXAS_ROOM_PLAYER ; }
+	bool isUpdate ; // update or add 
+	uint32_t nRoomID ;
+	uint32_t nPlayerUID ;
+	uint32_t m_nReadedInformSerial; 
+	uint64_t nTotalBuyInThisRoom ; 
+	uint64_t nFinalLeftInThisRoom ;  
+	uint32_t nWinTimesInThisRoom ;
+	uint32_t nPlayeTimesInThisRoom ;
+};
+
+struct stMsgSaveRemoveTaxasRoomPlayers
+	:public stMsg
+{
+	stMsgSaveRemoveTaxasRoomPlayers(){cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS ;}
+	uint32_t nRoomID ;
+};
+
+struct stMsgReadTaxasRoomPlayers
+	:public stMsg
+{
+	stMsgReadTaxasRoomPlayers(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_TAXAS_ROOM_PLAYERS ; }
+	uint32_t nRoomID ;
+};
+
+struct stMsgReadTaxasRoomPlayersRet
+	:public stMsgToRoom
+{
+	stMsgReadTaxasRoomPlayersRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_READ_TAXAS_ROOM_PLAYERS ; }
+	uint32_t nPlayerUID ;
+	uint32_t m_nReadedInformSerial; 
+	uint64_t nTotalBuyInThisRoom ; 
+	uint64_t nFinalLeftInThisRoom ;  
+	uint32_t nWinTimesInThisRoom ;
+	uint32_t nPlayeTimesInThisRoom ;
+};
+
+
 struct stMsgSavePlayerCommonLoginData
 	:public stMsg
 {

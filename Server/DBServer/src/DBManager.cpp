@@ -138,6 +138,77 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				strJoinedClub.c_str(),pRet->nUserUID) ;
 		}
 		break;
+	case MSG_SAVE_CREATE_TAXAS_ROOM_INFO:
+		{
+			stMsgSaveCreateTaxasRoomInfo* pRet = (stMsgSaveCreateTaxasRoomInfo*)pmsg ;
+			pRequest->eType = eRequestType_Add;
+			
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO taxasroom (roomID, configID,ownerUID,createTime) VALUES ('%d', '%u','%u','%u')",
+			 						pRet->nRoomID,pRet->nConfigID,pRet->nRoomOwnerUID,pRet->nCreateTime) ;
+			CLogMgr::SharedLogMgr()->PrintLog("save create taxas room room id = %d",pRet->nRoomID);
+		}
+		break;
+	case MSG_SAVE_UPDATE_TAXAS_ROOM_INFO:
+		{
+			stMsgSaveUpdateTaxasRoomInfo* pRet = (stMsgSaveUpdateTaxasRoomInfo*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+			pRet->vRoomDesc[MAX_LEN_ROOM_DESC-1] = 0 ;
+			pRet->vRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
+			CAutoBuffer autoBuffer(pRet->nInformLen + 1 );
+			autoBuffer.addContent(((char*)&pRet) + sizeof(stMsgSaveUpdateTaxasRoomInfo),pRet->nInformLen);
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE taxasroom SET deadTime = '%d', avataID = '%d', profit = '%I64d', roomName = '%s', roomDesc = '%s', roomInform = '%s', informSerial = '%s' WHERE roomID = '%d'"
+				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->vRoomName,pRet->vRoomDesc,autoBuffer.getBufferPtr(),pRet->nInformSerial,pRet->nRoomID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("save taxas room update info room id = %d",pRet->nRoomID);
+		}
+		break;
+	case MSG_READ_TAXAS_ROOM_INFO:
+		{
+			pRequest->eType = eRequestType_Select;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM taxasroom WHERE roomID != '0'") ;
+			CLogMgr::SharedLogMgr()->PrintLog("read all room rooms");
+		}
+		break;
+	case MSG_SAVE_TAXAS_ROOM_PLAYER:
+		{
+			stMsgSaveTaxasRoomPlayer* pRet = (stMsgSaveTaxasRoomPlayer*)pmsg ;
+			int64_t nOffset = pRet->nFinalLeftInThisRoom - pRet->nTotalBuyInThisRoom ;
+			if ( pRet->isUpdate )
+			{
+				pRequest->eType = eRequestType_Update;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"UPDATE taxasroomplayers SET readInformSerial = '%u', totalBuyin = '%I64d', finalLeft = '%I64d', playTimes = '%u', winTimes = '%u', offset = '%u' WHERE roomID = '%u' and playerUID = '%d'and flag = '0' "
+					,pRet->m_nReadedInformSerial,pRet->nTotalBuyInThisRoom,pRet->nFinalLeftInThisRoom,pRet->nPlayeTimesInThisRoom,pRet->nWinTimesInThisRoom,nOffset,pRet->nRoomID,pRet->nPlayerUID) ;
+				CLogMgr::SharedLogMgr()->PrintLog("updata taxas room player data room id = %u , uid = %u",pRet->nRoomID,pRet->nPlayerUID);
+			}
+			else
+			{
+				pRequest->eType = eRequestType_Add;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO taxasroomplayers (roomID, playerUID,readInformSerial,totalBuyin,finalLeft,playTimes,winTimes,offset) VALUES ('%u', '%u','%u','%I64d','%I64d','%u','%u','%I64d')",
+					pRet->nRoomID,pRet->nPlayerUID,pRet->m_nReadedInformSerial,pRet->nTotalBuyInThisRoom,pRet->nFinalLeftInThisRoom,pRet->nPlayeTimesInThisRoom,pRet->nWinTimesInThisRoom,nOffset) ;
+				CLogMgr::SharedLogMgr()->PrintLog("add taxas room player data room id = %u , uid = %u",pRet->nRoomID,pRet->nPlayerUID);
+			}
+		}
+		break;
+	case MSG_READ_TAXAS_ROOM_PLAYERS:
+		{
+			stMsgReadTaxasRoomPlayers* pRet = (stMsgReadTaxasRoomPlayers*)pmsg ;
+			pRequest->eType = eRequestType_Select;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM taxasroomplayers WHERE roomID = '%d' and flag = '0' order by offset desc limit 50 ",pRet->nRoomID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("read taxas room players room id = %d",pRet->nRoomID);
+		}
+		break;
+	case MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS:
+		{
+			stMsgSaveRemoveTaxasRoomPlayers* pRet = (stMsgSaveRemoveTaxasRoomPlayers*)pmsg ;
+			pRequest->eType = eRequestType_Update;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE taxasroomplayers SET flag = '1' WHERE roomID = '%u' and flag = '0' ",pRet->nRoomID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("remove taxas room player data room id = %u ",pRet->nRoomID);
+		}
+		break;
 // 	case MSG_PLAYER_SAVE_BASE_DATA:
 // 		{
 // 			stMsgGameServerSaveBaseData* pSaveBaseData = (stMsgGameServerSaveBaseData*)pmsg ;
@@ -665,6 +736,86 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					m_pTheApp->sendMsg(pdata->nSessionID,sendBuffer.getBufferPtr(),sendBuffer.getContentSize()) ;
 				}
 				
+			}
+		}
+		break;
+	case MSG_READ_TAXAS_ROOM_INFO:
+		{
+			stArgData* pdata = (stArgData*)pResult->pUserData ;
+			if ( pResult->nAffectRow <= 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("can not read taxas rooms ") ;
+			}
+			else
+			{
+				CAutoBuffer buffer(256);
+				for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow ; ++nIdx )
+				{
+					CMysqlRow& pRow = *pResult->vResultRows[0] ;
+					stMsgReadTaxasRoomInfoRet msgRet ;
+					msgRet.nAvataID = pRow["avataID"]->IntValue();
+					msgRet.nConfigID = pRow["configID"]->IntValue();
+					msgRet.nCreateTime = pRow["createTime"]->IntValue();
+					msgRet.nDeadTime = pRow["deadTime"]->IntValue();
+					msgRet.nInformSerial = pRow["informSerial"]->IntValue();
+					msgRet.nRoomID = pRow["roomID"]->IntValue();
+					msgRet.nRoomOwnerUID = pRow["ownerUID"]->IntValue();
+					msgRet.nRoomProfit = pRow["profit"]->IntValue();
+					memset(msgRet.vRoomName,0,sizeof(msgRet.vRoomName));
+					memset(msgRet.vRoomDesc,0,sizeof(msgRet.vRoomDesc)) ;
+					sprintf_s(msgRet.vRoomName,MAX_LEN_ROOM_NAME,"%s",pRow["roomName"]->CStringValue());
+					sprintf_s(msgRet.vRoomDesc,MAX_LEN_ROOM_DESC,"%s",pRow["roomDesc"]->CStringValue());
+					msgRet.nInformLen = pRow["roomInform"]->nBufferLen ; 
+					if ( msgRet.nInformLen > 0 )
+					{
+						buffer.clearBuffer();
+						buffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+						buffer.addContent(pRow["roomInform"]->BufferData(),msgRet.nInformLen);
+						m_pTheApp->sendMsg(pdata->nSessionID,buffer.getBufferPtr(),buffer.getContentSize()) ;
+					}
+					else
+					{
+						m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet)) ;
+					}
+					CLogMgr::SharedLogMgr()->PrintLog("read taxas room id = %d",msgRet.nRoomID);
+				}
+			}
+		}
+		break;
+	case MSG_READ_TAXAS_ROOM_PLAYERS:
+		{
+			stArgData* pdata = (stArgData*)pResult->pUserData ;
+			if ( pResult->nAffectRow <= 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("can not read taxas rooms ") ;
+			}
+			else
+			{
+				for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow ; ++nIdx )
+				{
+					CMysqlRow& pRow = *pResult->vResultRows[0] ;
+					stMsgReadTaxasRoomPlayersRet msgRet ;
+					msgRet.nRoomID = pRow["roomID"]->IntValue();
+					msgRet.nPlayerUID = pRow["playerUID"]->IntValue();
+					msgRet.m_nReadedInformSerial = pRow["readInformSerial"]->IntValue();
+					msgRet.nTotalBuyInThisRoom = pRow["totalBuyin"]->IntValue64();
+					msgRet.nFinalLeftInThisRoom = pRow["finalLeft"]->IntValue64();
+					msgRet.nWinTimesInThisRoom = pRow["playTimes"]->IntValue();
+					msgRet.nPlayeTimesInThisRoom = pRow["winTimes"]->IntValue();
+					m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet)) ;
+					CLogMgr::SharedLogMgr()->PrintLog("read taxas room players room id = %d",msgRet.nRoomID);
+				}
+			}
+		}
+		break;
+	case MSG_SAVE_CREATE_TAXAS_ROOM_INFO:
+	case MSG_SAVE_UPDATE_TAXAS_ROOM_INFO:
+	case MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS:
+	case MSG_SAVE_TAXAS_ROOM_PLAYER:
+		{
+			if ( pResult->nAffectRow <= 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog(" db result msg id = %d , row cnt = %d, failed  ", pResult->nRequestUID,pResult->nAffectRow );
 			}
 		}
 		break;
