@@ -26,6 +26,8 @@ bool CRoomManager::Init()
 		pRoom->setRoomName("System");
 		pRoom->setRoomDesc("I want you !");
 	}
+	m_pGoTyeAPI.init("https://qplusapi.gotye.com.cn:8443/api/");
+	m_pGoTyeAPI.setDelegate(this);
 	return true ;
 }
 
@@ -218,6 +220,7 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 		pRoom->setAvataID(pRet->nAvataID);
 		pRoom->setCreateTime(pRet->nCreateTime);
 		pRoom->setInformSieral(pRet->nInformSerial);
+		pRoom->setChatRoomID(pRet->nChatRoomID);
 		if ( pRet->nInformLen )
 		{
 			CAutoBuffer auBufo (pRet->nInformLen + 1 );
@@ -257,6 +260,59 @@ void CRoomManager::SendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID )
 	CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)pmsg,nLen) ;
 }
 
+void CRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg)
+{
+	if ( nUserTypeArg == eCrossSvrReq_CreateTaxasRoom )
+	{
+		uint64_t nChatRoomID = 0 ;
+		bool bSuccess = nDatalen > 0 ;
+		if ( bSuccess )
+		{
+			Json::Reader reader ;
+			Json::Value cValue ;
+			reader.parse(pResultData,pResultData + nDatalen,cValue) ;
+			bSuccess = cValue["errcode"].asInt() == 200 ;
+			nChatRoomID = cValue["room_id"].asUInt();
+		}
+
+		CTaxasRoom* pRoom = (CTaxasRoom*)pUserData ;
+		stMsgCrossServerRequestRet msgRet ;
+		msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
+		msgRet.nReqOrigID = pRoom->GetRoomID();
+		msgRet.nTargetID = pRoom->getOwnerUID();
+		msgRet.nRequestType = eCrossSvrReq_CreateTaxasRoom ;
+		msgRet.nRequestSubType = eCrossSvrReqSub_Default;
+		msgRet.nRet = 0 ;
+		msgRet.vArg[0] = pRoom->getConfigID() ;
+		msgRet.vArg[1] = 0 ;
+		if ( bSuccess ) // success
+		{
+			pRoom->setChatRoomID(nChatRoomID);
+			msgRet.vArg[1] = pRoom->GetRoomID() ;
+
+			stMsgSaveCreateTaxasRoomInfo msgCreateInfo ;
+			msgCreateInfo.nCreateTime = pRoom->getCreateTime();
+			msgCreateInfo.nConfigID = pRoom->getConfigID() ;
+			msgCreateInfo.nRoomID = pRoom->GetRoomID();
+			msgCreateInfo.nRoomOwnerUID = pRoom->getOwnerUID() ;
+			msgCreateInfo.nChatRoomID = nChatRoomID ;
+			SendMsg(&msgCreateInfo,sizeof(msgCreateInfo),pRoom->GetRoomID());
+			pRoom->forceDirytInfo();
+			pRoom->saveUpdateRoomInfo();
+			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d create room success",pRoom->getOwnerUID());
+		}
+		else
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d create room failed no more chat room",pRoom->getOwnerUID());
+			msgRet.nRet = 2;
+			m_vRooms.erase(m_vRooms.find(pRoom->GetRoomID())) ;
+			delete pRoom ;
+			pRoom = nullptr ;
+		}
+		SendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
+	}
+}
+
 bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
 {
 	if ( eCrossSvrReq_CreateTaxasRoom == pRequest->nRequestType )
@@ -272,8 +328,8 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		msgRet.nRequestType = pRequest->nRequestType ;
 		msgRet.nRequestSubType = pRequest->nRequestSubType ;
 		msgRet.nRet = 0 ;
-		msgRet.vArg[0] = 0 ;
-
+		msgRet.vArg[0] = pRequest->vArg[0];
+		msgRet.vArg[1] = 0 ;
 		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,nConfigID);
 		if ( pRoomConfig == nullptr )
 		{
@@ -288,18 +344,16 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		pRoom->onCreateByPlayer(pRequest->nReqOrigID);
 		pRoom->setRoomName(strName.c_str());
 		pRoom->setRoomDesc("I want you !");
-		msgRet.vArg[0] = pRoom->GetRoomID() ;
-		SendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
-
-		stMsgSaveCreateTaxasRoomInfo msgCreateInfo ;
-		msgCreateInfo.nCreateTime = time(nullptr);
-		msgCreateInfo.nConfigID = nConfigID ;
-		msgCreateInfo.nRoomID = pRoom->GetRoomID();
-		msgCreateInfo.nRoomOwnerUID = pRequest->nReqOrigID ;
-		SendMsg(&msgCreateInfo,sizeof(msgCreateInfo),pRoom->GetRoomID());
-
-		pRoom->forceDirytInfo();
-		pRoom->saveUpdateRoomInfo();
+		if ( false == reqeustChatRoomID(pRoom) )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d create room failed can not connect to chat svr",pRoom->getOwnerUID());
+			m_vRooms.erase(m_vRooms.find(pRoom->GetRoomID())) ;
+			delete pRoom ;
+			pRoom = nullptr ;
+			msgRet.nRet = 3;
+			SendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
+			return true ;
+		}
 		return true ;
 	}
 	return false ;
@@ -308,6 +362,20 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 bool CRoomManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue)
 {
 	return false ;
+}
+
+bool CRoomManager::reqeustChatRoomID(CTaxasRoom* pRoom)
+{
+	Json::Value cValue ;
+	cValue["email"] = "378569952@qq.com" ;
+	cValue["devpwd"] = "bill007" ;
+	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
+	cValue["room_name"] = pRoom->GetRoomID() ;
+	cValue["room_type"] = 1;
+	cValue["room_create_type"] = 0 ;
+	Json::StyledWriter sWrite ;
+	std::string str = sWrite.write(cValue);
+	return m_pGoTyeAPI.performRequest("CreateRoom",str.c_str(),str.size(),pRoom,eCrossSvrReq_CreateTaxasRoom);
 }
 
 void CRoomManager::onConnectedToSvr()

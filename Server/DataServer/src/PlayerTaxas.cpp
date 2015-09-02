@@ -146,7 +146,7 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			stMsgCreateTaxasRoomRet msgBack ;
 			stMsgCreateTaxasRoom* pRet = (stMsgCreateTaxasRoom*)pMessage ;
 			//stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,pRet->nConfigID);
-			CLogMgr::SharedLogMgr()->ErrorLog("create room pls kou qian, bu neng chongfu , wan cheng yi ge , then next ");
+			CLogMgr::SharedLogMgr()->ErrorLog("create room pls kou qian, bu neng chongfu , wan cheng yi ge , then next var[1] var[2]");
 			
 			//if ( pRoomConfig == nullptr )
 			//{
@@ -209,9 +209,17 @@ bool CPlayerTaxas::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 	{
 		stMsgCreateTaxasRoomRet msgBack ;
 		msgBack.nRet = pResult->nRet ;
-		msgBack.nRoomID = pResult->vArg[0];
+		msgBack.nRoomID = pResult->vArg[1];
 		SendMsg(&msgBack,sizeof(msgBack)) ;
-		m_vMyOwnRooms.insert(msgBack.nRoomID);
+		if ( pResult->nRet == 0 )
+		{
+			m_vMyOwnRooms.insert(msgBack.nRoomID);
+		}
+		else
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("create failed give back coin uid = %d",GetPlayer()->GetUserUID());
+		}
+		
 		CLogMgr::SharedLogMgr()->PrintLog("uid = %d create room ret = %d",GetPlayer()->GetSessionID(),msgBack.nRet);
 		return true ;
 	}

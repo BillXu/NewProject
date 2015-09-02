@@ -23,7 +23,7 @@ struct stMsgCreateTaxasRoomRet
 	:public stMsg
 {
 	stMsgCreateTaxasRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CREATE_ROOM ; }
-	uint8_t nRet ; // 0 success , 1 config error , 2 coin not enough 
+	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough 
 	uint32_t nRoomID ; 
 };
 

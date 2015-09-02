@@ -79,6 +79,6 @@ void CTaxasServerApp::onConnectedToSvr()
 {
 	if ( m_pRoomMgr )
 	{
-		m_pRoomMgr->onConnectedToSvr()
+		m_pRoomMgr->onConnectedToSvr() ;
 	}
 }

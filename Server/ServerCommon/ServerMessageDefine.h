@@ -125,6 +125,7 @@ struct stMsgSaveCreateTaxasRoomInfo
 	uint16_t nConfigID ;
 	uint32_t nRoomOwnerUID ;
 	uint32_t nCreateTime ;
+	uint32_t nChatRoomID ;
 };
 
 struct stMsgSaveUpdateTaxasRoomInfo
@@ -160,6 +161,7 @@ struct stMsgReadTaxasRoomInfoRet
 	uint16_t nAvataID ;
 	uint32_t nInformSerial;
 	uint64_t nRoomProfit;
+	uint64_t nChatRoomID ;
 	char vRoomName[MAX_LEN_ROOM_NAME];
 	char vRoomDesc[MAX_LEN_ROOM_DESC];
 	uint16_t nInformLen ;

@@ -63,12 +63,41 @@ void RunFunc ( CTaxasServerApp* pApp )
 	}
 }
 
+#include "httpRequest.h"
+#include <json/json.h>
 //---test
 //#include "CardPoker.h"
 //#include "TaxasPokerPeerCard.h"
 ///test
+class CCallback 
+	:public CHttpRequestDelegate
+{
+public:
+	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData, size_t tType )
+	{
+		Json::Reader reader ;
+		Json::Value cValue ;
+		reader.parse(pResultData,pResultData + nDatalen,cValue) ;
+		printf("retcode = %d, room id = %d\n ",cValue["errcode"].asInt(),cValue["room_id"].asInt());
+	}
+};
 int main()
 {
+	CCallback bat ;
+	CHttpRequest req ;
+	req.init("https://qplusapi.gotye.com.cn:8443/api/");
+	Json::Value cValue ;
+	cValue["email"] = "378569952@qq.com" ;
+	cValue["devpwd"] = "bill007" ;
+	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
+	cValue["room_name"] = 2 ;
+	cValue["room_type"] = 1;
+	cValue["room_create_type"] = 0 ;
+	Json::StyledWriter sWrite ;
+	std::string str = sWrite.write(cValue);
+	req.setDelegate(&bat);
+	req.performRequest("CreateRoom",str.c_str(),str.size(),NULL);
+	//room_name":"tset01","room_type":"1","room_create_type":"0"}
 	//-----test
 	//CCard publicCard[5] ;
 

@@ -90,6 +90,9 @@
     <ClInclude Include="..\ServerCommon\ServerCommon.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="src\httpRequest.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -136,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpRequest.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

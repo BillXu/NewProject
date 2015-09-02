@@ -143,8 +143,8 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgSaveCreateTaxasRoomInfo* pRet = (stMsgSaveCreateTaxasRoomInfo*)pmsg ;
 			pRequest->eType = eRequestType_Add;
 			
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO taxasroom (roomID, configID,ownerUID,createTime) VALUES ('%d', '%u','%u','%u')",
-			 						pRet->nRoomID,pRet->nConfigID,pRet->nRoomOwnerUID,pRet->nCreateTime) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO taxasroom (roomID, configID,ownerUID,createTime,chatRoomID) VALUES ('%d', '%u','%u','%u','%I64d')",
+			 						pRet->nRoomID,pRet->nConfigID,pRet->nRoomOwnerUID,pRet->nCreateTime,pRet->nChatRoomID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("save create taxas room room id = %d",pRet->nRoomID);
 		}
 		break;
@@ -761,6 +761,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					msgRet.nRoomID = pRow["roomID"]->IntValue();
 					msgRet.nRoomOwnerUID = pRow["ownerUID"]->IntValue();
 					msgRet.nRoomProfit = pRow["profit"]->IntValue();
+					msgRet.nChatRoomID = pRow["chatRoomID"]->IntValue64();
 					memset(msgRet.vRoomName,0,sizeof(msgRet.vRoomName));
 					memset(msgRet.vRoomDesc,0,sizeof(msgRet.vRoomDesc)) ;
 					sprintf_s(msgRet.vRoomName,MAX_LEN_ROOM_NAME,"%s",pRow["roomName"]->CStringValue());

@@ -880,6 +880,16 @@ void CTaxasRoom::setProfit(uint64_t nProfit )
 	m_nRoomProfit = nProfit ;
 }
 
+void CTaxasRoom::setCreateTime(uint32_t nTime)
+{
+	m_nCreateTime = nTime ;
+}
+
+void CTaxasRoom::setInformSieral(uint32_t nSieaial)
+{
+	m_nInformSerial = nSieaial ;
+}
+
 // logic function 
 uint8_t CTaxasRoom::GetPlayerCntWithState(eRoomPeerState eState )
 {

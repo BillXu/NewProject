@@ -118,6 +118,7 @@ public:
 	// room life and attribute
 	void onCreateByPlayer(uint32_t nUserUID );
 	void setOwnerUID(uint32_t nCreatorUID );
+	uint32_t getOwnerUID(){return m_nRoomOwnerUID ;}
 	void addLiftTime(uint32_t nDays );
 	void setDeadTime(uint32_t nDeadTime);
 	void setAvataID(uint32_t nAvaID );
@@ -127,7 +128,10 @@ public:
 	bool isRoomAlive();
 	void setProfit(uint64_t nProfit );
 	void setCreateTime(uint32_t nTime);
+	uint32_t getCreateTime(){ return m_nCreateTime;}
 	void setInformSieral(uint32_t nSieaial);
+	void setChatRoomID(uint64_t nChatRoomID ){ m_nChatRoomID = nChatRoomID ;}
+	uint32_t getConfigID(){ return 1 ; }
 
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
@@ -180,6 +184,7 @@ protected:
 	std::string m_strRoomInForm ;
 	uint32_t m_nInformSerial;
 	uint64_t m_nRoomProfit;
+	uint64_t m_nChatRoomID ;
 
 	// running members ;
 	eRoomState m_eCurRoomState ; // eRoomState ;
