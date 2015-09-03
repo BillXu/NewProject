@@ -1507,6 +1507,7 @@ void CTaxasRoom::writePlayerResultLogToJson(stTaxasPeerData& pWritePlayer)
 	refPlayer["card1"] = pWritePlayer.vHoldCard[1];
 	refPlayer["betCoin"] = (uint32_t)pWritePlayer.nAllBetCoin ;
 	refPlayer["offset"] = int32_t(pWritePlayer.nWinCoinThisGame - pWritePlayer.nAllBetCoin) ;
+	refPlayer["coin"] = (int32_t)pWritePlayer.nTakeInMoney ;
 	refPlayer["state"] = pWritePlayer.nStateFlag;
 	m_arrPlayers[pWritePlayer.nSeatIdx] = refPlayer ;
 	CLogMgr::SharedLogMgr()->PrintLog("write player uid = %d result log to json",pWritePlayer.nUserUID);

@@ -10,7 +10,7 @@ enum  eLogType
 	eLog_BindAccount, // externString, {ip:"ipdizhi"}
 	eLog_Logout, 
 	eLog_ModifyPwd, // externString, {ip:"ipdizhi"}
-	eLog_TaxasGameResult, // nTargetID = roomid , vArg[0] = creator uid ,var[1] = public0 ---var[5] = public4, externString: {[ {uid:234,idx:2,betCoin:4456,card0:23,card1:23,offset:-32,state = GIVE_UP },{ ... },{ ... }] } 
+	eLog_TaxasGameResult, // nTargetID = roomid , vArg[0] = creator uid ,var[1] = public0 ---var[5] = public4, externString: {[ {uid:234,idx:2,betCoin:4456,card0:23,card1:23,offset:-32,state:GIVE_UP,coin:23334 },{ ... },{ ... }] } 
 	eLog_Max,
 };
 
