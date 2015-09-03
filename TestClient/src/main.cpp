@@ -125,9 +125,11 @@ A gmin(A a,A b)
 		
 		obj[0u] = 31 ;
 		obj[1u] = "v2" ;
+		obj[3u] = 23;
 		obj2["s"] = 12;
 		obj2["ob"] = obj ;
 		obj[2u] = obj ;
+
 
 		std::string str = "h";
 		str = write.write(obj2) ; 

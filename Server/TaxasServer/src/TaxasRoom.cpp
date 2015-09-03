@@ -572,6 +572,8 @@ void CTaxasRoom::OnPlayerStandUp(uint8_t nSeatIdx )
 		CLogMgr::SharedLogMgr()->PrintLog("uid = %d standup while withdrawing money");
 	}
 
+	// write game result log 
+	writePlayerResultLogToJson(m_vSitDownPlayers[nSeatIdx]);
 	// save player room data 
 	if ( pData->nPlayeTimesInThisRoom == m_vSitDownPlayers[nSeatIdx].nPlayTimes && pData->nPlayeTimesInThisRoom != 0 )
 	{
@@ -911,6 +913,7 @@ uint8_t CTaxasRoom::GetPlayerCntWithState(eRoomPeerState eState )
 
 void CTaxasRoom::StartGame()
 {
+	m_arrPlayers.clear();
 	// parepare all players ;
 	for ( uint8_t nIdx = 0 ; nIdx < m_stRoomConfig.nMaxSeat ; ++nIdx)
 	{
@@ -1334,6 +1337,8 @@ uint8_t CTaxasRoom::CaculateGameResult()
 		}
 	}
 
+	// save serve log 
+	writeGameResultLog();
 	// send msg tell client ;
 	if ( GetFirstCanUseVicePool().nIdx == 0 )
 	{
@@ -1455,6 +1460,56 @@ void CTaxasRoom::saveUpdateRoomInfo()
 void CTaxasRoom::removeTaxasPlayersHistory()
 {
 
+}
+
+void CTaxasRoom::writeGameResultLog()
+{
+	CLogMgr::SharedLogMgr()->PrintLog("write game result dlg");
+	stMsgSaveLog saveMsg ;
+	saveMsg.nLogType = eLog_TaxasGameResult ;
+	saveMsg.nTargetID = GetRoomID();
+	saveMsg.vArg[0] = getOwnerUID();
+	for ( uint8_t nIdx = 0 ; nIdx < TAXAS_PUBLIC_CARD; ++nIdx )
+	{
+		saveMsg.vArg[nIdx+1] = m_vPublicCardNums[nIdx];
+	}
+
+	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
+	{
+		writePlayerResultLogToJson(m_vSitDownPlayers[nIdx]) ;
+	}
+
+	Json::StyledWriter write ;
+	std::string str = write.write(m_arrPlayers);
+	CAutoBuffer auBuffer (sizeof(saveMsg) + str.size());
+	auBuffer.addContent((char*)&saveMsg,sizeof(saveMsg)) ;
+	auBuffer.addContent(str.c_str(),str.size());
+	CTaxasServerApp::SharedGameServerApp()->sendMsg(GetRoomID(),auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+	CLogMgr::SharedLogMgr()->PrintLog("all player info json str = %s" , str.c_str());
+}
+
+void CTaxasRoom::writePlayerResultLogToJson(stTaxasPeerData& pWritePlayer)
+{
+	if ( pWritePlayer.IsInvalid() )
+	{
+		return ;
+	}
+
+	if ( pWritePlayer.IsHaveState(eRoomPeer_StayThisRound) == false )
+	{
+		return ;
+	}
+
+	Json::Value refPlayer ;
+	refPlayer["uid"] = pWritePlayer.nUserUID ;
+	refPlayer["idx"] = pWritePlayer.nSeatIdx;
+	refPlayer["card0"] = pWritePlayer.vHoldCard[0];
+	refPlayer["card1"] = pWritePlayer.vHoldCard[1];
+	refPlayer["betCoin"] = (uint32_t)pWritePlayer.nAllBetCoin ;
+	refPlayer["offset"] = int32_t(pWritePlayer.nWinCoinThisGame - pWritePlayer.nAllBetCoin) ;
+	refPlayer["state"] = pWritePlayer.nStateFlag;
+	m_arrPlayers[pWritePlayer.nSeatIdx] = refPlayer ;
+	CLogMgr::SharedLogMgr()->PrintLog("write player uid = %d result log to json",pWritePlayer.nUserUID);
 }
 
 uint8_t CTaxasRoom::GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate )

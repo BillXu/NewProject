@@ -354,7 +354,7 @@ struct stMsgSaveLog
 	uint32_t nTargetID ;
 	int64_t vArg[LOG_ARG_CNT];
 	uint16_t nJsonExtnerLen ;
-	char pJsonString[0] ;
+	PLACE_HOLDER(char* pJsonstring);
 };
 
 // cross server request 

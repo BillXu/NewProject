@@ -158,6 +158,8 @@ public:
 	void forceDirytInfo(){ m_bRoomInfoDirty = true ;}
 	void removeTaxasPlayersHistory();
 protected:
+	void writeGameResultLog();
+	void writePlayerResultLogToJson(stTaxasPeerData& pWritePlayer);
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 	stVicePool& GetFirstCanUseVicePool();
 	void CaculateVicePool(stVicePool& pPool );
@@ -200,4 +202,6 @@ protected:
 	stVicePool m_vAllVicePools[MAX_PEERS_IN_TAXAS_ROOM] ;
 	VEC_IN_ROOM_PEERS m_vAllPeers ;
 	CPoker m_tPoker ;
+
+	Json::Value m_arrPlayers ;
 };
