@@ -417,6 +417,38 @@ struct stMsgReadFriendListRet
 	PLACE_HOLDER(char* vFriendUIDS);
 };
 
+// mail module 
+struct stMsgSaveMail
+	:public stMsg
+{
+	stMsgSaveMail(){ usMsgType = MSG_PLAYER_SAVE_MAIL ;  cSysIdentifer = ID_MSG_PORT_DB ;}
+	uint32_t nUserUID ;
+	stMail pMailToSave ;
+};
+
+struct stMsgReadMailList
+	:public stMsg
+{
+	stMsgReadMailList(){ usMsgType = MSG_PLAYER_READ_MAIL_LIST ; cSysIdentifer = ID_MSG_PORT_DB ; }
+	uint32_t nUserUID ;
+};
+
+struct stMsgReadMailListRet
+	:public stMsg
+{
+	stMsgReadMailListRet(){ usMsgType = MSG_PLAYER_READ_MAIL_LIST ; cSysIdentifer = ID_MSG_PORT_DATA ; }
+	bool bFinal ;
+	stMail pMails ;
+};
+
+struct stMsgResetMailsState
+	:public stMsg
+{
+	stMsgResetMailsState(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_PLAYER_SET_MAIL_STATE ; }
+	uint32_t nUserUID ;
+	uint8_t tMailType ; 
+};
+
 //----above is new , below is old---------
 
 //--------------------------------------------
@@ -473,30 +505,7 @@ struct stMsgGameServerCreateRoleRet
 	unsigned int nSessionID ;
 };
 
-// mail module 
-struct stMsgGameServerSaveMail
-	:public stMsgGM2DB
-{
-	stMsgGameServerSaveMail(){ usMsgType = MSG_PLAYER_SAVE_MAIL ; }
-	unsigned int nUserUID ;
-	unsigned char nOperateType ; // eDBAct ;
-	stMail* pMailToSave ;
-};
 
-struct stMsgGameServerGetMailList
-	:public stMsgGM2DB
-{
-	stMsgGameServerGetMailList(){ usMsgType = MSG_PLAYER_GET_MAIL_LIST ; }
-	unsigned int nUserUID ;
-};
-
-struct stMsgGameServerGetMailListRet
-	:public stMsgDB2GM
-{
-	stMsgGameServerGetMailListRet(){ usMsgType = MSG_PLAYER_GET_MAIL_LIST ; }
-	unsigned short nMailCount ;
-	stMail* pMails ;
-};
 
 struct stMsgGameServerGetMaxMailUID
 	: public stMsgGM2DB 

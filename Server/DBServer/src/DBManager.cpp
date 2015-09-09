@@ -62,6 +62,46 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	CLogMgr::SharedLogMgr()->PrintLog("recive db req = %d",pmsg->usMsgType);
 	switch( pmsg->usMsgType )
 	{
+	case MSG_PLAYER_SAVE_MAIL:
+		{
+			stMsgSaveMail* pRet = (stMsgSaveMail*)pmsg ;
+			pRequest->eType = eRequestType_Add;
+			CAutoBuffer auBuffer(pRet->pMailToSave.nContentLen + 1 );
+			auBuffer.addContent((char*)pmsg + sizeof(stMsgSaveMail),pRet->pMailToSave.nContentLen) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO mail (userUID, postTime,mailType,mailContent) VALUES ('%u', '%u','%u','%s')",
+				pRet->nUserUID,pRet->pMailToSave.nPostTime,pRet->pMailToSave.eType,auBuffer.getBufferPtr()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("save  SAVE_MAIL uid = %d",pRet->nUserUID);
+			pdata->nExtenArg1 = pRet->nUserUID ;
+		}
+		break;
+	case MSG_PLAYER_READ_MAIL_LIST:
+		{
+			stMsgReadMailList* pRet = (stMsgReadMailList*)pmsg ;
+			pdata->nExtenArg1 = pRet->nUserUID ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM mail WHERE userUID = '%d' and state = '0' ",pRet->nUserUID) ;
+		}
+		break;
+	case MSG_PLAYER_SET_MAIL_STATE:
+		{
+			stMsgResetMailsState* pRet = (stMsgResetMailsState*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+
+			if ( pRet->tMailType == eMail_Max )
+			{
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"UPDATE mail SET state = '1' WHERE userUID = '%d' and state = '0' ",pRet->nUserUID) ;
+			}
+			else
+			{
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"UPDATE mail SET state = '1' WHERE userUID = '%d' and mailType = '%d' and state = '0' ",pRet->nUserUID,pRet->tMailType) ;
+			}
+			
+			CLogMgr::SharedLogMgr()->PrintLog("reset mail state for uid = %d",pRet->nUserUID);
+		}
+		break ;
 	case MSG_SAVE_FRIEND_LIST:
 		{
 			stMsgSaveFirendList* pRet = (stMsgSaveFirendList*)pmsg ;
@@ -658,6 +698,42 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	CLogMgr::SharedLogMgr()->PrintLog("processed db ret = %d",pResult->nRequestUID);
 	switch ( pResult->nRequestUID )
 	{
+	case MSG_PLAYER_READ_MAIL_LIST:
+		{
+			CLogMgr::SharedLogMgr()->PrintLog("read mail list for uid = %d cnt = %d",pdata->nExtenArg1,pResult->nAffectRow) ;
+			if ( pResult->nAffectRow < 1 )
+			{
+				return ;
+			}
+
+			CAutoBuffer buffer(256);
+			for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow ; ++nIdx )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
+				stMsgReadMailListRet msgRet ;
+				msgRet.bFinal = (nIdx + 1) == pResult->nAffectRow ;
+				msgRet.pMails.eType = pRow["mailType"]->IntValue();
+				msgRet.pMails.nPostTime = pRow["postTime"]->IntValue();
+				msgRet.pMails.nContentLen = pRow["mailContent"]->nBufferLen ;
+				if ( msgRet.pMails.nContentLen == 0 )
+				{
+					CLogMgr::SharedLogMgr()->ErrorLog("why this mail len is null uid = %d , post time = %u",pRow["userUID"]->IntValue(),msgRet.pMails.nPostTime);
+				}
+ 
+				if ( msgRet.pMails.nContentLen > 0 )
+				{
+					buffer.clearBuffer();
+					buffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+					buffer.addContent(pRow["mailContent"]->BufferData(),msgRet.pMails.nContentLen);
+					m_pTheApp->sendMsg(pdata->nSessionID,buffer.getBufferPtr(),buffer.getContentSize()) ;
+				}
+				else
+				{
+					m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet)) ;
+				}
+			}
+		}
+		break;
 	case MSG_READ_FRIEND_LIST:
 		{
 			if ( pResult->nAffectRow < 1 )
@@ -861,6 +937,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_SAVE_TAXAS_ROOM_PLAYER:
 	case MSG_SAVE_PLAYER_TAXAS_DATA:
 	case MSG_SAVE_FRIEND_LIST:
+	case MSG_PLAYER_SAVE_MAIL:
+	case MSG_PLAYER_SET_MAIL_STATE:
 		{
 			if ( pResult->nAffectRow <= 0 )
 			{

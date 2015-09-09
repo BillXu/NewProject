@@ -196,12 +196,8 @@ enum eRoomFlag
 #define MAX_KEEP_MAIL_COUNT 50
 enum eMailType
 {
-	eMail_Message,
-	eMail_Friend,
-	eMail_System,
-	eMail_PresentGift,
-	eMail_UnProcessedPurchaseVerify,
-	eMail_BeAddedFriend,
+	eMail_PlainText,
+	eMail_SysOfflineEvent,
 	eMail_Max,
 };
 

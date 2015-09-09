@@ -17,6 +17,7 @@ struct stMsgCreateTaxasRoom
 {
 	stMsgCreateTaxasRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_CREATE_ROOM ; }
 	uint16_t nConfigID ;
+	uint16_t nDays ;
 	char vRoomName[MAX_LEN_ROOM_NAME] ;
 };
 

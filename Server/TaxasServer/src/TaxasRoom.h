@@ -116,7 +116,7 @@ public:
 	stTaxasPeerData* GetSitDownPlayerDataByUID(uint32_t nUserUID);
 
 	// room life and attribute
-	void onCreateByPlayer(uint32_t nUserUID );
+	void onCreateByPlayer(uint32_t nUserUID, uint16_t nRentDays );
 	void setOwnerUID(uint32_t nCreatorUID );
 	uint32_t getOwnerUID(){return m_nRoomOwnerUID ;}
 	void addLiftTime(uint32_t nDays );

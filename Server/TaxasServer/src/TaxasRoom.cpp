@@ -6,7 +6,7 @@
 #include "ServerMessageDefine.h"
 #include <json/json.h>
 #include "AutoBuffer.h"
-#define TIME_SECONDS_PER_DAY (60*60*60*24)
+#define TIME_SECONDS_PER_DAY (60*60*24)
 #define TIME_SAVE_ROOM_INFO 60*30
 CTaxasRoom::CTaxasRoom()
 {
@@ -832,11 +832,11 @@ stTaxasPeerData* CTaxasRoom::GetSitDownPlayerDataByUID(uint32_t nUserUID)
 }
 
 // attribute and life
-void CTaxasRoom::onCreateByPlayer(uint32_t nUserUID )
+void CTaxasRoom::onCreateByPlayer(uint32_t nUserUID , uint16_t nRentDays )
 {
 	setOwnerUID(nUserUID);
 	m_nCreateTime = time(nullptr);
-	m_nDeadTime = m_nCreateTime + TIME_SECONDS_PER_DAY*31 ;
+	m_nDeadTime = m_nCreateTime + TIME_SECONDS_PER_DAY*nRentDays ;
 }
 
 void CTaxasRoom::setOwnerUID(uint32_t nCreatorUID )

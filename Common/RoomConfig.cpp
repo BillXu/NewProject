@@ -53,6 +53,7 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 
 void CRoomConfigMgr::Clear()
 {
+
 	LIST_ROOM_CONFIG::iterator iter = m_vAllConfig.begin();
 	for ( ; iter != m_vAllConfig.end() ; ++iter )
 	{

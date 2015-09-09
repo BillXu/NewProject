@@ -403,7 +403,7 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		CTaxasRoom* pRoom = new CTaxasRoom ;
 		pRoom->Init( ++m_nMaxRoomID,(stTaxasRoomConfig*)pRoomConfig) ;
 		m_vRooms[pRoom->GetRoomID()] = pRoom ;
-		pRoom->onCreateByPlayer(pRequest->nReqOrigID);
+		pRoom->onCreateByPlayer(pRequest->nReqOrigID,pRequest->vArg[1]);
 		pRoom->setRoomName(strName.c_str());
 		pRoom->setRoomDesc("I want you !");
 		if ( false == reqeustChatRoomID(pRoom) )

@@ -244,6 +244,38 @@ struct stMsgPlayerDelteFriendRet
 	uint32_t nDeleteUID ;
 };
 
+// mail
+struct stMsgInformNewMail
+	:public stMsg
+{
+	stMsgInformNewMail(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_INFORM_NEW_MAIL ; }
+	uint8_t nUnreadMailCount ;
+	uint8_t eNewMailType;
+};
+
+struct stMsgRequestMailList
+	:public stMsg
+{
+	stMsgRequestMailList(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_REQUEST_MAIL_LIST ; }
+};
+
+struct stMail
+{
+	uint32_t nPostTime ;
+	uint8_t eType;
+	uint16_t nContentLen ;
+	PLACE_HOLDER(char* pJsonContent) ;
+	stMail(){ nContentLen = 0 ; }
+};
+
+struct stMsgRequestMailListRet
+	:public stMsg
+{
+	stMsgRequestMailListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_REQUEST_MAIL_LIST ; }
+	bool isFinal ;
+	stMail tMail;
+};
+
 ///--------------------ablove is new , below is old------
 
 
@@ -646,38 +678,7 @@ struct stMailBeAddedFriend
 	stPlayerBrifData peerWhoWantAddMe ;
 };
 
-struct stMail
-{
-	uint64_t nMailUID ;
-	unsigned int nPostTime ;
-	unsigned char  eProcessAct ; // eProcessMailAct ; 
-	unsigned char eType;
-	unsigned short nContentLen ;
-	char* pContent ;
-	stMail(){ nContentLen = 0 ; pContent = 0 ; eProcessAct = 0 ; }
-};
 
-struct stMsgReceivedNewMail
-	:public stMsg
-{
-	stMsgReceivedNewMail(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_RECIEVED_NEW_MAIL ; }
-	unsigned short nUnreadMailCount ;
-};
-
-struct stMsgRequestMailList
-	:public stMsg
-{
-	stMsgRequestMailList(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_GET_MAIL_LIST ; }
-	uint64_t nBeginMailUID ;
-};
-
-struct stMsgRequestMailListRet
-	:public stMsg
-{
-	stMsgRequestMailListRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_GET_MAIL_LIST ; }
-	unsigned short nMailCount ;
-	stMail* pMails ;
-};
 
 
 struct stMsgPlayerProcessedMail

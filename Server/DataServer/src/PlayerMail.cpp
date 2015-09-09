@@ -10,7 +10,8 @@
 #include "GameServerApp.h"
 #include "ConfigManager.h"
 #include "PlayerEvent.h"
-uint64_t CPlayerMailComponent::s_nCurMaxMailUID = 0 ;
+#include "AutoBuffer.h"
+#define  MAX_KEEP_MAIL_CNT 10
 bool CPlayerMailComponent::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 {
 	if ( IPlayerComponent::OnMessage(pMsg,eSenderPort) )
@@ -20,66 +21,34 @@ bool CPlayerMailComponent::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 	switch ( pMsg->usMsgType )
 	{
-	case MSG_PLAYER_GET_MAIL_LIST:
+	case MSG_PLAYER_READ_MAIL_LIST:
 		{
-			if ( pMsg->cSysIdentifer == ID_MSG_C2GAME  )
-			{
-				stMsgRequestMailList* pRet = (stMsgRequestMailList*)pMsg ;
-				SendMailListToClient(pRet->nBeginMailUID);
-			}
-			else if ( ID_MSG_DB2GM == pMsg->cSysIdentifer )
-			{
-				stMsgGameServerGetMailListRet* pMsgRet = (stMsgGameServerGetMailListRet*)pMsg ;
-				char* pBuffer = (char*)pMsg ;
-				pBuffer += sizeof(stMsgGameServerGetMailListRet);
-				while ( pMsgRet->nMailCount--)
-				{
-					stMail* pMail = new stMail ;
-					memcpy(pMail,pBuffer,sizeof(stMail));
-					pBuffer += sizeof(stMail);
+			stMsgReadMailListRet* pMsgRet = (stMsgReadMailListRet*)pMsg ;
+			stRecievedMail sMail ;
+			sMail.eType = (eMailType)pMsgRet->pMails.eType ;
+			sMail.nRecvTime = pMsgRet->pMails.nPostTime ;
+			CAutoBuffer auf (pMsgRet->pMails.nContentLen + 1 );
+			auf.addContent((char*)pMsg + sizeof(stMsgReadMailListRet),pMsgRet->pMails.nContentLen ) ;
+			sMail.strContent = auf.getBufferPtr() ;
+			m_vAllMail.push_back(sMail);
 
-					if ( pMail->nContentLen > 0 )
-					{
-						pMail->pContent = new char[pMail->nContentLen] ;
-						memcpy(pMail->pContent,pBuffer,pMail->nContentLen);
-					}
-					pBuffer += pMail->nContentLen ;
-					m_vAllMail.push_back(pMail) ;
-				}
-
+			if ( pMsgRet->bFinal )
+			{
 				// if have unread mail should tell client ;
 				ProcessOfflineEvent();
 				stPlayerEvetArg arg ;
 				arg.eEventType = ePlayerEvent_ReadDBOK;
 				GetPlayer()->PostPlayerEvent(&arg);
 				InformRecievedUnreadMails();
+				CLogMgr::SharedLogMgr()->PrintLog("read mail finish uid = %d",GetPlayer()->GetUserUID());
 			}
-			else
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("from unknown server msg : MSG_PLAYER_GET_MAIL_LIST") ;
-			}
+
 		}
 		break;
-	case MSG_PLAYER_PROCESSED_MAIL:
+	case MSG_PLAYER_REQUEST_MAIL_LIST:
 		{
-			stMsgPlayerProcessedMailRet msgBack ;
-			stMsgPlayerProcessedMail* pMsgRet = (stMsgPlayerProcessedMail*)pMsg ;
-			msgBack.eProcessAct = pMsgRet->eProcessAct ;
-			msgBack.nMailUIDProcessed = pMsgRet->nMailUIDProcessed ;
-			stMail* pMail = GetMailByMailID(pMsgRet->nMailUIDProcessed) ;
-			if ( pMail == NULL )
-			{
-				msgBack.nRet = 1 ;
-			}
-			else if ( 0 != pMail->eProcessAct )
-			{
-				msgBack.nRet = 2 ;
-			}
-			else
-			{
-				ProcessMail(pMail,(eProcessMailAct)pMsgRet->eProcessAct) ;
-			}
-			SendMsg(&msgBack,sizeof(msgBack)) ;
+			SendMailListToClient();
+			return true ;
 		}
 		break;
 	default:
@@ -88,19 +57,13 @@ bool CPlayerMailComponent::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 	return true ;
 }
 
-void CPlayerMailComponent::OnPlayerDisconnect()
-{
-	// save mails to db ;
-	TimerSave();
-}
-
+ 
 void CPlayerMailComponent::Reset()
 {
-	//ClearMails();
-	//stMsgGameServerGetMailList msg ;
-	//msg.nSessionID = GetPlayer()->GetSessionID() ;
-	//msg.nUserUID = GetPlayer()->GetUserUID() ;
-	//SendMsgToDB((char*)&msg,sizeof(msg)) ;
+	ClearMails();
+	stMsgReadMailList msg ;
+	msg.nUserUID = GetPlayer()->GetUserUID() ;
+	SendMsg(&msg,sizeof(msg)) ;
 }
 
 void CPlayerMailComponent::Init()
@@ -116,317 +79,142 @@ void CPlayerMailComponent::OnOtherDoLogined()
 
 void CPlayerMailComponent::InformRecievedUnreadMails()
 {
-	//if ( GetUnprocessedMailCount() > 0 )
-	//{
-	//	stMsgReceivedNewMail msg ;
-	//	msg.nUnreadMailCount = GetUnprocessedMailCount() ;
-	//	SendMsgToClient((char*)&msg,sizeof(msg)) ;
-	//}
+	if ( m_vAllMail.size() )
+	{
+		stMsgInformNewMail msg ;
+		msg.nUnreadMailCount = m_vAllMail.size() ;
+		msg.eNewMailType = m_vAllMail.back().eType ;
+		SendMsg(&msg,sizeof(msg)) ;
+	}
 }
 
 void CPlayerMailComponent::ClearMails()
 {
-	LIST_MAIL::iterator iter = m_vAllMail.begin() ;
-	for ( ; iter != m_vAllMail.end(); ++iter )
-	{
-		if ( (*iter)->pContent )
-		{
-			delete[] (*iter)->pContent ;
-			(*iter)->pContent = NULL ;
-		}
+	m_vAllMail.clear();
+}
 
-		delete *iter ;
-		*iter = NULL ;
+void CPlayerMailComponent::SendMailListToClient()
+{
+	if ( m_vAllMail.empty() )
+	{
+		return ;
 	}
+
+	stMsgRequestMailListRet msgRet;
+	uint8_t nSize = m_vAllMail.size() ;
+	CAutoBuffer auBuff(sizeof(msgRet) + 100 );
+	for ( stRecievedMail& pMail : m_vAllMail )
+	{
+		--nSize ;
+		msgRet.isFinal = nSize == 0 ;
+		msgRet.tMail.eType = pMail.eType ;
+		msgRet.tMail.nContentLen = pMail.strContent.size() ;
+		auBuff.clearBuffer();
+		auBuff.addContent(&msgRet,sizeof(msgRet));
+		auBuff.addContent(pMail.strContent.c_str(),msgRet.tMail.nContentLen) ;
+		SendMsg((stMsg*)auBuff.getBufferPtr(),auBuff.getContentSize()) ;
+	}
+	CLogMgr::SharedLogMgr()->PrintLog("send mail to client uid = %d ,size = %d",GetPlayer()->GetUserUID(),m_vAllMail.size() ) ;
+
+	// tell db set state 
+	stMsgResetMailsState msgReset ;
+	msgReset.nUserUID = GetPlayer()->GetUserUID() ;
+	msgReset.tMailType = eMail_Max ;
+	SendMsg(&msgReset,sizeof(msgReset)) ;
+
 	m_vAllMail.clear() ;
+}
 
-	for ( int i = 0 ; i < eDBAct_Max ; ++i )
+
+void CPlayerMailComponent::PostMailToDB(stMail* pMail ,uint32_t nTargetUID  )
+{
+	stMsgSaveMail msgSave ;
+	msgSave.nUserUID = nTargetUID ;
+	memcpy(&msgSave.pMailToSave,pMail,sizeof(stMail));
+	CAutoBuffer auBuffer(sizeof(msgSave) + pMail->nContentLen );
+	auBuffer.addContent(&msgSave,sizeof(msgSave)) ;
+	auBuffer.addContent(((char*)pMail)+sizeof(stMail),pMail->nContentLen) ;
+	CGameServerApp::SharedGameServerApp()->sendMsg(nTargetUID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+}
+
+void CPlayerMailComponent::ReciveMail(stMail* pMail)
+{
+	PostMailToDB(pMail,GetPlayer()->GetUserUID());
+	stRecievedMail sMail ;
+	sMail.eType = (eMailType)pMail->eType ;
+	sMail.nRecvTime = pMail->nPostTime ;
+	CAutoBuffer auB(pMail->nContentLen + 1 );
+	auB.addContent((char*)pMail + sizeof(stMail),pMail->nContentLen) ;
+	sMail.strContent = auB.getBufferPtr() ;
+
+	m_vAllMail.push_back(sMail);
+	InformRecievedUnreadMails();
+	if ( m_vAllMail.size() > MAX_KEEP_MAIL_CNT )
 	{
-		LIST_MAIL& pMailList = m_vNeedUpdateMails[i] ;
-		if ( i != eDBAct_Delete )
-		{
-			pMailList.clear() ;
-			continue;
-		}
-
-		LIST_MAIL::iterator iter = pMailList.begin() ;
-		for ( ; iter != pMailList.end(); ++iter )
-		{
-			stMail*p = *iter ;
-			if ( p->pContent )
-			{
-				delete [] p->pContent ;
-			}
-			delete p ;
-		}
-		pMailList.clear();
+		m_vAllMail.erase(m_vAllMail.begin()) ;
 	}
 }
 
-unsigned short CPlayerMailComponent::GetUnprocessedMailCount()
+void CPlayerMailComponent::ReciveMail(stRecievedMail& refMail)
 {
-	unsigned short nCount = 0 ;
-	LIST_MAIL::iterator iter = m_vAllMail.begin() ;
-	for ( ; iter != m_vAllMail.end(); ++iter )
+	stMsgSaveMail msgSave ;
+	msgSave.nUserUID = GetPlayer()->GetUserUID() ;
+	msgSave.pMailToSave.eType = refMail.eType ;
+	msgSave.pMailToSave.nContentLen = refMail.strContent.size() ;
+	msgSave.pMailToSave.nPostTime = refMail.nRecvTime ;
+
+	CAutoBuffer auBuffer(sizeof(msgSave) + msgSave.pMailToSave.nContentLen );
+	auBuffer.addContent(&msgSave,sizeof(msgSave)) ;
+	auBuffer.addContent(refMail.strContent.c_str(),msgSave.pMailToSave.nContentLen) ;
+	CGameServerApp::SharedGameServerApp()->sendMsg(msgSave.nUserUID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+
+	m_vAllMail.push_back(refMail);
+	InformRecievedUnreadMails();
+	if ( m_vAllMail.size() > MAX_KEEP_MAIL_CNT )
 	{
-		if ( (*iter)->eProcessAct == 0 )
-		{
-			++nCount ;
-		}
-	}
-	return nCount ;
-}
-
-void CPlayerMailComponent::SendMailListToClient(uint64_t nBegMainUID)
-{
-	//LIST_MAIL vSendMail ;
-	//LIST_MAIL::iterator iter = m_vAllMail.begin() ;
-	//unsigned short nTotalLen = sizeof(stMsgRequestMailListRet) ;
-	//for ( ; iter != m_vAllMail.end(); ++iter )
-	//{
-	//	if ( (*iter)->nMailUID >= nBegMainUID )
-	//	{
-	//		vSendMail.push_back(*iter) ;
-	//		nTotalLen += sizeof(stMail);
-	//		nTotalLen += (*iter)->nContentLen ;
-	//	}
-	//}
-
-	//stMsgRequestMailListRet msg ;
-	//msg.nMailCount = vSendMail.size() ;
-	//unsigned short nOffset = 0 ;
-	//char* pBuffer = new char[nTotalLen] ;
-	//memcpy(pBuffer,&msg,sizeof(msg));
-	//nOffset += sizeof(msg);
-	//iter = vSendMail.begin() ;
-	//for ( ; iter != vSendMail.end(); ++iter )
-	//{
-	//	stMail* pMail = *iter ;
-	//	memcpy(pBuffer + nOffset , pMail,sizeof(stMail));
-	//	nOffset += sizeof(stMail);
-
-	//	memcpy(pBuffer + nOffset , pMail->pContent, pMail->nContentLen );
-	//	nOffset += pMail->nContentLen ;
-	//}
-	//SendMsgToClient(pBuffer,nOffset) ;
-	//delete[] pBuffer ;
-}
-
-void CPlayerMailComponent::SaveMailToDB(stMail* pMail , eDBAct eOpeateType,unsigned int nOwnerUID )
-{
-	//// 0 update , 1 delete , 2 insterd ;
-	//if ( nOwnerUID <= 0 )
-	//{
-	//	nOwnerUID = GetPlayer()->GetUserUID() ;
-	//}
-	//stMsgGameServerSaveMail msg ;
-	//msg.nSessionID = GetPlayer()->GetSessionID() ;
-	//msg.nUserUID = nOwnerUID ;
-	//msg.nOperateType = eOpeateType ;
-	//if ( eOpeateType == eDBAct_Add )
-	//{
-	//	char* pBuffer = new char[sizeof(msg) + sizeof(stMail)+ pMail->nContentLen] ;
-	//	int nOffset = 0 ;
-	//	
-	//	memcpy(pBuffer,&msg,sizeof(msg));
-	//	nOffset += sizeof(msg);
-
-	//	memcpy(pBuffer + nOffset,pMail,sizeof(stMail));
-	//	nOffset += sizeof(stMail);
-
-	//	memcpy(pBuffer + nOffset , pMail->pContent, pMail->nContentLen);
-	//	nOffset += pMail->nContentLen ;
-	//	SendMsgToDB(pBuffer,nOffset) ;
-	//	delete[] pBuffer;
-	//}
-	//else
-	//{
-	//	char* pBuffer = new char[sizeof(msg) + sizeof(stMail)] ;
-	//	int nOffset = 0 ;
-
-	//	memcpy(pBuffer,&msg,sizeof(msg));
-	//	nOffset += sizeof(msg);
-
-	//	memcpy(pBuffer + nOffset,pMail,sizeof(stMail));
-	//	nOffset += sizeof(stMail);
-	//	SendMsgToDB(pBuffer,nOffset) ;
-	//	delete[] pBuffer;
-	//}
-}
-
-void CPlayerMailComponent::PostGiftMail( CPlayer* pPlayerPresenter,unsigned int nTargetUID, unsigned short nItemID ,unsigned short nShopItemID, unsigned int nItemCount , uint64_t nCoin , unsigned int nDiamond )
-{
-	stMail* pMail = new stMail ;
-	pMail->eProcessAct = 0 ;
-	pMail->eType = eMail_PresentGift ;
-	pMail->nContentLen = sizeof(stMailGiftContent);
-	pMail->nMailUID = ++s_nCurMaxMailUID ;
-	pMail->nPostTime = (unsigned int)time(NULL) ;
-	pMail->pContent = new char[pMail->nContentLen] ;
-	stMailGiftContent* pContent = (stMailGiftContent*)pMail->pContent ;
-	pPlayerPresenter->GetBaseData()->GetPlayerBrifData(&pContent->stPresenter);
-	pContent->nCount = nItemCount ;
-	pContent->nItemID = nItemID ;
-	pContent->nPresentCoin = nCoin ;
-	pContent->nPrsentDiamond = nDiamond ;
-	pContent->nShopItemID = nShopItemID ;
-
-	PostMail(pMail,nTargetUID) ;
-}
-
-void CPlayerMailComponent::PostUnprocessedPurchaseVerify( unsigned int nMailTargetPlayerUID ,unsigned int nTaregetBuyForPlayerUID , unsigned short nShopItemID, bool bVerifyOK )
-{
-	stMail* pMail = new stMail ;
-	pMail->eProcessAct = 0 ;
-	pMail->eType = eMail_UnProcessedPurchaseVerify ;
-	pMail->nContentLen = sizeof(stMailUnprocessedPurchaseVerifyContent);
-	pMail->nMailUID = ++s_nCurMaxMailUID ;
-	pMail->nPostTime = (unsigned int)time(NULL) ;
-	pMail->pContent = new char[pMail->nContentLen] ;
-
-	stMailUnprocessedPurchaseVerifyContent* pContent = (stMailUnprocessedPurchaseVerifyContent*)pMail->pContent ;
-	pContent->nShopItemID = nShopItemID ;
-	pContent->nTaregetForPlayerUID = nTaregetBuyForPlayerUID ;
-	pContent->bVerifyOK = bVerifyOK ;
-	PostMail(pMail,nMailTargetPlayerUID) ;
-}
-
-void CPlayerMailComponent::PostBeAddedFriendMail( CPlayer* WhoAddMeTobeFriend, unsigned int nMailToUserUID )
-{
-	stMail* pMail = new stMail ;
-	pMail->eProcessAct = 0 ;
-	pMail->eType = eMail_BeAddedFriend ;
-	pMail->nContentLen = sizeof(stMailBeAddedFriend);
-	pMail->nMailUID = ++s_nCurMaxMailUID ;
-	pMail->nPostTime = (unsigned int)time(NULL) ;
-	pMail->pContent = new char[pMail->nContentLen] ;
-
-	stMailBeAddedFriend* pContent = (stMailBeAddedFriend*)pMail->pContent ;
-	WhoAddMeTobeFriend->GetBaseData()->GetPlayerBrifData(&pContent->peerWhoWantAddMe) ;
-	PostMail(pMail,nMailToUserUID) ;
-}
-
-void CPlayerMailComponent::PostMail(stMail* pMail ,unsigned int nTargetUID  )
-{
-	if ( nTargetUID <= 0 )
-	{
-		nTargetUID = GetPlayer()->GetUserUID();
-	}
-
-	if ( nTargetUID == GetPlayer()->GetUserUID() )
-	{
-		m_vAllMail.push_back(pMail) ;
-		m_vNeedUpdateMails[eDBAct_Add].push_back(pMail) ;
-		InformRecievedUnreadMails();
-	}
-	else
-	{
-		SaveMailToDB(pMail,eDBAct_Add,nTargetUID) ;
-		if ( pMail->pContent )
-		{
-			delete[] pMail->pContent ;
-			pMail->pContent = NULL ;
-		}
-		delete pMail ;
-		pMail = NULL ;
-	}
-}
-
-void CPlayerMailComponent::TimerSave()
-{
-	for ( int i = 0 ; i < eDBAct_Max ; ++i )
-	{
-		LIST_MAIL& pMailList = m_vNeedUpdateMails[i] ;
-		LIST_MAIL::iterator iter = pMailList.begin() ;
-		for ( ; iter != pMailList.end(); ++iter )
-		{
-			SaveMailToDB(*iter,(eDBAct)i) ;
-
-			if ( i == eDBAct_Delete )
-			{
-				stMail*p = *iter ;
-				if ( p->pContent )
-				{
-					delete [] p->pContent ;
-				}
-				delete p ;
-			}
-		}
-		pMailList.clear();
+		m_vAllMail.erase(m_vAllMail.begin()) ;
 	}
 }
 
 void CPlayerMailComponent::ProcessOfflineEvent()
 {
-	//LIST_MAIL::iterator iter = m_vAllMail.begin();
-	//for ( ; iter != m_vAllMail.end(); )
-	//{
-	//	stMail* pItem = *iter ;
-	//	if ( eMail_UnProcessedPurchaseVerify == pItem->eType )
-	//	{
-	//		stMsgFromVerifyServer pR ;
-	//		stMailUnprocessedPurchaseVerifyContent* pContent = (stMailUnprocessedPurchaseVerifyContent*)pItem->pContent ;
-	//		if ( pContent->bVerifyOK == false  )
-	//		{
-	//			pR.nRet = 0 ;
-	//		}
-	//		else
-	//		{
-	//			pR.nRet = 4 ;
-	//		}
-	//		pItem->eProcessAct = ePro_Mail_DoYes ;
-	//		pR.nBuyerPlayerUserUID = GetPlayer()->GetUserUID() ;
-	//		pR.nBuyForPlayerUserUID = pContent->nTaregetForPlayerUID ;
-	//		pR.nShopItemID = pContent->nShopItemID ;
-	//		GetPlayer()->OnMessage(&pR) ;
-	//		// push to need to update 
-	//		PushNeedToUpdate(pItem,eDBAct_Delete) ;
-	//		m_vAllMail.erase(iter) ;
-	//		iter = m_vAllMail.begin() ;   // invalid iterator ;
-	//		continue; 
-	//	}
-	//	++iter ;
-	//}
-}
-
-void CPlayerMailComponent::PushNeedToUpdate(stMail* pMail , eDBAct eAct )
-{
-	if ( pMail == NULL )
+	bool bNeedDel = false ;
+	for ( stRecievedMail& refMail : m_vAllMail )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("need update mail is null") ;
-		return ;
+		if ( ProcessMail(refMail) )
+		{
+			bNeedDel = true ;
+		}
 	}
-	m_vNeedUpdateMails[eAct].push_back(pMail) ;
-}
-bool CPlayerMailComponent::ProcessMail(stMail* pMail,eProcessMailAct eAct )
-{
-	if ( ePro_Mail_Delete == eAct )
+
+	if ( bNeedDel )
 	{
 		LIST_MAIL::iterator iter = m_vAllMail.begin() ;
-		for ( ; iter != m_vAllMail.end() ; ++iter )
+		for ( ; iter != m_vAllMail.end();  )
 		{
-			if ( *iter == pMail )
+			if ( (*iter).eType  == eMail_SysOfflineEvent )
 			{
 				m_vAllMail.erase(iter) ;
-				break; 
+				iter = m_vAllMail.begin() ;
+				continue;
 			}
+			++iter ;
 		}
-		PushNeedToUpdate(pMail,eDBAct_Delete) ;
-		return true ;
+		// tell db set state 
+		stMsgResetMailsState msgReset ;
+		msgReset.nUserUID = GetPlayer()->GetUserUID() ;
+		msgReset.tMailType = eMail_SysOfflineEvent ;
+		SendMsg(&msgReset,sizeof(msgReset)) ;
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("not process this mail , write code ,quick ") ;
-	return true ;
 }
 
-stMail* CPlayerMailComponent::GetMailByMailID(uint64_t nMailID)
+bool CPlayerMailComponent::ProcessMail( stRecievedMail& pMail)
 {
-	LIST_MAIL::iterator iter = m_vAllMail.begin() ;
-	for ( ; iter != m_vAllMail.end(); ++iter )
+	if ( pMail.eType != eMail_SysOfflineEvent )
 	{
-		if ( (*iter)->nMailUID == nMailID )
-		{
-			return *iter ;
-		}
+		return false ;
 	}
-	return NULL ;
+
+	CLogMgr::SharedLogMgr()->ErrorLog("process offline event here");
+	return true ;
 }

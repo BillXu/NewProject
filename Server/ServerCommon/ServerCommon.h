@@ -52,7 +52,7 @@ enum  eCrossSvrReqType
 {
 	eCrossSvrReq_DeductionMoney, //  var[0] isCoin ,var[1] needMoney, var[2] at least money,; result:  var[0] isCoin ,var[1] final deductionMoney 
 	eCrossSvrReq_AddMoney, //  var[0] isCoin ,var[1] addCoin
-	eCrossSvrReq_CreateTaxasRoom, // var[0] room config id, json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID,
+	eCrossSvrReq_CreateTaxasRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID,
 	eCrossSvrReq_Max,
 };
 

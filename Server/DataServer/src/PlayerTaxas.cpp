@@ -175,6 +175,7 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			msgReq.nRequestType = eCrossSvrReq_CreateTaxasRoom ;
 			msgReq.nTargetID = 0 ;
 			msgReq.vArg[0] = pRet->nConfigID ;
+			msgReq.vArg[1] = pRet->nDays ;
 			
 			Json::Value vArg ;
 			vArg["roonName"] = pRet->vRoomName;
