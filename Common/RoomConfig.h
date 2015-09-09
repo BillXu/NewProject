@@ -6,29 +6,26 @@
 #include "CommonDefine.h"
 struct stBaseRoomConfig
 {
-	unsigned int nRoomID ;
-	unsigned char nRoomType ;
-	unsigned char nRoomLevel ;
+	uint16_t nConfigID ;
+	uint8_t nGameType ;
+	//unsigned char nRoomLevel ;
 	unsigned short nMaxSeat ;
-	unsigned int nMinNeedToEnter ;
-	unsigned char nWaitOperateTime ; // second ;
-	unsigned int nCreateCount ;
-	uint32_t nCreateFee ;
+	//unsigned int nMinNeedToEnter ;
+	//unsigned char nWaitOperateTime ; // second ;
+	//unsigned int nCreateCount ;
+	//uint32_t nCreateFee ;
 };
 
-struct stPaiJiurRoomConfig
-	:public stBaseRoomConfig
-{
-	uint64_t nBankerNeedCoin ;
-};
 
 struct stTaxasRoomConfig
 	:public stBaseRoomConfig
 {
+	uint32_t nMiniTakeInCoin;
 	uint64_t nMaxTakeInCoin ;
 	uint64_t nBigBlind ;
-	uint32_t nRentFeeOneMonth;
+	uint32_t nRentFeePerDay;
 	uint32_t nDeskFee;
+	float fDividFeeRate;  // chou shui bi li
 };
 
 struct stGoldenRoomConfig
@@ -45,13 +42,6 @@ struct stGoldenRoomConfig
 
 typedef std::vector<stTaxasRoomConfig*> VEC_BLIND_ROOM_CONFIG ;
 
-struct stSpeedRoomConfigs
-{
-	VEC_BLIND_ROOM_CONFIG m_vPlayerCountRoom[eSeatCount_Max];  
-	void AddConfig(stTaxasRoomConfig* pConfig);
-	void Reset();
-};
-
 class CRoomConfigMgr 
 	:public IConfigFile
 {
@@ -62,17 +52,13 @@ public:
 	CRoomConfigMgr(){ Clear();}
 	~CRoomConfigMgr(){Clear();}
 	bool OnPaser(CReaderRow& refReaderRow );
-	stBaseRoomConfig* GetRoomConfig( unsigned int nRoomID ) ;
-	stBaseRoomConfig* GetRoomConfig( char cRoomType , char cRoomLevel ) ;
 	LIST_ITER GetBeginIter(){ return m_vAllConfig.begin(); }
 	LIST_ITER GetEndIter(){ return m_vAllConfig.end();}
 	virtual void OnFinishPaseFile();
-	int GetConfigCnt(eSpeed speed , eRoomSeat eSeatCn );
-	stTaxasRoomConfig* GetConfig( eSpeed speed , eRoomSeat eSeatCn , unsigned int nIdx );
-	stGoldenRoomConfig* GetGoldenConfig(unsigned short cLevel );
+	int GetConfigCnt();
+	stTaxasRoomConfig* GetConfigByConfigID( uint16_t nConfigID );
 protected:
 	void Clear() ;
 protected:
 	LIST_ROOM_CONFIG m_vAllConfig ;
-	stSpeedRoomConfigs m_vSpeedRoomConfig[eSpeed_Max];
 };

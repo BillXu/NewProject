@@ -174,6 +174,75 @@ struct stMsgPlayerModifyPhotoRet
 	uint8_t nRet ; // 0 means success ;
 };
 
+// friend 
+struct stMsgPlayerRequestFriendList
+	:public stMsg
+{
+	stMsgPlayerRequestFriendList(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_REQUEST_FRIEND_LIST ; }
+};
+
+struct stMsgPlayerRequestFriendListRet
+	:public stMsg
+{
+	stMsgPlayerRequestFriendListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_FRIEND_LIST ; }
+	uint16_t nFriendCount ; 
+	PLACE_HOLDER(uint32_t* nFriendUIDs);
+};
+
+struct stMsgPlayerAddFriend
+	:public stMsg
+{
+	stMsgPlayerAddFriend(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_ADD_FRIEND ; }
+	uint32_t nTargetUID ;
+};
+
+struct stMsgPlayerAddFriendRet 
+	:public stMsg
+{
+	stMsgPlayerAddFriendRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_ADD_FRIEND ; }
+	uint8_t nRet ; // 0 target agree, 1 target disagree , 2 your friend list is full , 3 target player friend list is full , 4 target offline , 5 , already friend ;
+	uint32_t nTaregtUID;
+	char pReplayerName[MAX_LEN_CHARACTER_NAME] ;
+};
+
+struct stMsgPlayerBeAddedFriend  
+	:public stMsg
+{
+	stMsgPlayerBeAddedFriend(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_BE_ADDED_FRIEND ; }
+	uint32_t nPlayerUserUID; // who want add you 
+	char pPlayerName[MAX_LEN_CHARACTER_NAME] ; // who want add you 
+};
+
+struct stMsgPlayerBeAddedFriendReply
+	:public stMsg
+{
+	stMsgPlayerBeAddedFriendReply(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_PLAYER_BE_ADDED_FRIEND_REPLY ; }
+	uint32_t nReplayToPlayerUserUID ;  // who you relay to ;
+	bool bAgree ; // 1 agree to make friend , 0  don't want to make friend ;
+};
+
+struct stMsgPlayerBeAddedFriendReplyRet
+	:public stMsg
+{
+	stMsgPlayerBeAddedFriendReplyRet(){cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_BE_ADDED_FRIEND_REPLY ;}
+	uint8_t nRet ; // 0 success ; 1 target list full , 2 self list full  3 target offline
+	uint32_t nNewFriendUserUID ;  // who you relay to ;
+};
+
+struct stMsgPlayerDelteFriend
+	:public stMsg
+{
+	stMsgPlayerDelteFriend(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_DELETE_FRIEND ; }
+	uint32_t nDelteFriendUserUID ;
+};
+
+struct stMsgPlayerDelteFriendRet
+	:public stMsg
+{
+	stMsgPlayerDelteFriendRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_DELETE_FRIEND ; }
+	unsigned char nRet ; // 0 success , 1 target player aready is not your friend ;
+	uint32_t nDeleteUID ;
+};
 
 ///--------------------ablove is new , below is old------
 
@@ -409,43 +478,6 @@ struct stMsgRoomLeaveRet
 	unsigned char nRet ; // 0 success ; 1 error ;
 };
 
-struct stMsgRequestRoomList
-	:public stMsg
-{
-	stMsgRequestRoomList(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_REQUEST_ROOM_LIST; }
-	unsigned char cRoomType ; // eRoomType
-	unsigned char cRoomLevel ;
-};
-
-struct stRoomListItem
-{
-	unsigned short nRoomID ;
-	unsigned char cRoomLevel ; // eRoomLevel ;
-	unsigned short nMaxCount ;
-	unsigned short nCurrentCount ;
-	uint64_t nMinCoinToTake ;
-	uint64_t nMaxCoinToTake ;
-	uint64_t nBigBlind ;
-	unsigned char nWaitOperateTime ; //second ; show as quick room or normal room ;
-};
-
-struct stPrivateRoomListItem
-	:public stRoomListItem
-{
-	char cRoomName[MAX_LEN_ROOM_NAME] ;
-	bool bDiamoned ;
-	bool bPassword ;
-};
-
-struct stMsgRequestRoomListRet
-	:public stMsg
-{
-	stMsgRequestRoomListRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_REQUEST_ROOM_LIST ; }
-	unsigned char cRoomType ; // eRoomType
-	unsigned char cRoomLevel ;
-	unsigned short nRoomCount ;
-	stRoomListItem* pRoomItem ;
-};
 
 // room common action 
 struct stMsgRoomPlayerSpeak
@@ -672,80 +704,7 @@ struct stFriendBrifData
 	unsigned int nPresentCoinTimes ;
 };
 
-struct stMsgPlayerRequestFriendList
-	:public stMsg
-{
-	stMsgPlayerRequestFriendList(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_REQUEST_FRIEND_LIST ; }
-};
 
-struct stMsgPlayerRequestFriendListRet
-	:public stMsg
-{
-	stMsgPlayerRequestFriendListRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_REQUEST_FRIEND_LIST ; }
-	unsigned short nFriendCount ; 
-	stFriendBrifData* pFriends ;
-};
-
-struct stMsgPlayerAddFriend
-	:public stMsg
-{
-	stMsgPlayerAddFriend(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_ADD_FRIEND ; }
-	unsigned int nUID ;
-};
-
-struct stMsgPlayerAddFriendRet 
-	:public stMsg
-{
-	stMsgPlayerAddFriendRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_ADD_FRIEND ; }
-	unsigned char nRet ; // 0 success , 1 your friend list is full , 2 target player friend list is full , 3 mail to target , 4 , already friend ;
-};
-
-//struct stMsgPlayerBeAddedFriend  
-//	:public stMsg
-//{
-//	stMsgPlayerBeAddedFriend(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_BE_ADDED_FRIEND ; }
-//	unsigned nPlayerUserUID; // who want add you 
-//	char pPlayerName[MAX_LEN_CHARACTER_NAME] ; // who want add you 
-//};
-
-//struct stMsgPlayerReplayBeAddedFriend
-//	:public stMsg
-//{
-//	stMsgPlayerReplayBeAddedFriend(){ cSysIdentifer = ID_MSG_C2GAME; usMsgType = MSG_PLAYER_REPLAY_BE_ADD_FRIEND ; }
-//	unsigned nReplayToPlayerUserUID ;  // who you relay to ;
-//	bool bAgree ; // 1 agree to make friend , 0  don't want to make friend ;
-//};
-//
-//struct stMsgPlayerReplayBeAddedFriendRet
-//	:public stMsg
-//{
-//	stMsgPlayerReplayBeAddedFriendRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_REPLAY_BE_ADD_FRIEND ; }
-//	unsigned char nRet ; // 0 success , 1 target offline , 2 self friend list is full , 3 other firend list is full , 4 already friend;
-//	char pTargetName[MAX_LEN_CHARACTER_NAME] ;
-//};
-
-//struct stMsgPlayerAddFriendReplay
-//	:public stMsg
-//{
-//	stMsgPlayerAddFriendReplay(){ cSysIdentifer = ID_MSG_GAME2C ;usMsgType = MSG_PLAYER_ADD_FRIEND_REPLAY ; }
-//	char pReplayerName[MAX_LEN_CHARACTER_NAME] ;
-//	bool bAgree ; // 0 agree  1 refuse ;
-//};
-
-struct stMsgPlayerDelteFriend
-	:public stMsg
-{
-	stMsgPlayerDelteFriend(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_DELETE_FRIEND ; }
-	unsigned int nDelteFriendUserUID ;
-};
-
-struct stMsgPlayerDelteFriendRet
-	:public stMsg
-{
-	stMsgPlayerDelteFriendRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_DELETE_FRIEND ; }
-	unsigned char nRet ; // 0 success , 1 target player aready is not your friend ;
-	unsigned int nDeleteUID ;
-};
 
 struct stMsgPlayerSearchPeer
 	:public stMsg
@@ -763,12 +722,12 @@ struct stMsgPlayerSearchPeerRet
 	stPlayerBrifData* pPeersInfo ;
 };
 
-struct stMsgPlayerRequestFriendDetail
-	:public stMsg
-{
-	stMsgPlayerRequestFriendDetail(){ cSysIdentifer = ID_MSG_C2GAME; usMsgType = MSG_PLAYER_REQUEST_FRIEND_DETAIL ; }
-	unsigned int nFriendUserUID ;
-};
+////struct stMsgPlayerRequestFriendDetail
+////	:public stMsg
+////{
+////	stMsgPlayerRequestFriendDetail(){ cSysIdentifer = ID_MSG_C2GAME; usMsgType = MSG_PLAYER_REQUEST_FRIEND_DETAIL ; }
+////	unsigned int nFriendUserUID ;
+////};
 
 //struct stFriendDetail
 //	:public stMsgCommonPeerDetail
@@ -777,28 +736,28 @@ struct stMsgPlayerRequestFriendDetail
 //	unsigned char vMaxCard[5] ;
 //};
 
-struct stMsgPlayerRequestFriendDetailRet
-	:public stMsg
-{
-	stMsgPlayerRequestFriendDetailRet(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_PLAYER_REQUEST_FRIEND_DETAIL ; }
-	unsigned char nRet ; // 0 success , 1 can not find ;
-	stPlayerDetailData stPeerInfo ;
-};
-
-struct stMsgPlayerRequestSearchedPeerDetail
-	:public stMsg
-{
-	stMsgPlayerRequestSearchedPeerDetail(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL ; }
-	unsigned int nPeerUserUID ;
-};
-
-struct stMsgPlayerRequestSearchedPeerDetailRet
-	:public stMsg
-{
-	stMsgPlayerRequestSearchedPeerDetailRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL ; }
-	unsigned char nRet ; // 0 success , 1 can not find ;
-	stPlayerDetailData stPeerInfo ;
-};
+////struct stMsgPlayerRequestFriendDetailRet
+////	:public stMsg
+////{
+////	stMsgPlayerRequestFriendDetailRet(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_PLAYER_REQUEST_FRIEND_DETAIL ; }
+////	unsigned char nRet ; // 0 success , 1 can not find ;
+////	stPlayerDetailData stPeerInfo ;
+////};
+////
+////struct stMsgPlayerRequestSearchedPeerDetail
+////	:public stMsg
+////{
+////	stMsgPlayerRequestSearchedPeerDetail(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL ; }
+////	unsigned int nPeerUserUID ;
+////};
+////
+////struct stMsgPlayerRequestSearchedPeerDetailRet
+////	:public stMsg
+////{
+////	stMsgPlayerRequestSearchedPeerDetailRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL ; }
+////	unsigned char nRet ; // 0 success , 1 can not find ;
+////	stPlayerDetailData stPeerInfo ;
+////};
 
 // item 
 struct stPlayerItem

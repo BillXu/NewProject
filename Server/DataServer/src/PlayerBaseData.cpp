@@ -68,7 +68,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 	switch( pMsg->usMsgType )
 	{
-	case MSG_PLAYER_BASE_DATA:   // from db server ;
+	case MSG_READ_PLAYER_BASE_DATA:   // from db server ;
 		{
 			stMsgDataServerGetBaseDataRet* pBaseData = (stMsgDataServerGetBaseDataRet*)pMsg ;
 			if ( pBaseData->nRet )
@@ -82,13 +82,13 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			return true ;
 		}
 		break;
-	case MSG_PLAYER_REQUEST_NOTICE:
-		{
-// 			CGameServerApp::SharedGameServerApp()->GetBrocaster()->SendInformsToPlayer(GetPlayer()) ;
-// 			CInformConfig* pConfig = (CInformConfig*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Informs) ;
-// 			m_stBaseData.nNoticeID = pConfig->GetMaxInformID();
-		}
-		break;
+//	case MSG_PLAYER_REQUEST_NOTICE:
+//		{
+//// 			CGameServerApp::SharedGameServerApp()->GetBrocaster()->SendInformsToPlayer(GetPlayer()) ;
+//// 			CInformConfig* pConfig = (CInformConfig*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Informs) ;
+//// 			m_stBaseData.nNoticeID = pConfig->GetMaxInformID();
+//		}
+//		break;
 	case MSG_PLAYER_MODIFY_SIGURE:
 		{
 			stMsgPLayerModifySigure* pMsgRet = (stMsgPLayerModifySigure*)pMsg ;

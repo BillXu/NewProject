@@ -151,6 +151,7 @@ void CAppleVerifyManager::ProcessQuest()
 	curl_easy_setopt(m_pCURL,CURLOPT_POSTFIELDS,strFinal.c_str() );
 	curl_easy_setopt(m_pCURL,CURLOPT_POSTFIELDSIZE,strlen(strFinal.c_str()));
 	curl_easy_setopt(m_pCURL,CURLOPT_WRITEDATA,pRequest);
+	urlRet = curl_easy_setopt(m_pCURL, CURLOPT_HEADER, 0L);
 	urlRet = curl_easy_perform(m_pCURL) ;
 	if ( urlRet != CURLE_OK )
 	{

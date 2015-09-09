@@ -1,5 +1,6 @@
 #pragma once
 #include <cstring>
+//template<typename T >
 class CAutoBuffer
 {
 public:
@@ -19,6 +20,13 @@ public:
 	{
 		delete[] pInnerBuffer ;
 		pInnerBuffer = nullptr ;
+	}
+
+	template<typename T >
+	int addContent(T* pData,int nLen )
+	{
+		const char* ptr = (char*)pData ;
+		return addContent(ptr,nLen);
 	}
 
 	int addContent(const char* pData, int nLen )

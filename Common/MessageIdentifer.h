@@ -87,13 +87,33 @@ enum eMsgType
 	MSG_SAVE_TAXAS_ROOM_PLAYER,
 	MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS,
 	MSG_READ_TAXAS_ROOM_PLAYERS,
+	MSG_REQUEST_MY_OWN_ROOMS,
+	MSG_REQUEST_MY_FOLLOW_ROOMS,
+	MSG_REQUEST_MY_OWN_ROOM_DETAIL,
+	MSG_REQUEST_ROOM_DETAIL,
 	MSG_PLAYER_BASE_DATA = 250,
+	MSG_READ_PLAYER_BASE_DATA,
 	MSG_PLAYER_SAVE_PLAYER_INFO,
-	//MSG_REQUEST_MONEY,
-	//MSG_REQUEST_MONEY_COMFIRM,
 
+	// friend module
+	MSG_READ_FRIEND_LIST = 300,  //;
+	MSG_SAVE_FRIEND_LIST,  // send to db 
+	MSG_REQUEST_FRIEND_LIST,
+	MSG_PLAYER_ADD_FRIEND,  // want to add other player 
+	MSG_PLAYER_ADD_FRIEND_REPLAY,  // other player replay my request ;
+	MSG_PLAYER_BE_ADDED_FRIEND,   // other player want to add me 
+	MSG_PLAYER_BE_ADDED_FRIEND_REPLY,
+	MSG_PLAYER_REPLAY_BE_ADD_FRIEND,  // I replay to other player who want to add me ;
+	MSG_PLAYER_SERACH_PEERS, // mo hu search , to add other o be firend ;
+	MSG_PLAYER_DELETE_FRIEND, // remove friend ;
+
+	// friend invite ;
+	MSG_PlAYER_INVITED_FRIEND_TO_JOIN_ROOM,  // invite a friend to join
+	MSG_PLAYER_BE_INVITED,   // i were invited by my friend ;
+	MSG_PLAYER_REPLAY_BE_INVITED,   // when i were invited by friend, i make a choice , reply;
+	MSG_PLAYER_RECIEVED_INVITED_REPLAY, // the player I invited ,replayed me ;
 	// message id for taxas poker
-	MSG_TP_BEGIN = 300,
+	MSG_TP_BEGIN = 450,
 	MSG_TP_CREATE_ROOM,
 
 	MSG_TP_ROOM_OWNER_BEGIN ,
@@ -103,7 +123,8 @@ enum eMsgType
 	MSG_TP_CACULATE_ROOM_PROFILE,
 	MSG_TP_REMIND_NEW_ROOM_INFORM,
 	MSG_TP_REQUEST_ROOM_INFORM,
-	MSG_TP_ROOM_OWNER_END = 360,
+	MSG_TP_REQUEST_ROOM_LIST,
+	MSG_TP_ROOM_OWNER_END,
 
 	MSG_TP_ENTER_ROOM,
 	MSG_TP_REQUEST_PLAYER_DATA,
@@ -133,7 +154,9 @@ enum eMsgType
 	MSG_TP_PUBLIC_CARD,
 	MSG_TP_GAME_RESULT,
 	MSG_TP_UPDATE_PLAYER_STATE,
+
 	MSG_TP_END,
+
 	///------new define end---
 	MSG_SERVER_AND_CLIENT_COMMON_BEGIN,  // server and client common msg , beyond specail game 
 	MSG_PLAYER_ENTER_GAME,    // after check , enter game 
@@ -142,7 +165,7 @@ enum eMsgType
 	
 	MSG_CREATE_ROLE,
 	// player base Data 
-	MSG_REQUEST_ROOM_LIST,
+	
 	MSG_SHOW_CONTINUE_LOGIN_DLG,
 	MSG_GET_CONTINUE_LOGIN_REWARD,
 	// modify name and sigure
@@ -158,7 +181,7 @@ enum eMsgType
 	// slot machine 
 	MSG_PLAYER_SLOT_MACHINE, // lao hu ji ;
 	// mail module
-	MSG_PLAYER_SAVE_MAIL = 200,
+	MSG_PLAYER_SAVE_MAIL ,
 	MSG_PLAYER_GET_MAIL_LIST,
 	MSG_PLAYER_NEW_MAIL_ARRIVED,
 	MSG_PLAYER_RECIEVED_NEW_MAIL,
@@ -166,26 +189,8 @@ enum eMsgType
 	MSG_GAME_SERVER_GET_MAX_MAIL_UID,
 	MSG_PLAYER_PROCESSED_MAIL,
 
-	// friend module
-	MSG_REQUEST_FRIEND_LIST = 250,  // send to db && send client and game server ;
-	MSG_SAVE_FRIEND_LIST,  // send to db 
-	MSG_REQUEST_FRIEND_BRIFDATA_LIST, // request friend brifdata , use between DB and Game ;
-	MSG_PLAYER_ADD_FRIEND,  // want to add other player 
-	MSG_PLAYER_ADD_FRIEND_REPLAY,  // other player replay my request ;
-	MSG_PLAYER_BE_ADDED_FRIEND,   // other player want to add me 
-	MSG_PLAYER_REPLAY_BE_ADD_FRIEND,  // I replay to other player who want to add me ;
-	MSG_PLAYER_SERACH_PEERS, // mo hu search , to add other o be firend ;
-	MSG_PLAYER_REQUEST_FRIEND_DETAIL, // get friend detail info ;
-	MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL, // get searched result peer's detail info ;
-	MSG_PLAYER_DELETE_FRIEND, // remove friend ;
-
-	// friend invite ;
-	MSG_PlAYER_INVITED_FRIEND_TO_JOIN_ROOM,  // invite a friend to join
-	MSG_PLAYER_BE_INVITED,   // i were invited by my friend ;
-	MSG_PLAYER_REPLAY_BE_INVITED,   // when i were invited by friend, i make a choice , reply;
-	MSG_PLAYER_RECIEVED_INVITED_REPLAY, // the player I invited ,replayed me ;
 	// item 
-	MSG_REQUEST_ITEM_LIST = 350,
+	MSG_REQUEST_ITEM_LIST ,
 	MSG_SAVE_ITEM_LIST,
 	MSG_PLAYER_PAWN_ASSERT, //  dian dang zi chan
 	MSG_PLAYER_USE_GIFT,
@@ -193,18 +198,18 @@ enum eMsgType
 	MSG_REQUEST_RANK,
 	MSG_REQUEST_RANK_PEER_DETAIL,
 	// inform 
-	MSG_INFORM_NEW_NOTICES = 450,
+	MSG_INFORM_NEW_NOTICES ,
 	MSG_PLAYER_REQUEST_NOTICE,
 	MSG_GLOBAL_BROCAST,
 	MSG_PLAYER_SAY_BROCAST,
 	// shop 
-	MSG_SAVE_SHOP_BUY_RECORD = 520,
+	MSG_SAVE_SHOP_BUY_RECORD,
 	MSG_GET_SHOP_BUY_RECORD,
 	MSG_PLAYER_REQUEST_SHOP_LIST,
 	MSG_BUY_SHOP_ITEM,
 	MSG_PLAYER_RECIEVED_SHOP_ITEM_GIFT,
 	// mission 
-	MSG_GAME_SERVER_SAVE_MISSION_DATA = 600,
+	MSG_GAME_SERVER_SAVE_MISSION_DATA,
 	MSG_GAME_SERVER_GET_MISSION_DATA,
 	MSG_PLAYER_REQUEST_MISSION_LIST,
 	MSG_PLAYER_NEW_MISSION_FINISHED,
@@ -215,7 +220,7 @@ enum eMsgType
 	MSG_PLAYER_REQUEST_ONLINE_BOX_STATE,
 
 	// room common msg ;
-	MSG_ROOM_MSG_BEGIN = 680,
+	MSG_ROOM_MSG_BEGIN,
 	MSG_ROOM_RET,
 	MSG_ROOM_SPEAK,
 	MSG_ROOM_OTHER_SPEAK,  
@@ -235,7 +240,7 @@ enum eMsgType
 	MSG_PLAYER_CREATE_PRIVATE_ROOM,  // create private Room ;
 
 	// message id for pai jiu 
-	MSG_PJ_BEGIN = 800,
+	MSG_PJ_BEGIN ,
 	MSG_PJ_ENTER_ROOM,
 	MSG_PJ_ACTION_RET,
 	MSG_PJ_ROOM_INFO,
@@ -261,7 +266,7 @@ enum eMsgType
 	
 
 	// message id for baccarat 
-	MSG_BC_BEGIN = 2000,
+	MSG_BC_BEGIN = 20000,
 	MSG_BC_ROOM_INFO,	
 	MSG_BC_BET,
 	MSG_BC_OTHER_BET,
@@ -272,7 +277,7 @@ enum eMsgType
 	MSG_BC_START_SHUFFLE,
 
 	// message for robot 
-	MSG_ROBOT_ORDER_TO_ENTER_ROOM = 2500,
+	MSG_ROBOT_ORDER_TO_ENTER_ROOM = 25000,
 	MSG_ROBOT_APPLY_TO_LEAVE,
 	MSG_ROBOT_CHECK_BIGGIEST,
 	MSG_ROBOT_INFORM_IDLE,

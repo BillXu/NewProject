@@ -17,15 +17,7 @@ CRoomManager::~CRoomManager()
 
 bool CRoomManager::Init()
 {
-	stBaseRoomConfig* pconfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,0);
-	if ( pconfig )
-	{
-		CTaxasRoom* pRoom = new CTaxasRoom ;
-		pRoom->Init(m_vRooms.size()+1,(stTaxasRoomConfig*)pconfig) ;
-		m_vRooms[pRoom->GetRoomID()] = pRoom ;
-		pRoom->setRoomName("System");
-		pRoom->setRoomDesc("I want you !");
-	}
+	m_nMaxRoomID = 1 ;
 	m_pGoTyeAPI.init("https://qplusapi.gotye.com.cn:8443/api/");
 	m_pGoTyeAPI.setDelegate(this);
 	return true ;
@@ -41,39 +33,18 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		}
 	}
 
-	if ( prealMsg->usMsgType <= MSG_TP_BEGIN || MSG_TP_END <= prealMsg->usMsgType )
+	if ( onPublicMsg(prealMsg,eSenderPort,nSessionID) )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why this msg send here msg = %d ",prealMsg->usMsgType ) ;
-		return false ;
-	}
-
-	if ( MSG_TP_ENTER_ROOM == prealMsg->usMsgType )
-	{
-		stMsgTaxasEnterRoom* pRel = (stMsgTaxasEnterRoom*)prealMsg ;
-		CTaxasRoom* pRoom = GetRoomByID(pRel->nRoomID) ;
-		if ( !pRoom )
-		{
-			CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d",pRel->nRoomID );
-			stMsgTaxasEnterRoomRet msgBack ;
-			msgBack.nRet = 1 ;
-			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-			return true ;
-		}
-
-		if ( pRoom->IsPlayerInRoomWithSessionID(nSessionID) )
-		{
-			stMsgTaxasEnterRoomRet msgBack ;
-			msgBack.nRet = 2 ;
-			CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-			return true ;
-		}
-		
-		stMsgRequestTaxasPlayerData msg ;
-		msg.nRoomID = pRel->nRoomID ;
-		SendMsg(&msg,sizeof(msg),nSessionID ) ;
-		CLogMgr::SharedLogMgr()->PrintLog("rquest player data for room ");
 		return true ;
 	}
+
+	////if ( prealMsg->usMsgType <= MSG_TP_BEGIN || MSG_TP_END <= prealMsg->usMsgType )
+	////{
+	////	CLogMgr::SharedLogMgr()->ErrorLog("why this msg send here msg = %d ",prealMsg->usMsgType ) ;
+	////	return false ;
+	////}
+
+
 
 	// msg give to room process 
 	stMsgToRoom* pRoomMsg = (stMsgToRoom*)prealMsg;
@@ -207,8 +178,9 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 	if ( MSG_READ_TAXAS_ROOM_INFO == prealMsg->usMsgType )
 	{
 		stMsgReadTaxasRoomInfoRet* pRet = (stMsgReadTaxasRoomInfoRet*)prealMsg ;
-		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,pRet->nConfigID);
+		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfigByConfigID(pRet->nConfigID);
 		assert(pRoomConfig&&"why config is null");
+		CLogMgr::SharedLogMgr()->PrintLog("read room info room id = %d",pRet->nRoomID);
 		CTaxasRoom* pRoom = new CTaxasRoom ;
 		pRoom->Init( pRet->nRoomID,(stTaxasRoomConfig*)pRoomConfig) ;
 		m_vRooms[pRoom->GetRoomID()] = pRoom ;
@@ -227,6 +199,13 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 			auBufo.addContent( ((char*)&pRet->nInformLen) + sizeof(pRet->nInformLen),pRet->nInformLen);
 			pRoom->setRoomInform(auBufo.getBufferPtr()) ;
 		}
+
+		if ( pRet->nRoomID > m_nMaxRoomID )
+		{
+			m_nMaxRoomID = pRet->nRoomID ;
+		}
+
+		return true ;
 	}
 
 	if ( MSG_READ_TAXAS_ROOM_PLAYERS == prealMsg->usMsgType )
@@ -243,6 +222,85 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 	}
 
 	return false ;
+}
+
+bool CRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
+{
+	switch (prealMsg->usMsgType)
+	{
+	case MSG_TP_ENTER_ROOM:
+		{
+			stMsgTaxasEnterRoom* pRel = (stMsgTaxasEnterRoom*)prealMsg ;
+			CTaxasRoom* pRoom = GetRoomByID(pRel->nRoomID) ;
+			if ( !pRoom )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d",pRel->nRoomID );
+				stMsgTaxasEnterRoomRet msgBack ;
+				msgBack.nRet = 1 ;
+				CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			if ( pRoom->IsPlayerInRoomWithSessionID(nSessionID) )
+			{
+				stMsgTaxasEnterRoomRet msgBack ;
+				msgBack.nRet = 2 ;
+				CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			stMsgRequestTaxasPlayerData msg ;
+			msg.nRoomID = pRel->nRoomID ;
+			SendMsg(&msg,sizeof(msg),nSessionID ) ;
+			CLogMgr::SharedLogMgr()->PrintLog("rquest player data for room ");
+			return true ;
+		}
+	case MSG_TP_REQUEST_ROOM_LIST:
+		{
+			stMsgRequestRoomListRet msgRet ;
+			stRoomListItem stItem ;
+			uint16_t nLeftSize = m_vRooms.size() ;
+			MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
+			uint8_t nCnt = 0 ;
+			nCnt = nLeftSize <= 5 ? nLeftSize : 5 ;
+			msgRet.bFinal = nCnt == nLeftSize ;
+			msgRet.nListCnt = nCnt ;
+			CAutoBuffer auBuffer(sizeof(msgRet) + sizeof(stRoomListItem) * msgRet.nListCnt );
+			auBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+			for ( ; iter != m_vRooms.end() && nLeftSize > 0  ; ++iter,--nLeftSize,--nCnt )
+			{
+				if ( nCnt == 0 )
+				{
+					SendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID);
+					auBuffer.clearBuffer();
+
+					nCnt = nLeftSize <= 5 ? nLeftSize : 5 ;
+					msgRet.nListCnt = nCnt ;
+					msgRet.bFinal = nCnt == nLeftSize ;
+					auBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+				}
+				memset(&stItem,0,sizeof(stItem));
+				CTaxasRoom* pRoom = iter->second ;
+				stItem.nCreatOwnerUID = pRoom->getOwnerUID() ;
+				stItem.nCurrentCount = pRoom->GetPlayerCntWithState(eRoomPeer_SitDown);
+				stItem.nRoomID = pRoom->GetRoomID();
+				stItem.nSmiallBlind = pRoom->getLittleBlind();
+				stItem.nSeatCnt = pRoom->getSeatCnt();
+				sprintf_s(stItem.vRoomName,sizeof(stItem.vRoomName),"%s",pRoom->getRoomName());
+				//sprintf_s(stItem.vDesc,sizeof(stItem.vDesc),"%s",pRoom->getRoomDesc());
+				auBuffer.addContent((char*)&stItem,sizeof(stItem)) ;
+			}
+
+			if (msgRet.nListCnt > 0 )
+			{
+				SendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID);
+			}
+		}  
+		break;
+	default:
+		return false;
+	}
+	return true ;
 }
 
 CTaxasRoom*CRoomManager::GetRoomByID(uint32_t nRoomID )
@@ -273,6 +331,7 @@ void CRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 			reader.parse(pResultData,pResultData + nDatalen,cValue) ;
 			bSuccess = cValue["errcode"].asInt() == 200 ;
 			nChatRoomID = cValue["room_id"].asUInt();
+			CLogMgr::SharedLogMgr()->PrintLog("error code = %d room id = %d",cValue["errcode"].asInt(), cValue["room_id"].asUInt() );
 		}
 
 		CTaxasRoom* pRoom = (CTaxasRoom*)pUserData ;
@@ -299,15 +358,18 @@ void CRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 			SendMsg(&msgCreateInfo,sizeof(msgCreateInfo),pRoom->GetRoomID());
 			pRoom->forceDirytInfo();
 			pRoom->saveUpdateRoomInfo();
-			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d create room success",pRoom->getOwnerUID());
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d create room success",pRoom->getOwnerUID());
 		}
 		else
 		{
 			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d create room failed no more chat room",pRoom->getOwnerUID());
 			msgRet.nRet = 2;
-			m_vRooms.erase(m_vRooms.find(pRoom->GetRoomID())) ;
-			delete pRoom ;
-			pRoom = nullptr ;
+			if ( m_vRooms.find(pRoom->GetRoomID())!= m_vRooms.end() )
+			{
+				m_vRooms.erase(m_vRooms.find(pRoom->GetRoomID())) ;
+				delete pRoom ;
+				pRoom = nullptr ;
+			}
 		}
 		SendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
 	}
@@ -330,7 +392,7 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		msgRet.nRet = 0 ;
 		msgRet.vArg[0] = pRequest->vArg[0];
 		msgRet.vArg[1] = 0 ;
-		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,nConfigID);
+		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfigByConfigID(nConfigID);
 		if ( pRoomConfig == nullptr )
 		{
 			msgRet.nRet = 1;
@@ -339,7 +401,7 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		}
 
 		CTaxasRoom* pRoom = new CTaxasRoom ;
-		pRoom->Init( m_vRooms.size() + 1,(stTaxasRoomConfig*)pRoomConfig) ;
+		pRoom->Init( ++m_nMaxRoomID,(stTaxasRoomConfig*)pRoomConfig) ;
 		m_vRooms[pRoom->GetRoomID()] = pRoom ;
 		pRoom->onCreateByPlayer(pRequest->nReqOrigID);
 		pRoom->setRoomName(strName.c_str());
@@ -384,6 +446,6 @@ void CRoomManager::onConnectedToSvr()
 	{
 		stMsgReadTaxasRoomInfo msg ;
 		SendMsg(&msg,sizeof(msg),0) ;
-		CLogMgr::SharedLogMgr()->ErrorLog("request taxas rooms");
+		CLogMgr::SharedLogMgr()->PrintLog("request taxas rooms");
 	}
 }

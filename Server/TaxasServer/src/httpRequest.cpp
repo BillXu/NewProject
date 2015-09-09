@@ -25,6 +25,7 @@ bool CHttpRequest::init(const char* pBaseUrl )
 	curl_easy_setopt(m_pCURL,CURLOPT_SSL_VERIFYPEER,0L);
 	curl_easy_setopt(m_pCURL,CURLOPT_SSL_VERIFYHOST,0L);
 	curl_easy_setopt(m_pCURL,CURLOPT_WRITEFUNCTION,&CHttpRequest::onRecieveData );
+	curl_easy_setopt(m_pCURL,CURLOPT_WRITEDATA,this);
 #ifndef NDEBUG
 	curl_easy_setopt(m_pCURL,CURLOPT_VERBOSE,1L) ;
 #endif
@@ -45,10 +46,10 @@ bool CHttpRequest::performRequest(const char* pAddtionUrl , const char* pData , 
 	curl_easy_setopt(m_pCURL,CURLOPT_HEADER,m_pCurlList) ; 
 	curl_easy_setopt(m_pCURL,CURLOPT_POSTFIELDS,pData );
 	curl_easy_setopt(m_pCURL,CURLOPT_POSTFIELDSIZE,nLen);
-	curl_easy_setopt(m_pCURL,CURLOPT_WRITEDATA,this);
+	urlRet = curl_easy_setopt(m_pCURL, CURLOPT_HEADER, 0L);
 
 	std::string strUrl = m_strBaseURL + pAddtionUrl ;
-	curl_easy_setopt(m_pCURL,CURLOPT_URL,strUrl.c_str());
+	curl_easy_setopt(m_pCURL,CURLOPT_URL,strUrl.c_str()); 
 	urlRet = curl_easy_perform(m_pCURL) ;
 	if ( urlRet != CURLE_OK )
 	{
@@ -62,6 +63,7 @@ void CHttpRequest::setDelegate(CHttpRequestDelegate* pDelegate)
 {
 	m_pDelegate = pDelegate ;
 }
+
 
 size_t CHttpRequest::onRecieveData(void *buffer, size_t size, size_t count, void *user_p)
 {

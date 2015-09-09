@@ -116,10 +116,12 @@
     <ClInclude Include="..\DataServer\src\main.h" />
     <ClInclude Include="..\DataServer\src\Player.h" />
     <ClInclude Include="..\DataServer\src\PlayerBaseData.h" />
+    <ClInclude Include="..\DataServer\src\PlayerFriend.h" />
     <ClInclude Include="..\DataServer\src\PlayerMail.h" />
     <ClInclude Include="..\DataServer\src\PlayerManager.h" />
     <ClInclude Include="..\DataServer\src\PlayerMission.h" />
     <ClInclude Include="..\DataServer\src\PlayerTaxas.h" />
+    <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
     <ClInclude Include="..\ServerCommon\ServerCommon.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
@@ -148,6 +150,7 @@
     <ClCompile Include="..\DataServer\src\main.cpp" />
     <ClCompile Include="..\DataServer\src\Player.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerBaseData.cpp" />
+    <ClCompile Include="..\DataServer\src\PlayerFriend.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerMail.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerManager.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerMission.cpp" />

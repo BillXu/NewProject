@@ -10,63 +10,7 @@
 #include "PlayerEvent.h"
 #include "PlayerMail.h"
 #include "EventCenter.h"
-void stFriendInfo::OnFriendOffline(CPlayer* pPlayerOffline)
-{
-	if (! pPlayer  || pPlayer->GetSessionID() > pPlayerOffline->GetSessionID() )
-	{
-		return ;
-	}
-
-	if ( pDetail == NULL )
-	{
-		pDetail = new stPlayerDetailData ;
-	}
-	pPlayer->GetBaseData()->GetPlayerBrifData(&tBrifData) ;
-	pPlayer->GetBaseData()->GetPlayerDetailData(pDetail) ;
-	pDetail->bIsOnLine = false ;
-	tBrifData.bIsOnLine = false ;
-	pPlayer = NULL ;
-}
-
-void stFriendInfo::OnFriendOnLine(CPlayer* pOnLinePlayer)
-{
-	if ( pOnLinePlayer == NULL )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("friend player online can not be null") ;
-		return ;
-	}
-	pPlayer = pOnLinePlayer ;
-	pPlayer->GetBaseData()->GetPlayerBrifData(&tBrifData) ;
-	bHaveBrifeData = true ;
-}
-
-bool stFriendInfo::GetDetailData(stPlayerDetailData* pData )
-{
-	if ( pPlayer )
-	{
-		pPlayer->GetBaseData()->GetPlayerDetailData(pData) ;
-		return true;
-	}
-
-	if ( pDetail )
-	{
-		memcpy(pData,pDetail,sizeof(stPlayerDetailData));
-		pData->bIsOnLine = false ;
-		return true ;
-	}
-	return false ;
-}
-
-void stFriendInfo::SetDetail(stPlayerDetailData* pDetailData )
-{
-	if ( pDetail == NULL )
-	{
-		pDetail = new stPlayerDetailData ;
-	}
-	memcpy(pDetail,pDetailData,sizeof(stPlayerDetailData));
-	memcpy(&tBrifData,pDetailData,sizeof(stPlayerBrifData));
-	bHaveBrifeData = true ;
-}
+#include "AutoBuffer.h"
 
 CPlayerFriend::CPlayerFriend(CPlayer* pPlayer):IPlayerComponent(pPlayer)
 {
@@ -75,313 +19,123 @@ CPlayerFriend::CPlayerFriend(CPlayer* pPlayer):IPlayerComponent(pPlayer)
 
 CPlayerFriend::~CPlayerFriend()
 {
-	ClearFriendInfo();
+	
 }
 
 bool CPlayerFriend::OnMessage(stMsg* pMsg )
 {
 	switch ( pMsg->usMsgType )
 	{
+	case MSG_READ_FRIEND_LIST:
+		{
+			stMsgReadFriendListRet* pRet = (stMsgReadFriendListRet*)pMsg ;
+			char* pBuffer = (char*)&pRet;
+			pBuffer += sizeof(stMsgReadFriendListRet);
+
+			if ( pRet->nFriendCountLen )
+			{
+				Json::Reader reader ;
+				Json::Value arrayValue ;
+				reader.parse(pBuffer,pBuffer + pRet->nFriendCountLen,arrayValue,false);
+				for ( uint16_t nIdx = 0 ; nIdx < arrayValue.size(); ++nIdx )
+				{
+					m_vAllFriends.insert(arrayValue[nIdx].asUInt());
+				}
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("read friend list ok uid = %d",GetPlayer()->GetUserUID());
+		}
+		break;
 	case MSG_REQUEST_FRIEND_LIST:
 		{
-			if ( pMsg->cSysIdentifer == ID_MSG_DB2GM )
-			{
-				stMsgGameServerRequestFirendListRet* pMsgRet = (stMsgGameServerRequestFirendListRet*)pMsg ;
-				char* pBuffer = (char*)pMsg ;
-				pBuffer += sizeof(stMsgGameServerRequestFirendListRet) ;
-				while ( pMsgRet->nFriendCount--)
-				{
-					stFriendInfo* pInfo = new stFriendInfo ;
-					stServerSaveFrienItem* pItem = (stServerSaveFrienItem*)pBuffer ;
-					pInfo->nPresentCoinTimes = pItem->nPresentTimes ;
-					pInfo->tBrifData.nUserUID = pItem->nFriendUserUID ;
-					if ( GetFriendByUID(pItem->nFriendUserUID) == NULL )
-					{
-						m_vAllFriends[pItem->nFriendUserUID] = pInfo;
-					}
-					
-					++pItem;
-				}
-				UpdateFirendInfo();
-				CLogMgr::SharedLogMgr()->PrintLog("read friend list from DB") ;
-			}
-			else
-			{
-				OnClientRequestFriendList();
-			}
+			SendListToClient();
 		}
 		break;
-	case MSG_REQUEST_FRIEND_BRIFDATA_LIST:
-		{
-			stMsgGameServerRequestFriendBrifDataListRet* pRet = (stMsgGameServerRequestFriendBrifDataListRet*)pMsg ;
-			char* pBuffer = (char*)pRet ;
-			pBuffer = pBuffer + sizeof(stMsgGameServerRequestFriendBrifDataListRet);
-			stPlayerBrifData* pData = (stPlayerBrifData*)pBuffer;
-			while ( pRet->nCount-- > 0 )
-			{
-				stFriendInfo* pInfo = GetFriendByUID(pData->nUserUID) ;
-				if ( pInfo == NULL )
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("friend info is NULL ? how ?") ;
-					continue;
-				}
-				memcpy(&pInfo->tBrifData,pData,sizeof(stPlayerBrifData));
-				pInfo->tBrifData.bIsOnLine = false ;
-				pInfo->bHaveBrifeData = true ;
-				++pData ;
-			}
-			CLogMgr::SharedLogMgr()->PrintLog("read friend brife data list from DB ,send list to client") ;
-			SendListToClient() ;
-		}
-		break;
-	case MSG_SAVE_FRIEND_LIST:
-		{
-			stMsgGameServerSaveFriendListRet* pRet = (stMsgGameServerSaveFriendListRet*)pMsg ;
-			if ( pRet->nRet == 0 )
-			{
-				CLogMgr::SharedLogMgr()->PrintLog("%s Save friend list success ",GetPlayer()->GetBaseData()->GetPlayerName()) ;
-			}
-			else
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("%s Save friend list Failed ",GetPlayer()->GetBaseData()->GetPlayerName()) ;
-			}
-		}
-		break; 
 	case MSG_PLAYER_ADD_FRIEND:
 		{
 			stMsgPlayerAddFriend* pMsgRet = (stMsgPlayerAddFriend*)pMsg ;
-			CPlayer* pTargetPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pMsgRet->nUID) ;
+			CPlayer* pTargetPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pMsgRet->nTargetUID,false) ;
 			stMsgPlayerAddFriendRet msg ;
 			msg.nRet = 0 ;
+			msg.nTaregtUID = pMsgRet->nTargetUID ;
+			memset(msg.pReplayerName,0,sizeof(msg.pReplayerName));
+			if ( pTargetPlayer )
+			{
+				sprintf_s(msg.pReplayerName,sizeof(msg.pReplayerName),"%s",pTargetPlayer->GetBaseData()->GetPlayerName()) ;
+			}
 
 			if ( IsFriendListFull() )
 			{
-				msg.nRet = 1 ;
+				msg.nRet = 2 ;
 				CLogMgr::SharedLogMgr()->PrintLog("friend list is full, can not add");
 			}
-			else if ( GetFriendByUID(pMsgRet->nUID) != NULL )
+			else if ( isPlayerUIDFriend(pMsgRet->nTargetUID) )
 			{
-				msg.nRet = 4 ;
+				msg.nRet = 5 ;
 				CLogMgr::SharedLogMgr()->PrintLog("already your friend , can not add");
 			}
-			else
+			else if ( pTargetPlayer == nullptr )
 			{
-				CPlayerMailComponent* pMail = NULL ;
-				if ( pTargetPlayer )
-				{
-					 pMail = (CPlayerMailComponent*)pTargetPlayer->GetComponent(ePlayerComponent_Mail) ;
-					 AddFriend(pTargetPlayer);
-					 CLogMgr::SharedLogMgr()->PrintLog("add friend target online , mail infom it ");
-				}
-				else
-				{
-					pMail = (CPlayerMailComponent*)GetPlayer()->GetComponent(ePlayerComponent_Mail) ;
-					AddFriend(pMsgRet->nUID);
-					CLogMgr::SharedLogMgr()->PrintLog("add friend target not online , mail infom it ");
-				}
-				pMail->PostBeAddedFriendMail(GetPlayer(),pMsgRet->nUID);
-				
-			}
-			SendMsgToClient((char*)&msg,sizeof(msg)) ;
-		}
-		break;
-	//case MSG_PLAYER_REPLAY_BE_ADD_FRIEND:
-	//	{
-	//		stMsgPlayerReplayBeAddedFriend* pMsgRet = (stMsgPlayerReplayBeAddedFriend*)pMsg ;
-	//		CPlayer* pReplyToPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pMsgRet->nReplayToPlayerUserUID) ;
-	//		CPlayerFriend* pReplyToFriendComponed =  NULL;
-	//		if ( pReplyToPlayer )
-	//		{
-	//			pReplyToFriendComponed = (CPlayerFriend*)pReplyToPlayer->GetComponent(ePlayerComponent_Friend) ;
-	//		}
-	//		
-	//		stMsgPlayerReplayBeAddedFriendRet msgBack ;
-	//		msgBack.nRet = 0 ;
-	//		if ( pReplyToPlayer )
-	//		{
-	//			memcpy(msgBack.pTargetName,pReplyToPlayer->GetBaseData()->GetPlayerName(),MAX_LEN_CHARACTER_NAME);
-	//		}
-	//		if ( IsFriendListFull() )
-	//		{
-	//			msgBack.nRet = 2 ;
-	//		}
-	//		else if ( pMsgRet->bAgree && GetFriendByUID(pMsgRet->nReplayToPlayerUserUID) != NULL )
-	//		{
-	//			msgBack.nRet = 4 ;
-	//		}
-	//		else if ( pReplyToPlayer == NULL )
-	//		{
-	//			msgBack.nRet = 1 ;
-	//			CPlayerMailComponent* pMail = (CPlayerMailComponent*)GetPlayer()->GetComponent(ePlayerComponent_Mail) ;
-	//			pMail->PostReplyToAddFriendMail(GetPlayer(),pMsgRet->bAgree,pMsgRet->nReplayToPlayerUserUID);
-	//		}
-	//		else if ( pReplyToFriendComponed->IsFriendListFull() )
-	//		{
-	//			msgBack.nRet = 3 ;
-	//		}
-	//		else
-	//		{
-	//			pReplyToFriendComponed->OnOtherReplayMeAboutAddItbeFriend(pMsgRet->bAgree,GetPlayer()) ;
-	//		}
-
-	//		if ( pMsgRet->bAgree )
-	//		{
-	//			SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-	//		}
-
-	//		if ( pMsgRet->bAgree )
-	//		{
-	//			if ( pReplyToPlayer )
-	//			{
-	//				AddFriend(pReplyToPlayer);
-	//			}
-	//			else
-	//			{
-	//				AddFriend(pMsgRet->nReplayToPlayerUserUID);
-	//			}
-	//		}
-	//	}
-	//	break;
-	case MSG_PLAYER_SERACH_PEERS:
-		{
-			if ( pMsg->cSysIdentifer == ID_MSG_DB2GM ) // db result 
-			{
-				stMsgGameServerGetSearchFriendResultRet* pMsgRet = (stMsgGameServerGetSearchFriendResultRet*)pMsg ;
-				stMsgPlayerSearchPeerRet msgBack ;
-				msgBack.nRetCount = pMsgRet->nResultCount ;
-				char* pBuffer = new char[ sizeof(msgBack) + pMsgRet->nResultCount * sizeof(stPlayerBrifData)] ;
-				unsigned short nOffset = 0 ;
-				memcpy(pBuffer,&msgBack,sizeof(msgBack));
-				nOffset += sizeof(msgBack);
-				memcpy(pBuffer + nOffset,(char*)pMsgRet + sizeof(stMsgGameServerGetSearchFriendResultRet),pMsgRet->nResultCount * sizeof(stPlayerBrifData));
-				nOffset += pMsgRet->nResultCount * sizeof(stPlayerBrifData) ;
-
-				// update online state 
-				char* pTemp = pBuffer + sizeof(msgBack);
-				stPlayerBrifData* pinfo = (stPlayerBrifData*)pTemp ;
-				for ( int i = 0 ; i < pMsgRet->nResultCount ; ++i )
-				{
-					pinfo->bIsOnLine = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pinfo->nUserUID) != NULL ;
-				}
-				SendMsgToClient(pBuffer,nOffset) ;
-				delete[] pBuffer;
-				CLogMgr::SharedLogMgr()->PrintLog("read search result from db");
-			}
-			else   // from client ;
-			{
-				stMsgPlayerSearchPeer* pMsgRet = (stMsgPlayerSearchPeer*)pMsg ;
-
-				if ( pMsgRet->nSearchContentLen >= MAX_LEN_CHARACTER_NAME )  // serach content is too long 
-				{
-					stMsgPlayerSearchPeerRet msgBack ;
-					msgBack.nRetCount = 0 ;
-					SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-					CLogMgr::SharedLogMgr()->PrintLog("search content is too long , no result");
-					break; ;
-				}
-				// sent to db , request the search ;
-				stMsgGameServerGetSearchFriendResult msgToDB ;
-				msgToDB.nLen = pMsgRet->nSearchContentLen ;
-				msgToDB.nSessionID = GetPlayer()->GetSessionID() ;
-				char* pBuffer = new char[sizeof(msgToDB) + msgToDB.nLen] ;
-				unsigned short nOffset = 0 ;
-				memcpy(pBuffer,&msgToDB,sizeof(msgToDB));
-				nOffset += sizeof(msgToDB);
-				memcpy(pBuffer + nOffset, (char*)pMsgRet + sizeof(stMsgPlayerSearchPeer),msgToDB.nLen);
-				nOffset += msgToDB.nLen ;
-				SendMsgToDB(pBuffer,nOffset) ;
-				delete[] pBuffer ;
-				CLogMgr::SharedLogMgr()->PrintLog("send request to DB to read search result");
-			}
-		}
-		break;
-	case MSG_PLAYER_REQUEST_FRIEND_DETAIL:
-		{
-			if ( pMsg->cSysIdentifer == ID_MSG_DB2GM )  // come from db search result ;
-			{
-				stMsgGameServerGetFriendDetailRet* pRetMsg = (stMsgGameServerGetFriendDetailRet*)pMsg ;
-				stMsgPlayerRequestFriendDetailRet msgBack ;
-				msgBack.nRet = pRetMsg->nRet ;
-				if ( msgBack.nRet != 0 )
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("request friend info error , friend uid = %d ",pRetMsg->stPeerInfo.nUserUID);
-				}
-				else
-				{
-					stFriendInfo* pInfo = GetFriendByUID(pRetMsg->stPeerInfo.nUserUID) ;
-					if ( pInfo == NULL )
-					{
-						CLogMgr::SharedLogMgr()->ErrorLog("NO this friend info , how ?") ;
-					}
-					else
-					{
-						pInfo->SetDetail(&pRetMsg->stPeerInfo) ;
-					}
-					memcpy(&msgBack.stPeerInfo,&pRetMsg->stPeerInfo,sizeof(msgBack.stPeerInfo));
-				}
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				CLogMgr::SharedLogMgr()->PrintLog("read friend detail from db, and send to client ");
+				msg.nRet = 4 ;
 			}
 			else
 			{
-				stMsgPlayerRequestFriendDetail* pRequest = (stMsgPlayerRequestFriendDetail*)pMsg ;
-				stFriendInfo* pInfo = GetFriendByUID(pRequest->nFriendUserUID) ;
-				if ( pInfo->HaveDetailData() )
+				CPlayerFriend* pTaretFriendModule = (CPlayerFriend*)pTargetPlayer->GetComponent(ePlayerComponent_Friend);
+				if ( pTaretFriendModule->IsFriendListFull() )
 				{
-					stMsgPlayerRequestFriendDetailRet msgBack ;
-					msgBack.nRet = 0 ;
-					pInfo->GetDetailData(&msgBack.stPeerInfo);
-					SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-					CLogMgr::SharedLogMgr()->PrintLog("already have friend detail, send to client ");
+					msg.nRet = 3 ;
 				}
 				else
 				{
-					// send to db 
-					stMsgGameServerGetFriendDetail msgToDB; 
-					msgToDB.nSessionID = GetPlayer()->GetSessionID() ;
-					msgToDB.nFriendUID = pRequest->nFriendUserUID ;
-					SendMsgToDB((char*)&msgToDB,sizeof(msgToDB)) ;
-					CLogMgr::SharedLogMgr()->PrintLog("now do not have friend detail, request from db ");
+					pTaretFriendModule->OnPlayerWantAddMe(this);
 				}
+			}
+			if ( msg.nRet )
+			{
+				SendMsg(&msg,sizeof(msg)) ;
 			}
 		}
 		break;
-	case MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL:
+	case MSG_PLAYER_BE_ADDED_FRIEND_REPLY:
 		{
-			if ( pMsg->cSysIdentifer == ID_MSG_DB2GM )
+			stMsgPlayerBeAddedFriendReply* pMsgRet = (stMsgPlayerBeAddedFriendReply*)pMsg ;
+			CPlayer* pReplyToPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pMsgRet->nReplayToPlayerUserUID) ;
+			CPlayerFriend* pReplyToFriendComponed =  NULL;
+			stMsgPlayerBeAddedFriendReplyRet msgBack ;
+			msgBack.nNewFriendUserUID = pMsgRet->nReplayToPlayerUserUID ;
+			msgBack.nRet = 0 ;
+			if ( pReplyToPlayer )
 			{
-				stMsgGameServerGetSearchedPeerDetailRet* pRetMsg = (stMsgGameServerGetSearchedPeerDetailRet*)pMsg ;
-				stMsgPlayerRequestSearchedPeerDetailRet msgBack ;
-				msgBack.nRet = pRetMsg->nRet ;
-				if ( msgBack.nRet != 0 )
-				{
+				pReplyToFriendComponed = (CPlayerFriend*)pReplyToPlayer->GetComponent(ePlayerComponent_Friend) ;
+			}
 
-				}
-				else
+			if ( pReplyToFriendComponed )
+			{
+				if ( IsFriendListFull() )
 				{
-					memcpy(&msgBack.stPeerInfo,&pRetMsg->stPeerInfo,sizeof(msgBack.stPeerInfo));
+					msgBack.nRet = 2 ;
 				}
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+
+				if ( msgBack.nRet == 0 && pReplyToFriendComponed->IsFriendListFull() )
+				{
+					msgBack.nRet = 1 ;
+				}
+
+				if ( pMsgRet->bAgree && msgBack.nRet == 0  )
+				{
+					AddFriend(pMsgRet->nReplayToPlayerUserUID) ;
+				}
+
+				pReplyToFriendComponed->OnOtherReplayMeAboutAddItbeFriend(pMsgRet->bAgree,this);
 			}
 			else
 			{
-				stMsgPlayerRequestSearchedPeerDetail* pRetMsg = (stMsgPlayerRequestSearchedPeerDetail*)pMsg ;
-				CPlayer* pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pRetMsg->nPeerUserUID) ;
-				if ( pPlayer )
-				{
-					CPlayerBaseData* pbaseData = pPlayer->GetBaseData() ;
-					stMsgPlayerRequestSearchedPeerDetailRet msgBack ;
-					pbaseData->GetPlayerDetailData(&msgBack.stPeerInfo) ;
-					SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				}
-				else
-				{
-					// send to db request ;
-					stMsgGameServerGetSearchedPeerDetail msgToDB; 
-					msgToDB.nSessionID = GetPlayer()->GetSessionID() ;
-					msgToDB.nPeerUserUID = pRetMsg->nPeerUserUID ;
-					SendMsgToDB((char*)&msgToDB,sizeof(msgToDB)) ;
-				}
+				CLogMgr::SharedLogMgr()->ErrorLog("%d uid offline can not reply add friend ",pMsgRet->nReplayToPlayerUserUID);
+				msgBack.nRet = 3 ;
+			}
+
+			if ( pMsgRet->bAgree )
+			{
+				SendMsg(&msgBack,sizeof(pMsgRet->bAgree)) ;
 			}
 		}
 		break;
@@ -391,7 +145,7 @@ bool CPlayerFriend::OnMessage(stMsg* pMsg )
 			msgBack.nRet = 0 ;
 			stMsgPlayerDelteFriend* pMsgRet = (stMsgPlayerDelteFriend*)pMsg ;
 			msgBack.nDeleteUID = pMsgRet->nDelteFriendUserUID ;
-			if ( !GetFriendByUID(pMsgRet->nDelteFriendUserUID) )
+			if ( isPlayerUIDFriend(pMsgRet->nDelteFriendUserUID) == false )
 			{
 				msgBack.nRet = 1 ;
 			}
@@ -399,7 +153,19 @@ bool CPlayerFriend::OnMessage(stMsg* pMsg )
 			{
 				RemoveFriendByUID(pMsgRet->nDelteFriendUserUID) ;
 			}
-			SendMsgToClient((char*)&msgBack,sizeof(msgBack));
+			SendMsg(&msgBack,sizeof(msgBack));
+
+			CPlayer* pReplyToPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(msgBack.nDeleteUID) ;
+			CPlayerFriend* pReplyToFriendComponed =  NULL;
+			if ( pReplyToPlayer )
+			{
+				pReplyToFriendComponed = (CPlayerFriend*)pReplyToPlayer->GetComponent(ePlayerComponent_Friend) ;
+				pReplyToFriendComponed->RemoveFriendByUID(GetPlayer()->GetUserUID()) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("no online tell mail to delete friend");
+			}
 		}
 		break;
 	default:
@@ -418,61 +184,23 @@ void CPlayerFriend::OnPlayerDisconnect()
 void CPlayerFriend::Reset()
 {
 	m_bDirty = false;
-	ClearFriendInfo();
+	m_vAllFriends.clear();
 	// send request ;
-	stMsgGameServerRequestFirendList msgRequest ;
-	msgRequest.nUserUID = GetPlayer()->GetUserUID() ;
-	msgRequest.nSessionID = GetPlayer()->GetSessionID() ;
-	SendMsgToDB((char*)&msgRequest,sizeof(msgRequest)) ;
-	CEventCenter::SharedEventCenter()->RegisterEventListenner(eEvent_PlayerOnline,this,CPlayerFriend::EventFunc ) ;
-	CEventCenter::SharedEventCenter()->RegisterEventListenner(eEvent_PlayerOffline,this,CPlayerFriend::EventFunc ) ;
+	stMsgReadFriendList msgRead ;
+	msgRead.nUserUID = GetPlayer()->GetUserUID() ;
+	SendMsg(&msgRead,sizeof(msgRead)) ;
 }
 
 void CPlayerFriend::Init()
 {
-	ClearFriendInfo();
 	IPlayerComponent::Init() ;
-	Reset();
+	m_vAllFriends.clear();
 	m_bDirty = false;
-}
 
-void CPlayerFriend::UpdateFirendInfo()
-{
-
-	if ( m_vAllFriends.empty() )
-	{
-		CLogMgr::SharedLogMgr()->PrintLog( "m_vAllFriends is null , can not update friend info !" ) ;
-		return ; 
-	}
-
- 	CPlayerManager* pPlayerMgr = CGameServerApp::SharedGameServerApp()->GetPlayerMgr();
-	
-	MAP_FRIENDS::iterator iter = m_vAllFriends.begin() ;
-	for ( ; iter != m_vAllFriends.end() ; ++iter )
-	{
-		stFriendInfo* pFriendInfo = iter->second ;
-		if ( pFriendInfo == NULL )
-		{
-			CLogMgr::SharedLogMgr()->ErrorLog( "Why this friend info is null" ) ;
-			continue; 
-		}
-
-		CPlayer* pPlayer = pPlayerMgr->GetPlayerByUserUID(pFriendInfo->tBrifData.nUserUID) ;
-		if ( pPlayer )
-		{
-			pFriendInfo->OnFriendOnLine(pPlayer) ;
-		}
-	}
-}
-
-void CPlayerFriend::ClearFriendInfo()
-{
-	MAP_FRIENDS::iterator iter = m_vAllFriends.begin() ;
-	for ( ; iter != m_vAllFriends.end() ; ++iter )
-	{
-		delete iter->second ;
-	}
-	m_vAllFriends.clear() ;
+	// send request ;
+	stMsgReadFriendList msgRead ;
+	msgRead.nUserUID = GetPlayer()->GetUserUID() ;
+	SendMsg(&msgRead,sizeof(msgRead)) ;
 }
 
 void CPlayerFriend::SendListToClient()
@@ -480,71 +208,55 @@ void CPlayerFriend::SendListToClient()
 	// send msg to client ;
 	stMsgPlayerRequestFriendListRet msg ;
 	msg.nFriendCount = m_vAllFriends.size() ;
-	char* pBuffer = new char[sizeof(msg) + msg.nFriendCount * sizeof(stFriendBrifData)] ;
-	unsigned short nOffset = 0 ;
-	memcpy(pBuffer,&msg,sizeof(msg));
-	nOffset += sizeof(msg);
-	MAP_FRIENDS::iterator iter = m_vAllFriends.begin() ;
-	for ( ; iter != m_vAllFriends.end(); ++iter )
+	if ( msg.nFriendCount == 0 )
 	{
-		stFriendInfo* pInfo = iter->second ;
-		memcpy(pBuffer + nOffset , pInfo,sizeof(stFriendBrifData));
-		nOffset += sizeof(stFriendBrifData);
-	}
-	SendMsgToClient(pBuffer,nOffset) ;
-	delete[] pBuffer ;
-	pBuffer = NULL ;
-}
-
-//void CPlayerFriend::OnPlayerWantAddMe(CPlayer* pPlayerWantAddMe )
-//{
-//	stMsgPlayerBeAddedFriend msg ;
-//	msg.nPlayerUserUID = pPlayerWantAddMe->GetUserUID() ;
-//	memcpy(msg.pPlayerName,pPlayerWantAddMe->GetBaseData()->strName,sizeof(msg.pPlayerName));
-//	SendMsgToClient((char*)&msg,sizeof(msg)) ;
-//}
-//
-//void CPlayerFriend::OnOtherReplayMeAboutAddItbeFriend(bool bAgree,CPlayer* pWhoReplyMe)
-//{
-//	if ( bAgree )
-//	{
-//		AddFriend(pWhoReplyMe) ;
-//		// success to add firend ;
-//		stPlayerEventArgAddFriend eventArg ;
-//		eventArg.eEventType = ePlayerEvent_AddFriend ;
-//		eventArg.pNewFirend = pWhoReplyMe ;
-//		GetPlayer()->PostPlayerEvent(&eventArg) ;
-//	}
-//
-//	stMsgPlayerAddFriendReplay msg;
-//	msg.bAgree = bAgree ;
-//	memcpy(msg.pReplayerName,pWhoReplyMe->GetBaseData()->strName,sizeof(msg.pReplayerName));
-//	SendMsgToClient((char*)&msg,sizeof(msg)) ;
-//}
-
-void CPlayerFriend::AddFriend( CPlayer* pPlayerToAdd )
-{
-#ifdef DEBUG
-	if ( GetFriendByUID(pPlayerToAdd->GetUserUID()) )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("error already friend");
+		SendMsg(&msg,sizeof(msg)) ;
 		return ;
 	}
-#endif
-	stFriendInfo* pInfo = new stFriendInfo ;
-	pInfo->OnFriendOnLine(pPlayerToAdd) ;
-	m_vAllFriends[pInfo->tBrifData.nUserUID] = pInfo ;
-	m_bDirty = true;
+
+	CAutoBuffer auBuffer(sizeof(msg) + sizeof(uint32_t) * msg.nFriendCount );
+	auBuffer.addContent((char*)&msg,sizeof(msg)) ;
+	FRIENDS_UID::iterator iter = m_vAllFriends.begin() ;
+	for ( ; iter != m_vAllFriends.end(); ++iter )
+	{
+		uint32_t nIds = *iter ;
+		auBuffer.addContent((char*)&nIds,sizeof(nIds)) ;
+	}
+	SendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize());
 }
 
-stFriendInfo* CPlayerFriend::GetFriendByUID(unsigned int nPlayerUID )
+void CPlayerFriend::OnPlayerWantAddMe(CPlayerFriend* pPlayerWantAddMe )
 {
-	MAP_FRIENDS::iterator iter = m_vAllFriends.find(nPlayerUID) ;
-	if ( iter != m_vAllFriends.end() )
+	stMsgPlayerBeAddedFriend msg ;
+	msg.nPlayerUserUID = pPlayerWantAddMe->GetPlayer()->GetUserUID() ;
+	memcpy(msg.pPlayerName,pPlayerWantAddMe->GetPlayer()->GetBaseData()->GetPlayerName(),sizeof(msg.pPlayerName));
+	SendMsg(&msg,sizeof(msg)) ;
+}
+
+void CPlayerFriend::OnOtherReplayMeAboutAddItbeFriend(bool bAgree,CPlayerFriend* pWhoReplyMe)
+{
+	stMsgPlayerAddFriendRet msg ;
+	msg.nRet = 0 ;
+	msg.nTaregtUID = pWhoReplyMe->GetPlayer()->GetUserUID() ;
+	memset(msg.pReplayerName,0,sizeof(msg.pReplayerName));
+	sprintf_s(msg.pReplayerName,sizeof(msg.pReplayerName),"%s",pWhoReplyMe->GetPlayer()->GetBaseData()->GetPlayerName()) ;
+	if ( bAgree == false )
 	{
-		return iter->second ;
+		msg.nRet = 1 ;
 	}
-	return NULL ;
+	else
+	{
+		if ( IsFriendListFull() )
+		{
+			msg.nRet = 2 ;
+		}
+		else
+		{
+			AddFriend(msg.nTaregtUID) ;
+		}
+	}
+
+	SendMsg(&msg,sizeof(msg)) ;
 }
 
 void CPlayerFriend::TimerSave()
@@ -554,43 +266,50 @@ void CPlayerFriend::TimerSave()
 		return ;
 	}
 	m_bDirty = false ;
-	// save current firend info ;
-	stMsgGameServerSaveFirendList msgSaveList ;
-	msgSaveList.nSessionID = GetPlayer()->GetSessionID() ;
-	msgSaveList.nFriendCount = m_vAllFriends.size() ;
-	msgSaveList.nUserUID = GetPlayer()->GetUserUID();
-	char* pBuffer = new char [ sizeof(msgSaveList) + sizeof(stServerSaveFrienItem) * msgSaveList.nFriendCount ] ;
-	unsigned short nOffset = 0 ;
-	memcpy(pBuffer,&msgSaveList,sizeof(msgSaveList));
-	nOffset += sizeof(msgSaveList);
-	MAP_FRIENDS::iterator iter = m_vAllFriends.begin() ;
-	stServerSaveFrienItem saveItem ;
-	for ( ; iter != m_vAllFriends.end(); ++iter) 
+
+	stMsgSaveFirendList saveList ;
+	saveList.nFriendCountLen = m_vAllFriends.size() ;
+	saveList.nUserUID = GetPlayer()->GetUserUID() ;
+	if ( saveList.nFriendCountLen == 0 )
 	{
-		stFriendInfo* pInfo = iter->second ;
-		if ( pInfo == NULL )
-		{
-			CLogMgr::SharedLogMgr()->ErrorLog("how can friend info is NULL") ;
-			continue;
-		}
-		saveItem.nFriendUserUID = pInfo->tBrifData.nUserUID;
-		saveItem.nPresentTimes = pInfo->nPresentCoinTimes;
-		memcpy(pBuffer + nOffset , &saveItem, sizeof(saveItem));
-		//CLogMgr::SharedLogMgr()->PrintLog("save friend id = %d",pInfo->nUID) ;
-		nOffset += sizeof(saveItem);
+		SendMsg(&saveList,sizeof(saveList)) ;
+		return ;
 	}
-	SendMsgToDB(pBuffer,nOffset) ;
-	delete[] pBuffer ;
+
+	std::string strFriends = "";
+	if ( !m_vAllFriends.empty() )
+	{
+		Json::Value followArray ;
+		Json::StyledWriter writeFollow ;
+
+		FRIENDS_UID::iterator iter = m_vAllFriends.begin() ;
+		uint16_t nIdx = 0 ;
+		for ( ; iter != m_vAllFriends.end(); ++iter ,++nIdx)
+		{
+			followArray[nIdx] = *iter ;
+		}
+		strFriends = writeFollow.write(followArray) ;
+	}
+
+	saveList.nFriendCountLen = strFriends.size() ;
+	CAutoBuffer auBf ( sizeof(saveList) + saveList.nFriendCountLen ) ;
+	auBf.addContent((char*)&saveList,sizeof(saveList)) ;
+	
+	for ( size_t nValue : m_vAllFriends )
+	{
+		auBf.addContent((char*)&nValue,sizeof(nValue)) ;
+	}
+	CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetUserUID(),auBf.getBufferPtr(),auBf.getContentSize()) ;
+	CLogMgr::SharedLogMgr()->PrintLog("save friend list uid = %d friend cnt = %d",GetPlayer()->GetUserUID(),m_vAllFriends.size());
 }
 
 void CPlayerFriend::RemoveFriendByUID(unsigned int nPlayerUID )
 {
-	MAP_FRIENDS::iterator iter = m_vAllFriends.begin() ;
+	FRIENDS_UID::iterator iter = m_vAllFriends.begin() ;
 	for ( ; iter != m_vAllFriends.end(); ++iter )
 	{
-		if ( iter->second->tBrifData.nUserUID == nPlayerUID )
+		if ( *iter == nPlayerUID )
 		{
-			delete iter->second ;
 			m_vAllFriends.erase(iter) ;
 			m_bDirty = true;
 			return;
@@ -601,54 +320,14 @@ void CPlayerFriend::RemoveFriendByUID(unsigned int nPlayerUID )
 void CPlayerFriend::AddFriend(unsigned int nFriendUserUID)
 {
 #ifdef DEBUG
-	if ( GetFriendByUID(nFriendUserUID) )
+	if ( isPlayerUIDFriend(nFriendUserUID) )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("error already friend");
 		return ;
 	}
 #endif
-	stFriendInfo* pInfo = new stFriendInfo ;
-	pInfo->tBrifData.nUserUID = nFriendUserUID ;
-	pInfo->bHaveBrifeData = false ;
-	pInfo->nPresentCoinTimes = 0 ;
-	m_vAllFriends[nFriendUserUID] = pInfo;
+	m_vAllFriends.insert(nFriendUserUID);
 	m_bDirty = true;
-}
-void CPlayerFriend::OnClientRequestFriendList()
-{
-	// is all friend have brife Data ;
-	std::vector<unsigned int > vUserUIDS ;
-	MAP_FRIENDS::iterator iter = m_vAllFriends.begin();
-	for ( ; iter != m_vAllFriends.end(); ++iter )
-	{
-		stFriendInfo* pInfo = iter->second ;
-		if (! pInfo->HaveBrifData() )
-		{
-			vUserUIDS.push_back(pInfo->tBrifData.nUserUID) ;
-		}
-	}
-
-	if ( vUserUIDS.size() == 0 )
-	{
-		SendListToClient();
-	}
-	else
-	{
-		// request from db to get more brif data 
-		stMsgGameServerRequestFriendBrifDataList msg ;
-		msg.nFriendCount = vUserUIDS.size();
-		msg.nSessionID = GetPlayer()->GetSessionID() ;
-		char* pBuffer = new char[sizeof(msg) + msg.nFriendCount * sizeof(unsigned int)] ;
-		memcpy(pBuffer,&msg,sizeof(msg));
-		unsigned int* pIntBuf = (unsigned int*)(pBuffer + sizeof(msg));
-		for ( unsigned int i = 0 ; i < vUserUIDS.size(); ++i )
-		{
-			*pIntBuf = vUserUIDS[i] ;
-			++pIntBuf ;
-		}
-		SendMsgToDB(pBuffer,sizeof(msg) + msg.nFriendCount * sizeof(unsigned int));
-		delete []pBuffer ;
-	}
 }
 
 bool CPlayerFriend::EventFunc(void* pUserData,stEventArg* pArg)
@@ -666,16 +345,16 @@ void CPlayerFriend::OnProcessEvent(stEventArg* pArg)
 	}
 
 	CPlayer* p = (CPlayer*)pArg->pData ;
-	stFriendInfo* pinfo = GetFriendByUID(p->GetUserUID()) ;
-	if ( pinfo )
+	
+	if ( 0 )
 	{
 		if ( pArg->cEvent == eEvent_PlayerOnline )
 		{
-			pinfo->OnFriendOnLine(p) ;
+			//pinfo->OnFriendOnLine(p) ;
 		}
 		else if ( eEvent_PlayerOffline == pArg->cEvent ) 
 		{
-			pinfo->OnFriendOffline(p);
+			//pinfo->OnFriendOffline(p);
 		}
 	}
 }

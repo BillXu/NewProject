@@ -79,6 +79,31 @@ A gmin(A a,A b)
 
 #include "MemoryManager.h"
 
+class CTempTest
+{
+public:
+	CTempTest(){ memset(nValue,0,sizeof(nValue)) ; }
+
+	template <typename T >
+	void setValue(T* v ,int nlen ) ;
+
+	void setValue(char* pV, int nLen )
+	{
+		printf("orig func\n") ;
+		memcpy(nValue,pV,nLen);
+	}
+public:
+	char nValue[100] ;
+};
+
+template <typename T >
+void CTempTest::setValue(T* v ,int nlen )
+{
+	printf("here point size = %d \n", sizeof(T));
+	char* p = (char*)v ;
+	setValue(p,nlen);
+}
+
 //{
 	//filename:function_partial_order.cpp 
 	//wirtten by saturnman #include<iostream> usingnamespacestd; 
@@ -102,6 +127,10 @@ A gmin(A a,A b)
 	} 
 
 	int hmain() {
+		CTempTest tt ;
+		short iv = 23 ;
+		short* ivp = &iv ;
+		tt.setValue(ivp,sizeof(short));
 		char pBuffer[10] = {"1234567"} ;
 		std::string strt = "";
 		bool b = strt.empty();
@@ -114,7 +143,7 @@ A gmin(A a,A b)
 		//test function template partial order 
 		cout<<"test function template partial order."<<endl; 
 		int param1 =10; int* param2 =NULL; 
-		func1(param1); 
+		func1<int>(param1); 
 		func1(param2); 
 		func2(param1); 
 		func2(param2);

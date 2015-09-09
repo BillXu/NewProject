@@ -16,6 +16,7 @@ public:
 	bool Init();
 	bool OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
 	bool OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nRoomID );
+	bool onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID);
 	CTaxasRoom* GetRoomByID(uint32_t nRoomID );
 	void SendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID );
 	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg);
@@ -27,4 +28,5 @@ protected:
 protected:
 	MAP_ID_ROOM m_vRooms ;
 	CHttpRequest m_pGoTyeAPI;
+	uint32_t m_nMaxRoomID ;
 };

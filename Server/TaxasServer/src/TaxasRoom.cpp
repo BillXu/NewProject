@@ -449,6 +449,31 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 			CLogMgr::SharedLogMgr()->PrintLog("read taxas player uid = %d",pData->nUserUID) ;
 		}
 		break;
+	case MSG_REQUEST_ROOM_DETAIL:
+		{
+			stMsgRequestRoomDetailRet msgRet ;
+			msgRet.detailInfo.nCreatOwnerUID = getOwnerUID();
+			msgRet.detailInfo.nCurrentCount = GetPlayerCntWithState(eRoomPeer_SitDown);
+			msgRet.detailInfo.nRoomID = GetRoomID();
+			msgRet.detailInfo.nSmiallBlind = getLittleBlind();
+			msgRet.detailInfo.nSeatCnt = getSeatCnt();
+			sprintf_s(msgRet.detailInfo.vRoomName,sizeof(msgRet.detailInfo.vRoomName),"%s",getRoomName());
+			SendMsgToPlayer(nPlayerSessionID,&msgRet,sizeof(msgRet)) ;
+		}
+		break;
+	case MSG_REQUEST_MY_OWN_ROOM_DETAIL:
+		{
+			stMsgRequestMyOwnRoomDetailRet msgRet ;
+			msgRet.nCanWithdrawProfit = m_nRoomProfit ;
+			msgRet.nConfigID = m_stRoomConfig.nConfigID ;
+			msgRet.nDeadTime = m_nDeadTime ;
+			msgRet.nFollows = 2 ;
+			msgRet.nRoomID = GetRoomID() ;
+			msgRet.nTotalProfit = 1000 ;
+			sprintf_s(msgRet.vRoomName,sizeof(msgRet.vRoomName),"%s",getRoomName());
+			SendMsgToPlayer(nPlayerSessionID,&msgRet,sizeof(msgRet)) ;
+		}
+		break;
 	default:
 		return false ;
 	}
@@ -508,7 +533,7 @@ void CTaxasRoom::OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID , uint64
 	msgCrossReq.nReqOrigID = GetRoomID() ;
 	msgCrossReq.vArg[0] = true ;
 	msgCrossReq.vArg[1] = nTakeInMoney ;
-	msgCrossReq.vArg[2] = m_stRoomConfig.nMinNeedToEnter ;
+	msgCrossReq.vArg[2] = m_stRoomConfig.nMiniTakeInCoin ;
 	Json::Value jsonArg ;
 	jsonArg["seatIdx"] = nSeatIdx ;
 	CON_REQ_MSG_JSON(msgCrossReq,jsonArg,pBuffer);
@@ -1442,7 +1467,7 @@ void CTaxasRoom::saveUpdateRoomInfo()
 	msgSave.nRoomProfit = m_nRoomProfit ;
 	memset(msgSave.vRoomDesc,0,sizeof(msgSave.vRoomDesc));
 	memset(msgSave.vRoomName,0,sizeof(msgSave.vRoomName));
-	sprintf(msgSave.vRoomDesc,"%s",m_strRoomDesc.c_str());
+	//sprintf(msgSave.vRoomDesc,"%s",m_strRoomDesc.c_str());
 	sprintf(msgSave.vRoomName,"%s",m_vRoomName );
 	msgSave.nInformLen = strlen(m_strRoomInForm.c_str());
 	if ( msgSave.nInformLen == 0 )
@@ -1692,9 +1717,10 @@ void CTaxasRoom::SendRoomInfoToPlayer(uint32_t nSessionID )
 	msgBaseInfo.nMaxSeat = (uint8_t)m_stRoomConfig.nMaxSeat;
 	msgBaseInfo.nMostBetCoinThisRound = m_nMostBetCoinThisRound ;
 	msgBaseInfo.nRoomID = nRoomID ;
-	msgBaseInfo.nMiniTakeIn = m_stRoomConfig.nMinNeedToEnter ;
+	msgBaseInfo.nMiniTakeIn = m_stRoomConfig.nMiniTakeInCoin ;
 	msgBaseInfo.nMaxTakeIn = m_stRoomConfig.nMaxTakeInCoin ;
 	msgBaseInfo.nDeskFee = m_stRoomConfig.nDeskFee ;
+	msgBaseInfo.nChatRoomID = m_nChatRoomID;
 	memcpy(msgBaseInfo.vPublicCardNums,m_vPublicCardNums,sizeof(msgBaseInfo.vPublicCardNums));
 	SendMsgToPlayer(nSessionID,&msgBaseInfo,sizeof(msgBaseInfo)) ;
 

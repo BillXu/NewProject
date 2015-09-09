@@ -142,6 +142,12 @@
     <ClInclude Include="..\DataServer\src\PlayerTaxas.h">
       <Filter>src\Player</Filter>
     </ClInclude>
+    <ClInclude Include="..\DataServer\src\PlayerFriend.h">
+      <Filter>src\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\AutoBuffer.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
@@ -226,6 +232,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\DataServer\src\PlayerTaxas.cpp">
+      <Filter>src\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\PlayerFriend.cpp">
       <Filter>src\Player</Filter>
     </ClCompile>
   </ItemGroup>

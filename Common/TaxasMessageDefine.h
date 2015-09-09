@@ -17,6 +17,7 @@ struct stMsgCreateTaxasRoom
 {
 	stMsgCreateTaxasRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_CREATE_ROOM ; }
 	uint16_t nConfigID ;
+	char vRoomName[MAX_LEN_ROOM_NAME] ;
 };
 
 struct stMsgCreateTaxasRoomRet
@@ -25,6 +26,39 @@ struct stMsgCreateTaxasRoomRet
 	stMsgCreateTaxasRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CREATE_ROOM ; }
 	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough 
 	uint32_t nRoomID ; 
+};
+
+struct stMsgRequestMyOwnRooms
+	:public stMsg
+{
+	stMsgRequestMyOwnRooms(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_REQUEST_MY_OWN_ROOMS; }
+};
+
+struct stMsgRequestMyOwnRoomsRet
+	:public stMsg
+{
+	stMsgRequestMyOwnRoomsRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MY_OWN_ROOMS ; }
+	uint16_t nCnt ;
+	PLACE_HOLDER(uint32_t* pRoomIDs);
+};
+
+struct stMsgRequestMyOwnRoomDetail
+	:public stMsgToRoom
+{
+	stMsgRequestMyOwnRoomDetail(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
+};
+
+struct stMsgRequestMyOwnRoomDetailRet
+	:public stMsg
+{
+	stMsgRequestMyOwnRoomDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
+	char vRoomName[MAX_LEN_ROOM_NAME] ;
+	uint32_t nRoomID ;
+	uint16_t nConfigID ;
+	uint64_t nTotalProfit;
+	uint32_t nCanWithdrawProfit;
+	uint32_t nDeadTime;
+	uint32_t nFollows ; 
 };
 
 struct stMsgModifyTaxasRoomName
@@ -132,6 +166,7 @@ struct stMsgTaxasRoomInfoBase
 	uint32_t nLittleBlind;
 	uint32_t nMiniTakeIn ;
 	uint64_t nMaxTakeIn ;
+	uint64_t nChatRoomID;
 	// running members ;
 	uint32_t eCurRoomState ; // eeRoomState ;
 	uint8_t nBankerIdx ;
@@ -315,6 +350,59 @@ struct stMsgTaxasRoomGameResult
 	uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM] ; 
 };
 
+struct stMsgRequestRoomList
+	:public stMsg
+{
+	stMsgRequestRoomList(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_REQUEST_ROOM_LIST; }
+};
+
+struct stRoomListItem
+{
+	uint32_t nCreatOwnerUID;
+	uint16_t nRoomID ;
+	char vRoomName[MAX_LEN_ROOM_NAME];
+	uint8_t nCurrentCount ;
+	uint32_t nSmiallBlind ;
+	uint8_t nSeatCnt;
+	//char vDesc[MAX_LEN_ROOM_DESC];
+};
+
+struct stMsgRequestRoomListRet
+	:public stMsg
+{
+	stMsgRequestRoomListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_REQUEST_ROOM_LIST ; }
+	bool bFinal;
+	uint8_t nListCnt ;
+	PLACE_HOLDER(stRoomListItem* pRoomItem );
+};
+
+
+struct stMsgRequestMyFollowRooms 
+	:public stMsg
+{
+	stMsgRequestMyFollowRooms(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_REQUEST_MY_FOLLOW_ROOMS ; }
+};
+
+struct stMsgRequestMyFollowRoomsRet
+	:public stMsg
+{
+	stMsgRequestMyFollowRoomsRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MY_FOLLOW_ROOMS ; }
+	uint16_t nCnt ;
+	PLACE_HOLDER(uint32_t* vRoomIDs);
+};
+
+struct stMsgRequestRoomDetail
+	:public stMsgToRoom
+{
+	stMsgRequestRoomDetail(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_ROOM_DETAIL ;}
+};
+
+struct stMsgRequestRoomDetailRet
+	:public stMsg
+{
+	stMsgRequestRoomDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_DETAIL ; }
+	stRoomListItem detailInfo;
+};
 
 //------------------------------------------------------beforear e new --
 

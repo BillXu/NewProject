@@ -59,9 +59,29 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	pRequest->pUserData = pdata;
 	pRequest->eType = eRequestType_Max ;
 	pRequest->nSqlBufferLen = 0 ;
-
+	CLogMgr::SharedLogMgr()->PrintLog("recive db req = %d",pmsg->usMsgType);
 	switch( pmsg->usMsgType )
 	{
+	case MSG_SAVE_FRIEND_LIST:
+		{
+			stMsgSaveFirendList* pRet = (stMsgSaveFirendList*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+			CAutoBuffer str (pRet->nFriendCountLen + 1 );
+			str.addContent((char*)pmsg + sizeof(stMsgSaveFirendList),pRet->nFriendCountLen) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE playerfriend SET friendUIDs = '%s' WHERE userUID = '%d'",str.getBufferPtr(),pRet->nUserUID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("save player FRIEND_LIST uid = %d",pRet->nUserUID);
+		}
+		break;
+	case MSG_READ_FRIEND_LIST:
+		{
+			stMsgReadFriendList* pRet = (stMsgReadFriendList*)pmsg ;
+			pdata->nExtenArg1 = pRet->nUserUID ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM playerfriend WHERE userUID = '%d'",pRet->nUserUID) ;
+		}
+		break;
 	case MSG_REQUEST_CREATE_PLAYER_DATA:
 		{
 			stMsgRequestDBCreatePlayerData* pCreate = (stMsgRequestDBCreatePlayerData*)pmsg ;
@@ -73,7 +93,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				"call CreateNewRegisterPlayerData(%d,'guest%d')",pCreate->nUserUID,nRandID) ;
 		}
 		break;
-	case MSG_PLAYER_BASE_DATA:
+	case MSG_READ_PLAYER_BASE_DATA:
 		{
 			stMsgDataServerGetBaseData* pRet = (stMsgDataServerGetBaseData*)pmsg ;
 			pdata->nExtenArg1 = pRet->nUserUID ;
@@ -157,7 +177,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			CAutoBuffer autoBuffer(pRet->nInformLen + 1 );
 			autoBuffer.addContent(((char*)&pRet) + sizeof(stMsgSaveUpdateTaxasRoomInfo),pRet->nInformLen);
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE taxasroom SET deadTime = '%d', avataID = '%d', profit = '%I64d', roomName = '%s', roomDesc = '%s', roomInform = '%s', informSerial = '%s' WHERE roomID = '%d'"
+				"UPDATE taxasroom SET deadTime = '%d', avataID = '%d', profit = '%I64d', roomName = '%s', roomDesc = '%s', roomInform = '%s', informSerial = '%d' WHERE roomID = '%d'"
 				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->vRoomName,pRet->vRoomDesc,autoBuffer.getBufferPtr(),pRet->nInformSerial,pRet->nRoomID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("save taxas room update info room id = %d",pRet->nRoomID);
 		}
@@ -198,6 +218,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"SELECT * FROM taxasroomplayers WHERE roomID = '%d' and flag = '0' order by offset desc limit 50 ",pRet->nRoomID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("read taxas room players room id = %d",pRet->nRoomID);
+			pdata->nExtenArg1 = pRet->nRoomID;
 		}
 		break;
 	case MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS:
@@ -634,8 +655,32 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 // 	}
 
 	stArgData*pdata = (stArgData*)pResult->pUserData ;
+	CLogMgr::SharedLogMgr()->PrintLog("processed db ret = %d",pResult->nRequestUID);
 	switch ( pResult->nRequestUID )
 	{
+	case MSG_READ_FRIEND_LIST:
+		{
+			if ( pResult->nAffectRow < 1 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("read friend list error uid = %d",pdata->nExtenArg1) ;
+			}
+
+			CMysqlRow& pRow = *pResult->vResultRows.front();
+			stMsgReadFriendListRet msgRet ;
+			msgRet.nFriendCountLen = pRow["friendUIDs"]->nBufferLen ;
+			if ( msgRet.nFriendCountLen == 0 )
+			{
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet)) ;
+				return ;
+			}
+
+			CAutoBuffer auB(sizeof(msgRet) + msgRet.nFriendCountLen);
+			auB.addContent(&msgRet,sizeof(msgRet)) ;
+			auB.addContent(pRow["friendUIDs"]->BufferData(),pRow["friendUIDs"]->nBufferLen);
+			m_pTheApp->sendMsg(pdata->nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d read friend list ok",pdata->nExtenArg1) ;
+		}
+		break;
 	case MSG_REQUEST_CREATE_PLAYER_DATA:
 		{
 			if ( pResult->nAffectRow != 1 )
@@ -656,7 +701,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
-	case MSG_PLAYER_BASE_DATA:
+	case MSG_READ_PLAYER_BASE_DATA:
 		{
 			stArgData* pdata = (stArgData*)pResult->pUserData ;
 			stMsgDataServerGetBaseDataRet msg ;
@@ -686,9 +731,10 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			stArgData* pdata = (stArgData*)pResult->pUserData ;
 			stMsgReadPlayerTaxasDataRet msg ;
 			msg.nRet = 0 ;
+			msg.nUserUID = pdata->nExtenArg1 ;
 			if ( pResult->nAffectRow <= 0 )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("can not find base data with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find TAXAS_DATA with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
 				msg.nRet = 1 ;
 				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 			}
@@ -751,7 +797,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				CAutoBuffer buffer(256);
 				for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow ; ++nIdx )
 				{
-					CMysqlRow& pRow = *pResult->vResultRows[0] ;
+					CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
 					stMsgReadTaxasRoomInfoRet msgRet ;
 					msgRet.nAvataID = pRow["avataID"]->IntValue();
 					msgRet.nConfigID = pRow["configID"]->IntValue();
@@ -786,15 +832,15 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_READ_TAXAS_ROOM_PLAYERS:
 		{
 			stArgData* pdata = (stArgData*)pResult->pUserData ;
-			if ( pResult->nAffectRow <= 0 )
+			if ( pResult->nAffectRow == 0 )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("can not read taxas rooms ") ;
+				CLogMgr::SharedLogMgr()->PrintLog("room id = %d have no history players",pdata->nExtenArg1) ;
 			}
 			else
 			{
 				for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow ; ++nIdx )
 				{
-					CMysqlRow& pRow = *pResult->vResultRows[0] ;
+					CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
 					stMsgReadTaxasRoomPlayersRet msgRet ;
 					msgRet.nRoomID = pRow["roomID"]->IntValue();
 					msgRet.nPlayerUID = pRow["playerUID"]->IntValue();
@@ -813,6 +859,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_SAVE_UPDATE_TAXAS_ROOM_INFO:
 	case MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS:
 	case MSG_SAVE_TAXAS_ROOM_PLAYER:
+	case MSG_SAVE_PLAYER_TAXAS_DATA:
+	case MSG_SAVE_FRIEND_LIST:
 		{
 			if ( pResult->nAffectRow <= 0 )
 			{

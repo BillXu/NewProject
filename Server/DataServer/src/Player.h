@@ -11,9 +11,9 @@ class CPlayer
 public:
 	enum ePlayerState
 	{
-		ePlayerState_Offline = 0 ,
-		ePlayerState_Online = 1,
-		ePlayerState_InTaxasRoom = (1<<1)| ePlayerState_Online,
+		ePlayerState_Offline = 1 ,
+		ePlayerState_Online = 1 << 1,
+		ePlayerState_InTaxasRoom = (1<<2)| ePlayerState_Online,
 		ePlayerState_Max,
 	};
 public:

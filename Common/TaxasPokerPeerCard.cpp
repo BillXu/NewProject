@@ -353,13 +353,13 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 //			{
 //				m_eType =  eCard_TongHuaShun ;
 //#if (!defined(GAME_SERVER)) && (!defined(ROBOT))
-//				m_strCardName = "同花顺";
+//				m_strCardName = "ͬ��˳";
 //#endif	
 //			}
 //			else
 //			{
 //				m_eType =  eCard_ShunZi ;
-//				m_strCardName = "顺子";
+//				m_strCardName = "˳��";
 //			}
 //			return ;
 //		}
@@ -381,7 +381,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 			VEC_CARD& vC = vColor[i] ;
 			std::sort(vC.begin(),vC.end(),CompFunction );
 			m_eType =  eCard_TongHua ;
-			m_strCardName = "同花";
+			m_strCardName = "ͬ��";
 			// add final ;
 			for ( int j = vC.size() -1  ;j >= 0 ; --j )
 			{
@@ -414,7 +414,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 				m_vFinalCard.clear();
 				m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
 #if (!defined(SERVER)) && (!defined(ROBOT))
-				m_strCardName = "同花顺";
+				m_strCardName = "ͬ��˳";
 #endif	
 				return ;
 			}
@@ -432,7 +432,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		m_vFinalCard.clear();
 		m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
 		m_eType =  eCard_ShunZi ;
-		m_strCardName = "顺子";
+		m_strCardName = "˳��";
 		return ;
 	}
 
@@ -442,7 +442,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		m_vFinalCard.clear();
 		m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
 		m_eType =  eCard_ShunZi ;
-		m_strCardName = "顺子";
+		m_strCardName = "˳��";
 		return ;
 	}
 
@@ -503,7 +503,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 			}
 		}
 		m_eType = eCard_GaoPai;
-		m_strCardName = "高牌" ;
+		m_strCardName = "����" ;
 		return ;
 	}
 
@@ -540,7 +540,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 					continue;
 				}
 				m_eType = eCard_SiTiao;
-				m_strCardName = "四条" ;
+				m_strCardName = "����" ;
 				return ;
 			}
 		}
@@ -568,14 +568,14 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 					if ( m_vFinalCard.size() == 5 )
 					{
 						m_eType = eCard_SanTiao ;
-						m_strCardName = "三条" ;
+						m_strCardName = "����" ;
 						return ;
 					}
 				}
 			}
 		}
 		m_eType = eCard_HuLu ;
-		m_strCardName = "葫芦" ;
+		m_strCardName = "��«" ;
 		return ;
 	}
 	else if ( vPairs[2].size() == 2 )
@@ -587,7 +587,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 			m_vFinalCard.insert(m_vFinalCard.begin(),vPairs[1].begin(),vPairs[1].end() ) ;
 			m_vPairs[1].insert(m_vPairs[1].begin(),vPairs[1].begin(),vPairs[1].end() ) ;
 			m_eType = eCard_LiangDui ;
-			m_strCardName = "两对" ;
+			m_strCardName = "����" ;
 		}
 		else  // one pairs ;
 		{
@@ -595,7 +595,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 #if defined(SERVER) || defined(ROBOT) 
 
 #else
-			m_strCardName = "一对";
+			m_strCardName = "һ��";
 #endif
 		}
 

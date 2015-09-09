@@ -177,9 +177,51 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			msgReq.vArg[0] = pRet->nConfigID ;
 			
 			Json::Value vArg ;
-			vArg["roonName"] = GetPlayer()->GetBaseData()->GetPlayerName();
+			vArg["roonName"] = pRet->vRoomName;
 			CON_REQ_MSG_JSON(msgReq,vArg,autoBuf) ;
 			CGameServerApp::SharedGameServerApp()->sendMsg(msgReq.nReqOrigID,autoBuf.getBufferPtr(),autoBuf.getContentSize()) ;
+		}
+		break;
+	case MSG_REQUEST_MY_FOLLOW_ROOMS:
+		{
+			stMsgRequestMyFollowRoomsRet msgRet ;
+			msgRet.nCnt = m_vFollowedRooms.size() ;
+			if ( msgRet.nCnt == 0 )
+			{
+				SendMsg(&msgRet,sizeof(msgRet)) ;
+				return true ;
+			}
+
+			CAutoBuffer autoBuffer(sizeof(msgRet) + sizeof(uint32_t)* msgRet.nCnt);
+			autoBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+			SET_ROOM_ID::iterator iter = m_vFollowedRooms.begin() ;
+			for ( ; iter != m_vFollowedRooms.end() ; ++iter )
+			{
+				uint32_t n = *iter ;
+				autoBuffer.addContent((char*)&n,sizeof(uint32_t));
+			}
+			SendMsg((stMsg*)autoBuffer.getBufferPtr(),autoBuffer.getContentSize()) ;
+		}
+		break;
+	case MSG_REQUEST_MY_OWN_ROOMS:
+		{
+			stMsgRequestMyOwnRoomsRet msgRet ;
+			msgRet.nCnt = m_vMyOwnRooms.size() ;
+			if ( msgRet.nCnt == 0 )
+			{
+				SendMsg(&msgRet,sizeof(msgRet)) ;
+				return true ;
+			}
+
+			CAutoBuffer autoBuffer(sizeof(msgRet) + sizeof(uint32_t)* msgRet.nCnt);
+			autoBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+			SET_ROOM_ID::iterator iter = m_vMyOwnRooms.begin() ;
+			for ( ; iter != m_vMyOwnRooms.end() ; ++iter )
+			{
+				uint32_t n = *iter ;
+				autoBuffer.addContent((char*)&n,sizeof(uint32_t));
+			}
+			SendMsg((stMsg*)autoBuffer.getBufferPtr(),autoBuffer.getContentSize()) ;
 		}
 		break;
 	default:
@@ -214,6 +256,7 @@ bool CPlayerTaxas::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 		if ( pResult->nRet == 0 )
 		{
 			m_vMyOwnRooms.insert(msgBack.nRoomID);
+			m_bDirty = true ;
 		}
 		else
 		{
@@ -309,7 +352,7 @@ void CPlayerTaxas::TimerSave()
 	msgSavePokerData.nMyOwnRoomsStrLen = strlen(strMyOwn.c_str()) ;
 
 	CAutoBuffer writeBuffer(sizeof(msgSavePokerData) + msgSavePokerData.nFollowedRoomsStrLen + msgSavePokerData.nMyOwnRoomsStrLen ) ;
-	writeBuffer.addContent((char*)&msgSavePokerData,sizeof(strMyOwn));
+	writeBuffer.addContent((char*)&msgSavePokerData,sizeof(msgSavePokerData));
 	if ( msgSavePokerData.nFollowedRoomsStrLen > 0 )
 	{
 		writeBuffer.addContent(strFollow.c_str(),msgSavePokerData.nFollowedRoomsStrLen) ;
@@ -321,4 +364,5 @@ void CPlayerTaxas::TimerSave()
 	}
 
 	CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),writeBuffer.getBufferPtr(),writeBuffer.getContentSize());
+	CLogMgr::SharedLogMgr()->PrintLog("time save taxas data for uid = %d",GetPlayer()->GetUserUID());
 }

@@ -52,14 +52,14 @@ struct stMsgOnPlayerLogin
 struct stMsgDataServerGetBaseData
 	:public stMsg
 {
-	stMsgDataServerGetBaseData(){cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_PLAYER_BASE_DATA ; }
+	stMsgDataServerGetBaseData(){cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_PLAYER_BASE_DATA ; }
 	unsigned int nUserUID ;
 };
 
 struct stMsgDataServerGetBaseDataRet
 	:public stMsg
 {
-	stMsgDataServerGetBaseDataRet(){cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_BASE_DATA ; }
+	stMsgDataServerGetBaseDataRet(){cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_PLAYER_BASE_DATA ; }
 	unsigned char nRet ; // 0 success , 1 not exsit  ;
 	stServerBaseData stBaseData ;
 };
@@ -125,7 +125,7 @@ struct stMsgSaveCreateTaxasRoomInfo
 	uint16_t nConfigID ;
 	uint32_t nRoomOwnerUID ;
 	uint32_t nCreateTime ;
-	uint32_t nChatRoomID ;
+	uint64_t nChatRoomID ;
 };
 
 struct stMsgSaveUpdateTaxasRoomInfo
@@ -392,6 +392,31 @@ struct stMsgCrossServerRequestRet
 	PLACE_HOLDER(char* pJsonString);
 };
 
+// friend 
+struct stMsgSaveFirendList
+	:public stMsg
+{
+	stMsgSaveFirendList(){ cSysIdentifer = ID_MSG_PORT_DB ;usMsgType = MSG_SAVE_FRIEND_LIST ; }
+	uint32_t nUserUID ;
+	uint16_t nFriendCountLen ;
+	PLACE_HOLDER(char* vFriendUIDS);
+};
+
+struct stMsgReadFriendList
+	:public stMsg
+{
+	stMsgReadFriendList(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_FRIEND_LIST ; }
+	uint32_t nUserUID ;
+};
+
+struct stMsgReadFriendListRet
+	:public stMsg
+{
+	stMsgReadFriendListRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_FRIEND_LIST ; }
+	uint16_t nFriendCountLen ;
+	PLACE_HOLDER(char* vFriendUIDS);
+};
+
 //----above is new , below is old---------
 
 //--------------------------------------------
@@ -508,52 +533,36 @@ struct stMsgGameServerRequestFirendListRet
 	stServerSaveFrienItem* pFirendsInfo;
 };
 
-struct stMsgGameServerRequestFriendBrifDataList
-	:public stMsgGM2DB
-{
-	stMsgGameServerRequestFriendBrifDataList(){ cSysIdentifer = ID_MSG_GM2DB; usMsgType = MSG_REQUEST_FRIEND_BRIFDATA_LIST ; }
-	unsigned int nFriendCount ;
-	unsigned int* pFriendUserUIDs ;
-};
+////struct stMsgGameServerRequestFriendBrifDataList
+////	:public stMsgGM2DB
+////{
+////	stMsgGameServerRequestFriendBrifDataList(){ cSysIdentifer = ID_MSG_GM2DB; usMsgType = MSG_REQUEST_FRIEND_BRIFDATA_LIST ; }
+////	unsigned int nFriendCount ;
+////	unsigned int* pFriendUserUIDs ;
+////};
 
-struct stMsgGameServerRequestFriendBrifDataListRet
-	:public stMsgDB2GM
-{
-	stMsgGameServerRequestFriendBrifDataListRet(){ cSysIdentifer = ID_MSG_DB2GM ; usMsgType = MSG_REQUEST_FRIEND_BRIFDATA_LIST ; }
-	unsigned int nCount ;
-	stPlayerBrifData* pFriendBrifData ;
-};
+//struct stMsgGameServerRequestFriendBrifDataListRet
+//	:public stMsgDB2GM
+//{
+//	stMsgGameServerRequestFriendBrifDataListRet(){ cSysIdentifer = ID_MSG_DB2GM ; usMsgType = MSG_REQUEST_FRIEND_BRIFDATA_LIST ; }
+//	unsigned int nCount ;
+//	stPlayerBrifData* pFriendBrifData ;
+//};
 
-struct stMsgGameServerSaveFirendList
-	:public stMsgGM2DB
-{
-	stMsgGameServerSaveFirendList(){ cSysIdentifer = ID_MSG_GM2DB ;usMsgType = MSG_SAVE_FRIEND_LIST ; }
-	unsigned int nUserUID ;
-	unsigned short nFriendCount ;
-	stServerSaveFrienItem* pFriends;
-};
-
-struct stMsgGameServerSaveFriendListRet
-	:public stMsgDB2GM
-{
-	stMsgGameServerSaveFriendListRet(){ cSysIdentifer = ID_MSG_DB2GM ; usMsgType = MSG_SAVE_FRIEND_LIST ; }
-	unsigned char nRet ; // 0 means success ; other value failed ;
-};
-
-struct stMsgGameServerGetFriendDetail
-	:public stMsgGM2DB
-{
-	stMsgGameServerGetFriendDetail(){ cSysIdentifer = ID_MSG_GM2DB; usMsgType = MSG_PLAYER_REQUEST_FRIEND_DETAIL ; }
-	unsigned int nFriendUID ;
-};
-
-struct stMsgGameServerGetFriendDetailRet
-	:public stMsgDB2GM
-{
-	stMsgGameServerGetFriendDetailRet(){ usMsgType = MSG_PLAYER_REQUEST_FRIEND_DETAIL ; }
-	unsigned char nRet ; // 0 success ; 1 failed ;
-	stPlayerDetailData stPeerInfo ;
-};
+////struct stMsgGameServerGetFriendDetail
+////	:public stMsgGM2DB
+////{
+////	stMsgGameServerGetFriendDetail(){ cSysIdentifer = ID_MSG_GM2DB; usMsgType = MSG_PLAYER_REQUEST_FRIEND_DETAIL ; }
+////	unsigned int nFriendUID ;
+////};
+////
+////struct stMsgGameServerGetFriendDetailRet
+////	:public stMsgDB2GM
+////{
+////	stMsgGameServerGetFriendDetailRet(){ usMsgType = MSG_PLAYER_REQUEST_FRIEND_DETAIL ; }
+////	unsigned char nRet ; // 0 success ; 1 failed ;
+////	stPlayerDetailData stPeerInfo ;
+////};
 
 struct stMsgGameServerGetSearchFriendResult
 	:public stMsgGM2DB
@@ -571,20 +580,20 @@ struct stMsgGameServerGetSearchFriendResultRet
 	stPlayerBrifData* pPeersInfo ;
 };
 
-struct stMsgGameServerGetSearchedPeerDetail
-	:public stMsgGM2DB
-{
-	stMsgGameServerGetSearchedPeerDetail(){ usMsgType = MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL ; }
-	unsigned int nPeerUserUID ;
-};
-
-struct stMsgGameServerGetSearchedPeerDetailRet
-	:public stMsgDB2GM 
-{
-	stMsgGameServerGetSearchedPeerDetailRet(){ usMsgType = MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL ; }
-	unsigned char nRet ; // 0 success , 1 can not find ;
-	stPlayerDetailData stPeerInfo ;
-};
+//struct stMsgGameServerGetSearchedPeerDetail
+//	:public stMsgGM2DB
+//{
+//	stMsgGameServerGetSearchedPeerDetail(){ usMsgType = MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL ; }
+//	unsigned int nPeerUserUID ;
+//};
+//
+//struct stMsgGameServerGetSearchedPeerDetailRet
+//	:public stMsgDB2GM 
+//{
+//	stMsgGameServerGetSearchedPeerDetailRet(){ usMsgType = MSG_PLAYER_REQUEST_SEARCH_PEER_DETAIL ; }
+//	unsigned char nRet ; // 0 success , 1 can not find ;
+//	stPlayerDetailData stPeerInfo ;
+//};
 // item 
 struct stMsgGameServerRequestItemList
 	:public stMsgGM2DB

@@ -123,7 +123,9 @@ public:
 	void setDeadTime(uint32_t nDeadTime);
 	void setAvataID(uint32_t nAvaID );
 	void setRoomName(const char* pRoomName);
+	const char* getRoomName(){ return m_vRoomName ;}
 	void setRoomDesc(const char* pRoomDesc );
+	const char* getRoomDesc(){ return m_strRoomDesc.c_str() ; }
 	void setRoomInform(const char* pRoomInform );
 	bool isRoomAlive();
 	void setProfit(uint64_t nProfit );
@@ -157,6 +159,9 @@ public:
 	void saveUpdateRoomInfo();
 	void forceDirytInfo(){ m_bRoomInfoDirty = true ;}
 	void removeTaxasPlayersHistory();
+	
+	uint32_t getLittleBlind(){ return m_nLittleBlind ;}
+	uint8_t getSeatCnt(){ return m_stRoomConfig.nMaxSeat ;}
 protected:
 	void writeGameResultLog();
 	void writePlayerResultLogToJson(stTaxasPeerData& pWritePlayer);

@@ -85,6 +85,7 @@ bool IServerApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 		cMsg.usMsgType = getVerifyType() ;
 		m_pNetWork->SendMsg((char*)&cMsg,sizeof(stMsg),pMsg->_connectID) ;
 		CLogMgr::SharedLogMgr()->SystemLog("Connected to Target Svr") ;
+		onConnectedToSvr();
 		return false ;
 	}
 
