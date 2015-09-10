@@ -62,6 +62,16 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	CLogMgr::SharedLogMgr()->PrintLog("recive db req = %d",pmsg->usMsgType);
 	switch( pmsg->usMsgType )
 	{
+	case MSG_SELECT_DB_PLAYER_DATA:
+		{
+			stMsgSelectPlayerData* pRet = (stMsgSelectPlayerData*)pmsg ;
+			pdata->nExtenArg1 = pRet->nReqPlayerSessionID ;
+			pdata->nExtenArg2 = pRet->isDetail ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM playerbasedata WHERE userUID = '%d'",pRet->nTargetPlayerUID) ;
+		}
+		break;
 	case MSG_PLAYER_SAVE_MAIL:
 		{
 			stMsgSaveMail* pRet = (stMsgSaveMail*)pmsg ;
@@ -698,6 +708,33 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	CLogMgr::SharedLogMgr()->PrintLog("processed db ret = %d",pResult->nRequestUID);
 	switch ( pResult->nRequestUID )
 	{
+	case MSG_SELECT_DB_PLAYER_DATA:
+		{
+			stMsgSelectPlayerDataRet msgBack;
+			msgBack.nRet = pResult->nAffectRow > 0 ? 0 : 1 ;
+			if ( msgBack.nRet )
+			{
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+				return ;
+			}
+			msgBack.nReqPlayerSessionID = pdata->nExtenArg1 ;
+			msgBack.isDetail = pdata->nExtenArg2 ;
+			CAutoBuffer auB(sizeof(msgBack) + sizeof(stPlayerDetailData) );
+			stPlayerDetailData tData;
+			CMysqlRow& pRow = *pResult->vResultRows.front();
+			if ( msgBack.isDetail )
+			{
+				GetPlayerDetailData(&tData,pRow);
+			}
+			else
+			{
+				GetPlayerBrifData(&tData,pRow) ;
+			}
+			auB.addContent(&msgBack,sizeof(msgBack)) ;
+			auB.addContent(&tData,msgBack.isDetail ? sizeof(stPlayerDetailData) : sizeof(stPlayerBrifData)) ;
+			m_pTheApp->sendMsg(pdata->nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+		}
+		break;
 	case MSG_PLAYER_READ_MAIL_LIST:
 		{
 			CLogMgr::SharedLogMgr()->PrintLog("read mail list for uid = %d cnt = %d",pdata->nExtenArg1,pResult->nAffectRow) ;
@@ -739,6 +776,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			if ( pResult->nAffectRow < 1 )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("read friend list error uid = %d",pdata->nExtenArg1) ;
+				return ;
 			}
 
 			CMysqlRow& pRow = *pResult->vResultRows.front();

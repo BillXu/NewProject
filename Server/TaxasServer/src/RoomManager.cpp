@@ -205,6 +205,7 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 			m_nMaxRoomID = pRet->nRoomID ;
 		}
 
+		addRoomToCreator(pRoom);
 		return true ;
 	}
 
@@ -297,6 +298,31 @@ bool CRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			}
 		}  
 		break;
+	case MSG_TP_READ_MY_OWN_ROOMS:
+		{
+			stMsgReadMyOwnTaxasRooms* pRet = (stMsgReadMyOwnTaxasRooms*)prealMsg ;
+			LIST_ROOM vRL ;
+			if ( getRoomCreatorRooms(pRet->nUserUID,vRL) == false )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %d do not create room so , need not respone list" ,pRet->nUserUID ) ;
+				return true ;
+			}
+
+			stMsgReadMyOwnTaxasRoomsRet msgRead ;
+			msgRead.nCnt = vRL.size() ;
+			CAutoBuffer auBuffer(msgRead.nCnt * sizeof(stMyOwnRoom) + sizeof(msgRead));
+			auBuffer.addContent(&msgRead,sizeof(msgRead)) ;
+			stMyOwnRoom info ;
+			for ( CTaxasRoom* proom : vRL )
+			{
+				info.nConfigID = proom->getConfigID() ;
+				info.nRoomID = proom->GetRoomID() ;
+				auBuffer.addContent(&info,sizeof(info)) ;
+			}
+			SendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("respone uid = %d have owns cnt = %d",pRet->nUserUID,vRL.size()) ;
+		}
+		break;
 	default:
 		return false;
 	}
@@ -358,6 +384,7 @@ void CRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 			SendMsg(&msgCreateInfo,sizeof(msgCreateInfo),pRoom->GetRoomID());
 			pRoom->forceDirytInfo();
 			pRoom->saveUpdateRoomInfo();
+			addRoomToCreator(pRoom);
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d create room success",pRoom->getOwnerUID());
 		}
 		else
@@ -448,4 +475,30 @@ void CRoomManager::onConnectedToSvr()
 		SendMsg(&msg,sizeof(msg),0) ;
 		CLogMgr::SharedLogMgr()->PrintLog("request taxas rooms");
 	}
+}
+
+void CRoomManager::addRoomToCreator(CTaxasRoom* pRoom)
+{
+	MAP_UID_CR::iterator iter =  m_vCreatorAndRooms.find(pRoom->getOwnerUID());
+	if ( iter != m_vCreatorAndRooms.end() )
+	{
+		iter->second.vRooms.push_back(pRoom) ;
+		return ;
+	}
+
+	stRoomCreatorInfo sInfo ;
+	sInfo.nPlayerUID = pRoom->getOwnerUID() ;
+	sInfo.vRooms.push_back(pRoom) ;
+	m_vCreatorAndRooms[sInfo.nPlayerUID] = sInfo ;
+}
+
+bool CRoomManager::getRoomCreatorRooms(uint32_t nCreatorUID, LIST_ROOM& vInfo )
+{
+	MAP_UID_CR::iterator iter = m_vCreatorAndRooms.find(nCreatorUID) ;
+	if ( iter == m_vCreatorAndRooms.end() )
+	{
+		return false ;
+	}
+	vInfo = iter->second.vRooms ;
+	return true ;
 }

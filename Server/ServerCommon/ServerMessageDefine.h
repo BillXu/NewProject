@@ -227,6 +227,25 @@ struct stMsgSavePlayerCommonLoginData
 	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
 };
 
+struct stMsgSelectPlayerData
+	:public stMsg
+{
+	stMsgSelectPlayerData(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SELECT_DB_PLAYER_DATA ;}
+	bool isDetail ;
+	uint32_t nTargetPlayerUID ;
+	uint32_t nReqPlayerSessionID ;
+};
+
+struct stMsgSelectPlayerDataRet
+	:public stMsg
+{
+	stMsgSelectPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_SELECT_DB_PLAYER_DATA ;}
+	uint8_t nRet ; // 0 success , 1 can not find player ;
+	bool isDetail ;
+	uint32_t nReqPlayerSessionID ;
+	stPlayerBrifData* tData ;
+};
+
 // data and taxas server 
 struct stMsgRequestTaxasPlayerData
 	:public stMsg
@@ -243,7 +262,26 @@ struct stMsgRequestTaxasPlayerDataRet
 	stTaxasInRoomPeerData tData ;
 };
 
+struct stMsgReadMyOwnTaxasRooms
+	:public stMsg
+{
+	stMsgReadMyOwnTaxasRooms(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_READ_MY_OWN_ROOMS ; }
+	uint32_t nUserUID ;
+};
 
+struct stMyOwnRoom
+{
+	uint32_t nRoomID;
+	uint16_t nConfigID ;
+};
+
+struct stMsgReadMyOwnTaxasRoomsRet
+	:public stMsg
+{
+	stMsgReadMyOwnTaxasRoomsRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_READ_MY_OWN_ROOMS ; }
+	uint16_t nCnt ;
+	PLACE_HOLDER(stMyOwnRoom* vMyOwnRooms);
+};
 
 //struct stMsgPlayerRequestCoin
 //	:public stMsg
@@ -405,7 +443,7 @@ struct stMsgSaveFirendList
 struct stMsgReadFriendList
 	:public stMsg
 {
-	stMsgReadFriendList(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_FRIEND_LIST ; }
+	stMsgReadFriendList(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_FRIEND_LIST ; }
 	uint32_t nUserUID ;
 };
 

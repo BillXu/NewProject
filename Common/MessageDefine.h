@@ -130,6 +130,24 @@ struct stMsgPlayerBaseData
 	stCommonBaseData stBaseData ;
 };
 
+struct stMsgRequestPlayerData
+	:public stMsg
+{
+	stMsgRequestPlayerData(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_REQUEST_PLAYER_DATA ; }
+	bool isDetail ;
+	uint32_t nPlayerUID ;
+};
+
+struct stMsgRequestPlayerDataRet
+	:public stMsg
+{
+	stMsgRequestPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_PLAYER_DATA ;}
+	uint8_t nRet ; // 0 success , 1 can not find player 
+	bool isDetail ;
+	PLACE_HOLDER(stPlayerBrifData* tData ;);  //or stPlayerDetailData* ; 
+};
+
+
 // modify name and sigure
 struct stMsgPLayerModifyName
 	:public stMsg

@@ -4,12 +4,20 @@
 #include <map>
 #include <json/json.h>
 #include "httpRequest.h"
+#include <list>
 class CTaxasRoom ;
 class CRoomManager
 	:public CHttpRequestDelegate
 {
 public:
+	typedef std::list<CTaxasRoom*> LIST_ROOM ;
 	typedef std::map<uint32_t, CTaxasRoom*> MAP_ID_ROOM;
+	struct stRoomCreatorInfo
+	{
+		uint32_t nPlayerUID ;
+		LIST_ROOM vRooms ;
+	};
+	typedef std::map<uint32_t,stRoomCreatorInfo> MAP_UID_CR;
 public:
 	CRoomManager();
 	~CRoomManager();
@@ -25,8 +33,11 @@ public:
 	void onConnectedToSvr();
 protected:
 	bool reqeustChatRoomID(CTaxasRoom* pRoom);
+	void addRoomToCreator(CTaxasRoom* pRoom);
+	bool getRoomCreatorRooms(uint32_t nCreatorUID,LIST_ROOM& vInfo );
 protected:
 	MAP_ID_ROOM m_vRooms ;
 	CHttpRequest m_pGoTyeAPI;
 	uint32_t m_nMaxRoomID ;
+	MAP_UID_CR m_vCreatorAndRooms ;
 };

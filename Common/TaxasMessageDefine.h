@@ -25,7 +25,7 @@ struct stMsgCreateTaxasRoomRet
 	:public stMsg
 {
 	stMsgCreateTaxasRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CREATE_ROOM ; }
-	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough 
+	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough , 5 reach your own room cnt up limit
 	uint32_t nRoomID ; 
 };
 
@@ -107,18 +107,37 @@ struct stMsgModifyTaxasInformRet
 };
 
 struct stMsgCaculateTaxasRoomProfit
-	:public stMsgToRoom
+	:public stMsg
 {
-	stMsgCaculateTaxasRoomProfit(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
+	stMsgCaculateTaxasRoomProfit(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
+	uint32_t nRoomID ;
 };
 
 struct stMsgCaculateTaxasRoomProfitRet
 	:public stMsg
 {
 	stMsgCaculateTaxasRoomProfitRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
-	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 room is dead , please pay rent fee,  3 , you are not in room,4 coin too few ;
+	uint8_t nRet ; // 0 sucess , 1 you are not creator  ;
+	uint32_t nRoomID ;
 	bool bDiamond ;
 	uint64_t nProfitMoney;
+};
+
+struct stMsgAddTaxasRoomRentTime
+	:public stMsg
+{
+	stMsgAddTaxasRoomRentTime(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_ADD_RENT_TIME ; }
+	uint32_t nRoomID ;
+	uint16_t nAddDays ;
+};
+
+struct  stMsgAddTaxasRoomRentTimeRet
+	: public stMsg
+{
+	stMsgAddTaxasRoomRentTimeRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ADD_RENT_TIME ; }
+	uint8_t nRet ; // 0 success , 1 you are not creator , 2 coin not enough 
+	uint32_t nRoomID ;
+	uint16_t nAddDays ;
 };
 
 struct stMsgRemindTaxasRoomNewInform
@@ -162,7 +181,7 @@ struct stMsgTaxasRoomInfoBase
 	uint32_t nRoomID ;
 	uint32_t nOwnerUID ;
 	uint16_t nAvataID ;
-	uint16_t vRoomName[MAX_LEN_ROOM_NAME];
+	uint8_t vRoomName[MAX_LEN_ROOM_NAME];
 	uint8_t nMaxSeat;
 	uint32_t nLittleBlind;
 	uint32_t nMiniTakeIn ;

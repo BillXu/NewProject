@@ -7,6 +7,7 @@
 #include <assert.h>
 #include "EventCenter.h"
 #include "PlayerBaseData.h"
+#include "AutoBuffer.h"
 CPlayerManager::CPlayerManager()
 {
 	m_vOfflinePlayers.clear() ;
@@ -120,6 +121,61 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				return false;
 			}
 			return true ;
+		}
+		break;
+	case MSG_REQUEST_PLAYER_DATA:
+		{
+			stMsgRequestPlayerData* pRet = (stMsgRequestPlayerData*)prealMsg ;
+			stMsgRequestPlayerDataRet msgBack ;
+			msgBack.nRet = 0 ;
+			msgBack.isDetail = pRet->isDetail ;
+			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nPlayerUID);
+
+			stPlayerDetailData stData ;
+			CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailData));
+			if ( pPlayer )
+			{
+				if ( pRet->isDetail )
+				{
+					pPlayer->GetBaseData()->GetPlayerDetailData(&stData);
+				}
+				else
+				{
+					pPlayer->GetBaseData()->GetPlayerBrifData(&stData) ;
+				}
+				
+				auB.addContent(&msgBack,sizeof(msgBack));
+				auB.addContent(&stData,pRet->isDetail ? sizeof(stPlayerDetailData) : sizeof(stPlayerBrifData) ) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+				return true ;
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("req detail player not online , req from db") ;
+			stMsgSelectPlayerData msgReq ;
+			msgReq.isDetail = pRet->isDetail ;
+			msgReq.nReqPlayerSessionID = nSessionID  ;
+			msgReq.nTargetPlayerUID = pRet->nPlayerUID ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgReq,sizeof(msgReq)) ;
+		}
+		break;
+	case MSG_SELECT_DB_PLAYER_DATA:
+		{
+			stMsgSelectPlayerDataRet* pRet = (stMsgSelectPlayerDataRet*)prealMsg ;
+			stMsgRequestPlayerDataRet msgBack ;
+			msgBack.nRet = pRet->nRet ;
+			msgBack.isDetail = pRet->isDetail ;
+			if ( pRet->nRet )
+			{
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nReqPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			}
+			else
+			{
+				CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailData));
+				auB.addContent(&msgBack,sizeof(msgBack));
+				uint16_t nLen = pRet->isDetail ? sizeof(stPlayerDetailData) : sizeof(stPlayerBrifData) ;
+				auB.addContent((char*)prealMsg + sizeof(stMsgSelectPlayerDataRet),nLen );
+				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nReqPlayerSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("session id = %d req play data ret = %d",pRet->nReqPlayerSessionID,pRet->nRet ) ;
 		}
 		break;
 	case MSG_PLAYER_LOGIN:

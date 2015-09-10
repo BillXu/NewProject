@@ -133,7 +133,7 @@ public:
 	uint32_t getCreateTime(){ return m_nCreateTime;}
 	void setInformSieral(uint32_t nSieaial);
 	void setChatRoomID(uint64_t nChatRoomID ){ m_nChatRoomID = nChatRoomID ;}
-	uint32_t getConfigID(){ return 1 ; }
+	uint32_t getConfigID(){ return m_stRoomConfig.nConfigID ; }
 
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
@@ -191,6 +191,7 @@ protected:
 	std::string m_strRoomInForm ;
 	uint32_t m_nInformSerial;
 	uint64_t m_nRoomProfit;
+	uint64_t m_nTotalProfit ;
 	uint64_t m_nChatRoomID ;
 
 	// running members ;

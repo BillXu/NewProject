@@ -17,6 +17,10 @@ void CPlayerTaxas::Reset()
 	stMsgReadPlayerTaxasData msg ;
 	msg.nUserUID = GetPlayer()->GetUserUID() ;
 	SendMsg(&msg,sizeof(msg)) ;
+
+	stMsgReadMyOwnTaxasRooms msgReq ;
+	msgReq.nUserUID = GetPlayer()->GetUserUID();
+	SendMsg(&msgReq,sizeof(msgReq)) ;
 }
 
 void CPlayerTaxas::Init()
@@ -33,6 +37,10 @@ void CPlayerTaxas::Init()
 	msg.nUserUID = GetPlayer()->GetUserUID() ;
 	SendMsg(&msg,sizeof(msg)) ;
 	CLogMgr::SharedLogMgr()->PrintLog("requesting player taxas data for uid = %d",msg.nUserUID);
+
+	stMsgReadMyOwnTaxasRooms msgReq ;
+	msgReq.nUserUID = GetPlayer()->GetUserUID();
+	SendMsg(&msgReq,sizeof(msgReq)) ;
 }
 
 bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
@@ -66,20 +74,6 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 					m_vFollowedRooms.insert(arrayValue[nIdx].asUInt());
 				}
 			}
-
-			pBuffer += pRet->nFollowedRoomsStrLen ;
-			
-			if ( pRet->nMyOwnRoomsStrLen > 0 )
-			{
-				Json::Reader reader ;
-				Json::Value arrayValue ;
-				reader.parse(pBuffer,pBuffer + pRet->nMyOwnRoomsStrLen,arrayValue,false);
-				for ( uint16_t nIdx = 0 ; nIdx < arrayValue.size(); ++nIdx )
-				{
-					m_vMyOwnRooms.insert(arrayValue[nIdx].asUInt());
-				}
-			}
-			
 			CLogMgr::SharedLogMgr()->PrintLog("uid taxas data followed rooms = %d , owner rooms = %d",m_vFollowedRooms.size(),m_vMyOwnRooms.size());
 		}
 		break;
@@ -216,13 +210,66 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 
 			CAutoBuffer autoBuffer(sizeof(msgRet) + sizeof(uint32_t)* msgRet.nCnt);
 			autoBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
-			SET_ROOM_ID::iterator iter = m_vMyOwnRooms.begin() ;
+			MAP_ID_MYROOW::iterator iter = m_vMyOwnRooms.begin() ;
 			for ( ; iter != m_vMyOwnRooms.end() ; ++iter )
 			{
-				uint32_t n = *iter ;
+				uint32_t n = iter->first ;
 				autoBuffer.addContent((char*)&n,sizeof(uint32_t));
 			}
 			SendMsg((stMsg*)autoBuffer.getBufferPtr(),autoBuffer.getContentSize()) ;
+		}
+		break;
+	case MSG_TP_CACULATE_ROOM_PROFILE:
+		{
+			stMsgCaculateTaxasRoomProfitRet msgBack ;
+			msgBack.bDiamond = false ;
+			msgBack.nProfitMoney = 0 ;
+			msgBack.nRet = 0 ;
+
+			stMsgCaculateTaxasRoomProfit* pRet = (stMsgCaculateTaxasRoomProfit*)pMessage ;
+			msgBack.nRoomID = pRet->nRoomID ;
+			if ( isRoomIDMyOwn(pRet->nRoomID) )
+			{
+				msgBack.nRet = 1 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			stMsgCrossServerRequest msgRoomProfitReq ;
+			msgRoomProfitReq.cSysIdentifer = ID_MSG_PORT_TAXAS ;
+			msgRoomProfitReq.nReqOrigID = GetPlayer()->GetUserUID() ;
+			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
+			msgRoomProfitReq.nRequestType = eCrossSvrReq_TaxasRoomProfit ;
+			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
+			SendMsg(&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
+			return true;
+		}
+		break;
+	case MSG_TP_ADD_RENT_TIME:
+		{
+			stMsgAddTaxasRoomRentTime* pRet = (stMsgAddTaxasRoomRentTime*)pMessage ;
+			CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_ADD_RENT_TIME check room id , and kou qian  do not forget ");
+			
+			stMsgCrossServerRequest msgRoomProfitReq ;
+			msgRoomProfitReq.cSysIdentifer = ID_MSG_PORT_TAXAS ;
+			msgRoomProfitReq.nReqOrigID = GetPlayer()->GetUserUID() ;
+			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
+			msgRoomProfitReq.nRequestType = eCrossSvrReq_AddRentTime ;
+			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
+			msgRoomProfitReq.vArg[0] = pRet->nAddDays ;
+			SendMsg(&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
+		}
+		break;
+	case MSG_TP_READ_MY_OWN_ROOMS:
+		{
+			stMsgReadMyOwnTaxasRoomsRet* pRet = (stMsgReadMyOwnTaxasRoomsRet*)pMessage ;
+			stMyOwnRoom* pRoomPtr = (stMyOwnRoom*)((char*)pMessage + sizeof(stMsgReadMyOwnTaxasRoomsRet));
+			while ( pRet->nCnt-- )
+			{
+				m_vMyOwnRooms.insert(MAP_ID_MYROOW::value_type(pRoomPtr->nRoomID,*pRoomPtr));
+				++pRoomPtr ;
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d ,read own creator room" , GetPlayer()->GetUserUID() ) ;
 		}
 		break;
 	default:
@@ -256,15 +303,40 @@ bool CPlayerTaxas::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 		SendMsg(&msgBack,sizeof(msgBack)) ;
 		if ( pResult->nRet == 0 )
 		{
-			m_vMyOwnRooms.insert(msgBack.nRoomID);
-			m_bDirty = true ;
+			stMyOwnRoom myroom ;
+			myroom.nRoomID = msgBack.nRoomID ;
+			myroom.nConfigID = pResult->vArg[0];
+			m_vMyOwnRooms.insert(MAP_ID_MYROOW::value_type(myroom.nRoomID,myroom));
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d , create room id = %d , config id = %d", GetPlayer()->GetUserUID(),myroom.nRoomID,myroom.nConfigID) ;
 		}
 		else
 		{
 			CLogMgr::SharedLogMgr()->ErrorLog("create failed give back coin uid = %d",GetPlayer()->GetUserUID());
 		}
-		
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d create room ret = %d",GetPlayer()->GetSessionID(),msgBack.nRet);
+
+		return true ;
+	}
+
+	if ( eCrossSvrReq_TaxasRoomProfit == pResult->nRequestType )
+	{
+		stMsgCaculateTaxasRoomProfitRet msgBack ;
+		msgBack.nRoomID = pResult->nReqOrigID ;
+		msgBack.bDiamond = !pResult->vArg[0] ;
+		msgBack.nProfitMoney = pResult->vArg[1] ;
+		msgBack.nRet = 0 ;
+		SendMsg(&msgBack,sizeof(msgBack)) ;
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d get profit = %llu",GetPlayer()->GetUserUID(),msgBack.nProfitMoney) ;
+		return true ;
+	}
+
+	if ( eCrossSvrReq_AddRentTime == pResult->nRequestType )
+	{
+		stMsgAddTaxasRoomRentTimeRet msgRet ;
+		msgRet.nRet = 0 ;
+		msgRet.nAddDays = pResult->vArg[0] ;
+		msgRet.nRoomID = pResult->nReqOrigID ;
+		SendMsg(&msgRet,sizeof(msgRet)) ;
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d add rent time = %d",GetPlayer()->GetUserUID(),msgRet.nAddDays) ;
 		return true ;
 	}
 	return false ;
@@ -314,14 +386,13 @@ void CPlayerTaxas::TimerSave()
 	msgSavePokerData.nUserUID = GetPlayer()->GetUserUID() ;
 	msgSavePokerData.nFollowedRoomsStrLen = 0 ;
 	msgSavePokerData.nMyOwnRoomsStrLen = 0 ;
-	if ( m_vFollowedRooms.empty() && m_vMyOwnRooms.empty() )
+	if ( m_vFollowedRooms.empty() )
 	{
 		SendMsg((stMsgSavePlayerMoney*)&msgSavePokerData,sizeof(msgSavePokerData)) ;
 		return ;
 	}
 
 	std::string strFollow = "";
-	std::string strMyOwn = "";
 	if ( !m_vFollowedRooms.empty() )
 	{
 		Json::Value followArray ;
@@ -336,32 +407,13 @@ void CPlayerTaxas::TimerSave()
 		strFollow = writeFollow.write(followArray) ;
 	}
 
-	if ( !m_vMyOwnRooms.empty() )
-	{
-		Json::Value ownArray ;
-		Json::StyledWriter writeOwn ;
-
-		SET_ROOM_ID::iterator iter = m_vMyOwnRooms.begin() ;
-		uint16_t nIdx = 0 ;
-		for ( ; iter != m_vMyOwnRooms.end(); ++iter ,++nIdx)
-		{
-			ownArray[nIdx] = *iter ;
-		}
-		strMyOwn = writeOwn.write(ownArray) ;
-	}
 	msgSavePokerData.nFollowedRoomsStrLen = strlen(strFollow.c_str()) ;
-	msgSavePokerData.nMyOwnRoomsStrLen = strlen(strMyOwn.c_str()) ;
 
 	CAutoBuffer writeBuffer(sizeof(msgSavePokerData) + msgSavePokerData.nFollowedRoomsStrLen + msgSavePokerData.nMyOwnRoomsStrLen ) ;
 	writeBuffer.addContent((char*)&msgSavePokerData,sizeof(msgSavePokerData));
 	if ( msgSavePokerData.nFollowedRoomsStrLen > 0 )
 	{
 		writeBuffer.addContent(strFollow.c_str(),msgSavePokerData.nFollowedRoomsStrLen) ;
-	}
-
-	if ( msgSavePokerData.nMyOwnRoomsStrLen > 0 )
-	{
-		writeBuffer.addContent(strMyOwn.c_str(),msgSavePokerData.nMyOwnRoomsStrLen) ;
 	}
 
 	CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),writeBuffer.getBufferPtr(),writeBuffer.getContentSize());

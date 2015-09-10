@@ -243,19 +243,19 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 			}
 
 			stMsgModifyTaxasRoomName* pRet = (stMsgModifyTaxasRoomName*)prealMsg ;
-			if ( !pData )
-			{
-				msgBack.nRet = 3 ;
-				SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
-				return true;
-			}
+			//if ( !pData )
+			//{
+			//	msgBack.nRet = 3 ;
+			//	SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
+			//	return true;
+			//}
 	
-			if ( m_nRoomOwnerUID != pData->nUserUID )
-			{
-				msgBack.nRet = 1 ;
-				SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
-				return true;
-			}
+			//if ( m_nRoomOwnerUID != pData->nUserUID )
+			//{
+			//	msgBack.nRet = 1 ;
+			//	SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
+			//	return true;
+			//}
 
 			msgBack.nRet = 0 ;
 			pRet->vNewRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
@@ -352,60 +352,6 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 				SendRoomMsg(&msgRemind,sizeof(msgRemind)) ;
 			}
 			m_bRoomInfoDirty = true ;
-		}
-		break;
-	case MSG_TP_CACULATE_ROOM_PROFILE:
-		{
-			stMsgCaculateTaxasRoomProfitRet msgBack ;
-			msgBack.bDiamond = false ;
-			msgBack.nProfitMoney = 0 ;
-			if ( isRoomAlive() == false )
-			{
-				msgBack.nRet = 2 ;
-				SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
-				return true;
-			}
-
-			stMsgModifyTaxasRoomName* pRet = (stMsgModifyTaxasRoomName*)prealMsg ;
-			if ( !pData )
-			{
-				msgBack.nRet = 3 ;
-				SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
-				return true;
-			}
-
-			if ( m_nRoomOwnerUID != pData->nUserUID )
-			{
-				msgBack.nRet = 1 ;
-				SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
-				return true;
-			}
-
-			if ( m_nRoomProfit < 10000 )
-			{
-				msgBack.nRet = 4 ;
-				SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
-				return true;
-			}
-
-			msgBack.nRet = 0 ;
-			msgBack.nProfitMoney = m_nRoomProfit - m_nRoomProfit % 10000;
-			m_nRoomProfit = m_nRoomProfit % 10000 ;
-
-			stMsgCrossServerRequest msgAddCoinReq ;
-			msgAddCoinReq.cSysIdentifer = ID_MSG_PORT_DATA ;
-			msgAddCoinReq.nReqOrigID = GetRoomID() ;
-			msgAddCoinReq.nTargetID = pData->nUserUID ;
-			msgAddCoinReq.vArg[0] = true ;
-			msgAddCoinReq.vArg[1] = msgBack.nProfitMoney ;
-			msgAddCoinReq.nRequestType = eCrossSvrReq_AddMoney ;
-			msgAddCoinReq.nRequestSubType = eCrossSvrReqSub_TaxasRoomProfit ;
-			CTaxasServerApp::SharedGameServerApp()->sendMsg(msgAddCoinReq.nTargetID,(char*)&msgAddCoinReq,sizeof(msgAddCoinReq)) ;
-
-			SendMsgToPlayer(nPlayerSessionID,&msgBack,sizeof(msgBack)) ;
-
-			m_bRoomInfoDirty = true ;
-			return true;
 		}
 		break;
 	case MSG_TP_REQUEST_ROOM_INFORM:
@@ -1816,7 +1762,44 @@ void CTaxasRoom::syncPlayerDataToDataSvr( stTaxasPeerData& pPlayerData )
 
 bool CTaxasRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
 {
-	return false ;
+	switch ( pRequest->nRequestType )
+	{
+	case eCrossSvrReq_TaxasRoomProfit:
+		{
+			stMsgCrossServerRequestRet msgRet ;
+			msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
+			msgRet.nReqOrigID = pRequest->nTargetID ;
+			msgRet.nTargetID = pRequest->nReqOrigID ;
+			msgRet.nRequestType = pRequest->nRequestType ;
+			msgRet.nRequestSubType = pRequest->nRequestSubType ;
+			msgRet.nRet = 0 ;
+			msgRet.vArg[0] = true ;
+			msgRet.vArg[1] = m_nRoomProfit ;
+			m_nTotalProfit += m_nRoomProfit ;
+			m_nRoomProfit = 0 ;
+			m_bRoomInfoDirty = true ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(msgRet.nTargetID,(char*)&msgRet,sizeof(msgRet)) ;
+		}
+		break;
+	case eCrossSvrReq_AddRentTime:
+		{
+			stMsgCrossServerRequestRet msgRet ;
+			msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
+			msgRet.nReqOrigID = pRequest->nTargetID ;
+			msgRet.nTargetID = pRequest->nReqOrigID ;
+			msgRet.nRequestType = pRequest->nRequestType ;
+			msgRet.nRequestSubType = pRequest->nRequestSubType ;
+			msgRet.nRet = 0 ;
+			msgRet.vArg[0] = pRequest->vArg[0] ;
+			addLiftTime(pRequest->vArg[0]) ;
+			m_bRoomInfoDirty = true ;
+			CTaxasServerApp::SharedGameServerApp()->sendMsg(msgRet.nTargetID,(char*)&msgRet,sizeof(msgRet)) ;
+		}
+		break;
+	default:
+		return false ;
+	}
+	return true ;
 }
 
 bool CTaxasRoom::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue)

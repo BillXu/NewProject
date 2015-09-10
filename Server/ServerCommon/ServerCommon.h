@@ -53,6 +53,8 @@ enum  eCrossSvrReqType
 	eCrossSvrReq_DeductionMoney, //  var[0] isCoin ,var[1] needMoney, var[2] at least money,; result:  var[0] isCoin ,var[1] final deductionMoney 
 	eCrossSvrReq_AddMoney, //  var[0] isCoin ,var[1] addCoin
 	eCrossSvrReq_CreateTaxasRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID,
+	eCrossSvrReq_TaxasRoomProfit, // result: var[0] isCoin , var[1] RecvMoney;
+	eCrossSvrReq_AddRentTime, // var[0] , add days;  result var[0] add days ;
 	eCrossSvrReq_Max,
 };
 
@@ -62,7 +64,6 @@ enum eCrossSvrReqSubType
 	eCrossSvrReqSub_TaxasSitDown, // ps: json arg: seatIdx , result: json arg just back 
 	eCrossSvrReqSub_TaxasSitDownFailed,
 	eCrossSvrReqSub_TaxasStandUp,
-	eCrossSvrReqSub_TaxasRoomProfit,
 	eCrossSvrReqSub_Max,
 };
 
