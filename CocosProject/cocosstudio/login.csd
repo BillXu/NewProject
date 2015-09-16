@@ -1,5 +1,5 @@
 <GameProjectFile>
-  <PropertyGroup Type="Scene" Name="login" ID="c2e144c5-bb54-4855-9902-a94aaffb677b" Version="2.3.0.1" />
+  <PropertyGroup Type="Scene" Name="login" ID="c2e144c5-bb54-4855-9902-a94aaffb677b" Version="2.3.2.3" />
   <Content ctype="GameProjectContent">
     <Content>
       <Animation Duration="0" Speed="1.0000" />
@@ -17,7 +17,7 @@
             <FileData Type="Normal" Path="image/main_bg.jpg" Plist="" />
             <BlendFunc Src="770" Dst="771" />
           </AbstractNodeData>
-          <AbstractNodeData Name="signup_bg_2" ActionTag="123631976" Tag="9" IconVisible="False" PositionPercentXEnabled="True" VerticalEdge="BothEdge" LeftMargin="56.0000" RightMargin="56.0000" TopMargin="302.0000" BottomMargin="302.0000" ctype="SpriteObjectData">
+          <AbstractNodeData Name="signup_bg_2" ActionTag="123631976" Tag="9" IconVisible="False" PositionPercentXEnabled="True" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="56.0000" RightMargin="56.0000" TopMargin="302.0000" BottomMargin="302.0000" ctype="SpriteObjectData">
             <Size X="528.0000" Y="532.0000" />
             <Children>
               <AbstractNodeData Name="account" ActionTag="1585914025" Tag="13" IconVisible="False" LeftMargin="142.8632" RightMargin="96.3736" TopMargin="132.6514" BottomMargin="349.3486" TouchEnable="True" StretchWidthEnable="True" FontSize="36" IsCustomSize="True" LabelText="" PlaceHolderText="Text Field" MaxLengthText="10" ctype="TextFieldObjectData">
@@ -47,7 +47,7 @@
                 <PrePosition X="0.5440" Y="0.4265" />
                 <PreSize X="0.5469" Y="0.0521" />
               </AbstractNodeData>
-              <AbstractNodeData Name="btnLogin" ActionTag="-666259792" Tag="16" IconVisible="False" LeftMargin="25.6818" RightMargin="38.3182" TopMargin="376.5289" BottomMargin="71.4711" TouchEnable="True" FontSize="48" ButtonText="Login" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="434" Scale9Height="62" ctype="ButtonObjectData">
+              <AbstractNodeData Name="btnLogin" ActionTag="-666259792" Tag="16" IconVisible="False" LeftMargin="25.6818" RightMargin="38.3182" TopMargin="376.5289" BottomMargin="71.4711" TouchEnable="True" FontSize="48" ButtonText="Login" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="434" Scale9Height="62" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
                 <Size X="464.0000" Y="84.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="257.6818" Y="113.4711" />
@@ -62,7 +62,7 @@
                 <OutlineColor A="255" R="255" G="0" B="0" />
                 <ShadowColor A="255" R="110" G="110" B="110" />
               </AbstractNodeData>
-              <AbstractNodeData Name="btnRegister" ActionTag="-1306974721" Tag="17" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="29.5184" RightMargin="34.4816" TopMargin="480.2112" BottomMargin="-32.2112" TouchEnable="True" FontSize="48" ButtonText="Register" Scale9Enable="True" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="434" Scale9Height="62" ctype="ButtonObjectData">
+              <AbstractNodeData Name="btnRegister" ActionTag="-1306974721" Tag="17" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" HorizontalEdge="BothEdge" VerticalEdge="BothEdge" LeftMargin="29.5184" RightMargin="34.4816" TopMargin="480.2112" BottomMargin="-32.2112" TouchEnable="True" FontSize="48" ButtonText="Register" Scale9Enable="True" LeftEage="15" RightEage="15" TopEage="11" BottomEage="11" Scale9OriginX="15" Scale9OriginY="11" Scale9Width="434" Scale9Height="62" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
                 <Size X="464.0000" Y="84.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="261.5184" Y="9.7888" />
