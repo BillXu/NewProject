@@ -381,7 +381,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 			VEC_CARD& vC = vColor[i] ;
 			std::sort(vC.begin(),vC.end(),CompFunction );
 			m_eType =  eCard_TongHua ;
-			m_strCardName = "ͬ��";
+			m_strCardName = "paixing_tonghua";
 			// add final ;
 			for ( int j = vC.size() -1  ;j >= 0 ; --j )
 			{
@@ -414,7 +414,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 				m_vFinalCard.clear();
 				m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
 #if (!defined(SERVER)) && (!defined(ROBOT))
-				m_strCardName = "ͬ��˳";
+				m_strCardName = "paixing_tonghuashun";
 #endif	
 				return ;
 			}
@@ -432,7 +432,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		m_vFinalCard.clear();
 		m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
 		m_eType =  eCard_ShunZi ;
-		m_strCardName = "˳��";
+		m_strCardName = "paixing_shunzi";
 		return ;
 	}
 
@@ -442,7 +442,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		m_vFinalCard.clear();
 		m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
 		m_eType =  eCard_ShunZi ;
-		m_strCardName = "˳��";
+		m_strCardName = "paixing_shunzi";
 		return ;
 	}
 
@@ -503,7 +503,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 			}
 		}
 		m_eType = eCard_GaoPai;
-		m_strCardName = "����" ;
+		m_strCardName = "paixing_gaopai" ;
 		return ;
 	}
 
@@ -540,7 +540,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 					continue;
 				}
 				m_eType = eCard_SiTiao;
-				m_strCardName = "����" ;
+				m_strCardName = "paixing_sitiao" ;
 				return ;
 			}
 		}
@@ -568,14 +568,14 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 					if ( m_vFinalCard.size() == 5 )
 					{
 						m_eType = eCard_SanTiao ;
-						m_strCardName = "����" ;
+						m_strCardName = "paixing_santiao" ;
 						return ;
 					}
 				}
 			}
 		}
 		m_eType = eCard_HuLu ;
-		m_strCardName = "��«" ;
+		m_strCardName = "paixing_hulu" ;
 		return ;
 	}
 	else if ( vPairs[2].size() == 2 )
@@ -587,7 +587,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 			m_vFinalCard.insert(m_vFinalCard.begin(),vPairs[1].begin(),vPairs[1].end() ) ;
 			m_vPairs[1].insert(m_vPairs[1].begin(),vPairs[1].begin(),vPairs[1].end() ) ;
 			m_eType = eCard_LiangDui ;
-			m_strCardName = "����" ;
+			m_strCardName = "paixing_liangdui" ;
 		}
 		else  // one pairs ;
 		{
@@ -595,7 +595,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 #if defined(SERVER) || defined(ROBOT) 
 
 #else
-			m_strCardName = "һ��";
+			m_strCardName = "paixing_yidui";
 #endif
 		}
 

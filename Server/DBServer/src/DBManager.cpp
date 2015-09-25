@@ -68,8 +68,16 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pdata->nExtenArg1 = pRet->nReqPlayerSessionID ;
 			pdata->nExtenArg2 = pRet->isDetail ;
 			pRequest->eType = eRequestType_Select ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM playerbasedata WHERE userUID = '%d'",pRet->nTargetPlayerUID) ;
+			if ( pRet->isDetail )
+			{
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"call selectPlayerDetailClient( '%u')",pRet->nTargetPlayerUID) ;
+			}
+			else
+			{
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"SELECT * FROM playerbasedata WHERE userUID = '%d'",pRet->nTargetPlayerUID) ;
+			}
 		}
 		break;
 	case MSG_PLAYER_SAVE_MAIL:
@@ -140,7 +148,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			uint16_t nRandID = rand() % 10000 ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"call CreateNewRegisterPlayerData(%d,'guest%d')",pCreate->nUserUID,nRandID) ;
+				"call CreateNewRegisterPlayerData(%d,'guest%d','%d')",pCreate->nUserUID,nRandID,pCreate->isRegister) ;
 		}
 		break;
 	case MSG_READ_PLAYER_BASE_DATA:
@@ -248,7 +256,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			{
 				pRequest->eType = eRequestType_Update;
 				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-					"UPDATE taxasroomplayers SET readInformSerial = '%u', totalBuyin = '%I64d', finalLeft = '%I64d', playTimes = '%u', winTimes = '%u', offset = '%u' WHERE roomID = '%u' and playerUID = '%d'and flag = '0' "
+					"UPDATE taxasroomplayers SET readInformSerial = '%u', totalBuyin = '%I64d', finalLeft = '%I64d', playTimes = '%u', winTimes = '%u', offset = '%lld' WHERE roomID = '%u' and playerUID = '%d'and flag = '0' "
 					,pRet->m_nReadedInformSerial,pRet->nTotalBuyInThisRoom,pRet->nFinalLeftInThisRoom,pRet->nPlayeTimesInThisRoom,pRet->nWinTimesInThisRoom,nOffset,pRet->nRoomID,pRet->nPlayerUID) ;
 				CLogMgr::SharedLogMgr()->PrintLog("updata taxas room player data room id = %u , uid = %u",pRet->nRoomID,pRet->nPlayerUID);
 			}
@@ -719,19 +727,82 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 			msgBack.nReqPlayerSessionID = pdata->nExtenArg1 ;
 			msgBack.isDetail = pdata->nExtenArg2 ;
-			CAutoBuffer auB(sizeof(msgBack) + sizeof(stPlayerDetailData) );
-			stPlayerDetailData tData;
+			CAutoBuffer auB(sizeof(msgBack) + sizeof(stPlayerDetailDataClient) );
+			stPlayerDetailDataClient tData;
 			CMysqlRow& pRow = *pResult->vResultRows.front();
 			if ( msgBack.isDetail )
 			{
-				GetPlayerDetailData(&tData,pRow);
+				tData.bIsOnLine = false ;
+				memset(tData.cName,0,sizeof(tData.cName)) ;
+				sprintf_s(tData.cName,sizeof(tData.cName),"%s",pRow["cName"]->CStringValue()) ;
+				tData.nCoin = pRow["nCoin"]->IntValue64();
+				tData.nDiamoned = pRow["nDiamoned"]->IntValue64();
+				tData.nPhotoID = pRow["nPhotoID"]->IntValue();
+				tData.nSex = pRow["nSex"]->IntValue();
+				tData.nUserUID = pRow["nUserUID"]->IntValue();
+				tData.nVipLevel = pRow["nVipLevel"]->IntValue();
+
+				memset(tData.cSignature,0,sizeof(tData.cSignature)) ;
+				sprintf_s(tData.cSignature,sizeof(tData.cSignature),"%s",pRow["cSignature"]->CStringValue()) ;
+				tData.nMostCoinEver = pRow["nMostCoinEver"]->IntValue64();
+				tData.dfLatidue = pRow["dfLatidue"]->FloatValue();
+				tData.dfLongitude = pRow["dfLongitude"]->FloatValue();
+
+				time_t tLastOffline = pRow["tOfflineTime"]->IntValue();
+				tData.tOfflineTime = tLastOffline ;
+
+				std::vector<int> vInt ;
+				vInt.clear();
+				//read upload pic 
+				vInt.clear();
+				pRow["vUploadedPic"]->VecInt(vInt);
+				memset(tData.vUploadedPic,0,sizeof(tData.vUploadedPic)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("vUploadedPic size = %d uid = %d",vInt.size(),tData.nUserUID ) ;
+				if ( vInt.size() == MAX_UPLOAD_PIC )
+				{
+					for ( uint8_t nIdx = 0 ; nIdx < MAX_UPLOAD_PIC ; ++nIdx )
+					{
+						tData.vUploadedPic[nIdx] = vInt[nIdx] ;
+					}
+				}
+
+				// read joined club ids ;
+				vInt.clear();
+				pRow["vJoinedClubID"]->VecInt(vInt);
+				memset(tData.vJoinedClubID,0,sizeof(tData.vJoinedClubID)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("vJoinedClubID size = %d uid = %d",vInt.size(),tData.nUserUID ) ;
+				if ( vInt.size() == MAX_JOINED_CLUB_CNT )
+				{
+					for ( uint8_t nIdx = 0 ; nIdx < MAX_JOINED_CLUB_CNT ; ++nIdx )
+					{
+						tData.vJoinedClubID[nIdx] = vInt[nIdx] ;
+					}
+				}
+
+				// read taxas data 
+				tData.tTaxasData.nPlayTimes = pRow["nPlayTimes"]->IntValue();
+				tData.tTaxasData.nWinTimes = pRow["nWinTimes"]->IntValue();
+				tData.tTaxasData.nSingleWinMost = pRow["nSingleWinMost"]->IntValue64();
+
+				vInt.clear();
+				// read max card ;
+				pRow["vMaxCards"]->VecInt(vInt);
+				memset(tData.tTaxasData.vMaxCards,0,sizeof(tData.tTaxasData.vMaxCards)) ;
+				if ( vInt.size() == MAX_TAXAS_HOLD_CARD )
+				{
+					for ( uint8_t nIdx = 0 ; nIdx < MAX_TAXAS_HOLD_CARD ; ++nIdx )
+					{
+						tData.tTaxasData.vMaxCards[nIdx] = vInt[nIdx] ;
+					}
+				}
+				CLogMgr::SharedLogMgr()->PrintLog("read select player detail uid = %d",tData.nUserUID) ;
 			}
 			else
 			{
 				GetPlayerBrifData(&tData,pRow) ;
 			}
 			auB.addContent(&msgBack,sizeof(msgBack)) ;
-			auB.addContent(&tData,msgBack.isDetail ? sizeof(stPlayerDetailData) : sizeof(stPlayerBrifData)) ;
+			auB.addContent(&tData,msgBack.isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerDetailDataClient)) ;
 			m_pTheApp->sendMsg(pdata->nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
 		}
 		break;
@@ -836,6 +907,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msg.stBaseData.tLastLoginTime = pRow["lastLoginTime"]->IntValue() ;
 				msg.stBaseData.tLastTakeCharityCoinTime = pRow["lastTakeCharityCoinTime"]->IntValue() ;
 				msg.stBaseData.nContinueDays = pRow["continueLoginDays"]->IntValue() ;
+				msg.stBaseData.isRegister = pRow["isRegister"]->IntValue() ;
 				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 			}
 		}

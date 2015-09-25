@@ -105,7 +105,6 @@
     <ClInclude Include="..\..\Common\RoomConfig.h" />
     <ClInclude Include="..\..\Common\ShopConfg.h" />
     <ClInclude Include="..\..\Common\TaxasMessageDefine.h" />
-    <ClInclude Include="..\..\Common\TaxasPokerMessage.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\TitleLevelConfig.h" />
     <ClInclude Include="..\..\Common\Utility.h" />

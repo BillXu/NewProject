@@ -182,8 +182,8 @@ void CTempTest::setValue(T* v ,int nlen )
 //}
 int main()
 {
-	hmain();
-	return 0;
+	//hmain();
+	//return 0;
 	//TestC t (3);
 	//hello<true,TestC>(&t);
 	//t.hello<false>();

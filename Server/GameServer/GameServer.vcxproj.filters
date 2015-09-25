@@ -40,9 +40,6 @@
     <ClInclude Include="..\..\Common\GoldenMessageDefine.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\TaxasPokerMessage.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\ServerCommon\ServerConfig.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>

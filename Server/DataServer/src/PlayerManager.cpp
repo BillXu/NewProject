@@ -8,6 +8,103 @@
 #include "EventCenter.h"
 #include "PlayerBaseData.h"
 #include "AutoBuffer.h"
+#include "PlayerTaxas.h"
+
+CSelectPlayerDataCacher::CSelectPlayerDataCacher()
+{
+	m_vBrifData.clear();
+	m_vDetailData.clear();
+}
+
+CSelectPlayerDataCacher::~CSelectPlayerDataCacher()
+{
+	for ( MAP_ID_DATA::value_type va : m_vBrifData )
+	{
+		delete va.second ;
+		va.second = nullptr ;
+	}
+	m_vBrifData.clear() ;
+
+	for ( MAP_ID_DATA::value_type va : m_vDetailData )
+	{
+		delete va.second ;
+		va.second = nullptr ;
+	}
+	m_vDetailData.clear() ;
+}
+
+void CSelectPlayerDataCacher::removePlayerDataCache( uint32_t nUID )
+{
+	MAP_ID_DATA::iterator iter = m_vBrifData.find(nUID) ;
+	if ( iter != m_vBrifData.end() )
+	{
+		delete iter->second ;
+		m_vBrifData.erase(iter) ;
+		return ;
+	}
+
+	iter = m_vDetailData.find(nUID) ;
+	if ( iter != m_vDetailData.end() )
+	{
+		delete iter->second ;
+		m_vDetailData.erase(iter) ;
+		return ;
+	}
+}
+
+void CSelectPlayerDataCacher::cachePlayerData(stMsgSelectPlayerDataRet* pmsg )
+{
+	if ( pmsg->nRet )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("cahe player data failed");
+		return ;
+	}
+
+	stPlayerBrifData* pData = (stPlayerBrifData*)((char*)pmsg + sizeof(stMsgSelectPlayerDataRet));
+	if ( pmsg->isDetail )
+	{
+		removePlayerDataCache(pData->nUserUID);
+		stPlayerDetailDataClient* pCdata = new stPlayerDetailDataClient ;
+		memcpy(pCdata,pData,sizeof(stPlayerDetailDataClient));
+		m_vDetailData[pData->nUserUID] = pCdata ;
+	}
+	else
+	{
+		stPlayerBrifData* pCdata = new stPlayerBrifData ;
+		memcpy(pCdata,pData,sizeof(stPlayerBrifData));
+		m_vBrifData[pData->nUserUID] = pCdata ;
+	}
+}
+
+bool CSelectPlayerDataCacher::getPlayerData(uint32_t nUID , stPlayerBrifData* pData , bool isDetail )
+{
+	MAP_ID_DATA::iterator iter ;
+	if ( isDetail )
+	{
+		iter = m_vDetailData.find(nUID) ;
+		if ( iter == m_vDetailData.end() )
+		{
+			return false ;
+		}
+	}
+	else
+	{
+		iter = m_vBrifData.find(nUID) ;
+		if ( iter == m_vBrifData.end() )
+		{
+			iter = m_vDetailData.find(nUID) ;
+			if ( iter == m_vDetailData.end() )
+			{
+				return false ;
+			}
+		}
+	}
+ 
+	memcpy(pData,iter->second,isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData));
+	return true ;
+}
+
+
 CPlayerManager::CPlayerManager()
 {
 	m_vOfflinePlayers.clear() ;
@@ -131,13 +228,15 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			msgBack.isDetail = pRet->isDetail ;
 			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nPlayerUID);
 
-			stPlayerDetailData stData ;
+			stPlayerDetailDataClient stData ;
 			CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailData));
 			if ( pPlayer )
 			{
 				if ( pRet->isDetail )
 				{
 					pPlayer->GetBaseData()->GetPlayerDetailData(&stData);
+					CPlayerTaxas* pTaxasData = (CPlayerTaxas*)pPlayer->GetComponent(ePlayerComponent_PlayerTaxas);
+					pTaxasData->getTaxasData(&stData.tTaxasData);
 				}
 				else
 				{
@@ -145,10 +244,20 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				}
 				
 				auB.addContent(&msgBack,sizeof(msgBack));
-				auB.addContent(&stData,pRet->isDetail ? sizeof(stPlayerDetailData) : sizeof(stPlayerBrifData) ) ;
+				auB.addContent(&stData,pRet->isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
 				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
 				return true ;
 			}
+
+			if ( m_tPlayerDataCaher.getPlayerData(pRet->nPlayerUID,&stData,pRet->isDetail) )
+			{
+				auB.addContent(&msgBack,sizeof(msgBack));
+				auB.addContent(&stData,pRet->isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+				CLogMgr::SharedLogMgr()->PrintLog("get player data from cahe") ;
+				return true ;
+			}
+
 			CLogMgr::SharedLogMgr()->PrintLog("req detail player not online , req from db") ;
 			stMsgSelectPlayerData msgReq ;
 			msgReq.isDetail = pRet->isDetail ;
@@ -169,9 +278,10 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			}
 			else
 			{
-				CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailData));
+				m_tPlayerDataCaher.cachePlayerData(pRet);
+				CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailDataClient));
 				auB.addContent(&msgBack,sizeof(msgBack));
-				uint16_t nLen = pRet->isDetail ? sizeof(stPlayerDetailData) : sizeof(stPlayerBrifData) ;
+				uint16_t nLen = pRet->isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ;
 				auB.addContent((char*)prealMsg + sizeof(stMsgSelectPlayerDataRet),nLen );
 				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nReqPlayerSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
 			}
@@ -218,6 +328,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 		}
 		break;
 	case MSG_DISCONNECT_CLIENT:
+	case MSG_PLAYER_LOGOUT:
 		{
 			CPlayer* pPlayer = GetPlayerBySessionID(nSessionID) ;
 			if ( pPlayer )

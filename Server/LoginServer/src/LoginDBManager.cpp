@@ -191,6 +191,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			// request db to create new player data 
 			stMsgRequestDBCreatePlayerData msgCreateData ;
 			msgCreateData.nUserUID = msgRet.nUserID ;
+			msgCreateData.isRegister = msgRet.cRegisterType != 0 ;
 			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgCreateData,sizeof(msgCreateData)) ;
 
 			// tell client the success register result ;
@@ -255,6 +256,9 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 
 			if ( msgBack.nRet == 0 )
 			{
+				stMsgOnPlayerBindAccount msgInfom ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgInfom,sizeof(msgInfom)); 
+
 				stMsgLoginSvrInformGateSaveLog msglog ;
 				msglog.nlogType = eLog_BindAccount ;
 				msglog.nUserUID = pdata->nExtenArg1 ;

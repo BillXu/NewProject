@@ -41,6 +41,13 @@ public:
 	unsigned char nServerType ; // eServerType ;
 };
 
+struct stMsgPlayerLogout
+	:public stMsg
+{
+public: 
+	stMsgPlayerLogout(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_LOGOUT ;}
+};
+
 // register an login ;
 struct stMsgRegister
 	:public stMsg
@@ -130,6 +137,13 @@ struct stMsgPlayerBaseData
 	stCommonBaseData stBaseData ;
 };
 
+struct stMsgPlayerBaseDataTaxas
+	:public stMsg
+{
+	stMsgPlayerBaseDataTaxas(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_BASE_DATA_TAXAS ; }
+	stPlayerTaxasData tTaxasData ;
+};
+
 struct stMsgRequestPlayerData
 	:public stMsg
 {
@@ -144,9 +158,17 @@ struct stMsgRequestPlayerDataRet
 	stMsgRequestPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_PLAYER_DATA ;}
 	uint8_t nRet ; // 0 success , 1 can not find player 
 	bool isDetail ;
-	PLACE_HOLDER(stPlayerBrifData* tData ;);  //or stPlayerDetailData* ; 
+	PLACE_HOLDER(stPlayerBrifData* tData ;);  //or stPlayerDetailDataClient* ; 
 };
 
+
+struct stMsgPlayerUpdateMoney
+	:public stMsg
+{
+	stMsgPlayerUpdateMoney(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_UPDATE_MONEY ; }
+	uint64_t nFinalCoin ;
+	unsigned int nFinalDiamoned ;
+};
 
 // modify name and sigure
 struct stMsgPLayerModifyName
@@ -294,6 +316,37 @@ struct stMsgRequestMailListRet
 	stMail tMail;
 };
 
+// Charity module ;
+struct stMsgPlayerRequestCharityState
+	:public stMsg
+{
+	stMsgPlayerRequestCharityState(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_PLAYER_REQUEST_CHARITY_STATE ; }
+};
+
+struct stMsgPlayerRequestCharityStateRet
+	:public stMsg
+{
+	stMsgPlayerRequestCharityStateRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_REQUEST_CHARITY_STATE ; }
+	unsigned char nState ; // 0 can get charity , 1 you coin is enough , do not need charity, 2 time not reached ;
+	unsigned int nLeftSecond ;
+};
+
+struct stMsgPlayerGetCharity
+	:public stMsg
+{
+	stMsgPlayerGetCharity(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_PLAYER_GET_CHARITY; }
+};
+
+struct stMsgPlayerGetCharityRet
+	:public stMsg
+{
+	stMsgPlayerGetCharityRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_GET_CHARITY; }
+	unsigned char nRet ; // 0 success ,  1 you coin is enough , do not need charity, 2 time not reached ;
+	uint64_t nGetCoin ;
+	uint64_t nFinalCoin ;
+	unsigned int nLeftSecond ;
+};
+
 ///--------------------ablove is new , below is old------
 
 
@@ -379,45 +432,6 @@ struct stMsgPlayerUpdateVipLevel
 	unsigned char nCurVIPLevel ;
 };
 
-struct stMsgPlayerUpdateMoney
-	:public stMsg
-{
-	stMsgPlayerUpdateMoney(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PLAYER_UPDATE_MONEY ; }
-	uint64_t nFinalCoin ;
-	unsigned int nFinalDiamoned ;
-	uint64_t nTakeInCoin;
-	unsigned int nTakeInDiamoned ;
-};
-
-struct stMsgPlayerRequestCharityState
-	:public stMsg
-{
-	stMsgPlayerRequestCharityState(){ cSysIdentifer = ID_MSG_C2GAME; usMsgType = MSG_PLAYER_REQUEST_CHARITY_STATE ; }
-};
-
-struct stMsgPlayerRequestCharityStateRet
-	:public stMsg
-{
-	stMsgPlayerRequestCharityStateRet(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_PLAYER_REQUEST_CHARITY_STATE ; }
-	unsigned char nState ; // 0 can get charity , 1 you coin is enough , do not need charity, 2 time not reached ;
-	unsigned int nLeftSecond ;
-};
-
-struct stMsgPlayerGetCharity
-	:public stMsg
-{
-	stMsgPlayerGetCharity(){ cSysIdentifer = ID_MSG_C2GAME; usMsgType = MSG_PLAYER_GET_CHARITY; }
-};
-
-struct stMsgPlayerGetCharityRet
-	:public stMsg
-{
-	stMsgPlayerGetCharityRet(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_PLAYER_GET_CHARITY; }
-	unsigned char nRet ; // 0 success ,  1 you coin is enough , do not need charity, 2 time not reached ;
-	uint64_t nGetCoin ;
-	uint64_t nFinalCoin ;
-	unsigned int nLeftSecond ;
-};
 
 struct stMsgPlayerRequestNewMoneyState
 	:public stMsg

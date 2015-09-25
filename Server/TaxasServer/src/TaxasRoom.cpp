@@ -5,6 +5,8 @@
 #include "TaxasPokerPeerCard.h"
 #include "ServerMessageDefine.h"
 #include <json/json.h>
+#include "TaxasServerApp.h"
+#include "RoomManager.h"
 #include "AutoBuffer.h"
 #define TIME_SECONDS_PER_DAY (60*60*24)
 #define TIME_SAVE_ROOM_INFO 60*30
@@ -418,6 +420,40 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 			msgRet.nTotalProfit = 1000 ;
 			sprintf_s(msgRet.vRoomName,sizeof(msgRet.vRoomName),"%s",getRoomName());
 			SendMsgToPlayer(nPlayerSessionID,&msgRet,sizeof(msgRet)) ;
+		}
+		break;
+	case MSG_TP_CHANGE_ROOM:
+		{
+			stMsgTaxasPlayerLeave leave ;
+			OnMessage(&leave,ID_MSG_PORT_CLIENT,nPlayerSessionID);
+			CTaxasServerApp::SharedGameServerApp()->GetRoomMgr()->onPlayerChangeRoom(GetRoomID(),nPlayerSessionID) ;
+			return true ;
+		}
+		break;
+	case MSG_TP_REQUEST_ROOM_RANK:
+		{
+			const int nMaxCnt = 6;
+			CAutoBuffer auBuffer(sizeof(stMsgRequestTaxasRoomRankRet) + sizeof(stTaxasRoomRankItem) * nMaxCnt );
+			stMsgRequestTaxasRoomRankRet msgBack ;
+			VEC_IN_ROOM_PEERS::iterator iter = m_vAllPeers.begin();
+			uint8_t nSendedItemCnt = 0 ;
+			do 
+			{
+				msgBack.nCnt = (m_vAllPeers.size() - nSendedItemCnt )<= nMaxCnt ? (m_vAllPeers.size() - nSendedItemCnt ) : nMaxCnt ;
+				msgBack.bLast = m_vAllPeers.size() - nSendedItemCnt  <= nMaxCnt ;
+				auBuffer.addContent(&msgBack,sizeof(msgBack)) ;
+				for ( int nIdx = 0 ;  nIdx < msgBack.nCnt && iter != m_vAllPeers.end(); ++nIdx,++iter,++nSendedItemCnt )
+				{
+					stTaxasRoomRankItem item ;
+					item.nCoinOffset = (*iter)->nFinalLeftInThisRoom - (*iter)->nTotalBuyInThisRoom ;
+					item.nTotoalBuyIn = (*iter)->nTotalBuyInThisRoom ;
+					item.nUID = (*iter)->nUserUID ;
+					auBuffer.addContent(&item,sizeof(item));
+				}
+				SendMsgToPlayer(nPlayerSessionID,(stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+				auBuffer.clearBuffer();
+			} while ( iter != m_vAllPeers.end() );
+			CLogMgr::SharedLogMgr()->PrintLog("send room rank to sesion id = %d, size =%d",nSendedItemCnt,nPlayerSessionID);
 		}
 		break;
 	default:
@@ -845,7 +881,7 @@ bool CTaxasRoom::isRoomAlive()
 		return true ;
 	}
 
-	return time(NULL) > m_nDeadTime ;
+	return time(NULL) <= m_nDeadTime ;
 }
 
 void CTaxasRoom::setProfit(uint64_t nProfit )
@@ -1453,6 +1489,7 @@ void CTaxasRoom::writeGameResultLog()
 	Json::StyledWriter write ;
 	std::string str = write.write(m_arrPlayers);
 	CAutoBuffer auBuffer (sizeof(saveMsg) + str.size());
+	saveMsg.nJsonExtnerLen = str.size() ;
 	auBuffer.addContent((char*)&saveMsg,sizeof(saveMsg)) ;
 	auBuffer.addContent(str.c_str(),str.size());
 	CTaxasServerApp::SharedGameServerApp()->sendMsg(GetRoomID(),auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;

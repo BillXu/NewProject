@@ -11,14 +11,17 @@ public:
 	CPlayerTaxas(CPlayer* pPlayer):IPlayerComponent(pPlayer){ m_eType = ePlayerComponent_PlayerTaxas ; }
 	virtual void Reset();
 	virtual void Init();
-	virtual bool OnMessage( stMsg* pMessage , eMsgPort eSenderPort) ;
-	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
-	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
-	virtual void OnPlayerDisconnect();
-	virtual void OnOtherWillLogined();
+	virtual bool OnMessage( stMsg* pMessage , eMsgPort eSenderPort)override ;
+	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr)override;
+	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr )override;
+	virtual void OnPlayerDisconnect()override;
+	virtual void OnOtherWillLogined()override;
 	virtual void TimerSave();
+    void OnReactive(uint32_t nSessionID )override{ sendTaxaDataToClient(); }
+	void getTaxasData(stPlayerTaxasData* pData );
 protected:
 	bool isRoomIDMyOwn(uint32_t nRoomID ){ return true ;}
+	void sendTaxaDataToClient();
 protected:
 	uint32_t m_nCurTaxasRoomID ;
 	bool m_bDirty ;

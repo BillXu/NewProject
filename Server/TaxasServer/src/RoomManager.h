@@ -31,6 +31,7 @@ public:
 	bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
 	bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 	void onConnectedToSvr();
+	void onPlayerChangeRoom(uint32_t nCurRoomID , uint32_t nPlayerSessionID );
 protected:
 	bool reqeustChatRoomID(CTaxasRoom* pRoom);
 	void addRoomToCreator(CTaxasRoom* pRoom);

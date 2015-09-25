@@ -174,6 +174,16 @@ struct stMsgTaxasEnterRoomRet
 	uint8_t nRet ; // 0 success , 1 invalid session id ;2 already in room ; 3 room id error ;
 };
 
+struct  stMsgTaxasQuickEnterRoom
+	:public stMsg
+{
+	stMsgTaxasQuickEnterRoom()
+	{
+		cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_QUICK_ENTER ;
+	}
+	uint64_t nCurCoin ;
+};
+
 struct stMsgTaxasRoomInfoBase
 	:public stMsg
 {
@@ -423,6 +433,29 @@ struct stMsgRequestRoomDetailRet
 	stMsgRequestRoomDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_DETAIL ; }
 	stRoomListItem detailInfo;
 };
+
+struct stMsgRequestTaxasRoomRank
+	:public stMsgToRoom
+{
+	stMsgRequestTaxasRoomRank(){ usMsgType = MSG_TP_REQUEST_ROOM_RANK ;}
+};
+
+struct stTaxasRoomRankItem
+{
+	uint32_t nUID ;
+	int64_t nCoinOffset ;
+	uint64_t nTotoalBuyIn;
+};
+
+struct stMsgRequestTaxasRoomRankRet
+	:public stMsg
+{
+	stMsgRequestTaxasRoomRankRet(){ usMsgType = MSG_TP_REQUEST_ROOM_RANK ; cSysIdentifer = ID_MSG_PORT_CLIENT ; }
+	bool bLast;
+	uint8_t nCnt ;
+	PLACE_HOLDER(stTaxasRoomRankItem*);
+};
+
 
 //------------------------------------------------------beforear e new --
 

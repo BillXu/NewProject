@@ -39,6 +39,13 @@ struct stMsgRequestDBCreatePlayerData
 {
 	stMsgRequestDBCreatePlayerData(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_REQUEST_CREATE_PLAYER_DATA ; }
 	uint32_t nUserUID ;
+	uint8_t isRegister ;
+};
+
+struct stMsgOnPlayerBindAccount
+	:public stMsg
+{
+	stMsgOnPlayerBindAccount(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_ON_PLAYER_BIND_ACCOUNT ; }
 };
 
 struct stMsgOnPlayerLogin
@@ -243,7 +250,7 @@ struct stMsgSelectPlayerDataRet
 	uint8_t nRet ; // 0 success , 1 can not find player ;
 	bool isDetail ;
 	uint32_t nReqPlayerSessionID ;
-	stPlayerBrifData* tData ;
+	PLACE_HOLDER(stPlayerBrifData* tData ) ;
 };
 
 // data and taxas server 

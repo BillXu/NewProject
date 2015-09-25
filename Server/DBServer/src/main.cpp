@@ -77,11 +77,11 @@ int main()
 		scanf("%c",&c);
 		return 0;
 	}
-#ifdef NDEBUG
+//#ifdef NDEBUG
 	RunFunc(&theApp) ;
-#else
-	theApp.run();
-#endif
+//#else
+//	theApp.run();
+//#endif
 	Sleep(3000) ; // wait other thread finish work ;
 	return 0 ; 
 }

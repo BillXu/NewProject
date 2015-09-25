@@ -16,7 +16,7 @@ namespace TestWinForm
             m_myPanel = pForm.getAddCardTypePanel();
             vCardTypeBtn = new RadioButton[(int)eCardType.eCard_Robot_Max];
             vCardTypeBtn = pForm.m_vCardType;
-            vCardTypeBtn[0] = null;
+            vCardTypeBtn[0] = null; 
         }
 
         public override void refreshCurNodeData(NodeData nCurData)

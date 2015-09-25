@@ -15,6 +15,14 @@ struct stPlayerBrifData
 	bool bIsOnLine ;
 };
 
+struct stPlayerTaxasData
+{
+	uint32_t nWinTimes ;
+	uint32_t nPlayTimes ;
+	uint64_t nSingleWinMost ;
+	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
+};
+
 struct stPlayerDetailData
 	:public stPlayerBrifData
 {
@@ -25,6 +33,13 @@ struct stPlayerDetailData
 	uint32_t tOfflineTime ;  // last offline time ;
 	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
 	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
+};
+
+
+struct stPlayerDetailDataClient
+	:public stPlayerDetailData
+{
+	stPlayerTaxasData tTaxasData ;
 };
 
 struct stCommonBaseData
@@ -40,14 +55,7 @@ struct stServerBaseData
 	uint32_t nContinueDays ;
 	uint32_t tLastLoginTime;
 	uint32_t tLastTakeCharityCoinTime ;
-};
-
-struct stPlayerTaxasData
-{
-	uint32_t nWinTimes ;
-	uint32_t nPlayTimes ;
-	uint64_t nSingleWinMost ;
-	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
+	bool isRegister ;
 };
 
 struct stTaxasInRoomPeerData

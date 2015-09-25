@@ -51,7 +51,7 @@ bool CRoomManager::OnMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 	CTaxasRoom* pRoom = GetRoomByID(pRoomMsg->nRoomID) ;
 	if ( pRoom == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("can not find room to process id = %d ,from = %d",prealMsg->usMsgType,eSenderPort ) ;
+		CLogMgr::SharedLogMgr()->ErrorLog("can not find room to process id = %d ,from = %d, room id = %d",prealMsg->usMsgType,eSenderPort,pRoomMsg->nRoomID ) ;
 		return  false ;
 	}
 
@@ -475,6 +475,25 @@ void CRoomManager::onConnectedToSvr()
 		SendMsg(&msg,sizeof(msg),0) ;
 		CLogMgr::SharedLogMgr()->PrintLog("request taxas rooms");
 	}
+}
+
+void CRoomManager::onPlayerChangeRoom(uint32_t nCurRoomID , uint32_t nPlayerSessionID )
+{
+	int nSize = m_vRooms.size();
+	int nR = rand()%nSize ;
+	MAP_ID_ROOM::iterator iter = m_vRooms.begin();
+	for ( int nidx = 0 ; iter != m_vRooms.end(); ++iter,++nidx )
+	{
+		if ( nidx == nR )
+		{
+			break;
+		}
+	}
+
+	stMsgRequestTaxasPlayerData msg ;
+	msg.nRoomID = iter->first ;
+	SendMsg(&msg,sizeof(msg),nPlayerSessionID ) ;
+	CLogMgr::SharedLogMgr()->PrintLog("change room rquest player data for room ");
 }
 
 void CRoomManager::addRoomToCreator(CTaxasRoom* pRoom)

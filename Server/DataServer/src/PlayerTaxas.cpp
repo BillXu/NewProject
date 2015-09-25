@@ -75,6 +75,7 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				}
 			}
 			CLogMgr::SharedLogMgr()->PrintLog("uid taxas data followed rooms = %d , owner rooms = %d",m_vFollowedRooms.size(),m_vMyOwnRooms.size());
+			sendTaxaDataToClient();
 		}
 		break;
 	case MSG_TP_REQUEST_PLAYER_DATA:
@@ -102,7 +103,8 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			CPlayer* pPlayer = GetPlayer();
 			msgBack.tData.nPhotoID = pPlayer->GetBaseData()->GetPhotoID();
 			memset(msgBack.tData.cName,0,sizeof(msgBack.tData.cName) );
-			sprintf_s(msgBack.tData.cName,sizeof(msgBack.tData.cName),"%s",pPlayer->GetBaseData()->GetPlayerName()) ;
+			//sprintf_s(msgBack.tData.cName,sizeof(msgBack.tData.cName),"%s",pPlayer->GetBaseData()->GetPlayerName()) ;
+			memcpy(msgBack.tData.cName,pPlayer->GetBaseData()->GetPlayerName(),sizeof(msgBack.tData.cName));
 			msgBack.tData.nSex = pPlayer->GetBaseData()->GetSex();
 			msgBack.tData.nUserUID = pPlayer->GetUserUID();
 			msgBack.tData.nVipLevel = pPlayer->GetBaseData()->GetVipLevel() ;
@@ -112,9 +114,9 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 	case MSG_TP_SYNC_PLAYER_DATA:
 		{
 			stMsgSyncTaxasPlayerData* pRet = (stMsgSyncTaxasPlayerData*)pMessage ;
-			m_tData.nPlayTimes = pRet->nPlayTimes ;
-			m_tData.nSingleWinMost = pRet->nSingleWinMost ;
-			m_tData.nWinTimes = pRet->nWinTimes ;
+			m_tData.nPlayTimes += pRet->nPlayTimes ;
+			m_tData.nSingleWinMost = m_tData.nSingleWinMost > pRet->nSingleWinMost ? m_tData.nSingleWinMost : pRet->nSingleWinMost;
+			m_tData.nWinTimes += pRet->nWinTimes ;
 			CLogMgr::SharedLogMgr()->PrintLog("be told uid = %d sys player data ",GetPlayer()->GetUserUID());
 			m_bDirty = true ;
 		}
@@ -418,4 +420,16 @@ void CPlayerTaxas::TimerSave()
 
 	CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),writeBuffer.getBufferPtr(),writeBuffer.getContentSize());
 	CLogMgr::SharedLogMgr()->PrintLog("time save taxas data for uid = %d",GetPlayer()->GetUserUID());
+}
+
+void CPlayerTaxas::sendTaxaDataToClient()
+{
+	stMsgPlayerBaseDataTaxas msg ;
+	memcpy(&msg.tTaxasData,&m_tData,sizeof(m_tData)) ;
+	SendMsg(&msg,sizeof(msg)) ;
+}
+
+void CPlayerTaxas::getTaxasData(stPlayerTaxasData* pData )
+{
+	memcpy(pData,&m_tData,sizeof(m_tData)) ;
 }

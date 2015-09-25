@@ -13,6 +13,7 @@
 #include "EventCenter.h"
 #include "InformConfig.h"
 #include "AutoBuffer.h"
+#include "PlayerManager.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
 CPlayerBaseData::CPlayerBaseData(CPlayer* player )
@@ -68,6 +69,12 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 	switch( pMsg->usMsgType )
 	{
+	case MSG_ON_PLAYER_BIND_ACCOUNT:
+		{
+			m_stBaseData.isRegister = true ;
+			CLogMgr::SharedLogMgr()->PrintLog("player bind account ok uid = %u",GetPlayer()->GetUserUID());
+		}
+		break;
 	case MSG_READ_PLAYER_BASE_DATA:   // from db server ;
 		{
 			stMsgDataServerGetBaseDataRet* pBaseData = (stMsgDataServerGetBaseDataRet*)pMsg ;
@@ -79,6 +86,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			memcpy(&m_stBaseData,&pBaseData->stBaseData,sizeof(m_stBaseData));
 			CLogMgr::SharedLogMgr()->PrintLog("recived base data uid = %d",pBaseData->stBaseData.nUserUID);
 			SendBaseDatToClient();
+			CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->getPlayerDataCaher().removePlayerDataCache(pBaseData->stBaseData.nUserUID) ;
 			return true ;
 		}
 		break;
@@ -102,11 +110,19 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 	case MSG_PLAYER_MODIFY_NAME:
 		{
 			stMsgPLayerModifyName* pMsgRet = (stMsgPLayerModifyName*)pMsg ;
-			memcpy(m_stBaseData.cName,pMsgRet->pNewName,sizeof(m_stBaseData.cName)) ;
 			stMsgPlayerModifyNameRet ret ;
 			ret.nRet = 0 ;
+			if ( pMsgRet->pNewName[sizeof(pMsgRet->pNewName) -1 ] != 0 )
+			{
+				ret.nRet = 1 ;
+				CLogMgr::SharedLogMgr()->ErrorLog("name is too long uid = %d",GetPlayer()->GetUserUID());
+			}
+			else
+			{
+				memcpy(m_stBaseData.cName,pMsgRet->pNewName,sizeof(m_stBaseData.cName)) ;
+				m_bPlayerInfoDataDirty = true ;
+			}
 			SendMsg(&ret,sizeof(ret)) ;
-			m_bPlayerInfoDataDirty = true ;
 		}
 		break;
 	case MSG_PLAYER_MODIFY_PHOTO:
@@ -139,12 +155,10 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 		break;
 	case MSG_PLAYER_UPDATE_MONEY:
 		{
-// 			stMsgPlayerUpdateMoney msgUpdate ;
-// 			msgUpdate.nFinalCoin = GetAllCoin();
-// 			msgUpdate.nFinalDiamoned = GetAllDiamoned();
-// 			msgUpdate.nTakeInCoin = GetTakeInMoney();
-// 			msgUpdate.nTakeInDiamoned = (unsigned int)GetTakeInMoney(true) ;
-// 			SendMsgToClient((char*)&msgUpdate,sizeof(msgUpdate));
+ 			stMsgPlayerUpdateMoney msgUpdate ;
+ 			msgUpdate.nFinalCoin = GetAllCoin();
+ 			msgUpdate.nFinalDiamoned = GetAllDiamoned();
+ 			SendMsg(&msgUpdate,sizeof(msgUpdate));
 		}
 		break;
 	case MSG_GET_CONTINUE_LOGIN_REWARD:
@@ -213,48 +227,49 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 		break;
 	case MSG_PLAYER_REQUEST_CHARITY_STATE:
 		{
-// 			stMsgPlayerRequestCharityStateRet msgBack ;
-// 			 // 0 can get charity , 1 you coin is enough , do not need charity, 2 time not reached ;
-// 			msgBack.nState = 0 ;
-// 			msgBack.nLeftSecond = 0 ;
-// 			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )
-// 			{
-// 				msgBack.nState = 1 ;
-// 			}
-// 			else if ( time(NULL) - m_stBaseData.tLastTakeCharityCoinTime < TIME_GET_CHARITY_ELAPS )
-// 			{
-// 				msgBack.nState = 2 ;
-// 				msgBack.nLeftSecond = m_stBaseData.tLastTakeCharityCoinTime + TIME_GET_CHARITY_ELAPS - time(NULL) ;
-// 			}
-// 			SendMsg(&msgBack,sizeof(msgBack)) ;
+ 			stMsgPlayerRequestCharityStateRet msgBack ;
+ 			 // 0 can get charity , 1 you coin is enough , do not need charity, 2 time not reached ;
+ 			msgBack.nState = 0 ;
+ 			msgBack.nLeftSecond = 0 ;
+ 			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )
+ 			{
+ 				msgBack.nState = 1 ;
+ 			}
+ 			else if ( time(NULL) - m_stBaseData.tLastTakeCharityCoinTime < TIME_GET_CHARITY_ELAPS )
+ 			{
+ 				msgBack.nState = 2 ;
+ 				msgBack.nLeftSecond = m_stBaseData.tLastTakeCharityCoinTime + TIME_GET_CHARITY_ELAPS - time(NULL) ;
+ 			}
+ 			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
 		break;
 	case MSG_PLAYER_GET_CHARITY:
 		{
-// 			stMsgPlayerGetCharityRet msgBack ;
-// 			// 0 success ,  1 you coin is enough , do not need charity, 2 time not reached ;
-// 			msgBack.nRet = 0 ;
-// 			msgBack.nFinalCoin = GetAllCoin();
-// 			msgBack.nGetCoin = 0;
-// 			msgBack.nLeftSecond = 0 ;
-// 			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )
-// 			{
-// 				msgBack.nRet = 1 ;
-// 			}
-// 			else if ( time(NULL) - m_stBaseData.tLastTakeCharityCoinTime < TIME_GET_CHARITY_ELAPS )
-// 			{
-// 				msgBack.nRet = 2 ;
-// 				msgBack.nLeftSecond = m_stBaseData.tLastTakeCharityCoinTime + TIME_GET_CHARITY_ELAPS - time(NULL) ;
-// 			}
-// 			else
-// 			{
-// 				m_stBaseData.nCoin += COIN_FOR_CHARITY ;
-// 				msgBack.nFinalCoin = GetAllCoin();
-// 				msgBack.nGetCoin = COIN_FOR_CHARITY;
-// 				msgBack.nLeftSecond = 0 ;
-// 				m_stBaseData.tLastLoginTime = time(NULL) ;
-// 			}
-// 			SendMsg(&msgBack,sizeof(msgBack)) ;
+ 			stMsgPlayerGetCharityRet msgBack ;
+ 			// 0 success ,  1 you coin is enough , do not need charity, 2 time not reached ;
+ 			msgBack.nRet = 0 ;
+ 			msgBack.nFinalCoin = GetAllCoin();
+ 			msgBack.nGetCoin = 0;
+ 			msgBack.nLeftSecond = 0 ;
+ 			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )
+ 			{
+ 				msgBack.nRet = 1 ;
+ 			}
+ 			else if ( time(NULL) - m_stBaseData.tLastTakeCharityCoinTime < TIME_GET_CHARITY_ELAPS )
+ 			{
+ 				msgBack.nRet = 2 ;
+ 				msgBack.nLeftSecond = m_stBaseData.tLastTakeCharityCoinTime + TIME_GET_CHARITY_ELAPS - time(NULL) ;
+ 			}
+ 			else
+ 			{
+ 				m_stBaseData.nCoin += COIN_FOR_CHARITY ;
+ 				msgBack.nFinalCoin = GetAllCoin();
+ 				msgBack.nGetCoin = COIN_FOR_CHARITY;
+ 				msgBack.nLeftSecond = 0 ;
+ 				m_stBaseData.tLastTakeCharityCoinTime = time(NULL) ;
+				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get charity",GetPlayer()->GetUserUID());
+ 			}
+ 			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
 		break;
 	default:

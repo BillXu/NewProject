@@ -8,6 +8,7 @@
 #pragma warning(disable:4996)
 #pragma warning(disable:4819)
 #include "ConfigReader.h"
+#include <stdlib.h>
 #define MAX_ROW_BUFFER 1024*2
 #define MAX_CELL_BUFFER 512*2
 
