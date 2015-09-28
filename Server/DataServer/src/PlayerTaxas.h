@@ -19,6 +19,7 @@ public:
 	virtual void TimerSave();
     void OnReactive(uint32_t nSessionID )override{ sendTaxaDataToClient(); }
 	void getTaxasData(stPlayerTaxasData* pData );
+	uint32_t getCurRoomID(){ return m_nCurTaxasRoomID ;}
 protected:
 	bool isRoomIDMyOwn(uint32_t nRoomID ){ return true ;}
 	void sendTaxaDataToClient();

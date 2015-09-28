@@ -64,47 +64,10 @@ void RunFunc ( CGameServerApp* pApp )
 	}
 }
 
-//---test
-//#include "CardPoker.h"
-//#include "TaxasPokerPeerCard.h"
-///test
+
 int main()
 {
-	//-----test
-	//CCard publicCard[5] ;
 
-	//CCard privateCardA[2] ;
-	//CCard pviatCardB[2] ;
-
-	//CTaxasPokerPeerCard pPeerA ,pPeerB ;
-
-	//publicCard[0].SetCard(CCard::eCard_Heart,2) ;
-	//publicCard[1].SetCard(CCard::eCard_Heart,9) ;
-	//publicCard[2].SetCard(CCard::eCard_Club,12) ;
-	//publicCard[3].SetCard(CCard::eCard_Heart,5) ;
-	//publicCard[4].SetCard(CCard::eCard_Sword,13) ;
-
-	//privateCardA[0].SetCard(CCard::eCard_Heart,6) ;
-	//privateCardA[1].SetCard(CCard::eCard_Club,11) ;
-
-	//pviatCardB[0].SetCard(CCard::eCard_Heart,9) ;
-	//pviatCardB[1].SetCard(CCard::eCard_Diamond,13) ;
-
-	//pPeerA.AddCardByCompsiteNum(privateCardA[0].GetCardCompositeNum());
-	//pPeerA.AddCardByCompsiteNum(privateCardA[1].GetCardCompositeNum());
-
-	//pPeerB.AddCardByCompsiteNum(pviatCardB[0].GetCardCompositeNum());
-	//pPeerB.AddCardByCompsiteNum(pviatCardB[1].GetCardCompositeNum());
-	//for ( int i = 0 ; i < 5 ; ++i )
-	//{
-	//	pPeerA.AddCardByCompsiteNum(publicCard[i].GetCardCompositeNum()) ;
-	//	pPeerB.AddCardByCompsiteNum(publicCard[i].GetCardCompositeNum()) ;
-	//}
-	//int nType = pPeerA.GetCardType();
-	//int nTypeB = pPeerB.GetCardType();
-	//char c = pPeerA.PK(&pPeerB) ;
-	//printf( "type A = %d ,robot Type A = %d, type B = %d ,result = %d\n",nType,pPeerA.GetCardTypeForRobot(),nTypeB ,c) ;
-	/////----test
 	CGameServerApp theApp ;
 	bool bok = theApp.init() ;
 	if ( !bok )

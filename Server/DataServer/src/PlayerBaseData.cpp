@@ -267,7 +267,9 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
  				msgBack.nGetCoin = COIN_FOR_CHARITY;
  				msgBack.nLeftSecond = 0 ;
  				m_stBaseData.tLastTakeCharityCoinTime = time(NULL) ;
+				ModifyMoney(msgBack.nGetCoin);
 				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get charity",GetPlayer()->GetUserUID());
+				m_bCommonLogicDataDirty = true ;
  			}
  			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
@@ -339,6 +341,7 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 
 			uint64_t& nAddTarget = bDiamoned ? m_stBaseData.nDiamoned : m_stBaseData.nCoin ; 
 			nAddTarget += nAddCoin ;
+			m_bMoneyDataDirty = true ;
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do add coin cross rquest , final diamond = %I64d, coin = %I64d",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin );
 		}
 		break;
@@ -493,6 +496,7 @@ bool CPlayerBaseData::onPlayerRequestMoney(uint64_t& nCoinOffset,uint64_t nAtLea
 			{
 				nCoinOffset = nAtLeast ;
 				m_stBaseData.nCoin -= nCoinOffset ;
+				m_bMoneyDataDirty = true ;
 				return true ;
 			}
 			return false ;
@@ -508,6 +512,7 @@ bool CPlayerBaseData::onPlayerRequestMoney(uint64_t& nCoinOffset,uint64_t nAtLea
 			{
 				nCoinOffset = nAtLeast ;
 				m_stBaseData.nDiamoned -= nCoinOffset ;
+				m_bMoneyDataDirty = true ;
 				return true ;
 			}
 
@@ -516,6 +521,7 @@ bool CPlayerBaseData::onPlayerRequestMoney(uint64_t& nCoinOffset,uint64_t nAtLea
  		// m_nTaxasPlayerDiamoned += nCoinOffset; ; //add after recieved comfirm msg 
  		m_stBaseData.nDiamoned -= nCoinOffset ;
  	}
+	m_bMoneyDataDirty = true ;
 	return true ;
 }
 

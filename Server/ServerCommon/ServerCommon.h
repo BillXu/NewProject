@@ -1,7 +1,7 @@
 #pragma once
 #include "CommonDefine.h"
 #define LOG_ARG_CNT 6
-#define CROSS_SVR_REQ_ARG 3
+#define CROSS_SVR_REQ_ARG 4
 #define RESEVER_GAME_SERVER_PLAYERS 100 
 enum  eLogType
 {
@@ -55,6 +55,7 @@ enum  eCrossSvrReqType
 	eCrossSvrReq_CreateTaxasRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID,
 	eCrossSvrReq_TaxasRoomProfit, // result: var[0] isCoin , var[1] RecvMoney;
 	eCrossSvrReq_AddRentTime, // var[0] , add days;  result var[0] add days ;
+	eCrossSvrReq_SelectTakeIn, // var[0] select player uid,  result: var[0] select player uid, var[1] isCoin, var[2] money 
 	eCrossSvrReq_Max,
 };
 
@@ -64,6 +65,7 @@ enum eCrossSvrReqSubType
 	eCrossSvrReqSub_TaxasSitDown, // ps: json arg: seatIdx , result: json arg just back 
 	eCrossSvrReqSub_TaxasSitDownFailed,
 	eCrossSvrReqSub_TaxasStandUp,
+	eCrossSvrReqSub_SelectPlayerData,  // ps: orgid = sessionid , not uid this situation; var[1] isDeail, result: var[3] isDetail  , json: playTimes,winTimes,singleMost;
 	eCrossSvrReqSub_Max,
 };
 

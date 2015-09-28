@@ -204,8 +204,8 @@ void CRobotControlTaxas::onSelfStandUp()
 	}
 	else
 	{
-		m_eState =  eRobot_StandUp ;
-		printf("what situation , standup here ? \n");
+		m_eState = eRobot_WaitPosSitDown ;
+		printf("what situation , standup here , money lose all? \n");
 	}
 }
 

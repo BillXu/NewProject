@@ -932,13 +932,14 @@ void CTaxasRoom::StartGame()
 		stTaxasPeerData& pData = m_vSitDownPlayers[nIdx] ;
 		pData.nAllBetCoin = 0 ;
 		pData.nBetCoinThisRound = 0 ;
-		++pData.nPlayTimes ;
-		++pData.pHistoryData->nPlayeTimesInThisRoom ;
+
 		pData.nWinCoinThisGame = 0 ;
 		if (pData.IsHaveState(eRoomPeer_WaitNextGame) )
 		{
 			pData.nStateFlag = eRoomPeer_CanAct ;
 
+			++pData.nPlayTimes ;
+			++pData.pHistoryData->nPlayeTimesInThisRoom ;
 			// shou tai fei 
 			m_nRoomProfit += m_stRoomConfig.nDeskFee ;
 			pData.nTakeInMoney -= m_stRoomConfig.nDeskFee ;
@@ -1831,6 +1832,45 @@ bool CTaxasRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPo
 			addLiftTime(pRequest->vArg[0]) ;
 			m_bRoomInfoDirty = true ;
 			CTaxasServerApp::SharedGameServerApp()->sendMsg(msgRet.nTargetID,(char*)&msgRet,sizeof(msgRet)) ;
+		}
+		break;
+	case eCrossSvrReq_SelectTakeIn:
+		{
+			stMsgCrossServerRequestRet msgRet ;
+			msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
+			msgRet.nReqOrigID = pRequest->nTargetID ;
+			msgRet.nTargetID =  pRequest->nReqOrigID ;
+			msgRet.nRequestType = pRequest->nRequestType ;
+			msgRet.nRequestSubType = pRequest->nRequestSubType ;
+			msgRet.nRet = 0 ;
+			if ( eCrossSvrReqSub_SelectPlayerData == pRequest->nRequestSubType )
+			{
+				stTaxasPeerData*pData = GetSitDownPlayerDataByUID(pRequest->vArg[0]);
+				msgRet.vArg[0] = pRequest->vArg[0] ; 
+				msgRet.vArg[1] = true ;
+				msgRet.vArg[2] = 0 ;
+				msgRet.vArg[3] = pRequest->vArg[1];
+				if ( pData )
+				{
+					msgRet.vArg[2] = pData->nTakeInMoney ;
+
+					if ( pRequest->vArg[1] ) // is detail 
+					{
+						Json::Value vArg ;
+						vArg["playTimes"] = pData->nPlayTimes;
+						vArg["winTimes"] = pData->nWinTimes;
+						vArg["singleMost"] = (uint32_t)pData->nSingleWinMost ;
+						CON_REQ_MSG_JSON(msgRet,vArg,autoBuf) ;
+						CTaxasServerApp::SharedGameServerApp()->sendMsg(msgRet.nTargetID,autoBuf.getBufferPtr(),autoBuf.getContentSize()) ;
+						return true ;
+					}
+				}
+				CTaxasServerApp::SharedGameServerApp()->sendMsg(msgRet.nTargetID,(char*)&msgRet,sizeof(msgRet)) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("unknown select take in sub type = %d",pRequest->nRequestSubType);
+			}
 		}
 		break;
 	default:

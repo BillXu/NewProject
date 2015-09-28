@@ -13,6 +13,7 @@ struct stPlayerBrifData
 	uint64_t nCoin ;
 	uint64_t nDiamoned ;
 	bool bIsOnLine ;
+	uint32_t nCurrentRoomID ;
 };
 
 struct stPlayerTaxasData

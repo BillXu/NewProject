@@ -1,6 +1,7 @@
 #include "TaxasPokerPeerCard.h"
 #include <algorithm>
 #include "LogManager.h"
+#include <assert.h>
 bool CompFunction(CCard* left , CCard* right )
 {
 	unsigned char nNumLeft = left->GetCardFaceNum(true) ;
@@ -238,10 +239,10 @@ unsigned char CTaxasPokerPeerCard::GetCardTypeForRobot(unsigned char& nContriBut
 		VEC_CARD vNewCard ;
 		vNewCard.assign(m_vAllCard.begin(),m_vAllCard.end()) ;
 		VEC_CARD vResult ;
-		CheckShunZi(vNewCard,true,vResult) ;
+		robotCheck4ShunZi(vNewCard,true,vResult) ;
 		if ( vResult.size() != 4)
 		{
-			CheckShunZi(vNewCard,false,vResult) ;
+			robotCheck4ShunZi(vNewCard,false,vResult) ;
 		}
 
 		if ( vResult.size() == 4 )
@@ -580,12 +581,32 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 	}
 	else if ( vPairs[2].size() == 2 )
 	{
-		m_vFinalCard.assign(vPairs[2].begin(),vPairs[2].end()) ;
+		m_vFinalCard.insert(m_vFinalCard.begin(),vPairs[2].begin(),vPairs[2].end() ) ;
 		m_vPairs[0].assign(vPairs[2].begin(),vPairs[2].end()) ;
 		if ( vPairs[1].size() == 2 ) // two pairs
 		{
 			m_vFinalCard.insert(m_vFinalCard.begin(),vPairs[1].begin(),vPairs[1].end() ) ;
 			m_vPairs[1].insert(m_vPairs[1].begin(),vPairs[1].begin(),vPairs[1].end() ) ;
+			if ( vPairs[0].size() == 2 )
+			{
+				vAllCardHelper.push_back(vPairs[0][0]);
+				vAllCardHelper.push_back(vPairs[0][1]);
+
+				// clear NULL node 
+				VEC_CARD::iterator iter = vAllCardHelper.begin();
+				while ( iter != vAllCardHelper.end() )
+				{
+					if ( *iter == NULL )
+					{
+						vAllCardHelper.erase(iter) ;
+						iter = vAllCardHelper.begin() ;
+						continue;
+					}
+					++iter ;
+				}
+				std::sort(vAllCardHelper.begin(),vAllCardHelper.end(),CompFunction );
+			}
+
 			m_eType = eCard_LiangDui ;
 			m_strCardName = "paixing_liangdui" ;
 		}
@@ -612,7 +633,13 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		}
 
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog( "analys card error , unknown error !" ) ;
+	CLogMgr::SharedLogMgr()->ErrorLog( "analys card error , unknown error !card info : " ) ;
+	for ( CCard* pcardnow : m_vAllCard )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("card type = %d , face = %d",pcardnow->GetType(),pcardnow->GetCardFaceNum() ) ;
+	}
+	CLogMgr::SharedLogMgr()->ErrorLog("card end !!! ");
+	assert(0 && "fix error " );
 }
 
 void CTaxasPokerPeerCard::ClearVecCard(VEC_CARD& vCards )

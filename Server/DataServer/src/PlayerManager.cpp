@@ -229,13 +229,32 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			CPlayer* pPlayer = GetPlayerByUserUID(pRet->nPlayerUID);
 
 			stPlayerDetailDataClient stData ;
+			stData.nCurrentRoomID = 0 ;
 			CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailData));
 			if ( pPlayer )
 			{
+				CPlayerTaxas* pTaxasData = (CPlayerTaxas*)pPlayer->GetComponent(ePlayerComponent_PlayerTaxas);
+				stData.nCurrentRoomID = pTaxasData->getCurRoomID() ;
+
+				if ( stData.nCurrentRoomID )  // select take in
+				{
+					stMsgCrossServerRequest msgReq ;
+					msgReq.nJsonsLen = 0 ;
+					msgReq.nReqOrigID = nSessionID ;
+					msgReq.nRequestSubType = eCrossSvrReqSub_SelectPlayerData ;
+					msgReq.nRequestType = eCrossSvrReq_SelectTakeIn ;
+					msgReq.nTargetID = stData.nCurrentRoomID ;
+					msgReq.cSysIdentifer = ID_MSG_PORT_TAXAS ;
+					msgReq.vArg[0] = pRet->nPlayerUID;
+					msgReq.vArg[1] = pRet->isDetail ;
+					CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgReq,sizeof(msgReq)) ;
+					CLogMgr::SharedLogMgr()->PrintLog("select take in for player detail") ;
+					return true ;
+				}
+
 				if ( pRet->isDetail )
 				{
 					pPlayer->GetBaseData()->GetPlayerDetailData(&stData);
-					CPlayerTaxas* pTaxasData = (CPlayerTaxas*)pPlayer->GetComponent(ePlayerComponent_PlayerTaxas);
 					pTaxasData->getTaxasData(&stData.tTaxasData);
 				}
 				else
@@ -258,7 +277,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				return true ;
 			}
 
-			CLogMgr::SharedLogMgr()->PrintLog("req detail player not online , req from db") ;
+			CLogMgr::SharedLogMgr()->PrintLog("req detail player not online , req from db target uid = %u",pRet->nPlayerUID) ;
 			stMsgSelectPlayerData msgReq ;
 			msgReq.isDetail = pRet->isDetail ;
 			msgReq.nReqPlayerSessionID = nSessionID  ;
@@ -549,5 +568,61 @@ bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eM
 
 bool CPlayerManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue)
 {
+	if ( eCrossSvrReq_SelectTakeIn == pResult->nRequestType && eCrossSvrReqSub_SelectPlayerData == pResult->nRequestSubType )
+	{
+		stMsgRequestPlayerDataRet msgBack ;
+		msgBack.nRet = 0 ;
+		msgBack.isDetail = pResult->vArg[3] ;
+		CPlayer* pPlayer = GetPlayerByUserUID(pResult->vArg[0]);
+		if ( pPlayer == nullptr )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("why this player is null , can not , funck!") ;
+			return true ;
+		}
+
+		stPlayerDetailDataClient stData ;
+		stData.nCurrentRoomID = 0 ;
+		CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailDataClient));
+		if ( pPlayer )
+		{
+			CPlayerTaxas* pTaxasData = (CPlayerTaxas*)pPlayer->GetComponent(ePlayerComponent_PlayerTaxas);
+			stData.nCurrentRoomID = pResult->nReqOrigID;
+			if ( msgBack.isDetail )
+			{
+				pPlayer->GetBaseData()->GetPlayerDetailData(&stData);
+				pTaxasData->getTaxasData(&stData.tTaxasData);
+				if ( vJsValue )
+				{
+					stData.tTaxasData.nPlayTimes += (*vJsValue)["playTimes"].asUInt();
+					stData.tTaxasData.nWinTimes += (*vJsValue)["winTimes"].asUInt();
+					stData.tTaxasData.nSingleWinMost = (*vJsValue)["singleMost"].asUInt() < stData.tTaxasData.nSingleWinMost ? stData.tTaxasData.nSingleWinMost : (*vJsValue)["singleMost"].asUInt();
+				}
+				else
+				{
+					CLogMgr::SharedLogMgr()->PrintLog("targe player not sit down uid = %llu",pResult->vArg[0]);
+				}
+			}
+			else
+			{
+				pPlayer->GetBaseData()->GetPlayerBrifData(&stData) ;
+			}
+
+			if ( pResult->vArg[1] )
+			{
+				stData.nCoin += pResult->vArg[2] ;
+			}
+			else
+			{
+				stData.nDiamoned += pResult->vArg[2] ;
+			}
+
+			auB.addContent(&msgBack,sizeof(msgBack));
+			auB.addContent(&stData,msgBack.isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nTargetID,auB.getBufferPtr(),auB.getContentSize()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("select take in ret , send player data");
+			return true ;
+		}
+		return true ;
+	}
 	return false ;
 }

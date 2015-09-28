@@ -126,7 +126,49 @@ void CTempTest::setValue(T* v ,int nlen )
 		cout<<"func2"<<endl;
 	} 
 
+	//---test
+#include "CardPoker.h"
+#include "TaxasPokerPeerCard.h"
+	///test
+
 	int hmain() {
+		//-----test
+		CCard publicCard[5] ;
+
+		CCard privateCardA[2] ;
+		CCard pviatCardB[2] ;
+
+		CTaxasPokerPeerCard pPeerA ,pPeerB ;
+
+		publicCard[0].SetCard(CCard::eCard_Diamond,8) ;
+		publicCard[1].SetCard(CCard::eCard_Heart,11) ;
+		publicCard[2].SetCard(CCard::eCard_Club,8) ;
+		publicCard[3].SetCard(CCard::eCard_Sword,7) ;
+		publicCard[4].SetCard(CCard::eCard_Heart,9) ;
+
+		privateCardA[0].SetCard(CCard::eCard_Club,2) ;
+		privateCardA[1].SetCard(CCard::eCard_Club,5) ;
+
+		pviatCardB[0].SetCard(CCard::eCard_Heart,13) ;
+		pviatCardB[1].SetCard(CCard::eCard_Diamond,13) ;
+
+		pPeerA.AddCardByCompsiteNum(privateCardA[0].GetCardCompositeNum());
+		pPeerA.AddCardByCompsiteNum(privateCardA[1].GetCardCompositeNum());
+
+		pPeerB.AddCardByCompsiteNum(pviatCardB[0].GetCardCompositeNum());
+		pPeerB.AddCardByCompsiteNum(pviatCardB[1].GetCardCompositeNum());
+		for ( int i = 0 ; i < 4 ; ++i )
+		{
+			pPeerA.AddCardByCompsiteNum(publicCard[i].GetCardCompositeNum()) ;
+			pPeerB.AddCardByCompsiteNum(publicCard[i].GetCardCompositeNum()) ;
+		}
+		unsigned char a , bc ;
+		int nType = pPeerA.GetCardTypeForRobot(a,bc);
+		int nTypeB = pPeerB.GetCardType();
+		//char c = pPeerA.PK(&pPeerB) ;
+		//printf( "type A = %d ,robot Type A = %d, type B = %d ,result = %d\n",nType,pPeerA.GetCardTypeForRobot(),nTypeB ,c) ;
+		/////----test
+
 		CTempTest tt ;
 		short iv = 23 ;
 		short* ivp = &iv ;
