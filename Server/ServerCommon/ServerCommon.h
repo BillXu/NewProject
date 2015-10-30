@@ -11,6 +11,9 @@ enum  eLogType
 	eLog_Logout, 
 	eLog_ModifyPwd, // externString, {ip:"ipdizhi"}
 	eLog_TaxasGameResult, // nTargetID = roomid , vArg[0] = creator uid ,var[1] = public0 ---var[5] = public4, externString: {[ {uid:234,idx:2,betCoin:4456,card0:23,card1:23,offset:-32,state:GIVE_UP,coin:23334 },{ ... },{ ... }] } 
+	eLog_AddMoney, // nTargetID = userUID , var[0] = isCoin , var[1] = addMoneyCnt, var[2] final coin, var[3] finalDiamond ,var[4] subType, var[5] subarg ;
+	eLog_DeductionMoney,  // nTargetID = userUID , var[0] = isCoin , var[1] = DeductionCnt, var[2] final coin, var[3] finalDiamond, var[4] subType, var[5] subarg ;
+	eLog_ResetPassword,
 	eLog_Max,
 };
 
@@ -56,6 +59,7 @@ enum  eCrossSvrReqType
 	eCrossSvrReq_TaxasRoomProfit, // result: var[0] isCoin , var[1] RecvMoney;
 	eCrossSvrReq_AddRentTime, // var[0] , add days;  result var[0] add days ;
 	eCrossSvrReq_SelectTakeIn, // var[0] select player uid,  result: var[0] select player uid, var[1] isCoin, var[2] money 
+	eCrossSvrReq_Inform, // var[0] target player uid 
 	eCrossSvrReq_Max,
 };
 

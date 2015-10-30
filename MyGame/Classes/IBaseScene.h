@@ -9,7 +9,7 @@ USING_NS_GOTYEAPI;
 USING_NS_CC ;
 struct stMsg ;
 class IBaseScene
-	:public Node,public CNetMessageDelegate,public GotyeDelegate
+	:public Node,public CNetMessageDelegate/*,public GotyeDelegate*/
 {
 public:
 	virtual bool OnMessage( stMsg* pMsg )final{ return onMsg(pMsg) ;} ;

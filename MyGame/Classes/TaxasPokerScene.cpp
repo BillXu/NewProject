@@ -135,11 +135,11 @@ void CTaxasPokerScene::onRecievedRoomInfo()
 
 void CTaxasPokerScene::enterChatRoom()
 {
-	GotyeRoom room (getPokerData()->nChatRoomID);
-	if ( GotyeAPI::getInstance()->isInRoom(room) == false )
-	{
-		GotyeAPI::getInstance()->enterRoom(room);
-	}
+	//GotyeRoom room (getPokerData()->nChatRoomID);
+	//if ( GotyeAPI::getInstance()->isInRoom(room) == false )
+	//{
+	//	GotyeAPI::getInstance()->enterRoom(room);
+	//}
 }
 
 void CTaxasPokerScene::refreshContent()
@@ -642,21 +642,21 @@ void CTaxasPokerScene::onEnterRoom(GotyeStatusCode code, GotyeRoom& room)
 
 void CTaxasPokerScene::chatInputCallBack(int nContentType , const char* pContent )
 {
-	GotyeRoom room (14361018);
-	GotyeMessage msg = GotyeMessage::createTextMessage(room,pContent) ;
-	GotyeAPI::getInstance()->sendMessage(msg);
+	//GotyeRoom room (14361018);
+	//GotyeMessage msg = GotyeMessage::createTextMessage(room,pContent) ;
+	//GotyeAPI::getInstance()->sendMessage(msg);
 		
-	bool b ;
-	onReceiveMessage(msg,&b);
+	//bool b ;
+	//onReceiveMessage(msg,&b);
 }
                       
 void CTaxasPokerScene::onReceiveMessage(const GotyeMessage& message, bool* downloadMediaIfNeed)
 {
-	if ( message.hasMedia() )
-	{
-		*downloadMediaIfNeed = true ;
-		return ;
-	}
+	//if ( message.hasMedia() )
+	//{
+	//	*downloadMediaIfNeed = true ;
+	//	return ;
+	//}
 
 	stChatItem* pItem = new stChatItem ;
 	pItem->strName = message.sender.name ;
@@ -666,7 +666,7 @@ void CTaxasPokerScene::onReceiveMessage(const GotyeMessage& message, bool* downl
 
 void CTaxasPokerScene::onDownloadMediaInMessage(GotyeStatusCode code, const GotyeMessage& message)
 {
-	GotyeAPI::getInstance()->playMessage(message);
+	/*GotyeAPI::getInstance()->playMessage(message);*/
 	stChatItem* pItem = new stChatItem ;
 	pItem->strName = message.sender.name ;
 	pItem->strContent = "Audio" ;
@@ -685,6 +685,6 @@ void CTaxasPokerScene::onReconnecting(GotyeStatusCode code, const GotyeLoginUser
 void CTaxasPokerScene::onExit()
 {
 	IBaseScene::onExit() ;
-	GotyeRoom room (getPokerData()->nChatRoomID);
-	GotyeAPI::getInstance()->leaveRoom(room);
+	//GotyeRoom room (getPokerData()->nChatRoomID);
+	//GotyeAPI::getInstance()->leaveRoom(room);
 }

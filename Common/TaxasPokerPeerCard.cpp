@@ -145,7 +145,8 @@ char CTaxasPokerPeerCard::PK(CTaxasPokerPeerCard* pPeerCard )
 			return -1 ;
 		}
 	}
-	return 0 ;
+    return 0 ;
+
 }
 
 void CTaxasPokerPeerCard::Reset()

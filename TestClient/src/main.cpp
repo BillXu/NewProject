@@ -132,6 +132,28 @@ void CTempTest::setValue(T* v ,int nlen )
 	///test
 
 	int hmain() {
+
+		short t = 0x0102;
+		char* p = (char*)&t ;
+		char* p2 = p+1 ;
+		printf("low = %d,high = %d\n",*p,*p2) ;
+
+
+		union {
+			short s;
+			char c[sizeof(short)];
+		} un;
+		un.s = 0x0102;
+		if(sizeof(short)==2) {
+			if(un.c[0]==1 && un.c[1] == 2)
+				printf("big-endian\n");
+			else if (un.c[0] == 2 && un.c[1] == 1)
+				printf("little-endian\n");
+			else
+				printf("unknown\n");
+		} else
+			printf("sizeof(short)= %d\n",sizeof(short));
+
 		//-----test
 		CCard publicCard[5] ;
 
@@ -222,8 +244,23 @@ void CTempTest::setValue(T* v ,int nlen )
 		return 0;
 	}
 //}
+
+#include <regex>
 int main()
 {
+	//std::regex patern ("0{0,1}1[3-9]\\d{9}" );
+	//bool bmatch = std::regex_match("013920061456",patern);
+	//char* p= "hello	s t";
+	//std::string st ;
+	//while (*p)
+	//{
+	//	if ( *p != 32 && *p != '\t')
+	//	{
+	//		st.push_back(*p);
+	//	}
+	//	++p;
+	//}
+	//return 0 ;
 	//hmain();
 	//return 0;
 	//TestC t (3);

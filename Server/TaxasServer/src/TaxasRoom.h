@@ -1,5 +1,6 @@
 #pragma once
 #include "ServerMessageDefine.h"
+#include "LogManager.h"
 #include "RoomConfig.h"
 #include "CommonData.h"
 #include "CardPoker.h"
@@ -38,6 +39,7 @@ struct stTaxasPeerData
 	uint32_t nPlayTimes ;
 	uint64_t nSingleWinMost ;
 	stTaxasInRoomPeerDataExten* pHistoryData;
+	uint8_t vBestCards[MAX_TAXAS_HOLD_CARD];
 
 	bool IsHaveState( eRoomPeerState estate ) { return ( nStateFlag & estate ) == estate ; } ;
 	bool IsInvalid(){ return (nSessionID == 0) && (nUserUID == 0);}
@@ -50,6 +52,7 @@ struct stTaxasPeerData
 			nTakeInMoney -= nBetCoin ;
 			nAllBetCoin += nBetCoin ;
 			nBetCoinThisRound += nBetCoin ;
+			CLogMgr::SharedLogMgr()->SystemLog("uid= %d , betCoin = %lld, nBetThisRound = %lld",nUserUID,nBetCoin,nBetCoinThisRound);
 			return true ;
 		} 
 		return false ;
@@ -134,6 +137,8 @@ public:
 	void setInformSieral(uint32_t nSieaial);
 	void setChatRoomID(uint64_t nChatRoomID ){ m_nChatRoomID = nChatRoomID ;}
 	uint32_t getConfigID(){ return m_stRoomConfig.nConfigID ; }
+	uint32_t getDeadTime(){ return m_nDeadTime ;}
+	void sendExpireInform();
 
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
@@ -162,6 +167,11 @@ public:
 	
 	uint32_t getLittleBlind(){ return m_nLittleBlind ;}
 	uint8_t getSeatCnt(){ return m_stRoomConfig.nMaxSeat ;}
+	uint32_t getMaxTakeIn(){ return m_stRoomConfig.nMaxTakeInCoin ; }
+
+	void didCaculateGameResult();
+private:
+	bool addInroomPlayerInternal(stTaxasInRoomPeerDataExten* pAdd );
 protected:
 	void writeGameResultLog();
 	void writePlayerResultLogToJson(stTaxasPeerData& pWritePlayer);

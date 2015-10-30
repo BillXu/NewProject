@@ -1,7 +1,7 @@
 #include "IBaseScene.h"
 #include "ClientApp.h"
 #include "LogManager.h"
-#include "GotyeAPI.h"
+//#include "GotyeAPI.h"
 bool IBaseScene::OnLostSever()
 {
 	cocos2d::MessageBox("lost server connect","error");
@@ -22,14 +22,14 @@ void IBaseScene::onEnter()
 {
 	Node::onEnter() ;
 	CClientApp::getInstance()->addMsgDelegate(this);
-	GotyeAPI::getInstance()->addListener(*this);
+	//GotyeAPI::getInstance()->addListener(*this);
 }
 
 void IBaseScene::onExit()
 {
 	Node::onExit();
 	CClientApp::getInstance()->removeMsgDelegate(this);
-	GotyeAPI::getInstance()->removeListener(*this);
+	/*GotyeAPI::getInstance()->removeListener(*this);*/
 }
 
 void IBaseScene::sendMsg(stMsg* pmsg, uint16_t nLen )

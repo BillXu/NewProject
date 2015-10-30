@@ -75,6 +75,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT;ROBOT</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../Common;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;../Server/NetworkUtility/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

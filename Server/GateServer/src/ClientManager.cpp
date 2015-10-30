@@ -7,7 +7,7 @@
 #include "GateServer.h"
 #include "ServerMessageDefine.h"
 #include "ServerNetwork.h"
-#define TIME_WAIT_FOR_RECONNECTE 6
+#define TIME_WAIT_FOR_RECONNECTE 60
 CGateClientMgr::CGateClientMgr()
 {
 	m_vNetWorkIDGateClientIdx.clear();

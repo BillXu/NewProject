@@ -18,10 +18,11 @@ public:
 	virtual void OnOtherWillLogined()override;
 	virtual void TimerSave();
     void OnReactive(uint32_t nSessionID )override{ sendTaxaDataToClient(); }
+	void OnOtherDoLogined() override{sendTaxaDataToClient();}
 	void getTaxasData(stPlayerTaxasData* pData );
 	uint32_t getCurRoomID(){ return m_nCurTaxasRoomID ;}
 protected:
-	bool isRoomIDMyOwn(uint32_t nRoomID ){ return true ;}
+	bool isRoomIDMyOwn(uint32_t nRoomID );
 	void sendTaxaDataToClient();
 protected:
 	uint32_t m_nCurTaxasRoomID ;

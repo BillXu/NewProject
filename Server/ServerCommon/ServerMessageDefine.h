@@ -144,6 +144,7 @@ struct stMsgSaveUpdateTaxasRoomInfo
 	uint16_t nAvataID ;
 	uint32_t nInformSerial;
 	uint64_t nRoomProfit;
+	uint64_t nTotalProfit;
 	char vRoomName[MAX_LEN_ROOM_NAME];
 	char vRoomDesc[MAX_LEN_ROOM_DESC];
 	uint16_t nInformLen ;
@@ -328,11 +329,12 @@ struct stMsgReadMyOwnTaxasRoomsRet
 struct  stMsgSyncTaxasPlayerData
 	:public stMsg
 {
-	stMsgSyncTaxasPlayerData(){ cSysIdentifer = ID_MSG_PORT_DATA,usMsgType = MSG_TP_SYNC_PLAYER_DATA ; }
+	stMsgSyncTaxasPlayerData(){ cSysIdentifer = ID_MSG_PORT_DATA,usMsgType = MSG_TP_SYNC_PLAYER_DATA ;  }
 	uint32_t nUserUID ;
 	uint32_t nWinTimes ;
 	uint32_t nPlayTimes ;
 	uint64_t nSingleWinMost ;
+	uint8_t  vBestCard[MAX_TAXAS_HOLD_CARD];
 };
 
 struct stMsgInformTaxasPlayerLeave
@@ -492,6 +494,15 @@ struct stMsgResetMailsState
 	stMsgResetMailsState(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_PLAYER_SET_MAIL_STATE ; }
 	uint32_t nUserUID ;
 	uint8_t tMailType ; 
+};
+
+struct  stMsgSavePlayerAdvice
+	:public stMsg
+{
+	stMsgSavePlayerAdvice(){ cSysIdentifer = ID_MSG_PORT_LOG ; usMsgType = MSG_SAVE_PLAYER_ADVICE ; }
+	uint32_t nUserUID ;
+	uint16_t nLen ;
+	PLACE_HOLDER(char* pContent);
 };
 
 //----above is new , below is old---------

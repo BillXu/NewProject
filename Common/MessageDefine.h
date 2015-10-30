@@ -122,6 +122,22 @@ struct stMsgModifyPasswordRet
 	unsigned char nRet ; // 0 success , 1 uid not exsit , 2 old passworld error 
 };
 
+struct stMsgResetPassword
+	:public stMsg
+{
+	stMsgResetPassword(){ cSysIdentifer = ID_MSG_PORT_LOGIN ; usMsgType = MSG_RESET_PASSWORD ; }
+	char cAccount[MAX_LEN_ACCOUNT] ;
+	char cNewPassword[MAX_LEN_PASSWORD] ;
+};
+
+struct stMsgResetPasswordRet
+	:public stMsg
+{
+	stMsgResetPasswordRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_RESET_PASSWORD ; }
+ 	uint8_t nRet ; // 0 success , 1 can not find account ;
+};
+
+
 struct stMsgPlayerOtherLogin
 	:public stMsg
 {
@@ -135,6 +151,7 @@ struct stMsgPlayerBaseData
 {
 	stMsgPlayerBaseData(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_BASE_DATA ; }
 	stCommonBaseData stBaseData ;
+	uint32_t nSessionID ;
 };
 
 struct stMsgPlayerBaseDataTaxas
@@ -213,6 +230,22 @@ struct stMsgPlayerModifyPhotoRet
 	stMsgPlayerModifyPhotoRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_MODIFY_PHOTO ; }
 	uint8_t nRet ; // 0 means success ;
 };
+
+struct stMsgPlayerModifySex
+	:public stMsg
+{
+	stMsgPlayerModifySex(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_MODIFY_SEX ; }
+	uint8_t nNewSex ;
+};
+
+struct stMsgPlayerModifySexRet
+	:public stMsg
+{
+	stMsgPlayerModifySexRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_MODIFY_SEX ; }
+	uint8_t nRet ; // 0 means success ;
+};
+
+
 
 // friend 
 struct stMsgPlayerRequestFriendList
@@ -314,6 +347,21 @@ struct stMsgRequestMailListRet
 	stMsgRequestMailListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_REQUEST_MAIL_LIST ; }
 	bool isFinal ;
 	stMail tMail;
+};
+
+struct stMsgPlayerAdvice
+	:public stMsg
+{
+	stMsgPlayerAdvice(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_PLAYER_ADVICE ; }
+	uint16_t nLen ;
+	PLACE_HOLDER(char* pAdviceContent);
+};
+
+struct stMsgPlayerAdviceRet
+	:public stMsg
+{
+	stMsgPlayerAdviceRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_ADVICE ; }
+	uint8_t nRet ;
 };
 
 // Charity module ;

@@ -1,0 +1,28 @@
+{
+    "packageUrl" : "http://localhost/english/english/Image/ccbResources/",
+    "remoteVersionUrl" : "http://localhost/version.manifest",
+    "remoteManifestUrl" : "http://localhost/project.manifest",
+    "version" : "1.0.0",
+    "engineVersion" : "Cocos2d-JS v3.0 RC0",
+
+    "assets" : {
+        "LobbyScene/MainLobbyTipLayer_mv.png" : {
+            "md5" : "..."
+        },
+        "LobbyScene/map1-1.png" : {
+            "md5" : "..."
+        },
+        "LobbyScene/map2-3.png" : {
+            "md5" : "..."
+        },
+        "LobbyScene/map4-1.png" : {
+            "md5" : "..."
+        },
+        "LobbyScene/map3-4.png" : {
+            "md5" : "..."
+        }
+    },
+    "searchPaths" : [
+        "res/"
+    ]
+}

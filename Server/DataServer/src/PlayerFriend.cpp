@@ -22,7 +22,7 @@ CPlayerFriend::~CPlayerFriend()
 	
 }
 
-bool CPlayerFriend::OnMessage(stMsg* pMsg )
+bool CPlayerFriend::OnMessage(stMsg* pMsg, eMsgPort eSenderPort )
 {
 	switch ( pMsg->usMsgType )
 	{
@@ -135,7 +135,8 @@ bool CPlayerFriend::OnMessage(stMsg* pMsg )
 
 			if ( pMsgRet->bAgree )
 			{
-				SendMsg(&msgBack,sizeof(pMsgRet->bAgree)) ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %u msg type = stMsgPlayerBeAddedFriendReplyRet, typeid = %s",GetPlayer()->GetUserUID(),typeid(stMsgPlayerBeAddedFriendReplyRet)) ;
 			}
 		}
 		break;
@@ -257,6 +258,7 @@ void CPlayerFriend::OnOtherReplayMeAboutAddItbeFriend(bool bAgree,CPlayerFriend*
 	}
 
 	SendMsg(&msg,sizeof(msg)) ;
+	CLogMgr::SharedLogMgr()->PrintLog("uid = %d send msg stMsgPlayerAddFriendRet",GetPlayer()->GetUserUID());
 }
 
 void CPlayerFriend::TimerSave()
@@ -357,4 +359,17 @@ void CPlayerFriend::OnProcessEvent(stEventArg* pArg)
 			//pinfo->OnFriendOffline(p);
 		}
 	}
+}
+
+bool CPlayerFriend::isPlayerUIDFriend(uint32_t nPlayerUID)
+{
+	FRIENDS_UID::iterator iter = m_vAllFriends.begin() ;
+	for ( ; iter != m_vAllFriends.end() ; ++iter )
+	{
+		if ( *iter == nPlayerUID )
+		{
+			return true ;
+		}
+	}
+	return false ;
 }

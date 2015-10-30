@@ -135,6 +135,16 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			m_bPlayerInfoDataDirty = true ;
 		}
 		break;
+	case MSG_PLAYER_MODIFY_SEX:
+		{
+			stMsgPlayerModifySex* pRet = (stMsgPlayerModifySex*)pMsg ;
+			m_stBaseData.nSex = pRet->nNewSex ;
+			stMsgPlayerModifySexRet msgback ;
+			msgback.nRet = 0 ;
+			SendMsg(&msgback,sizeof(msgback)) ;
+			m_bPlayerInfoDataDirty = true ;
+		}
+		break;
 	case MSG_PUSH_APNS_TOKEN:
 		{
 			//stMsgPushAPNSToken* pMsgRet = (stMsgPushAPNSToken*)pMsg ;
@@ -327,6 +337,24 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 			{
 				CGameServerApp::SharedGameServerApp()->sendMsg(pRequest->nReqOrigID,(char*)&msgRet,sizeof(msgRet));
 			}
+
+			// save log 
+			stMsgSaveLog msgLog ;
+			memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+			msgLog.nJsonExtnerLen = 0 ;
+			msgLog.nLogType = eLog_DeductionMoney ;
+			msgLog.nTargetID = GetPlayer()->GetUserUID() ;
+			msgLog.vArg[0] = !bDiamoned ;
+			msgLog.vArg[1] = bRet ? nNeedMoney : 0;
+			msgLog.vArg[2] = m_stBaseData.nCoin;
+			msgLog.vArg[3] = m_stBaseData.nDiamoned ;
+			msgLog.vArg[4] = pRequest->nRequestSubType ;
+			if ( eCrossSvrReqSub_TaxasSitDown == pRequest->nRequestSubType )
+			{
+				msgLog.vArg[5] = pRequest->nReqOrigID ;
+			}
+			CGameServerApp::SharedGameServerApp()->sendMsg(pRequest->nReqOrigID,(char*)&msgLog,sizeof(msgLog));
+
 		}
 		break;
 	case eCrossSvrReq_AddMoney:
@@ -343,6 +371,23 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 			nAddTarget += nAddCoin ;
 			m_bMoneyDataDirty = true ;
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do add coin cross rquest , final diamond = %I64d, coin = %I64d",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin );
+
+			// save log 
+			stMsgSaveLog msgLog ;
+			memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+			msgLog.nJsonExtnerLen = 0 ;
+			msgLog.nLogType = eLog_AddMoney ;
+			msgLog.nTargetID = GetPlayer()->GetUserUID() ;
+			msgLog.vArg[0] = !bDiamoned ;
+			msgLog.vArg[1] = nAddCoin;
+			msgLog.vArg[2] = m_stBaseData.nCoin;
+			msgLog.vArg[3] = m_stBaseData.nDiamoned ;
+			msgLog.vArg[4] = pRequest->nRequestSubType ;
+			if ( eCrossSvrReqSub_TaxasSitDownFailed == pRequest->nRequestSubType || eCrossSvrReqSub_TaxasStandUp == pRequest->nRequestSubType )
+			{
+				msgLog.vArg[5] = pRequest->nReqOrigID ;
+			}
+			CGameServerApp::SharedGameServerApp()->sendMsg(pRequest->nReqOrigID,(char*)&msgLog,sizeof(msgLog));
 		}
 		break;
 	default:
@@ -364,6 +409,7 @@ void CPlayerBaseData::SendBaseDatToClient()
 {
 	stMsgPlayerBaseData msg ;
 	memcpy(&msg.stBaseData,&m_stBaseData,sizeof(msg.stBaseData));
+	msg.nSessionID = GetPlayer()->GetSessionID() ;
 	SendMsg(&msg,sizeof(msg)) ;
 	CLogMgr::SharedLogMgr()->PrintLog("send base data to session id = %d ",GetPlayer()->GetSessionID() );
 }

@@ -98,7 +98,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pdata->nExtenArg1 = pRet->nUserUID ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM mail WHERE userUID = '%d' and state = '0' ",pRet->nUserUID) ;
+				"SELECT * FROM mail WHERE userUID = '%d' and state = '0' limit 50",pRet->nUserUID) ;
 		}
 		break;
 	case MSG_PLAYER_SET_MAIL_STATE:
@@ -235,8 +235,8 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			CAutoBuffer autoBuffer(pRet->nInformLen + 1 );
 			autoBuffer.addContent(((char*)&pRet) + sizeof(stMsgSaveUpdateTaxasRoomInfo),pRet->nInformLen);
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE taxasroom SET deadTime = '%d', avataID = '%d', profit = '%I64d', roomName = '%s', roomDesc = '%s', roomInform = '%s', informSerial = '%d' WHERE roomID = '%d'"
-				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->vRoomName,pRet->vRoomDesc,autoBuffer.getBufferPtr(),pRet->nInformSerial,pRet->nRoomID) ;
+				"UPDATE taxasroom SET deadTime = '%d', avataID = '%d', profit = '%I64d',totalProfit = '%I64d', roomName = '%s', roomDesc = '%s', roomInform = '%s', informSerial = '%d' WHERE roomID = '%d'"
+				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->nTotalProfit,pRet->vRoomName,pRet->vRoomDesc,autoBuffer.getBufferPtr(),pRet->nInformSerial,pRet->nRoomID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("save taxas room update info room id = %d",pRet->nRoomID);
 		}
 		break;
@@ -729,6 +729,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			msgBack.isDetail = pdata->nExtenArg2 ;
 			CAutoBuffer auB(sizeof(msgBack) + sizeof(stPlayerDetailDataClient) );
 			stPlayerDetailDataClient tData;
+			memset(&tData,0,sizeof(tData)) ;
 			CMysqlRow& pRow = *pResult->vResultRows.front();
 			if ( msgBack.isDetail )
 			{

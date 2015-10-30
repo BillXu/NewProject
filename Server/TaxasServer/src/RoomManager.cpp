@@ -232,7 +232,16 @@ bool CRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 	case MSG_TP_ENTER_ROOM:
 		{
 			stMsgTaxasEnterRoom* pRel = (stMsgTaxasEnterRoom*)prealMsg ;
-			CTaxasRoom* pRoom = GetRoomByID(pRel->nRoomID) ;
+			CTaxasRoom* pRoom = nullptr;
+			if ( pRel->nRoomID == 0 )
+			{
+				pRoom = GetQuickEnterRoom(0);
+			}
+			else
+			{
+				pRoom = GetRoomByID(pRel->nRoomID) ;
+			}
+
 			if ( !pRoom )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d",pRel->nRoomID );
@@ -251,7 +260,7 @@ bool CRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			}
 
 			stMsgRequestTaxasPlayerData msg ;
-			msg.nRoomID = pRel->nRoomID ;
+			msg.nRoomID = pRoom->GetRoomID() ;
 			SendMsg(&msg,sizeof(msg),nSessionID ) ;
 			CLogMgr::SharedLogMgr()->PrintLog("rquest player data for room ");
 			return true ;
@@ -287,6 +296,7 @@ bool CRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 				stItem.nRoomID = pRoom->GetRoomID();
 				stItem.nSmiallBlind = pRoom->getLittleBlind();
 				stItem.nSeatCnt = pRoom->getSeatCnt();
+				stItem.nDeadTime = pRoom->getDeadTime();
 				sprintf_s(stItem.vRoomName,sizeof(stItem.vRoomName),"%s",pRoom->getRoomName());
 				//sprintf_s(stItem.vDesc,sizeof(stItem.vDesc),"%s",pRoom->getRoomDesc());
 				auBuffer.addContent((char*)&stItem,sizeof(stItem)) ;
@@ -337,6 +347,63 @@ CTaxasRoom*CRoomManager::GetRoomByID(uint32_t nRoomID )
 		return iter->second ;
 	}
 	return NULL ;
+}
+
+CTaxasRoom* CRoomManager::GetQuickEnterRoom(uint64_t nCoin )
+{
+	LIST_ROOM vValidRooms , vLiveRooms;
+	MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
+	for ( ; iter != m_vRooms.end() ; ++iter )
+	{
+		if ( iter->second->isRoomAlive() )
+		{
+			uint8_t nPCnt = iter->second->GetPlayerCntWithState(eRoomPeer_SitDown);
+			if ( nPCnt > 0 && nPCnt != iter->second->getSeatCnt() )
+			{
+				vValidRooms.push_back(iter->second);
+			}
+			else
+			{
+				vLiveRooms.push_back(iter->second) ;
+			}
+		}
+	}
+
+	uint16_t nRandom = 0 ;
+	if ( vValidRooms.empty() == false )
+	{
+		nRandom = rand() % vValidRooms.size() ;
+		LIST_ROOM::iterator iter = vValidRooms.begin() ;
+		while ( nRandom-- )
+		{
+			++iter ;
+		}
+
+		if ( iter == vValidRooms.end() )
+		{
+			--iter ;
+			CLogMgr::SharedLogMgr()->ErrorLog("will not run to here   iter == vValidRooms.end() ");
+		}
+		return *iter ;
+	}
+
+	if ( vLiveRooms.empty() == false )
+	{
+		nRandom = rand() % vLiveRooms.size() ;
+		LIST_ROOM::iterator iterL = vLiveRooms.begin() ;
+		while ( nRandom-- )
+		{
+			++iterL ;
+		}
+
+		if ( iterL == vLiveRooms.end() )
+		{
+			--iterL ;
+			CLogMgr::SharedLogMgr()->ErrorLog("will not run to here   iter == vLiveRooms.end() ");
+		}
+		return *iterL ;
+	}
+	return nullptr ;
 }
 
 void CRoomManager::SendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID )

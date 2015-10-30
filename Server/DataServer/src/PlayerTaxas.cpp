@@ -5,6 +5,7 @@
 #include "PlayerBaseData.h"
 #include <json/json.h>
 #include "AutoBuffer.h"
+#include "TaxasPokerPeerCard.h"
 void CPlayerTaxas::Reset()
 {
 	IPlayerComponent::Reset();
@@ -117,6 +118,24 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			m_tData.nPlayTimes += pRet->nPlayTimes ;
 			m_tData.nSingleWinMost = m_tData.nSingleWinMost > pRet->nSingleWinMost ? m_tData.nSingleWinMost : pRet->nSingleWinMost;
 			m_tData.nWinTimes += pRet->nWinTimes ;
+			if ( pRet->vBestCard[0] )
+			{
+				CTaxasPokerPeerCard vBest , vNewBest;
+				for ( uint8_t nIdx = 0 ; nIdx < MAX_TAXAS_HOLD_CARD ; ++nIdx )
+				{
+					vNewBest.AddCardByCompsiteNum(pRet->vBestCard[nIdx]) ;
+					if ( m_tData.vMaxCards[nIdx] )
+						vBest.AddCardByCompsiteNum(m_tData.vMaxCards[nIdx]) ;
+				}
+
+				if ( m_tData.vMaxCards[0] == 0 || vNewBest.PK(&vBest) == 1 )
+				{
+					vNewBest.GetCardType();
+					vNewBest.GetFinalCard(m_tData.vMaxCards);
+				}
+
+			}
+			
 			CLogMgr::SharedLogMgr()->PrintLog("be told uid = %d sys player data ",GetPlayer()->GetUserUID());
 			m_bDirty = true ;
 		}
@@ -230,7 +249,7 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 
 			stMsgCaculateTaxasRoomProfit* pRet = (stMsgCaculateTaxasRoomProfit*)pMessage ;
 			msgBack.nRoomID = pRet->nRoomID ;
-			if ( isRoomIDMyOwn(pRet->nRoomID) )
+			if ( !isRoomIDMyOwn(pRet->nRoomID) )
 			{
 				msgBack.nRet = 1 ;
 				SendMsg(&msgBack,sizeof(msgBack)) ;
@@ -427,6 +446,12 @@ void CPlayerTaxas::sendTaxaDataToClient()
 	stMsgPlayerBaseDataTaxas msg ;
 	memcpy(&msg.tTaxasData,&m_tData,sizeof(m_tData)) ;
 	SendMsg(&msg,sizeof(msg)) ;
+}
+
+bool CPlayerTaxas::isRoomIDMyOwn(uint32_t nRoomID )
+{
+	MAP_ID_MYROOW::iterator iter = m_vMyOwnRooms.find(nRoomID) ;
+	return iter != m_vMyOwnRooms.end() ;
 }
 
 void CPlayerTaxas::getTaxasData(stPlayerTaxasData* pData )

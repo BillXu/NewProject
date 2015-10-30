@@ -9,6 +9,7 @@
 #include "PlayerBaseData.h"
 #include "AutoBuffer.h"
 #include "PlayerTaxas.h"
+#include "PlayerMail.h"
 
 CSelectPlayerDataCacher::CSelectPlayerDataCacher()
 {
@@ -563,6 +564,19 @@ bool CPlayerManager::ProcessIsAlreadyLogin(unsigned int nUserID ,unsigned nSessi
 
 bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
 {
+	if ( pRequest->nRequestType == eCrossSvrReq_Inform )
+	{
+		CPlayer* pp = GetPlayerByUserUID(pRequest->nTargetID) ;
+		if ( pp )
+		{
+			((CPlayerMailComponent*)pp->GetComponent(ePlayerComponent_Mail))->ReciveMail(((char*)pRequest) + sizeof(stMsgCrossServerRequest),pRequest->nJsonsLen);
+		}
+		else
+		{
+			CPlayerMailComponent::PostMailToDB(((char*)pRequest) + sizeof(stMsgCrossServerRequest),pRequest->nJsonsLen,pRequest->nTargetID);
+		}
+		return true ;
+	}
 	return false ;
 }
 

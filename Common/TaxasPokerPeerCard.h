@@ -38,6 +38,7 @@ public:
 	void GetHoldCard(unsigned char vHoldeCard[2] );
 	unsigned char GetCardTypeForRobot(unsigned char& nContriButeCnt,unsigned char& nKeyCardFaceNum);
 	void adjustPosForSpecailShunZi();
+	unsigned char getAllCardCnt(){ return m_vAllCard.size() ;}
 protected:
 	void CaculateFinalCard();
 	void ClearVecCard(VEC_CARD& vCards );

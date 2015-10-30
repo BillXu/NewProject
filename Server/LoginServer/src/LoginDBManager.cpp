@@ -147,6 +147,26 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
 		}
 		break;
+	case MSG_RESET_PASSWORD:
+		{
+			stMsgResetPassword* pMsgRet = (stMsgResetPassword*)pmsg ;
+			pdata->nSessionID = nSessionID ;
+			if ( strlen(pMsgRet->cAccount) >= MAX_LEN_ACCOUNT || strlen(pMsgRet->cNewPassword) >= MAX_LEN_PASSWORD )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("MSG_MODIFY_PASSWORD password or account len is too long ");
+				m_vReserverArgData.push_back(pdata) ;
+				break; 
+			}
+
+			stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+			pRequest->cOrder = eReq_Order_Super ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nRequestUID = pmsg->usMsgType ;
+			pRequest->pUserData = pdata;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"call ResetPassword('%s','%s')",pMsgRet->cAccount,pMsgRet->cNewPassword ) ;
+			CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+		}
+		break;
 	default:
 		{
 			m_vReserverArgData.push_back(pdata) ;
@@ -288,6 +308,33 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				stMsgLoginSvrInformGateSaveLog msglog ;
 				msglog.nlogType = eLog_ModifyPwd ;
 				msglog.nUserUID = pdata->nExtenArg1 ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msglog,sizeof(msglog)) ;
+			}
+		}
+		break;
+	case MSG_RESET_PASSWORD:
+		{
+			stMsgResetPasswordRet msgBack ;
+			msgBack.nRet = 0 ;
+			uint32_t nUID = 0 ;
+			if ( pResult->nAffectRow > 0 )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows.front() ;
+				msgBack.nRet = pRow["nOutRet"]->IntValue() ;
+				nUID = pRow["nUID"]->IntValue() ;
+			}
+			else
+			{
+				msgBack.nRet = 1 ;
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d modify password ret = %d",nUID,msgBack.nRet ) ;
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)); 
+
+			if ( msgBack.nRet == 0 )
+			{
+				stMsgLoginSvrInformGateSaveLog msglog ;
+				msglog.nlogType = eLog_ResetPassword ;
+				msglog.nUserUID = nUID ;
 				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msglog,sizeof(msglog)) ;
 			}
 		}

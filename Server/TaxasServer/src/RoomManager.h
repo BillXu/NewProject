@@ -26,6 +26,7 @@ public:
 	bool OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nRoomID );
 	bool onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID);
 	CTaxasRoom* GetRoomByID(uint32_t nRoomID );
+	CTaxasRoom* GetQuickEnterRoom(uint64_t nCoin );
 	void SendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID );
 	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg);
 	bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);

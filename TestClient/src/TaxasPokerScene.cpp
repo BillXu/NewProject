@@ -119,6 +119,23 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 			}
 		}
 		break;
+	case MSG_PLAYER_BE_ADDED_FRIEND:
+		{
+			stMsgPlayerBeAddedFriend* pret = (stMsgPlayerBeAddedFriend*)pmsg ;
+			printf("uid = %d want add me friend \n",pret->nPlayerUserUID);
+
+			stMsgPlayerBeAddedFriendReply msgReply ;
+			msgReply.bAgree = true ;
+			msgReply.nReplayToPlayerUserUID = pret->nPlayerUserUID ;
+			SendMsg(&msgReply,sizeof(msgReply));
+		}
+		break;
+	case MSG_PLAYER_BE_ADDED_FRIEND_REPLY:
+		{
+			stMsgPlayerBeAddedFriendReplyRet* pret = (stMsgPlayerBeAddedFriendReplyRet*)pmsg ;
+			printf("recive replay ret = %d , new friend uid = %d\n",pret->nRet,pret->nNewFriendUserUID) ;
+		}
+		break;
 	default:
 		break;
 	}

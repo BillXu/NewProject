@@ -394,6 +394,7 @@ struct stRoomListItem
 	uint8_t nCurrentCount ;
 	uint32_t nSmiallBlind ;
 	uint8_t nSeatCnt;
+	uint32_t nDeadTime ;
 	//char vDesc[MAX_LEN_ROOM_DESC];
 };
 

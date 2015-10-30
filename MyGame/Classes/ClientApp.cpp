@@ -3,7 +3,7 @@
 #include "loginScene.h"
 #include "CardPoker.h"
 #include "GotyeAPI.h"
-
+#include "checkUpdateLayer.h"
 CClientApp* CClientApp::s_ClientApp = NULL ;
 CClientApp* CClientApp::getInstance()
 {
@@ -50,13 +50,13 @@ bool CClientApp::init()
 
 	FileUtils::getInstance()->addSearchPath("res/");
 	// init chat module 
-	status sret = GotyeAPI::getInstance()->init("abffee4b-deea-4e96-ac8d-b9d58f246c3f","com.poker.game");
+	/*status sret = GotyeAPI::getInstance()->init("abffee4b-deea-4e96-ac8d-b9d58f246c3f","com.poker.game");
 	if ( GotyeStatusCodeOK != sret )
 	{
 		CCLOG("init socail module error");
-	}
+	}*/
 	// create a scene. it's an autorelease object
-	auto scene = CLoginScene::createLoginScene();
+	auto scene = CCheckUpdateLayer::scene();//CLoginScene::createLoginScene();
 	// run
 	 cocos2d::Director::getInstance()->runWithScene(scene);
 

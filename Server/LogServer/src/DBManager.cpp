@@ -80,6 +80,20 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pStrBuffer = nullptr;
 		}
 		break;
+	case MSG_SAVE_PLAYER_ADVICE:
+		{
+			stMsgSavePlayerAdvice* pSave = (stMsgSavePlayerAdvice*)pmsg ;
+			time_t nT = time(nullptr) ;
+			char* pBuff = new char[pSave->nLen+1] ;
+			memset(pBuff,0,pSave->nLen+1) ;
+			memcpy(pBuff,(char*)pmsg + sizeof(stMsgSavePlayerAdvice) ,pSave->nLen );
+			pRequest->eType = eRequestType_Add ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO log_playeradvice (userUID, cotent,time,c_time) VALUES ('%u', '%s','%u','%s')",
+				pSave->nUserUID,pBuff,(uint32_t)nT,ctime(&nT)) ;
+			delete[] pBuff ;
+			pBuff = nullptr ;
+		}
+		break;
 	default:
 		{
 			m_vReserverArgData.push_back(pdata) ;
@@ -107,6 +121,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	switch ( pResult->nRequestUID )
 	{
 	case MSG_SAVE_LOG:
+	case MSG_SAVE_PLAYER_ADVICE:
 		{
 			if ( pResult->nAffectRow != 1 )
 			{

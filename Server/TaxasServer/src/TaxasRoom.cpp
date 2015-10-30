@@ -391,10 +391,18 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 			pData->nFinalLeftInThisRoom = pRet->nFinalLeftInThisRoom ;
 			pData->nPlayeTimesInThisRoom = pRet->nPlayeTimesInThisRoom ;
 			pData->nTotalBuyInThisRoom = pRet->nTotalBuyInThisRoom ;
+			CLogMgr::SharedLogMgr()->SystemLog("READ_TAXAS rooid = %d, uid = %d , allByin = %I64d",GetRoomID(),pData->nUserUID,pData->nTotalBuyInThisRoom);
 			pData->nWinTimesInThisRoom = pRet->nWinTimesInThisRoom ;
 			pData->nUserUID = pRet->nPlayerUID ;
-			m_vAllPeers.push_back(pData);
-			CLogMgr::SharedLogMgr()->PrintLog("read taxas player uid = %d",pData->nUserUID) ;
+			if ( !addInroomPlayerInternal(pData) )
+			{
+				delete pData ;
+				pData = nullptr ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("read taxas player uid = %d",pData->nUserUID) ;
+			}
 		}
 		break;
 	case MSG_REQUEST_ROOM_DETAIL:
@@ -417,7 +425,7 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 			msgRet.nDeadTime = m_nDeadTime ;
 			msgRet.nFollows = 2 ;
 			msgRet.nRoomID = GetRoomID() ;
-			msgRet.nTotalProfit = 1000 ;
+			msgRet.nTotalProfit = m_nTotalProfit ;
 			sprintf_s(msgRet.vRoomName,sizeof(msgRet.vRoomName),"%s",getRoomName());
 			SendMsgToPlayer(nPlayerSessionID,&msgRet,sizeof(msgRet)) ;
 		}
@@ -466,7 +474,12 @@ void CTaxasRoom::AddPlayer( stTaxasInRoomPeerDataExten& nPeerData )
 {
 	stTaxasInRoomPeerDataExten* pData = new stTaxasInRoomPeerDataExten ;
 	memcpy(pData,&nPeerData,sizeof(stTaxasInRoomPeerDataExten));
-	m_vAllPeers.push_back(pData);
+	if ( !addInroomPlayerInternal(pData) )
+	{
+		delete pData ;
+		pData = nullptr ;
+		return ;
+	}
 }
 
 bool CTaxasRoom::IsPlayerInRoomWithSessionID(uint32_t nSessionID )
@@ -496,6 +509,8 @@ void CTaxasRoom::OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID , uint64
 		CLogMgr::SharedLogMgr()->ErrorLog("nsession id = %d not in room cannot sit down or just withdrawing money ",nSessionID) ; 
 		return ;
 	}
+
+	CLogMgr::SharedLogMgr()->SystemLog("uid = %d sitdown , allbuyin = %lld , left = %lld",pData->nUserUID,pData->nTotalBuyInThisRoom,pData->nFinalLeftInThisRoom);
 
 	stTaxasPeerData& refSeatData = m_vSitDownPlayers[nSeatIdx];
 
@@ -944,6 +959,7 @@ void CTaxasRoom::StartGame()
 			m_nRoomProfit += m_stRoomConfig.nDeskFee ;
 			pData.nTakeInMoney -= m_stRoomConfig.nDeskFee ;
 			pData.pHistoryData->nFinalLeftInThisRoom -= m_stRoomConfig.nDeskFee ;
+			CLogMgr::SharedLogMgr()->SystemLog("uid = %d deskfree = %d",pData.nUserUID,m_stRoomConfig.nDeskFee);
 		}
 
 		pData.eCurAct = eRoomPeerAction_None ;
@@ -1234,7 +1250,7 @@ uint8_t CTaxasRoom::CaculateOneRoundPool()
 				CLogMgr::SharedLogMgr()->PrintLog("put player into pool player Idx = %d, UID = %d",nIdx,pData.nUserUID ) ;
 			}
 		}
-		CLogMgr::SharedLogMgr()->PrintLog("pool idx = %d : coin = %I64d",pPool.nIdx,pPool.nCoin) ;
+		CLogMgr::SharedLogMgr()->SystemLog("pool idx = %d : coin = %I64d",pPool.nIdx,pPool.nCoin) ;
 	}
 
 	// build mian pool ;
@@ -1250,6 +1266,7 @@ uint8_t CTaxasRoom::CaculateOneRoundPool()
 		if ( pData.nBetCoinThisRound > 0 )
 		{
 			m_nCurMainBetPool += pData.nBetCoinThisRound ;
+			pData.nBetCoinThisRound = 0 ;
 			CLogMgr::SharedLogMgr()->PrintLog("put player into Main pool player Idx = %d, UID = %d",nIdx,pData.nUserUID ) ;
 		}
 	}
@@ -1345,12 +1362,11 @@ uint8_t CTaxasRoom::CaculateGameResult()
 		}
 	}
 
-	// save serve log 
-	writeGameResultLog();
 	// send msg tell client ;
 	if ( GetFirstCanUseVicePool().nIdx == 0 )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("why this game have no pool ? at least should have one room id = %d",nRoomID ) ;
+		didCaculateGameResult();
 		return 0 ;
 	}
 
@@ -1376,6 +1392,7 @@ uint8_t CTaxasRoom::CaculateGameResult()
 		}
 		SendRoomMsg(&msgResult,sizeof(msgResult)) ;
 	}
+	didCaculateGameResult();
 	return GetFirstCanUseVicePool().nIdx ;
 }
 
@@ -1419,10 +1436,11 @@ bool CTaxasRoom::isPlayerAlreadySitDown(uint32_t nSessionID )
 
 void CTaxasRoom::debugPlayerHistory()
 {
-	CLogMgr::SharedLogMgr()->PrintLog("debug players history: ");
+	CLogMgr::SharedLogMgr()->SystemLog("debug players history: ");
 	VEC_IN_ROOM_PEERS::iterator iter = m_vAllPeers.begin() ;
 	stTaxasInRoomPeerDataExten* pPlayer = nullptr ;
-	stTaxasPeerData* pSitDownPlayer = nullptr ;
+
+	int32_t tAll = 0 ; 
 	for ( ; iter != m_vAllPeers.end(); ++iter )
 	{
 		pPlayer = *iter ;
@@ -1430,7 +1448,18 @@ void CTaxasRoom::debugPlayerHistory()
 		uint32_t nPlayTimes = pPlayer->nPlayeTimesInThisRoom ;
 		uint32_t nWinTimes = pPlayer->nWinTimesInThisRoom ;
 		int64_t nOffset = nRealLeft - pPlayer->nTotalBuyInThisRoom ;
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d , offset = %I64d totoalbuyin = %I64d, left = %I64d , playTimes = %d , winTimes = %d",pPlayer->nUserUID,nOffset,pPlayer->nTotalBuyInThisRoom,nRealLeft,nPlayTimes,nWinTimes);
+		CLogMgr::SharedLogMgr()->SystemLog("uid = %d , offset = %I64d Allbuyin = %I64d, left = %I64d",pPlayer->nUserUID,nOffset,pPlayer->nTotalBuyInThisRoom,nRealLeft);
+		tAll += nOffset ;
+	}
+
+	if ( (tAll + m_nRoomProfit + m_nTotalProfit) != 0 )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("tall = %d, profit = %llu , all pro = %llu",tAll,m_nRoomProfit,m_nTotalProfit);
+		Sleep(999999999);
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->SystemLog("ok history");
 	}
 }
 
@@ -1448,6 +1477,7 @@ void CTaxasRoom::saveUpdateRoomInfo()
 	msgSave.nInformSerial = m_nInformSerial ;
 	msgSave.nRoomID = nRoomID ;
 	msgSave.nRoomProfit = m_nRoomProfit ;
+	msgSave.nTotalProfit = m_nTotalProfit ;
 	memset(msgSave.vRoomDesc,0,sizeof(msgSave.vRoomDesc));
 	memset(msgSave.vRoomName,0,sizeof(msgSave.vRoomName));
 	//sprintf(msgSave.vRoomDesc,"%s",m_strRoomDesc.c_str());
@@ -1468,6 +1498,66 @@ void CTaxasRoom::saveUpdateRoomInfo()
 void CTaxasRoom::removeTaxasPlayersHistory()
 {
 
+}
+
+void CTaxasRoom::didCaculateGameResult()
+{
+	// save serve log 
+	writeGameResultLog();
+	
+	// update best card ;
+	if ( IsPublicDistributeFinish() )
+	{
+		CTaxasPokerPeerCard peerCur , peerBest;
+		for ( stTaxasPeerData& peer : m_vSitDownPlayers )
+		{
+			if ( peer.IsInvalid() || peer.IsHaveState(eRoomPeer_StayThisRound) == false || peer.IsHaveState(eRoomPeer_GiveUp) )
+			{
+				continue;
+			}
+
+			peerCur.Reset();
+			peerBest.Reset() ;
+			for ( uint8_t& comN : m_vPublicCardNums )
+			{
+				peerCur.AddCardByCompsiteNum(comN);
+			}
+			peerCur.AddCardByCompsiteNum(peer.vHoldCard[0]) ;
+			peerCur.AddCardByCompsiteNum(peer.vHoldCard[1]) ;
+
+			if ( peer.vBestCards[0] == 0 )
+			{
+				peerCur.GetCardType() ;
+				peerCur.GetFinalCard(peer.vBestCards);
+				continue;
+			}
+
+			for ( uint8_t& c : peer.vBestCards )
+			{
+				peerBest.AddCardByCompsiteNum(c);
+			}
+
+			if ( peerCur.PK(&peerBest) == 1 )
+			{
+				peerCur.GetFinalCard(peer.vBestCards);
+			}
+		}
+	}
+
+}
+
+bool CTaxasRoom::addInroomPlayerInternal(stTaxasInRoomPeerDataExten* pAdd )
+{
+	for ( stTaxasInRoomPeerDataExten* pPlayer : m_vAllPeers )
+	{
+		if ( pAdd->nUserUID == pPlayer->nUserUID )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("uid = %u already in room id = %u",pAdd->nUserUID , GetRoomID() ) ;
+			return false ;
+		}
+	}
+	m_vAllPeers.push_back(pAdd);
+	return true ;
 }
 
 void CTaxasRoom::writeGameResultLog()
@@ -1671,7 +1761,8 @@ void CTaxasRoom::CaculateVicePool(stVicePool& pPool )
 	pPool.nCoin -= nElasCoin ;
 	if ( nElasCoin > 0 )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("system got the elaps coin = %d, room id = %d , pool idx = %d ",nElasCoin,nRoomID,pPool.nIdx ) ;
+		m_nRoomProfit += nElasCoin ;
+		CLogMgr::SharedLogMgr()->SystemLog("system got the elaps coin = %d, room id = %d , pool idx = %d ",nElasCoin,nRoomID,pPool.nIdx ) ;
 	}
 	uint64_t nCoinPerWinner = pPool.nCoin / pPool.vWinnerIdxs.size() ;
 	for ( uint8_t nIdx = 0 ; nIdx < pPool.vWinnerIdxs.size(); ++nIdx )
@@ -1680,7 +1771,7 @@ void CTaxasRoom::CaculateVicePool(stVicePool& pPool )
 		pData.nTakeInMoney += nCoinPerWinner ;
 		pData.pHistoryData->nFinalLeftInThisRoom += nCoinPerWinner ;
 		pData.nWinCoinThisGame += nCoinPerWinner ;
-		CLogMgr::SharedLogMgr()->PrintLog("player use uid = %d win coin = %I64d , from pool idx = %d, room id = %d",pData.nUserUID,nCoinPerWinner,pPool.nIdx,nRoomID) ;
+		CLogMgr::SharedLogMgr()->SystemLog("player use uid = %d win coin = %I64d , from pool idx = %d, room id = %d",pData.nUserUID,nCoinPerWinner,pPool.nIdx,nRoomID) ;
 	}
 }
 
@@ -1794,8 +1885,33 @@ void CTaxasRoom::syncPlayerDataToDataSvr( stTaxasPeerData& pPlayerData )
 		msg.nPlayTimes = pPlayerData.nPlayTimes ;
 		msg.nWinTimes = pPlayerData.nWinTimes ;
 		msg.nSingleWinMost = pPlayerData.nSingleWinMost ;
+		memset(msg.vBestCard,0,sizeof(msg.vBestCard));
+		if ( pPlayerData.vBestCards[0] ) // vBestCard not empty
+		{
+			memcpy(msg.vBestCard,pPlayerData.vBestCards,sizeof(msg.vBestCard));
+		}
 		CTaxasServerApp::SharedGameServerApp()->sendMsg(GetRoomID(),(char*)&msg,sizeof(msg)) ;
 	}
+}
+
+void CTaxasRoom::sendExpireInform()
+{
+	// if player requesting coin , do not sync data ;
+	stMsgCrossServerRequest msgReq ;
+	msgReq.cSysIdentifer = ID_MSG_PORT_DATA ;
+	msgReq.nReqOrigID = GetRoomID();
+	msgReq.nTargetID = m_nRoomOwnerUID;
+	msgReq.nRequestType = eCrossSvrReq_Inform ;
+	msgReq.nRequestSubType = eCrossSvrReqSub_Default ;
+
+	std::string str = "your room ( id = %d ) have expired !" ;
+	char pBuffer[200] = {0} ;
+	sprintf(pBuffer,str.c_str(),GetRoomID()) ;
+	msgReq.nJsonsLen = strlen(pBuffer) ;
+	CAutoBuffer aub(sizeof(msgReq) + msgReq.nJsonsLen );
+	aub.addContent(&msgReq,sizeof(msgReq)) ;
+	aub.addContent(pBuffer,msgReq.nJsonsLen) ;
+	CTaxasServerApp::SharedGameServerApp()->sendMsg(0,aub.getBufferPtr(),aub.getContentSize()) ;
 }
 
 bool CTaxasRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
@@ -1948,6 +2064,7 @@ bool CTaxasRoom::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Jso
 					pPlayrInRoomData->nTotalBuyInThisRoom += nNewExtBuyIn;
 					pPlayrInRoomData->nFinalLeftInThisRoom += nNewExtBuyIn; 
 				}
+				CLogMgr::SharedLogMgr()->SystemLog("uid = %d buyin = %lld , allByin = %lld left = %lld",pPlayrInRoomData->nUserUID,nMoney,pPlayrInRoomData->nTotalBuyInThisRoom,pPlayrInRoomData->nFinalLeftInThisRoom);
 			}
 		}
 

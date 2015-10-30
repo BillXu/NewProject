@@ -10,7 +10,7 @@ namespace cocos2d
 
 class CClientApp
 	:public CNetMessageDelegate
-	,public gotyeapi::GotyeDelegate
+	//,public gotyeapi::GotyeDelegate
 {
 public:
 	static CClientApp* getInstance();

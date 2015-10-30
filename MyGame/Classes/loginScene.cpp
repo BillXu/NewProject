@@ -137,11 +137,11 @@ bool CLoginScene::onMsg(stMsg* pmsg )
 			auto scene = CMainScene::createScene();
 			Director::getInstance()->replaceScene(scene);
 
-			bool bOk = GotyeAPI::getInstance()->isOnline();
+			//bool bOk = GotyeAPI::getInstance()->isOnline();
 
-			string strPas = "123456";
-			GotyeAPI::getInstance()->login(String::createWithFormat("%d",pRet->stBaseData.nUserUID)->getCString(),&strPas);
-			
+			//string strPas = "123456";
+			//GotyeAPI::getInstance()->login(String::createWithFormat("%d",pRet->stBaseData.nUserUID)->getCString(),&strPas);
+			//
 		}
 		break;
 	default:

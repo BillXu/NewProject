@@ -12,7 +12,7 @@ public:
 public:
 	CPlayerFriend(CPlayer* pPlayer) ;
 	~CPlayerFriend();
-	virtual bool OnMessage(stMsg* pMsg ) ;
+	virtual bool OnMessage( stMsg* pMessage , eMsgPort eSenderPort);
 	virtual void OnPlayerDisconnect();
 	virtual void Reset();
 	virtual void Init();
@@ -23,7 +23,7 @@ public:
 	void RemoveFriendByUID(uint32_t nPlayerUID );
 	void AddFriend( uint32_t nFriendUserUID);
 	static bool EventFunc(void* pUserData,stEventArg* pArg);
-	bool isPlayerUIDFriend(uint32_t nPlayerUID){ return true ;}
+	bool isPlayerUIDFriend(uint32_t nPlayerUID);
 protected:
 	void SendListToClient();
 	void OnProcessEvent(stEventArg* pArg);
