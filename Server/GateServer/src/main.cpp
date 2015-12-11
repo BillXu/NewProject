@@ -1,8 +1,10 @@
 #define CRTDBG_MAP_ALLOC
+#include <windows.h>
 #include <stdlib.h>
 #include "GateServer.h"
 #include <WinDef.h>
 #include <Dbghelp.h>
+#include "LogManager.h"
 #pragma comment( lib, "DbgHelp" )
 //#include <vld.h>
 
@@ -65,9 +67,10 @@ void RunFunc ( CGateServer* pApp )
 
 int main()
 {
-	zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
-	zsummer::log4z::ILog4zManager::GetInstance()->Start();
+	//zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
+	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
 	CGateServer  theApp ;
+	CLogMgr::SharedLogMgr()->SetOutputFile("GateSvr");
 	bool bok = theApp.init() ;
 	if (!bok )
 	{

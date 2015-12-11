@@ -5,9 +5,9 @@ public:
 	enum eCardType
 	{
 		eCard_None,
-        eCard_Club = eCard_None, // cao hua
+		eCard_Diamond = eCard_None, // fangkuai
+        eCard_Club, // cao hua
 		eCard_Heart, // hong tao
-        eCard_Diamond, // fangkuai
 		eCard_Sword, // hei tao 
 		eCard_NoJoker,
 		eCard_Joker = eCard_NoJoker, // xiao wang

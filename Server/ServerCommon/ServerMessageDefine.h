@@ -370,6 +370,7 @@ struct stMsgToVerifyServer
 	unsigned int nBuyerPlayerUserUID ; 
 	unsigned int nBuyForPlayerUserUID ;
 	unsigned short nShopItemID ; // for mutilp need to verify ;
+	uint32_t nMiUserUID ;
 	unsigned short nTranscationIDLen ;
 	char* ptransactionID ;   // base64 ed ;
 };

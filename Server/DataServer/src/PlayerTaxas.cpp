@@ -346,6 +346,21 @@ bool CPlayerTaxas::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 		msgBack.nProfitMoney = pResult->vArg[1] ;
 		msgBack.nRet = 0 ;
 		SendMsg(&msgBack,sizeof(msgBack)) ;
+		GetPlayer()->GetBaseData()->ModifyMoney(msgBack.nProfitMoney,msgBack.bDiamond);
+		// save log 
+		stMsgSaveLog msgLog ;
+		memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+		msgLog.nJsonExtnerLen = 0 ;
+		msgLog.nLogType = eLog_AddMoney ;
+		msgLog.nTargetID = GetPlayer()->GetUserUID() ;
+		msgLog.vArg[0] = !msgBack.bDiamond ;
+		msgLog.vArg[1] = msgBack.nProfitMoney;
+		msgLog.vArg[2] = GetPlayer()->GetBaseData()->GetData()->nCoin;
+		msgLog.vArg[3] = GetPlayer()->GetBaseData()->GetData()->nDiamoned ;
+		msgLog.vArg[4] = eCrossSvrReq_TaxasRoomProfit ;
+		msgLog.vArg[5] = pResult->nReqOrigID ;
+		CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nReqOrigID,(char*)&msgLog,sizeof(msgLog));
+
 		CLogMgr::SharedLogMgr()->PrintLog("uid = %d get profit = %llu",GetPlayer()->GetUserUID(),msgBack.nProfitMoney) ;
 		return true ;
 	}

@@ -162,7 +162,7 @@ void CReaderRow::PrintIndexContent()
     for ( ; iter != m_vStrToIdx.end() ; ++iter )
     {
         sprintf(pbuffer, "title: %s$  index = %d \n", iter->first.c_str(),iter->second ) ;
-        printf(pbuffer) ;
+        //printf(pbuffer) ;
         memset(pbuffer, 0, sizeof(pbuffer)) ;
     }
 }

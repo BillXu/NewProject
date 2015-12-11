@@ -85,6 +85,13 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			{
 				vAllTaxasPlayerData[pRet->nSeatIdx].nStateFlag = pRet->nStateFlag ;
 				vAllTaxasPlayerData[pRet->nSeatIdx].nTakeInMoney = pRet->nTakeInCoin ;
+				if (vAllTaxasPlayerData[pRet->nSeatIdx].nTakeInMoney <= nLittleBlind * 2 )
+				{
+					{
+						vAllTaxasPlayerData[pRet->nSeatIdx].nStateFlag = eRoomPeer_LackOfCoin ;
+						printf("update player state player lack of coin idx = %d, name = %s\n",vAllTaxasPlayerData[pRet->nSeatIdx].nSeatIdx,vAllTaxasPlayerData[pRet->nSeatIdx].cName);
+					}
+				}
 			}
 		}
 		break;
@@ -166,6 +173,14 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 				{
 					pPlayerData.nStateFlag = eRoomPeer_GiveUp ;
 					nCurMainBetPool += pPlayerData.nBetCoinThisRound ;
+
+					if (pPlayerData.nTakeInMoney <= nLittleBlind * 2 )
+					{
+						if ((pPlayerData.nStateFlag & eRoomPeer_WithdrawingCoin) != eRoomPeer_WithdrawingCoin )
+						{
+							pPlayerData.nStateFlag |= eRoomPeer_LackOfCoin ;
+						}
+					}
 				}
 				break;
 			case eRoomPeerAction_Add:
@@ -300,14 +315,19 @@ void stTaxasPokerData::resetRuntimeData()
 	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
 	{
 		stTaxasPeerBaseData& data = vAllTaxasPlayerData[nIdx] ;
+		if ( data.nUserUID == 0 )
+		{
+			continue;
+		}
 		data.eCurAct = eRoomPeerAction_None ;
 		data.nBetCoinThisRound = 0 ;
 		memset(data.vHoldCard,0,sizeof(data.vHoldCard));
 		if (data.nTakeInMoney <= nLittleBlind * 2 )
 		{
-			if ((data.nStateFlag & eRoomPeer_WithdrawingCoin) != eRoomPeer_WithdrawingCoin )
+			//if ((data.nStateFlag & eRoomPeer_WithdrawingCoin) != eRoomPeer_WithdrawingCoin )
 			{
 				data.nStateFlag = eRoomPeer_LackOfCoin ;
+				printf("player lack of coin idx = %d, name = %s\n",data.nSeatIdx,data.cName);
 			}
 		}
 		else
@@ -368,4 +388,17 @@ void stTaxasPokerData::resetBetRoundState()
 			vAllTaxasPlayerData[nIdx].eCurAct = eRoomPeerAction_None ;
 		}
 	}
+}
+
+uint8_t stTaxasPokerData::getPlayerCnt()
+{
+	uint8_t nCnt = 0 ;
+	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
+	{
+		if ( vAllTaxasPlayerData[nIdx].nUserUID )
+		{
+			++nCnt;
+		}
+	}
+	return nCnt ;
 }

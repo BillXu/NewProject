@@ -7,7 +7,7 @@ stGateClient::stGateClient()
 	tTimeForRemove = 0 ;
 	strIPAddress = "NULL";
 }
-void stGateClient::Reset(unsigned int nSessionID , CONNECT_ID nNetWorkID,char* IpInfo )
+void stGateClient::Reset(unsigned int nSessionID , CONNECT_ID nNetWorkID,const char* IpInfo )
 {
 	this->nSessionId = nSessionID ;
 	this->nNetWorkID = nNetWorkID ;

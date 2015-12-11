@@ -26,8 +26,10 @@ void CVerifyApp::update(float fDeta )
 	}
 
 	// check Apple Verify ;
-	LIST_VERIFY_REQUEST vOutAppleResult ;
+	LIST_VERIFY_REQUEST vOutAppleResult , vMiResult;
 	m_AppleVerifyMgr.GetProcessedRequest(vOutAppleResult) ;
+	m_MiVerifyMgr.GetProcessedRequest(vMiResult);
+	vOutAppleResult.insert(vOutAppleResult.begin(),vMiResult.begin(),vMiResult.end());
 	stVerifyRequest* pVerifyRequest = NULL ;
 	LIST_VERIFY_REQUEST::iterator iter = vOutAppleResult.begin() ;
 	for ( ; iter != vOutAppleResult.end(); ++iter )
@@ -80,8 +82,10 @@ bool CVerifyApp::init()
 	setConnectServerConfig(pConfig);
 
 	m_AppleVerifyMgr.Init() ;
+	m_MiVerifyMgr.Init();
 	m_DBVerifyMgr.Init();
 	CLogMgr::SharedLogMgr()->SystemLog("START verify server !") ;
+	return true;
 }
 
 stVerifyRequest* CVerifyApp::GetRequestToUse()
@@ -182,10 +186,20 @@ bool CVerifyApp::onLogicMsg( stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSess
 		pRequest->nBuyedForPlayerUserUID = pReal->nBuyForPlayerUserUID ;
 		pRequest->nRequestType = 0 ;  // now just apple ;
 		pRequest->nSessionID = nSessionID ;
-		std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
-		//std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),20);
-		memcpy(pRequest->pBufferVerifyID,str.c_str(),strlen(str.c_str()));
-		m_AppleVerifyMgr.AddRequest(pRequest) ;
+		pRequest->nMiUserUID = pReal->nMiUserUID ;
+		if ( pRequest->nMiUserUID )
+		{
+			memcpy(pRequest->pBufferVerifyID,((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
+			m_MiVerifyMgr.AddRequest(pRequest) ;
+		}
+		else
+		{
+			std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
+			//std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),20);
+			memcpy(pRequest->pBufferVerifyID,str.c_str(),strlen(str.c_str()));
+			m_AppleVerifyMgr.AddRequest(pRequest) ;
+		}
+
 		printf("recived a transfaction need to verify shop id = %d useruid = %d\n",pReal->nShopItemID,pReal->nBuyerPlayerUserUID);
 	}
 	else

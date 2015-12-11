@@ -29,6 +29,24 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 
 	switch ( pmsg->usMsgType )
 	{
+	case MSG_TP_ROOM_BASE_INFO:
+		{
+			stMsgTaxasRoomInfoBase* pRet = (stMsgTaxasRoomInfoBase*)pmsg ;
+			if ( pRet->eCurRoomState == eRoomState_TP_WaitJoin )
+			{
+				m_tRobotControler.orderSitdown();
+			}
+		}
+		break;
+	case MSG_TP_ROOM_PLAYER_DATA:
+		{
+			stMsgTaxasRoomInfoPlayerData* pRet = (stMsgTaxasRoomInfoPlayerData*)pmsg;
+			if ( pRet->bIsLast )
+			{
+				m_tRobotControler.onRecivedAllRoomPlayers(m_tData.getPlayerCnt());
+			}
+		}
+		break;
 	case MSG_TP_PLAYER_SIT_DOWN:
 		{
 			stMsgTaxasPlayerSitDownRet* pRet = (stMsgTaxasPlayerSitDownRet*)pmsg ;
@@ -68,9 +86,14 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 				{
 					m_tRobotControler.onSelfStandUp() ;
 				}
+				else
+				{
+					m_tRobotControler.onRecivedAllRoomPlayers(m_tData.getPlayerCnt()) ;
+				}
 			}
 
 			m_tData.onMsg(pmsg);
+
 		}
 		break;
 	case MSG_TP_WAIT_PLAYER_ACT:
@@ -101,7 +124,12 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 		break;
 	case MSG_TP_GAME_RESULT:
 		{
-			getPokerData()->resetRuntimeData();
+			stMsgTaxasRoomGameResult* pRet = (stMsgTaxasRoomGameResult*)pmsg ;
+			if ( pRet->bIsLastOne )
+			{
+				getPokerData()->resetRuntimeData();
+				m_tRobotControler.onGameEnd(m_tData.getPlayerCnt());
+			}
 		}
 		break;
 	case MSG_ROBOT_CHECK_BIGGIEST:

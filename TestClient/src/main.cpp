@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "main.h"
 #include "MessageDefine.h"
 #include <iostream>
@@ -9,8 +10,8 @@
 #define JSON_DLL
 #include <json/json.h>
 #pragma comment(lib,"JsonDll.lib")
-#define GATE_IP "127.0.0.1"
-//#define GATE_IP "203.186.75.136"
+#define GATE_IP "139.196.56.147"
+//#define GATE_IP "127.0.0.1"
 BOOL WINAPI ConsoleHandler(DWORD msgType)
 {    
 
@@ -111,19 +112,19 @@ void CTempTest::setValue(T* v ,int nlen )
 	template<typename T> 
 	void func1(T t) 
 	{ 
-		cout<<"func1 1"<<endl; 
+		std::cout<<"func1 1"<<std::endl; 
 	} 
 
 	template<typename T> 
 	void func1(T* t)
 	{
-		cout<<"func1 2"<<endl;
+		std::cout<<"func1 2"<<std::endl;
 	} 
 	
 	template<typename T>
 	void func2(T t) 
 	{ 
-		cout<<"func2"<<endl;
+		std::cout<<"func2"<<std::endl;
 	} 
 
 	//---test
@@ -205,7 +206,7 @@ void CTempTest::setValue(T* v ,int nlen )
 		bool bE = 0 == '\0';
 		printf("size = %d len = %d s = %s",strt.size(),strlen(strt.c_str()),pBuffer);
 		//test function template partial order 
-		cout<<"test function template partial order."<<endl; 
+		std::cout<<"test function template partial order."<<std::endl; 
 		int param1 =10; int* param2 =NULL; 
 		func1<int>(param1); 
 		func1(param2); 
@@ -370,8 +371,7 @@ int main()
 	CConfigReader::s_SkillRow = 0 ;
 	int i = 0 ;
 	CRobotConfigFile::stRobotItem* pitem = NULL ;
-	int nCount = 5 ;
-	while ( (pitem = nRobotConfige.EnumConfigItem() ) && nCount-- > 0 )
+	while ( (pitem = nRobotConfige.EnumConfigItem() ))
 	{
 		pClient = new CClientRobot ;
 		bool bR = pClient->Init(GATE_IP);

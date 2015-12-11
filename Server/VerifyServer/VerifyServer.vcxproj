@@ -43,11 +43,13 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>../Bin/ServerBin</OutDir>
     <EmbedManifest>false</EmbedManifest>
+    <LibraryPath>C:\local\boost_1_59_0\lib32-msvc-11.0;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../Bin/ServerRelease</OutDir>
     <EmbedManifest>false</EmbedManifest>
+    <LibraryPath>C:\local\boost_1_59_0\lib32-msvc-11.0;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -102,10 +104,13 @@
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\AppleVerifyManager.cpp" />
     <ClCompile Include="src\DBVerifyManager.cpp" />
+    <ClCompile Include="src\HMAC_SHA1.cpp" />
     <ClCompile Include="src\lib_json\json_reader.cpp" />
     <ClCompile Include="src\lib_json\json_value.cpp" />
     <ClCompile Include="src\lib_json\json_writer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MiVerifyManager.cpp" />
+    <ClCompile Include="src\SHA1.cpp" />
     <ClCompile Include="src\VerifyApp.cpp" />
     <ClCompile Include="src\VerifyRequest.cpp" />
   </ItemGroup>
@@ -128,6 +133,7 @@
     <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\AppleVerifyManager.h" />
     <ClInclude Include="src\DBVerifyManager.h" />
+    <ClInclude Include="src\HMAC_SHA1.h" />
     <ClInclude Include="src\json\autolink.h" />
     <ClInclude Include="src\json\config.h" />
     <ClInclude Include="src\json\features.h" />
@@ -137,6 +143,8 @@
     <ClInclude Include="src\json\value.h" />
     <ClInclude Include="src\json\writer.h" />
     <ClInclude Include="src\lib_json\json_batchallocator.h" />
+    <ClInclude Include="src\MiVerifyManager.h" />
+    <ClInclude Include="src\SHA1.h" />
     <ClInclude Include="src\VerifyApp.h" />
     <ClInclude Include="src\VerifyRequest.h" />
   </ItemGroup>

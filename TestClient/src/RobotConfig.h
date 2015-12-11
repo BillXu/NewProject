@@ -17,6 +17,7 @@ public:
 		unsigned char nApplyLeaveWhenPeerCount ;
 		float fActDelayBegin;
 		float fActDelayEnd ;
+		unsigned int nDstRoomID ;
 	};
 public:
 	typedef std::list<stRobotItem*> LIST_ROBOT_ITEM ;

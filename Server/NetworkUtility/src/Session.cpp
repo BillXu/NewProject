@@ -1,310 +1,167 @@
+#include <WinSock2.h>
 #include "Session.h"
-#include "ServerNetworkImp.h"
-#include "depends/protocol4z/protocol4z.h"
-CSession::CSession()
+#include "SeverNetworkImp.h"
+#define  TIME_CHECK_FIRST_MSG 9
+// MUST big than TIME_CHECK_FIRST_MSG
+#define  TIME_HEAT_BET (TIME_CHECK_FIRST_MSG + 4)
+uint32_t CSession::s_ConnectID = 1 ;
+CSession::CSession(boost::asio::io_service& io_service,CServerNetworkImp* network )
+	:m_socket(io_service),m_pNetwork(network),m_pReadIngBuffer(new CInternalBuffer()),m_tHeatBeat(io_service),m_tWaitFirstMsg(io_service)
 {
-	m_pNetwork = NULL;
-	m_socket = NULL;
-
-	m_type = 1;
-	m_bSeverMode = false ;
-	memset(&m_recving, 0, sizeof(m_recving));
-	m_curRecvLen = 0;
-	memset(&m_sending, 0, sizeof(m_sending));
-	m_curSendLen = 0;
-	m_nConnectID = INVALID_CONNECT_ID ;
-	m_bWaitDelete = 0 ;
-	m_nHeatBetTimeOut = (time_t)-1 ;;
-	m_nTimeSendBet = (time_t)-1 ;
-
-	memset(m_pIPString,0,sizeof(m_pIPString));
+	m_nConnectID = ++s_ConnectID ;
+	m_bRecivedMsg = false ;
 }
 
-CSession::~CSession()
+bool CSession::sendData(const char* pData , uint16_t nLen )
 {
-	if ( m_socket && !m_bSeverMode )
+	InternalBuffer_ptr pBuffer( new CInternalBuffer() );
+	if ( ! pBuffer->setData(pData,nLen) )
 	{
-		//DestroyTcpSocket(m_socket);  // mostly m_socket will delete it self ;
-	}
-}
-
-void CSession::InitSocketForServer(INetwork *proc, ITcpSocket *s, CONNECT_ID nConnectID )
-{
-	m_nHeatBetTimeOut = time(NULL) + _HEAT_BET_TIME_OUT ;
-	m_bWaitDelete = false ;
-
-	m_nTimeSendBet = time(NULL) + _HEAT_BET_SEND_TIME ;
-
-	m_nConnectID = nConnectID ;
-	m_pNetwork = proc;
-	m_socket = s;
-	m_socket->DoRecv(m_recving._orgdata, 2);
-	m_bSeverMode = true ;
-
-	m_pNetwork->OnNewSession(this,m_nConnectID);
-	// add packet 
-	Packet* p = new Packet ;
-	p->_connectID = m_nConnectID ;
-	p->_brocast = false ;
-	p->_len = sizeof(ConnectInfo);
-	p->_packetType = _PACKET_TYPE_CONNECTED ;
-
-	ConnectInfo cInfo ;
-	unsigned int nAddress ;
-	m_socket->GetPeerInfo(&nAddress,&cInfo.nPort);
-	memset(cInfo.strAddress,0,sizeof(cInfo.strAddress));
-	in_addr addres ;
-	addres.S_un.S_addr= nAddress ;
-	sprintf_s((char*)cInfo.strAddress,sizeof(cInfo.strAddress),"%s",inet_ntoa(addres));
-	memcpy(p->_orgdata,&cInfo,sizeof(cInfo));
-	m_pNetwork->AddPacket(p);
-
-	memset(m_pIPString,0,sizeof(m_pIPString));
-	sprintf_s(m_pIPString,sizeof(m_pIPString),"%s |%d",cInfo.strAddress,cInfo.nPort);
-}
-
-bool CSession::InitSocketForClient(INetwork *proc, zsummer::network::IIOServer* pIO,const char* pip, unsigned short nPort, CONNECT_ID nConnectID)
-{
-	m_socket = zsummer::network::CreateTcpSocket();
-	if ( !m_socket->Initialize(pIO, this) )
-	{
-		delete m_socket ;
-		m_socket = NULL ;
 		return false ;
 	}
-	m_socket->DoConnect(pip, nPort);
-
-	m_nConnectID = nConnectID ;
-	m_pNetwork = proc;
-	m_bSeverMode = true ;
-	return true ;
-}
-
-bool CSession::OnRecv(unsigned int nRecvedLen)
-{
-	m_curRecvLen += nRecvedLen;
-
-// 	static int totolRecive = 0 ;
-// 	totolRecive += nRecvedLen ;
-// 	printf("totolRecive = %d\n",totolRecive);
-
-	std::pair<zsummer::protocol4z::INTEGRITY_RET_TYPE, zsummer::protocol4z::DefaultStreamHeadTraits::Integer> ret = zsummer::protocol4z::CheckBuffIntegrity<zsummer::protocol4z::DefaultStreamHeadTraits>(m_recving._orgdata, m_curRecvLen, _MSG_BUF_LEN);
-
-	if (ret.first == zsummer::protocol4z::IRT_CORRUPTION)
+	
+	WriteLock wLock(m_SendBuffersMutex);
+	bool bSending = m_vWillSendBuffers.empty() == false ;
+	m_vWillSendBuffers.push_back(pBuffer) ;
+	if ( bSending == false )
 	{
-		LOGE("killed socket: CheckBuffIntegrity error ");
-		m_socket->Close();
-		return false;
-	}
-	if (ret.first == zsummer::protocol4z::IRT_SHORTAGE)
-	{
-		m_socket->DoRecv(m_recving._orgdata+m_curRecvLen, ret.second);
-		return true;
-	}
-
-// 	//! 解包完成 进行消息处理
- 	zsummer::protocol4z::ReadStream<zsummer::protocol4z::DefaultStreamHeadTraits> rs(m_recving._orgdata, m_curRecvLen);
-	//printf( "recving idx: %d, len = %d\n",*((unsigned short*)(m_recving._orgdata+2)),m_curRecvLen);
-	if ( rs.GetStreamBodyLen() == sizeof(unsigned short) )  // heat beat 
-	{
-		unsigned short nproid ; 
-		rs >> nproid ;
-		if ( nproid )
-		{
-			LOGFMTE("why heat bet value = %d",nproid );
-		}
-		m_nHeatBetTimeOut = time(NULL) + _HEAT_BET_TIME_OUT ;
-		m_bWaitDelete = false ;
-		//LOGD("RECIVED HEAT BET ");
-	}
-	else
-	{
-		Packet* pOkPacket = new Packet ;
-		memcpy(pOkPacket->_orgdata,rs.GetStreamBody(),rs.GetStreamBodyLen());
-		pOkPacket->_brocast = false;
-		pOkPacket->_len = rs.GetStreamBodyLen();
-		pOkPacket->_connectID = m_nConnectID;
-		pOkPacket->_packetType = _PACKET_TYPE_MSG ;
-		m_pNetwork->AddPacket(pOkPacket);
-	}
-
-	//! 继续收包
-	m_recving._len = 0;
-	m_curRecvLen = 0;
-	m_socket->DoRecv(m_recving._orgdata, 2);
-	return true;
-}
-
-void CSession::Send(char * buf, unsigned int len)
-{
-	if (m_sending._len != 0)
-	{
-		Packet *p = new Packet;
-		memcpy(p->_orgdata, buf, len);
-		p->_len = len;
-		m_sendque.push(p);
-		//printf("send queeu sending len = %d\n  ",p->_len);
-	}
-	else
-	{
-		memcpy(m_sending._orgdata, buf, len);
-		m_sending._len= len;
-		m_socket->DoSend(m_sending._orgdata, m_sending._len);
-		//printf("send direct nlen = %d\n ",m_sending._len);
-	}
-}
-
-bool CSession::OnConnect(bool bConnected)
-{
-	if ( bConnected )
-	{
-		printf("connect to server sucess\n");
-		OnRecv(0);
-		m_pNetwork->OnNewSession(this,m_nConnectID) ;
-		// add packet 
-		Packet* p = new Packet ;
-		p->_connectID = m_nConnectID ;
-		p->_brocast = false ;
-		
-		ConnectInfo cInfo ;
-		unsigned int nAddress ;
-		m_socket->GetPeerInfo(&nAddress,&cInfo.nPort);
-		memset(cInfo.strAddress,0,sizeof(cInfo.strAddress));
-		in_addr addres ;
-		addres.S_un.S_addr= nAddress ;
-		sprintf_s((char*)cInfo.strAddress,sizeof(cInfo.strAddress),"%s",inet_ntoa(addres));
-		memcpy(p->_orgdata,&cInfo,sizeof(cInfo));
-
-		p->_len = sizeof(ConnectInfo);
-		p->_packetType = _PACKET_TYPE_CONNECTED;
-		m_pNetwork->AddPacket(p);
-		memset(m_pIPString,0,sizeof(m_pIPString));
-		sprintf_s(m_pIPString,sizeof(m_pIPString),"%s | %d",cInfo.strAddress,cInfo.nPort);
-
-		m_nTimeSendBet = time(NULL) + _HEAT_BET_SEND_TIME ;
-		m_nHeatBetTimeOut = time(NULL) + _HEAT_BET_TIME_OUT ;
-		m_bWaitDelete = false ;
-	}
-	else
-	{
-		Packet* p = new Packet ;
-		p->_connectID = m_nConnectID ;
-		p->_brocast = false ;
-		p->_len = sizeof(ConnectInfo);
-		p->_packetType = _PACKET_TYPE_CONNECT_FAILED ;
-
-		ConnectInfo cInfo ;
-		unsigned int nAddress ;
-		m_socket->GetPeerInfo(&nAddress,&cInfo.nPort);
-		memset(cInfo.strAddress,0,sizeof(cInfo.strAddress));
-		in_addr addres ;
-		addres.S_un.S_addr= nAddress ;
-		sprintf_s((char*)cInfo.strAddress,sizeof(cInfo.strAddress),"%s",inet_ntoa(addres));
-		memcpy(p->_orgdata,&cInfo,sizeof(cInfo));
-		m_pNetwork->AddPacket(p);
-
-		//LOGI("connect failed so close delete ! ");
-		printf("connect failed so close socket = %X, sesion = %X \n",(int)m_socket,(int)this) ;
-		// as connected failed tcpsocket will not delete it self ; so we do it ;
-		delete m_socket; ;
-		m_socket = nullptr ;
-		delete this ;
-	}
-	return true;
-}
-
-bool CSession::CheckHeatbet()
-{
-	time_t tNow = time(NULL) ;
-	if ( tNow >= m_nTimeSendBet )
-	{
-		unsigned short nHeartBet = 0 ;
- 		char buf[10] = {0};
- 		zsummer::protocol4z::WriteStream<zsummer::protocol4z::DefaultStreamHeadTraits> ws(buf, 10);
- 		ws << nHeartBet ;
- 		this->Send(buf,ws.GetStreamLen()) ;
-
-		m_nTimeSendBet = tNow + _HEAT_BET_SEND_TIME ;
-		//LOGD("send heat bet");
-	}
-
-	if ( tNow >= m_nHeatBetTimeOut )
-	{
-		if ( m_bWaitDelete )
-		{
-			LOGD("heat bet time out will delete");
-			return false ;
-		}
-		else
-		{
-			LOGD("heat bet time out just close");
-			m_bWaitDelete = true ;
-			m_nHeatBetTimeOut = tNow + 2 ;
-			Close();
-		}
+		boost::asio::async_write(m_socket,  
+			boost::asio::buffer(m_vWillSendBuffers.front()->data(),  
+			m_vWillSendBuffers.front()->length()),   
+			boost::bind(&CSession::handleWrite, shared_from_this(),  
+			boost::asio::placeholders::error)); 
 	}
 	return true ;
 }
 
-bool CSession::OnSend(unsigned int nSentLen)
+uint32_t CSession::getConnectID()
 {
-	m_curSendLen += nSentLen;
-	if (m_curSendLen < m_sending._len)
-	{
-		m_socket->DoSend(&m_sending._orgdata[m_curSendLen], m_sending._len - m_curSendLen);
-	}
-	else if (m_curSendLen == m_sending._len)
-	{
-// 		m_process->AddTotalSendCount(1);
-// 		m_process->AddTotalSendLen(m_curSendLen);
-		m_curSendLen = 0;
-		if (m_sendque.empty())
-		{
-			m_sending._len = 0;
-		}
-		else
-		{
-			Packet *p = m_sendque.front();
-			m_sendque.pop();
-			memcpy(m_sending._orgdata, p->_orgdata, p->_len);
-			m_sending._len = p->_len;
-			delete p;
-			m_socket->DoSend(m_sending._orgdata, m_sending._len);
-		}
-	}
-	return true;
+	return m_nConnectID ;
 }
 
-bool CSession::OnClose()
+std::string CSession::getIPString()
 {
-	Packet* p = new Packet ;
-	p->_connectID = m_nConnectID ;
-	p->_brocast = false ;
-	p->_len = sizeof(ConnectInfo);
-	p->_packetType = _PACKET_TYPE_DISCONNECT ;
-
-	ConnectInfo cInfo ;
-	unsigned int nAddress ;
-	m_socket->GetPeerInfo(&nAddress,&cInfo.nPort);
-	memset(cInfo.strAddress,0,sizeof(cInfo.strAddress));
-	in_addr addres ;
-	addres.S_un.S_addr= nAddress ;
-	sprintf_s((char*)cInfo.strAddress,sizeof(cInfo.strAddress),"%s",inet_ntoa(addres));
-	memcpy(p->_orgdata,&cInfo,sizeof(cInfo));
-	m_pNetwork->AddPacket(p);
-
-	m_pNetwork->RemoveSession(m_nConnectID);
-
-	LOGI("Client Closed!");
-	delete this; //! 安全的自删除源于底层的彻底的异步分离
-	return true;
+	return m_socket.remote_endpoint().address().to_string();
 }
 
-void CSession::Close()
+void CSession::start()
 {
-	if ( m_socket )
+	boost::asio::async_read(m_socket,  
+		boost::asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length),  
+		boost::bind(  
+		&CSession::handleReadHeader, shared_from_this(),  
+		boost::asio::placeholders::error)); //异步读客户端发来的消息
+}
+
+void CSession::close()
+{
+	m_socket.close() ;
+	m_tHeatBeat.cancel();
+}
+// handle function ;
+void CSession::handleReadHeader(const boost::system::error_code& error)
+{
+	if (!error && m_pReadIngBuffer->decodeHeader())  
+	{  
+		boost::asio::async_read(m_socket,  
+			boost::asio::buffer(m_pReadIngBuffer->body(), m_pReadIngBuffer->bodyLength()),  
+			boost::bind(&CSession::handleReadBody, shared_from_this(),  
+			boost::asio::placeholders::error));  
+	}  
+	else  
+	{  
+		m_pNetwork->closeSession(getConnectID());
+	} 
+}
+
+void CSession::handleReadBody(const boost::system::error_code& error) 
+{
+	if (!error)  
+	{  
+		if ( m_pReadIngBuffer->bodyLength() )
+		{
+			m_pNetwork->onReivedData(getConnectID(),m_pReadIngBuffer->body(),m_pReadIngBuffer->bodyLength());
+			m_bRecivedMsg = true ;
+		}
+
+		boost::asio::async_read(m_socket,  
+			boost::asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length),  
+			boost::bind(  
+			&CSession::handleReadHeader, shared_from_this(),  
+			boost::asio::placeholders::error));
+	}  
+	else  
+	{  
+		m_pNetwork->closeSession(getConnectID());
+	}  
+}
+
+void CSession::handleWrite(const boost::system::error_code& error) 
+{
+	if (!error)  
+	{  
+		WriteLock wLock(m_SendBuffersMutex);
+		m_vWillSendBuffers.pop_front();  
+		if (!m_vWillSendBuffers.empty())  
+		{  
+			boost::asio::async_write(m_socket,  
+				boost::asio::buffer(m_vWillSendBuffers.front()->data(),  
+				m_vWillSendBuffers.front()->length()),  
+				boost::bind(&CSession::handleWrite, shared_from_this(),  
+				boost::asio::placeholders::error));
+		}  
+	}  
+	else  
+	{  
+		m_pNetwork->closeSession(getConnectID());
+	} 
+}
+
+void CSession::startWaitFirstMsg()
+{
+	m_tWaitFirstMsg.expires_from_now(boost::posix_time::seconds(TIME_CHECK_FIRST_MSG));
+	m_tWaitFirstMsg.async_wait(boost::bind(&CSession::handleCheckFirstMsg, this));
+}
+
+void CSession::handleCheckFirstMsg()
+{
+	if ( !m_bRecivedMsg )
 	{
-		LOGD(" CSession::Close ");
-		m_socket->Close();
+		m_pNetwork->closeSession(getConnectID());
+		printf("find a dead connect \n");
+	}
+}
+
+void CSession::startHeartbeatTimer()
+{
+	m_tHeatBeat.expires_from_now(boost::posix_time::seconds(TIME_HEAT_BET));
+	m_tHeatBeat.async_wait(boost::bind(&CSession::sendHeatBeat, this,boost::asio::placeholders::error));
+}
+
+void CSession::handleWriteHeartbeat(const boost::system::error_code& ec)
+{
+	if(!ec){
+		startHeartbeatTimer();
+		//printf("send beat ok \n");
+	}
+	else{
+		// close ;
+		m_pNetwork->closeSession(getConnectID());
+		printf("heat beat failed \n");
+	}
+}
+
+void CSession::sendHeatBeat( const boost::system::error_code& ec )
+{
+	if ( !ec )
+	{
+		char p[4] = { 0 } ;
+		unsigned short* psh = (unsigned short*)p;
+		*psh = 3;
+		p[2] = 0 ;
+		p[3] = 0 ;
+		boost::asio::async_write(m_socket, boost::asio::buffer(p, sizeof(p)),
+			boost::bind(&CSession::handleWriteHeartbeat, this,
+			boost::asio::placeholders::error ));
 	}
 }

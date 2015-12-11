@@ -145,7 +145,7 @@ void CPlayerMailComponent::InformRecievedUnreadMails()
 {
 	stMsgInformNewMail msg ;
 	msg.nUnreadMailCount = m_vAllMail.size() + getNewerMailListByTime(m_tReadTimeTag) ;
-	msg.nUnreadMailCount = min(msg.nUnreadMailCount,MAX_KEEP_MAIL_CNT) ;
+	msg.nUnreadMailCount = msg.nUnreadMailCount < MAX_KEEP_MAIL_CNT ? msg.nUnreadMailCount : MAX_KEEP_MAIL_CNT ;
 	msg.eNewMailType = eMail_Public ;
 
 	if ( msg.nUnreadMailCount )

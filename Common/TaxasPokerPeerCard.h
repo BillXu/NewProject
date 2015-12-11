@@ -39,6 +39,7 @@ public:
 	unsigned char GetCardTypeForRobot(unsigned char& nContriButeCnt,unsigned char& nKeyCardFaceNum);
 	void adjustPosForSpecailShunZi();
 	unsigned char getAllCardCnt(){ return m_vAllCard.size() ;}
+    bool checkIsSelected(unsigned char nCardNum);
 protected:
 	void CaculateFinalCard();
 	void ClearVecCard(VEC_CARD& vCards );

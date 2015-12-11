@@ -56,9 +56,6 @@
     <ClCompile Include="src\RobotConfig.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\RobotAIConfig.cpp">
-      <Filter>RobotConfig</Filter>
-    </ClCompile>
     <ClCompile Include="src\tinystr.cpp">
       <Filter>RobotConfig\tinyXml</Filter>
     </ClCompile>
@@ -106,6 +103,12 @@
     </ClCompile>
     <ClCompile Include="..\Common\MemoryManager.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RobotAIConfig.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TaxasRobotBrain.cpp">
+      <Filter>robot</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +198,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\MemoryManager.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TaxasRobotBrain.h">
+      <Filter>robot</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -44,13 +44,21 @@ CTaxasAINode* CTaxasAINode::getNodeFromMap(MAP_TAXASAINODE& vMap, int nKey )
 		if ( iter->first <= nKey )
 		{
 			pNodeFind = iter->second ;
-		}
-		else
-		{
-			break; 
+			MAP_TAXASAINODE::iterator iterForward = iter;
+			if ( iterForward == vMap.begin() )
+			{
+				return pNodeFind ;
+			}
+			else
+			{
+				--iterForward ;
+			}
+
+			return ( abs(iterForward->first - nKey) < abs(iter->first - nKey) ? iterForward->second : iter->second ) ;
 		}
 	}
-	return pNodeFind ;
+	--iter ;
+	return iter->second ;
 }
 
 

@@ -49,6 +49,7 @@ public:
     unsigned int GetAssetSize();//资产
     
     unsigned int GetAppStoreProductSize();//appstore商品
+    unsigned int GetAllProductSize(){return m_vAllShopItems.size();}
     
     stShopItem* GetCurrencyByIndex(unsigned int index);//货币中心
     stShopItem* GetPropsByIndex(unsigned int index);//道具

@@ -234,6 +234,12 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 	stTaxasInRoomPeerDataExten* pData = GetInRoomPlayerDataBySessionID(nPlayerSessionID) ;
 	switch (prealMsg->usMsgType )
 	{
+	case MSG_TP_REQUEST_ROOM_INFO:
+		{
+			CLogMgr::SharedLogMgr()->SystemLog("send room info to player session id = %d",nPlayerSessionID );
+			SendRoomInfoToPlayer(nPlayerSessionID);
+		}
+		break;
 	case MSG_TP_MODIFY_ROOM_NAME:
 		{
 			stMsgModifyTaxasRoomNameRet msgBack ;
@@ -733,7 +739,7 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 		break;
 	case eRoomPeerAction_Follow:
 		{
-			if ( pData.nTakeInMoney + pData.nBetCoinThisRound < m_nMostBetCoinThisRound )
+			if ( pData.nTakeInMoney + pData.nBetCoinThisRound <= m_nMostBetCoinThisRound )
 			{
 				nValue = pData.nTakeInMoney ; // when all in must tell what value have allIned 
 				return OnPlayerAction(nSeatIdx,eRoomPeerAction_AllIn,nValue);
@@ -744,7 +750,7 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 		break;
 	case eRoomPeerAction_Add:
 		{
-			if ( pData.nTakeInMoney < nValue )
+			if ( pData.nTakeInMoney <= nValue )
 			{
 				nValue = pData.nTakeInMoney ; // when all in must tell what value have allIned
 				return OnPlayerAction(nSeatIdx,eRoomPeerAction_AllIn,nValue);
@@ -753,6 +759,11 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 			if ( pData.nBetCoinThisRound + nValue < m_nMostBetCoinThisRound + m_nLittleBlind * 2  )
 			{
 				return 6 ;
+			}
+
+			if ( ((pData.nBetCoinThisRound + nValue) - m_nMostBetCoinThisRound ) % (m_nLittleBlind * 2) != 0  )
+			{
+				return 7 ;
 			}
 
 			pData.eCurAct = act ;
@@ -769,7 +780,7 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 			if ( pData.nBetCoinThisRound == 0 )
 			{
 				pData.nBetCoinThisRound = 1 ;   // avoid 0 all In bug ;
-				CLogMgr::SharedLogMgr()->SystemLog("room id = %d , 0 coin all in player idx = %d",GetRoomID(),nSeatIdx) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("room id = %d , 0 coin all in player idx = %d, uid = %d",GetRoomID(),nSeatIdx,pData.nUserUID) ;
 			}
 
 			if ( pData.nBetCoinThisRound > m_nMostBetCoinThisRound )
@@ -843,6 +854,11 @@ void CTaxasRoom::setOwnerUID(uint32_t nCreatorUID )
 
 void CTaxasRoom::addLiftTime(uint32_t nDays )
 {
+	time_t tNow = time(nullptr) ;
+	if ( tNow > m_nDeadTime )
+	{
+		m_nDeadTime = tNow ;
+	}
 	m_nDeadTime += TIME_SECONDS_PER_DAY*nDays ;
 }
 
@@ -1436,7 +1452,7 @@ bool CTaxasRoom::isPlayerAlreadySitDown(uint32_t nSessionID )
 
 void CTaxasRoom::debugPlayerHistory()
 {
-	CLogMgr::SharedLogMgr()->SystemLog("debug players history: ");
+	CLogMgr::SharedLogMgr()->SystemLog("debug players history: id = %d",GetRoomID());
 	VEC_IN_ROOM_PEERS::iterator iter = m_vAllPeers.begin() ;
 	stTaxasInRoomPeerDataExten* pPlayer = nullptr ;
 
@@ -1454,8 +1470,8 @@ void CTaxasRoom::debugPlayerHistory()
 
 	if ( (tAll + m_nRoomProfit + m_nTotalProfit) != 0 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("tall = %d, profit = %llu , all pro = %llu",tAll,m_nRoomProfit,m_nTotalProfit);
-		Sleep(999999999);
+		CLogMgr::SharedLogMgr()->ErrorLog("tall = %d, profit = %llu , all pro = %llu room id = %d",tAll,m_nRoomProfit,m_nTotalProfit,GetRoomID());
+		Sleep(6);
 	}
 	else
 	{
@@ -1820,7 +1836,7 @@ void CTaxasRoom::SendRoomInfoToPlayer(uint32_t nSessionID )
 		{
 			continue;
 		}
-		msgPlayerData.bIsLast = --nCnt > 0 ;
+		msgPlayerData.bIsLast = (--nCnt <= 0 );
 		memcpy(&msgPlayerData.tPlayerData,&m_vSitDownPlayers[nIdx],sizeof(msgPlayerData.tPlayerData));
 		SendMsgToPlayer(nSessionID,&msgPlayerData,sizeof(msgPlayerData)) ;
 	}

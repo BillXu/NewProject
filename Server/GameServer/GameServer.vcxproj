@@ -44,11 +44,13 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>../Bin/ServerBin</OutDir>
     <EmbedManifest>false</EmbedManifest>
+    <LibraryPath>C:\local\boost_1_59_0\lib32-msvc-11.0;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../Bin/ServerRelease</OutDir>
     <EmbedManifest>false</EmbedManifest>
+    <LibraryPath>C:\local\boost_1_59_0\lib32-msvc-11.0;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

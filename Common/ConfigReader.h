@@ -6,7 +6,6 @@
 //
 //
 #pragma warning(disable:4819)
-
 #ifndef God_ConfigReader_h
 #define God_ConfigReader_h
 #ifdef POKER_CLIENT

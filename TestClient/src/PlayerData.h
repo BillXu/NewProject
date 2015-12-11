@@ -22,6 +22,7 @@ public:
 	bool IsMustWin(bool bDiamoned );
 	const char* GetName(){ return stBaseData.cName ;}
 	unsigned int getUserUID(){ return stBaseData.nUserUID ;}
+	unsigned int getDstRoomID(){ return pRobotItem->nDstRoomID; }
 public:
 	unsigned int nSessionID ;
 	stCommonBaseData stBaseData ;

@@ -43,8 +43,8 @@ bool CGameServerApp::init()
 	}
 	setConnectServerConfig(pConfig);
 
-	//m_pConfigManager = new CConfigManager ;
-	//m_pConfigManager->LoadAllConfigFile("../configFile/") ;
+	m_pConfigManager = new CConfigManager ;
+	m_pConfigManager->LoadAllConfigFile("../configFile/") ;
 	// init component ;
 	m_pPlayerManager = new CPlayerManager ;
 	

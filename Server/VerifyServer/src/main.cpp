@@ -1,8 +1,13 @@
 #include "VerifyApp.h"
+//#include "HMAC_SHA1.h"
 int main()
 {
-	zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
-	zsummer::log4z::ILog4zManager::GetInstance()->Start();
+//  	CHMAC_SHA1 tt ;
+//  	char* pKey = "bKgKJPGrgjQlWFQBJpTOhw==" ;
+//  	char* pM = "appId=2882303761517415923&cpOrderId=3887efdb-e91f-403f-ae4c-54cf6a43d3c4&uid=56965855" ;
+//  	std::string str = tt.HMAC_SHA1((BYTE*)pM,strlen(pM),(BYTE*)pKey,strlen(pKey)) ;
+//	zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
+//	zsummer::log4z::ILog4zManager::GetInstance()->Start();
 
 	CVerifyApp theApp ;
 	bool bok = theApp.init() ;

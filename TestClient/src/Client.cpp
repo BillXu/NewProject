@@ -1,7 +1,9 @@
+#include <windows.h>
 #include "Client.h"
 #include "MessageDefine.h"
 #include "CommonDefine.h"
 #include "LoginScene.h"
+#include <synchapi.h>
 CClientRobot::CClientRobot()
 {
 	m_pPlayerData = new CPlayerData ;

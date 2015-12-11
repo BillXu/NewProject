@@ -1,9 +1,11 @@
+#include <windows.h>
 #include "TaxasServerApp.h"
 #include <iostream>
 #include <WinDef.h>
 #include <Dbghelp.h>
 #pragma comment( lib, "DbgHelp" )
 #pragma comment(lib,"JsonDll.lib")
+#include "LogManager.h"
 DWORD WINAPI ThreadProc(LPVOID lpParam)
 {
 	bool bRunning = true;
@@ -136,6 +138,7 @@ int main()
 	//printf( "type A = %d ,robot Type A = %d, type B = %d ,result = %d\n",nType,pPeerA.GetCardTypeForRobot(),nTypeB ,c) ;
 	/////----test
 	CTaxasServerApp theApp ;
+	CLogMgr::SharedLogMgr()->SetOutputFile("taxasSvr");
 	bool bok = theApp.init() ;
 	if ( !bok )
 	{

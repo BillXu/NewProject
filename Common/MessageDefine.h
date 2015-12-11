@@ -395,6 +395,34 @@ struct stMsgPlayerGetCharityRet
 	unsigned int nLeftSecond ;
 };
 
+// shop
+struct stMsgPlayerBuyShopItem
+	:public stMsg 
+{
+public:
+	stMsgPlayerBuyShopItem(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_BUY_SHOP_ITEM ; }
+	unsigned short nShopItemID ;
+	unsigned int nBuyShopItemForUserUID ; // 0 means buy it for self , other means buy it for other player ;
+	unsigned int nCount ;
+	// below only used when RMB purchase 
+	uint32_t nMiUserUID ;
+	unsigned char nChannelID ; // 0 appStore , 1 91 market ;
+	unsigned short nBufLen ;   // based64 string , for app store purchase ;, or xiao mi cporder id , other may not use ;
+	PLACE_HOLDER(char* pBuffer);
+};
+
+struct stMsgPlayerBuyShopItemRet 
+	:public stMsg
+{
+	stMsgPlayerBuyShopItemRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_BUY_SHOP_ITEM ; }
+	unsigned short nShopItemID; // buyed shoped;
+	unsigned int nBuyShopItemForUserUID;
+	unsigned char nRet ; // 0 success , 1 money not enough , 2 verify failed , 3 buy times limit , 4 shop item out of date, 5 shopitem don't exsit , 6 unknown error;
+	uint64_t nFinalyCoin ;
+	unsigned int nDiamoned ;
+	unsigned int nSavedMoneyForVip ;  // a vip player can buy discont shop item , this is saved money compare to normal player ;
+};
+
 ///--------------------ablove is new , below is old------
 
 
@@ -1039,34 +1067,7 @@ public:
 	unsigned short* ShopItemIDs;
 };
 
-struct stMsgPlayerBuyShopItem
-	:public stMsg 
-{
-public:
-	stMsgPlayerBuyShopItem(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_BUY_SHOP_ITEM ; }
-	unsigned short nShopItemID ;
-	unsigned int nBuyShopItemForUserUID ; // 0 means buy it for self , other means buy it for other player ;
-	unsigned int nCount ;
-	// below only used when RMB purchase 
-	unsigned char nChannelID ; // 0 appStore , 1 91 market ;
-	unsigned short nBufLen ;   // based64 string , for app store purchase ;, other may not use ;
-	char* pBuffer ; 
-};
 
-struct stMsgPlayerBuyShopItemRet 
-	:public stMsg
-{
-	stMsgPlayerBuyShopItemRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_BUY_SHOP_ITEM ; }
-	unsigned short nShopItemID; // buyed shoped;
-	unsigned int nBuyShopItemForUserUID;
-	unsigned char nRet ; // 0 success , 1 money not enough , 2 verify failed , 3 buy times limit , 4 shop item out of date, 5 shopitem don't exsit , 6 unknown error;
-	uint64_t nFinalyCoin ;
-	unsigned int nDiamoned ;
-	// money in room 
-	uint64_t nFinalyTakeInCoin ;
-	unsigned int nFinalTakeInDiamoned;
-	unsigned int nSavedMoneyForVip ;  // a vip player can buy discont shop item , this is saved money compare to normal player ;
-};
 
 struct stMsgPlayerRecievedShopItemGift
 	:public stMsg

@@ -1,8 +1,11 @@
 #pragma once
+
 #include "NetWorkManager.h"
+
 #include "Timer.h"
 #include "ServerConfig.h"
 #include "MessageIdentifer.h"
+
 struct stMsg ;
 class IServerApp
 	:CNetMessageDelegate

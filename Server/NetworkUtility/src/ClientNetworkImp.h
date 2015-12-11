@@ -1,23 +1,61 @@
 #pragma once
-#include "INetwork.h"
-class CClientNetwork
-	:public INetwork
+#include "NetworkDefine.h"
+#include <list>
+#include <boost/asio.hpp>
+#include <boost/thread.hpp>
+#include "InternalBuffer.h"
+#include <deque> 
+using boost::asio::ip::tcp;  
+class CClientNetworkImp
 {
 public:
-	struct stConnectMission
+	typedef std::list<Packet*> LIST_PACKET;
+	typedef boost::shared_ptr<CInternalBuffer> InternalBuffer_ptr;  
+	typedef std::deque<InternalBuffer_ptr> BufferQueue;
+	typedef boost::unique_lock<boost::shared_mutex> WriteLock;  
+	enum  
 	{
-		char cIP[20];
-		unsigned short nPort ;
-		CONNECT_ID nConnectID ;
+		eState_None,
+		eState_Connecting,
+		eState_Connected,
+		eState_ConnectedFailed,
+		eState_Max,
 	};
-	typedef std::vector<stConnectMission*> VEC_CONNECT_MISSION ; 
 public:
-	void Start();
-	CONNECT_ID ConnectToServer(const char* pIP, unsigned short nPort );
-protected:
-	void DoConnectMission();
-	void Run();
-protected:
-	zsummer::thread4z::CLock m_lockConnectMission; 
-	VEC_CONNECT_MISSION	m_vWillConnect ;
+	CClientNetworkImp();
+	~CClientNetworkImp();
+	bool init();
+	void shutdown();
+	bool connectToServer(const char* pIP, unsigned short nPort );
+	bool getAllPacket(LIST_PACKET& vOutPackets ); // must delete out side ;
+	bool getFirstPacket(Packet** ppPacket ); // must delete out side ;
+	void addPacket(Packet* pPacket ) ;
+	bool sendMsg(const char* pData , size_t nLen ) ;
+private:  
+	void handleConnect(const boost::system::error_code& error);
+
+	void handleReadHeader(const boost::system::error_code& error) ; 
+
+	void handleReadBody(const boost::system::error_code& error) ;
+
+	void doWrite(InternalBuffer_ptr msg) ;
+
+	void handleWrite(const boost::system::error_code& error) ;
+
+	void doClose();
+private:  
+	boost::asio::io_service m_io_service;  
+	tcp::socket* m_socket;  
+
+	boost::shared_mutex m_PacketMutex;
+	LIST_PACKET m_vRecivedPackets ;
+
+	boost::shared_mutex m_SendBuffersMutex;
+	BufferQueue m_vWillSendBuffers ;
+
+	InternalBuffer_ptr m_pReadIngBuffer ;
+	unsigned char m_nState ;
+
+	boost::thread* m_pIOThread ;
+	boost::asio::ip::tcp::endpoint* m_pEndpoint ;
 };

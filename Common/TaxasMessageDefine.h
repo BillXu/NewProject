@@ -69,12 +69,19 @@ struct stMsgModifyTaxasRoomName
 	char vNewRoomName[MAX_LEN_ROOM_NAME] ;
 };
 
+struct stMsgRequestTaxasRoomInfo
+	:public stMsgToRoom
+{
+	stMsgRequestTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_REQUEST_ROOM_INFO ; }
+};
+
 struct stMsgModifyTaxasRoomNameRet
 	:public stMsg
 {
 	stMsgModifyTaxasRoomNameRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_MODIFY_ROOM_NAME ; }
 	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 room is dead , please pay rent fee 3 , you are not in room;
 };
+
 
 struct  stMsgModifyTaxasRoomDesc
 	:public stMsgToRoom

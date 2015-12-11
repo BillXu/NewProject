@@ -61,7 +61,7 @@ public:
 	typedef std::map<int,stBetTimesAction*> MAP_BET_TIMES_STRAGES ;
 public:
 	unsigned char nCard ;  // CTaxasPokerPeerCard::eCardType
-	MAP_BET_TIMES_STRAGES vAllBetTimesStrages ;
+	MAP_BET_TIMES_STRAGES vAllBetTimesStrages ;  // Ä¬ÈÏÊÇÉýÐò
 public:
 	stCardTypeAction(){ nCard = -1 ;}
 	void ParseNode(TiXmlElement* pNode);

@@ -1,5 +1,6 @@
-#include "LogSvrApp.h"
+#include <windows.h>
 #include <Dbghelp.h>
+#include "LogSvrApp.h"
 #include <iostream>
 #include "ThreadMod.h"
 #pragma comment( lib, "DbgHelp" )

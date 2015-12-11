@@ -8,11 +8,11 @@
 
 #ifndef God_NetWorkManager_h
 #define God_NetWorkManager_h
+#include "NetworkDefine.h"
 #include <list>
-#include "ClientNetworkImp.h"
 class CNetWorkMgr ;
 struct stMsg ;
-
+class CClientNetworkImp ;
 class CNetMessageDelegate
 {
 public:
@@ -76,7 +76,7 @@ public:
 	void EnumDeleagte( CNetWorkMgr* pTarget, lpfunc pFunc, void* pData );
 	void DisconnectServer( CONNECT_ID& nServerNetUID );
 	void DisconnectServer();
-    char* GetIPStringByConnectID(CONNECT_ID id ){ return m_pNetPeer->GetIPStringByConnectID(id);}
+    char* GetIPStringByConnectID(CONNECT_ID id );
     void ShutDown();
 public:
     static int s_nCurrentDataSize ;
@@ -90,7 +90,7 @@ protected:
     LIST_DELEGATE m_vAllDelegate;
     LIST_DELEGATE m_vWillAddDelegate;
     LIST_DELEGATE m_vWillRemoveDelegate ;
-    CClientNetwork* m_pNetPeer;
+    CClientNetworkImp* m_pNetPeer;
     CONNECT_ID m_nCurrentServer ;  // the newest accepted Server ; 
 	short m_nConnectedTo ;
 	short m_nMaxConnectTo ;

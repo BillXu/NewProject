@@ -376,7 +376,16 @@ void CTaxasStatePlayerBet::PlayerDoActOver()
 {
 	if ( m_pRoom->IsThisRoundBetOK() )
 	{
-		m_pRoom->GoToState(eRoomState_TP_OneRoundBetEndResult) ;
+		//if ( 1 == m_pRoom->GetPlayerCntWithState(eRoomPeer_WaitCaculate) )  
+		//{
+		//	// avoid all player leave room in one time ;
+		//	m_pRoom->CaculateOneRoundPool() ;
+		//	m_pRoom->GoToState(eRoomState_TP_GameResult) ;
+		//}
+		//else
+		{
+			m_pRoom->GoToState(eRoomState_TP_OneRoundBetEndResult) ;
+		}
 	}
 	else 
 	{
@@ -474,7 +483,7 @@ void CTaxasStateGameResult::EnterState(CTaxasRoom* pRoom )
 	}
 	else
 	{
-		m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + 1.3f;
+		m_fDuringTime = TIME_TAXAS_CACULATE_PER_BET_POOL * m_pRoom->CaculateGameResult() + 1.3f  + TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL ;  // all players give up ;
 	}
 	
 	CLogMgr::SharedLogMgr()->PrintLog("CTaxasStateGameResult");

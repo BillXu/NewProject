@@ -1,5 +1,5 @@
 #include "ServerNetwork.h"
-#include "header.h"
+#include "SeverNetworkImp.h"
 void CServerNetworkDelegate::SetPriority(unsigned int nPriority )
 {
 	if ( nPriority == m_nPriority )
@@ -38,9 +38,9 @@ bool CServerNetwork::StartupNetwork( unsigned short nPort , int nMaxInComming ,c
 	}
 
 	m_pNetPeer = new CServerNetworkImp;
-	if (  !m_pNetPeer->Start(nPort) )
+	if (  !m_pNetPeer->init(nPort))
 	{
-		LOGE( "Can not Start ServerNetwork " );
+		printf( "Can not Start ServerNetwork \n" );
 		return false ;
 	}
 	return  true;
@@ -51,7 +51,6 @@ void CServerNetwork::ShutDown()
 	if ( m_pNetPeer == NULL)
 		return ;
 	m_vAllDelegates.clear() ;
-	m_pNetPeer->Stop();
 	delete m_pNetPeer ;
 	m_pNetPeer = NULL ;
 }
@@ -63,13 +62,13 @@ void CServerNetwork::RecieveMsg()
 		return ;
 	}
 
-	INetwork::VEC_PACKET vPacket ;
-	if ( !m_pNetPeer->GetAllPacket(vPacket) )
+	CServerNetworkImp::LIST_PACKET vPacket ;
+	if ( !m_pNetPeer->getAllPacket(vPacket) )
 	{
 		return ;
 	}
 
-	INetwork::VEC_PACKET::iterator iter = vPacket.begin();
+	CServerNetworkImp::LIST_PACKET::iterator iter = vPacket.begin();
 	for ( ; iter != vPacket.end(); ++iter )
 	{
 		Packet* packet = *iter ;
@@ -93,19 +92,14 @@ void CServerNetwork::SendMsg(const char* pData , int nLength , CONNECT_ID& nSend
 {
 	if ( !m_pNetPeer )
 		return ;
-	m_pNetPeer->SendMsg((unsigned char*)pData,nLength,nSendToOrExcpet,bBroadcast);
+	m_pNetPeer->sendMsg(nSendToOrExcpet, pData,nLength);
 }
 
 void CServerNetwork::ClosePeerConnection(CONNECT_ID& nPeerToClose)
 {
 	if ( !m_pNetPeer )
 		return ;
-	m_pNetPeer->CloseConnection(nPeerToClose);
-	// tell delegate ;
-	Packet packet ;
-	packet._connectID = nPeerToClose ;
-	memset(packet._orgdata,0,sizeof(packet._orgdata));
-	EnumDelegate(&CServerNetwork::OnPeerDisconnected,&packet);
+	m_pNetPeer->closeSession(nPeerToClose);
 }
 
 void CServerNetwork::AddDelegate(CServerNetworkDelegate* pDelegate , unsigned int nPriority /* = 0 */ )
@@ -135,11 +129,11 @@ void CServerNetwork::RemoveDelegate(CServerNetworkDelegate* pDelegate )
 	}
 }
 
-char* CServerNetwork::GetIPInfoByConnectID(CONNECT_ID nID)
+std::string CServerNetwork::GetIPInfoByConnectID(CONNECT_ID nID)
 {
 	if ( m_pNetPeer )
 	{
-		return m_pNetPeer->GetIPStringByConnectID(nID);
+		return m_pNetPeer->getIPportString(nID);
 	}
 	return "NULL" ;
 }

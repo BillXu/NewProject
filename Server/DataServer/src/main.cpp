@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "GameServerApp.h"
 #include <iostream>
 #include <WinDef.h>

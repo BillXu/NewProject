@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{85AC5ADD-E1A4-4908-BA71-CC53B30B594A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>NiuNiuServer</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <LibraryPath>C:\local\boost_1_59_0\lib32-msvc-11.0;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>C:\local\boost_1_59_0\lib32-msvc-11.0;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;NIUNIU_SERVER</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../../Common;../ServerCommon;../NetworkUtility/src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>../Bin/Lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;NIUNIU_SERVER</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../../Common;../ServerCommon;../NetworkUtility/src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>../Bin/Lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Common\CardPoker.h" />
+    <ClInclude Include="..\..\Common\CommonData.h" />
+    <ClInclude Include="..\..\Common\CommonDefine.h" />
+    <ClInclude Include="..\..\Common\ConfigReader.h" />
+    <ClInclude Include="..\..\Common\IPeerCard.h" />
+    <ClInclude Include="..\..\Common\LogManager.h" />
+    <ClInclude Include="..\..\Common\MessageDefine.h" />
+    <ClInclude Include="..\..\Common\MessageIdentifer.h" />
+    <ClInclude Include="..\..\Common\NativeTypes.h" />
+    <ClInclude Include="..\..\Common\NiuNiuMessageDefine.h" />
+    <ClInclude Include="..\..\Common\NiuNiuPeerCard.h" />
+    <ClInclude Include="..\..\Common\RoomConfig.h" />
+    <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
+    <ClInclude Include="..\ServerCommon\IRoom.h" />
+    <ClInclude Include="..\ServerCommon\IRoomPlayer.h" />
+    <ClInclude Include="..\ServerCommon\IRoomState.h" />
+    <ClInclude Include="..\ServerCommon\ISeverApp.h" />
+    <ClInclude Include="..\ServerCommon\ISitableRoomPlayer.h" />
+    <ClInclude Include="..\ServerCommon\ServerCommon.h" />
+    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
+    <ClInclude Include="..\ServerCommon\ServerDefine.h" />
+    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
+    <ClInclude Include="..\ServerCommon\Singleton.h" />
+    <ClInclude Include="..\ServerCommon\ISitableRoom.h" />
+    <ClInclude Include="..\ServerCommon\Timer.h" />
+    <ClInclude Include="src\NiuNiuRoom.h" />
+    <ClInclude Include="src\NiuNiuRoomBetState.h" />
+    <ClInclude Include="src\NiuNiuRoomDistribute4CardState.h" />
+    <ClInclude Include="src\NiuNiuRoomDistributeFinalCardState.h" />
+    <ClInclude Include="src\NiuNiuRoomGameResult.h" />
+    <ClInclude Include="src\NiuNiuRoomPlayer.h" />
+    <ClInclude Include="src\NiuNiuRoomRandBankerState.h" />
+    <ClInclude Include="src\NiuNiuRoomTryBankerState.h" />
+    <ClInclude Include="src\NiuNiuRoomWaitJoinState.h" />
+    <ClInclude Include="src\NiuNiuServer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Common\CardPoker.cpp" />
+    <ClCompile Include="..\..\Common\ConfigReader.cpp" />
+    <ClCompile Include="..\..\Common\LogManager.cpp" />
+    <ClCompile Include="..\..\Common\NiuNiuPeerCard.cpp" />
+    <ClCompile Include="..\..\Common\RoomConfig.cpp" />
+    <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\IRoom.cpp" />
+    <ClCompile Include="..\ServerCommon\IRoomPlayer.cpp" />
+    <ClCompile Include="..\ServerCommon\IRoomState.cpp" />
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
+    <ClCompile Include="..\ServerCommon\ISitableRoomPlayer.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\ISitableRoom.cpp" />
+    <ClCompile Include="..\ServerCommon\Timer.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\NiuNiuRoom.cpp" />
+    <ClCompile Include="src\NiuNiuRoomBetState.cpp" />
+    <ClCompile Include="src\NiuNiuRoomDistribute4CardState.cpp" />
+    <ClCompile Include="src\NiuNiuRoomGameResult.cpp" />
+    <ClCompile Include="src\NiuNiuRoomPlayer.cpp" />
+    <ClCompile Include="src\NiuNiuRoomRandBankerState.cpp" />
+    <ClCompile Include="src\NiuNiuRoomTryBankerState.cpp" />
+    <ClCompile Include="src\NiuNiuRoomWaitJoinState.cpp" />
+    <ClCompile Include="src\NiuNiuServer.cpp" />
+    <ClCompile Include="src\NiuNiuRoomDistributeFinalCardState.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -45,6 +45,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>../Bin/Lib</OutDir>
+    <LibraryPath>C:\local\boost_1_59_0\lib32-msvc-11.0;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -53,6 +54,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>C:\local\boost_1_59_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -68,6 +70,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AdditionalIncludeDirectories>C:\local\boost_1_59_0</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -82,38 +85,20 @@
   <ItemGroup>
     <ClInclude Include="src\ClientNetworkImp.h" />
     <ClInclude Include="src\depends\log4z\log4z.h" />
-    <ClInclude Include="src\depends\protocol4z\protocol4z.h" />
-    <ClInclude Include="src\depends\thread4z\thread.h" />
-    <ClInclude Include="src\header.h" />
-    <ClInclude Include="src\INetwork.h" />
+    <ClInclude Include="src\InternalBuffer.h" />
+    <ClInclude Include="src\NetworkDefine.h" />
     <ClInclude Include="src\NetWorkManager.h" />
-    <ClInclude Include="src\network\iocp\iocp.h" />
-    <ClInclude Include="src\network\iocp\public.h" />
-    <ClInclude Include="src\network\iocp\tcpaccept.h" />
-    <ClInclude Include="src\network\iocp\tcpsocket.h" />
-    <ClInclude Include="src\network\iocp\udpsocket.h" />
-    <ClInclude Include="src\network\SocketInterface.h" />
     <ClInclude Include="src\ServerNetwork.h" />
-    <ClInclude Include="src\ServerNetworkImp.h" />
     <ClInclude Include="src\Session.h" />
-    <ClInclude Include="src\utility\cirque.h" />
-    <ClInclude Include="src\utility\objectpool.h" />
-    <ClInclude Include="src\utility\utility.h" />
+    <ClInclude Include="src\SeverNetworkImp.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ClientNetworkImp.cpp" />
     <ClCompile Include="src\depends\log4z\log4z.cpp" />
-    <ClCompile Include="src\depends\thread4z\thread.cpp" />
-    <ClCompile Include="src\INetwork.cpp" />
     <ClCompile Include="src\NetWorkManager.cpp" />
-    <ClCompile Include="src\network\iocp\iocp.cpp" />
-    <ClCompile Include="src\network\iocp\public.cpp" />
-    <ClCompile Include="src\network\iocp\tcpaccept.cpp" />
-    <ClCompile Include="src\network\iocp\tcpsocket.cpp" />
-    <ClCompile Include="src\network\iocp\udpsocket.cpp" />
     <ClCompile Include="src\ServerNetwork.cpp" />
-    <ClCompile Include="src\ServerNetworkImp.cpp" />
     <ClCompile Include="src\Session.cpp" />
+    <ClCompile Include="src\SeverNetworkImp.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,7 @@
 #include "DBVerifyManager.h"
 #include "DBRequest.h"
 #include "DataBaseThread.h"
+#include "ServerConfig.h"
 CDBVerifyManager::CDBVerifyManager()
 {
 	m_pDBThead = NULL ;
@@ -17,7 +18,13 @@ CDBVerifyManager::~CDBVerifyManager()
 void CDBVerifyManager::Init()
 {
 	m_pDBThead = new CDataBaseThread ;
-	m_pDBThead->InitDataBase("127.0.0.1",3306,"root","123456","taxpokerdb");
+
+	CSeverConfigMgr stSvrConfigMgr ;
+	stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
+	// set up data base thread 
+	stServerConfig* pDatabase = stSvrConfigMgr.GetServerConfig(eSvrType_DataBase);
+
+	m_pDBThead->InitDataBase(pDatabase->strIPAddress,pDatabase->nPort,pDatabase->strAccount,pDatabase->strPassword,"taxpokerdb");
 	m_pDBThead->Start();
 }
 

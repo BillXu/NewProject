@@ -156,7 +156,7 @@ void CTaxasPokerPeerCard::Reset()
 	m_vDefaul.clear() ;
 	m_vFinalCard.clear() ;
 	m_eType = eCard_Max ;
-	m_strCardName = "Wait";
+	m_strCardName = "paixing_gaopai";
 	m_vPairs[0].clear();
 	m_vPairs[1].clear(); 
 }
@@ -404,7 +404,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 				m_vFinalCard.clear();
 				m_vFinalCard.assign(vResult.begin(),vResult.end()) ;
 #if (!defined(SERVER)) && (!defined(ROBOT))
-				m_strCardName = "tong hua shun";
+				m_strCardName = "paixing_tonghuashun";
 #endif	
 				return ;
 			}
@@ -787,4 +787,17 @@ unsigned char CTaxasPokerPeerCard::robotGetContribute(VEC_CARD& vFinalCard, VEC_
 	}
 	
 	return vInBothCard.size() ;
+}
+bool CTaxasPokerPeerCard::checkIsSelected(unsigned char nCardNum){
+    for (auto num : m_vPairs[0]) {
+        if (num->GetCardCompositeNum() == nCardNum) {
+            return true;
+        }
+    }
+    for (auto num : m_vPairs[1]) {
+        if (num->GetCardCompositeNum() == nCardNum) {
+            return true;
+        }
+    }
+    return false;
 }

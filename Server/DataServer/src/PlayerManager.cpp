@@ -629,7 +629,7 @@ bool CPlayerManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult
 			{
 				stData.nDiamoned += pResult->vArg[2] ;
 			}
-
+			stData.nCurrentRoomID = pResult->nReqOrigID;
 			auB.addContent(&msgBack,sizeof(msgBack));
 			auB.addContent(&stData,msgBack.isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
 			CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nTargetID,auB.getBufferPtr(),auB.getContentSize()) ;

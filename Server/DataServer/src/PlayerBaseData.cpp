@@ -14,6 +14,8 @@
 #include "InformConfig.h"
 #include "AutoBuffer.h"
 #include "PlayerManager.h"
+#include "ShopConfg.h"
+#include <assert.h>
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
 CPlayerBaseData::CPlayerBaseData(CPlayer* player )
@@ -69,6 +71,55 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 	switch( pMsg->usMsgType )
 	{
+	case MSG_BUY_SHOP_ITEM:
+		{
+			stMsgPlayerBuyShopItem* pRet = (stMsgPlayerBuyShopItem*)pMsg ;
+			stMsgToVerifyServer msgVerify ;
+			msgVerify.nBuyerPlayerUserUID = GetPlayer()->GetUserUID();
+			msgVerify.nBuyForPlayerUserUID = msgVerify.nBuyerPlayerUserUID ;
+			msgVerify.nMiUserUID = pRet->nMiUserUID ;
+			msgVerify.nShopItemID = pRet->nShopItemID ;
+			msgVerify.nTranscationIDLen = pRet->nBufLen ;
+			CAutoBuffer buffer(sizeof(stMsgPlayerBuyShopItem) + pRet->nBufLen ) ;
+			buffer.addContent(&msgVerify,sizeof(msgVerify));
+			buffer.addContent(((char*)pRet) + sizeof(stMsgPlayerBuyShopItem),pRet->nBufLen);
+			SendMsg((stMsg*)buffer.getBufferPtr(),buffer.getContentSize());
+		}
+		break;
+	case MSG_VERIFY_TANSACTION:
+		{
+			stMsgFromVerifyServer* pRet = (stMsgFromVerifyServer*)pMsg ;
+			stMsgPlayerBuyShopItemRet msgBack ;
+			msgBack.nBuyShopItemForUserUID = pRet->nBuyForPlayerUserUID ;
+			msgBack.nDiamoned = 0 ;
+			msgBack.nSavedMoneyForVip = 0 ;
+			msgBack.nShopItemID = pRet->nShopItemID ;
+			msgBack.nRet = 0 ;
+			if ( pRet->nRet == 4 ) // success 
+			{
+				CShopConfigMgr* pMgr = (CShopConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Shop);
+				stShopItem* pItem = pMgr->GetShopItem(pRet->nShopItemID);
+				if ( pItem == nullptr )
+				{
+					msgBack.nRet = 5 ;
+					CLogMgr::SharedLogMgr()->ErrorLog("can not find shop id = %d , buyer uid = %d",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
+				}
+				else
+				{
+					ModifyMoney(pItem->nCount) ;
+					CLogMgr::SharedLogMgr()->SystemLog("add coin with shop id = %d for buyer uid = %d ",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
+				}
+			}
+			else
+			{
+				msgBack.nRet = 2 ;
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d ,shop id = %d , verify error ",pRet->nBuyerPlayerUserUID,pRet->nShopItemID) ;
+			}
+
+			msgBack.nFinalyCoin = GetAllCoin() ;
+			SendMsg(&msgBack,sizeof(msgBack)) ;
+		}
+		break;
 	case MSG_ON_PLAYER_BIND_ACCOUNT:
 		{
 			m_stBaseData.isRegister = true ;
@@ -272,15 +323,15 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
  			}
  			else
  			{
- 				m_stBaseData.nCoin += COIN_FOR_CHARITY ;
- 				msgBack.nFinalCoin = GetAllCoin();
  				msgBack.nGetCoin = COIN_FOR_CHARITY;
- 				msgBack.nLeftSecond = 0 ;
+ 				msgBack.nLeftSecond = TIME_GET_CHARITY_ELAPS ;
  				m_stBaseData.tLastTakeCharityCoinTime = time(NULL) ;
 				ModifyMoney(msgBack.nGetCoin);
+				msgBack.nFinalCoin = GetAllCoin();
 				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get charity",GetPlayer()->GetUserUID());
 				m_bCommonLogicDataDirty = true ;
  			}
+			CLogMgr::SharedLogMgr()->SystemLog("uid = %d , final coin = %I64d",GetPlayer()->GetUserUID(),GetAllCoin());
  			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
 		break;
@@ -412,6 +463,7 @@ void CPlayerBaseData::SendBaseDatToClient()
 	msg.nSessionID = GetPlayer()->GetSessionID() ;
 	SendMsg(&msg,sizeof(msg)) ;
 	CLogMgr::SharedLogMgr()->PrintLog("send base data to session id = %d ",GetPlayer()->GetSessionID() );
+	CLogMgr::SharedLogMgr()->SystemLog("send data uid = %d , final coin = %I64d",GetPlayer()->GetUserUID(),GetAllCoin());
 }
 
 void CPlayerBaseData::OnProcessContinueLogin()

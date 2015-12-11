@@ -12,18 +12,6 @@
     <Filter Include="head\log4z">
       <UniqueIdentifier>{1d1bd69c-b6bf-4275-8968-346c3b51f95b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="head\network">
-      <UniqueIdentifier>{6e815cf5-65b2-4db5-a8f2-a10825d6cd47}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="head\protocol">
-      <UniqueIdentifier>{875af2b8-3423-462e-ab6f-1a5263d3505b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="head\thread">
-      <UniqueIdentifier>{572bb7d5-4398-4c3f-9183-71515b526d43}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="head\utility">
-      <UniqueIdentifier>{74ec0afd-d203-4e1c-926c-eb72236f3aab}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -39,39 +27,6 @@
     <ClInclude Include="src\depends\log4z\log4z.h">
       <Filter>head\log4z</Filter>
     </ClInclude>
-    <ClInclude Include="src\network\SocketInterface.h">
-      <Filter>head\network</Filter>
-    </ClInclude>
-    <ClInclude Include="src\network\iocp\iocp.h">
-      <Filter>head\network</Filter>
-    </ClInclude>
-    <ClInclude Include="src\network\iocp\public.h">
-      <Filter>head\network</Filter>
-    </ClInclude>
-    <ClInclude Include="src\network\iocp\tcpaccept.h">
-      <Filter>head\network</Filter>
-    </ClInclude>
-    <ClInclude Include="src\network\iocp\tcpsocket.h">
-      <Filter>head\network</Filter>
-    </ClInclude>
-    <ClInclude Include="src\network\iocp\udpsocket.h">
-      <Filter>head\network</Filter>
-    </ClInclude>
-    <ClInclude Include="src\depends\protocol4z\protocol4z.h">
-      <Filter>head\protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="src\utility\cirque.h">
-      <Filter>head\utility</Filter>
-    </ClInclude>
-    <ClInclude Include="src\utility\objectpool.h">
-      <Filter>head\utility</Filter>
-    </ClInclude>
-    <ClInclude Include="src\utility\utility.h">
-      <Filter>head\utility</Filter>
-    </ClInclude>
-    <ClInclude Include="src\depends\thread4z\thread.h">
-      <Filter>head\thread</Filter>
-    </ClInclude>
     <ClInclude Include="src\NetWorkManager.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -81,40 +36,22 @@
     <ClInclude Include="src\ClientNetworkImp.h">
       <Filter>src\NetworkCore</Filter>
     </ClInclude>
-    <ClInclude Include="src\header.h">
+    <ClInclude Include="src\InternalBuffer.h">
       <Filter>src\NetworkCore</Filter>
     </ClInclude>
-    <ClInclude Include="src\INetwork.h">
-      <Filter>src\NetworkCore</Filter>
-    </ClInclude>
-    <ClInclude Include="src\ServerNetworkImp.h">
+    <ClInclude Include="src\NetworkDefine.h">
       <Filter>src\NetworkCore</Filter>
     </ClInclude>
     <ClInclude Include="src\Session.h">
+      <Filter>src\NetworkCore</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SeverNetworkImp.h">
       <Filter>src\NetworkCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\depends\log4z\log4z.cpp">
       <Filter>head\log4z</Filter>
-    </ClCompile>
-    <ClCompile Include="src\network\iocp\iocp.cpp">
-      <Filter>head\network</Filter>
-    </ClCompile>
-    <ClCompile Include="src\network\iocp\public.cpp">
-      <Filter>head\network</Filter>
-    </ClCompile>
-    <ClCompile Include="src\network\iocp\tcpaccept.cpp">
-      <Filter>head\network</Filter>
-    </ClCompile>
-    <ClCompile Include="src\network\iocp\tcpsocket.cpp">
-      <Filter>head\network</Filter>
-    </ClCompile>
-    <ClCompile Include="src\network\iocp\udpsocket.cpp">
-      <Filter>head\network</Filter>
-    </ClCompile>
-    <ClCompile Include="src\depends\thread4z\thread.cpp">
-      <Filter>head\thread</Filter>
     </ClCompile>
     <ClCompile Include="src\NetWorkManager.cpp">
       <Filter>src</Filter>
@@ -125,13 +62,10 @@
     <ClCompile Include="src\ClientNetworkImp.cpp">
       <Filter>src\NetworkCore</Filter>
     </ClCompile>
-    <ClCompile Include="src\INetwork.cpp">
-      <Filter>src\NetworkCore</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ServerNetworkImp.cpp">
-      <Filter>src\NetworkCore</Filter>
-    </ClCompile>
     <ClCompile Include="src\Session.cpp">
+      <Filter>src\NetworkCore</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SeverNetworkImp.cpp">
       <Filter>src\NetworkCore</Filter>
     </ClCompile>
   </ItemGroup>

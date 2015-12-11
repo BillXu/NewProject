@@ -40,6 +40,7 @@ enum eServerType
 	eSvrType_Center,
 	eSvrType_Data,
 	eSvrType_Taxas,
+	eSvrType_NiuNiu,
 	eSvrType_Max,
 };
 

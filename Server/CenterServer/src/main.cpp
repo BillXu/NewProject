@@ -1,6 +1,8 @@
 #define CRTDBG_MAP_ALLOC
+#include <windows.h>
 #include <stdlib.h>
 #include "CenterServer.h"
+#include "LogManager.h"
 #include <WinDef.h>
 #include <Dbghelp.h>
 #pragma comment( lib, "DbgHelp" )
@@ -67,6 +69,7 @@ int main()
 	//zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
 	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
 	CCenterServerApp  theApp ;
+	CLogMgr::SharedLogMgr()->SetOutputFile("CenterSvr");
 	theApp.Init() ;
 	CreateThred(&theApp);
 #ifdef NDEBUG

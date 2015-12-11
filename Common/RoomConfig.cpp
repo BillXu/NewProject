@@ -2,7 +2,6 @@
 #include "CommonDefine.h"
 #include "LogManager.h"
 #include <assert.h>
-
 bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 {
 	unsigned char cType = refReaderRow["GameType"]->IntValue() ;
@@ -19,6 +18,7 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 			pConfig->nRentFeePerDay = refReaderRow["RendFeePerDay"]->IntValue() ;
 			pConfig->nDeskFee = refReaderRow["DeskFee"]->IntValue() ;
 			pConfig->fDividFeeRate = refReaderRow["DividFeeRate"]->FloatValue() ;
+			pConfig->nMaxSeat = refReaderRow["MaxSeat"]->IntValue();
 			pRoomConfig = pConfig ;
 		}
 		break;
@@ -29,12 +29,12 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 			pConfig->nChangeCardRound = refReaderRow["ChangeCardRound"]->IntValue();
 			pConfig->nMiniBet = refReaderRow["MiniBet"]->IntValue();
 			pConfig->nTitleNeedToEnter = refReaderRow["TitleNeedToEnter"]->IntValue();
-#ifndef GAME_SERVER
+#ifdef SERVER
 			char pBuffer[256] = {0};
 			for ( int i = 0 ; i < GOLDEN_ROOM_COIN_LEVEL_CNT ; ++i )
 			{
 				memset(pBuffer,0,sizeof(pBuffer));
-				sprintf(pBuffer,"CoinLevel%d",i);
+				sprintf_s(pBuffer,"CoinLevel%d",i);
 				pConfig->vCoinLevels[i] = refReaderRow[pBuffer]->IntValue();
 			}
 #endif
@@ -46,7 +46,6 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	}
 	pRoomConfig->nGameType = cType ;
 	pRoomConfig->nConfigID = refReaderRow["configID"]->IntValue();
-	pRoomConfig->nMaxSeat = refReaderRow["MaxSeat"]->IntValue();
 	m_vAllConfig.push_back(pRoomConfig) ;
 	return true ;
 }

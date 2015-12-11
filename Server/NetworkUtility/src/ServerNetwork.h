@@ -1,6 +1,7 @@
 #pragma once
-#include "ServerNetworkImp.h"
+#include "NetworkDefine.h"
 #include <list>
+class  CServerNetworkImp ;
 class CServerNetworkDelegate
 {
 public:
@@ -31,7 +32,7 @@ public:
 	void ClosePeerConnection(CONNECT_ID& nPeerToClose);
 	void AddDelegate(CServerNetworkDelegate* pDelegate , unsigned int nPriority = 0 );
 	void RemoveDelegate(CServerNetworkDelegate* pDelegate );
-	char* GetIPInfoByConnectID(CONNECT_ID nID);
+	std::string GetIPInfoByConnectID(CONNECT_ID nID);
 protected:
 	bool OnNewPeerConnected(CServerNetworkDelegate* pDelegate, Packet* pData  );
 	bool OnPeerDisconnected(CServerNetworkDelegate* pDelegate, Packet* pData  );

@@ -7,6 +7,7 @@
 #include "GateServer.h"
 #include "ServerMessageDefine.h"
 #include "ServerNetwork.h"
+#include <time.h>
 #define TIME_WAIT_FOR_RECONNECTE 60
 CGateClientMgr::CGateClientMgr()
 {
@@ -46,14 +47,14 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 	CHECK_MSG_SIZE(stMsg,pData->_len);
 	if ( MSG_VERIFY_CLIENT == pMsg->usMsgType )
 	{
-		char* pIPInfo = CGateServer::SharedGateServer()->GetNetWorkForClients()->GetIPInfoByConnectID(pData->_connectID) ;
+		std::string pIPInfo = CGateServer::SharedGateServer()->GetNetWorkForClients()->GetIPInfoByConnectID(pData->_connectID) ;
 		stGateClient* pGateClient = GetReserverGateClient();
 		if ( !pGateClient )
 		{
 			pGateClient = new stGateClient ;
 		}
 
-		pGateClient->Reset(CGateServer::SharedGateServer()->GenerateSessionID(),pData->_connectID,pIPInfo) ;
+		pGateClient->Reset(CGateServer::SharedGateServer()->GenerateSessionID(),pData->_connectID,pIPInfo.c_str()) ;
 		AddClientGate(pGateClient);
 		CLogMgr::SharedLogMgr()->SystemLog("a Client connected ip = %s Session id = %d",pGateClient->strIPAddress.c_str(),pGateClient->nSessionId ) ;
 		return true;
@@ -145,7 +146,7 @@ void CGateClientMgr::OnServerMsg( const char* pRealMsgData, uint16_t nDataLen,ui
 
 	if ( pClient->tTimeForRemove )
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("client is waiting for reconnected session id = %d, msg = %d",uTargetSessionID,pReal->usMsgType) ;
+		CLogMgr::SharedLogMgr()->PrintLog("client is waiting for reconnected session id = %d, msg = %d",uTargetSessionID,pReal->usMsgType) ;
 		return ;
 	}
 	CGateServer::SharedGateServer()->SendMsgToClient(pRealMsgData,nDataLen,pClient->nNetWorkID ) ;

@@ -5,16 +5,22 @@
 //  Created by Xu BILL on 12-10-30.
 //
 //
+//#ifdef _MSC_VER
+//#define _WIN32_WINNT 0x0501
+//#endif
+ #include <WinSock2.h>
 #include "NetWorkManager.h"
+#include "ClientNetworkImp.h"
+//#include "log4z.h"
 //#include "LogManager.h"
 //#include "MessageDefine.h"
-#include "header.h"
+#include "NetworkDefine.h"
 int CNetWorkMgr::s_nCurrentDataSize = 0 ;
 void CNetMessageDelegate::SetPriority( unsigned int nPriority )
 {
 	if ( nPriority == GetPriority() )
 		return ;
-	m_nPriority = nPriority ;
+	m_nPriority = nPriority ; 
 }
 
 CNetWorkMgr::CNetWorkMgr()
@@ -31,7 +37,7 @@ CNetWorkMgr::~CNetWorkMgr()
 {
 	if ( m_pNetPeer )
 	{
-		m_pNetPeer->Stop();
+		m_pNetPeer->shutdown() ;
 		delete m_pNetPeer;
 		m_pNetPeer = NULL ;
 	}
@@ -42,8 +48,8 @@ void CNetWorkMgr::ShutDown()
 {
     if ( m_pNetPeer )
     {
-        m_pNetPeer->CloseConnection(m_nCurrentServer);
-		m_pNetPeer->Stop();
+        m_pNetPeer->shutdown();
+		delete m_pNetPeer ;
         //delete m_pNetPeer;
         m_pNetPeer = NULL ;
     }
@@ -60,8 +66,8 @@ void CNetWorkMgr::SetupNetwork( int nIntendServerCount )
 	if ( !m_pNetPeer )
 	{
 		m_nMaxConnectTo = nIntendServerCount ;
-		m_pNetPeer =  new CClientNetwork ;
-		m_pNetPeer->Start();
+		m_pNetPeer =  new CClientNetworkImp() ;
+		m_pNetPeer->init();
 	}
 }
 
@@ -70,14 +76,14 @@ bool CNetWorkMgr::ConnectToServer(const char *pSeverIP, unsigned short nPort , c
 	assert(m_pNetPeer && "Pls SetupNetwork() first! " );
     if ( !m_pNetPeer )
 	{
-		LOGE("m_pNetPeer is null , please setup network first ");
+		//LOGE("m_pNetPeer is null , please setup network first ");
 		return false ;
 	}
 
 	assert(m_nConnectedTo < m_nMaxConnectTo && "no more slot for new coming server" );
 	if ( m_nMaxConnectTo <= m_nConnectedTo )
 	{
-		LOGFMTE("no more slot for new coming server, so can not connected to the server: %s , port: %d",pSeverIP, nPort );
+		//LOGFMTE("no more slot for new coming server, so can not connected to the server: %s , port: %d",pSeverIP, nPort );
 		return false ;
 	}
 
@@ -91,7 +97,7 @@ bool CNetWorkMgr::ConnectToServer(const char *pSeverIP, unsigned short nPort , c
 		pPassword = NULL ;
 	}
 
-	return  INVALID_CONNECT_ID != m_pNetPeer->ConnectToServer(pSeverIP, nPort) ;
+	return m_pNetPeer->connectToServer(pSeverIP, nPort) ;
 }
 
 void CNetWorkMgr::ReciveMessage()
@@ -100,13 +106,13 @@ void CNetWorkMgr::ReciveMessage()
 	if ( m_pNetPeer == NULL )
 		return ;
 	
-	INetwork::VEC_PACKET vPacket ;
-	if ( !m_pNetPeer->GetAllPacket(vPacket) )
+	CClientNetworkImp::LIST_PACKET vPacket ;
+	if ( !m_pNetPeer->getAllPacket(vPacket) )
 	{
 		return ;
 	}
 
-	INetwork::VEC_PACKET::iterator iter = vPacket.begin();
+	CClientNetworkImp::LIST_PACKET::iterator iter = vPacket.begin();
 	for ( ; iter != vPacket.end(); ++iter )
 	{
 		Packet* packet = *iter ;
@@ -145,7 +151,7 @@ void CNetWorkMgr::ReciveOneMessage()
 		return ;
 	Packet* packet = nullptr ;
 	
-	if ( m_pNetPeer->GetFirstPacket(&packet) == false )
+	if ( m_pNetPeer->getFirstPacket(&packet) == false )
 	{
 		return ;
 	}
@@ -186,15 +192,14 @@ bool CNetWorkMgr::SendMsg(const char *pbuffer, int iSize)
 {
     if ( m_pNetPeer == NULL )
         return false ;
-	return m_pNetPeer->SendMsg((unsigned char*)pbuffer, iSize, m_nCurrentServer, false) ;
+	return m_pNetPeer->sendMsg(pbuffer, iSize) ;
 }
 
 bool CNetWorkMgr::SendMsg( const char* pbuffer , int iSize,CONNECT_ID& nServerNetUID )
 {
 	if ( m_pNetPeer == NULL || nServerNetUID == INVALID_CONNECT_ID )
 		return false ;
-	m_pNetPeer->SendMsg((unsigned char*)pbuffer, iSize, nServerNetUID, false) ;
-	return true;
+	return m_pNetPeer->sendMsg(pbuffer, iSize) ;
 }
 
 void CNetWorkMgr::AddMessageDelegate(CNetMessageDelegate *pDelegate, unsigned short nPrio )
@@ -254,13 +259,13 @@ void CNetWorkMgr::DisconnectServer( CONNECT_ID& nServerNetUID )
 	}
     //if ( IsConnected() )
     {
-        m_pNetPeer->CloseConnection(nServerNetUID) ;
+        m_pNetPeer->shutdown();
     }
 }
 
 void CNetWorkMgr::DisconnectServer()
 {
-	m_pNetPeer->CloseConnection(m_nCurrentServer) ;
+	m_pNetPeer->shutdown();
 }
 
 bool CNetWorkMgr::OnConnectSateChanged( CNetMessageDelegate* pDeleate,void* pData )

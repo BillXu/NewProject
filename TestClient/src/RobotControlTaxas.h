@@ -31,6 +31,9 @@ public:
 	void onSelfGiveUp();
 	uint8_t getMySeatIdx(){ return m_nMySeatIdx ; }
 	bool isRobotSitDown(){ return m_nMySeatIdx != MAX_PEERS_IN_TAXAS_ROOM ; }
+	void orderSitdown();
+	void onRecivedAllRoomPlayers( uint8_t nCnt );
+	void onGameEnd( uint8_t nCnt);
 protected:
 	void standUp();
 	void TryingSitDown();
@@ -40,4 +43,5 @@ protected:
 
 	eRobotState m_eState ;
 	uint8_t m_nMySeatIdx ;
+	float m_fTicketForCheckCanSitDown ;
 };

@@ -264,28 +264,24 @@ const stBetTimesAction* stCardTypeAction::GetBetTimesAction( int nTimes)
 	MAP_BET_TIMES_STRAGES::iterator iter = vAllBetTimesStrages.begin();
 	for ( ;iter != vAllBetTimesStrages.end() ; ++iter)
 	{
-		if ( iter->first > nTimes )
+		if ( iter->first >= nTimes )
 		{
-			continue;
-		}
-
-		if ( pTargetAct == NULL )
-		{
-			pTargetAct = iter->second ;
-			continue ;
-		}
-
-		if ( iter->first < pTargetAct->nBetTimes )
-		{
-			pTargetAct = iter->second ;
+			MAP_BET_TIMES_STRAGES::iterator iterForward = iter ;
+			if ( iterForward == vAllBetTimesStrages.begin() )
+			{
+				return iterForward->second ;
+			}
+			--iterForward ;
+			if ( abs(nTimes - iterForward->first) > abs(nTimes - iter->first ) )
+			{
+				return iter->second ;
+			}
+			return iterForward->second ;
 		}
 	}
 
-	if ( pTargetAct == NULL )
-	{
-		printf("error\n");
-	}
-	return pTargetAct ;
+	--iter;
+	return iter->second ;
 }
 //void stCardControl::ParseNode(TiXmlElement* pNode)
 //{

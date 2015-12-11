@@ -3,6 +3,7 @@
 #include "ServerMessageDefine.h"
 #include "LogManager.h"
 #include "GateClient.h"
+#include <assert.h>
 #define MAX_INCOME_PLAYER 5000
 CGateServer* CGateServer::s_GateServer = NULL ;
 CGateServer* CGateServer::SharedGateServer()

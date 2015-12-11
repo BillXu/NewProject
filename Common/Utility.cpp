@@ -44,13 +44,15 @@ std::string TimeToStringFormate( unsigned int nSec )
    unsigned int nDay = ( nHou - nHour ) / 24 ;
     
     char pBuffer[100] = { 0 } ;
+#ifdef SERVER
     if ( nDay > 0 )
     {
-        sprintf(pBuffer, "%d天 : %d : %d : %d", nDay,nHour,nMinite,nSecond );
+        sprintf_s(pBuffer, "%d天 : %d : %d : %d", nDay,nHour,nMinite,nSecond );
     }
     else
     {
-        sprintf(pBuffer, "%d : %d : %d",nHour,nMinite,nSecond );
+        sprintf_s(pBuffer, "%d : %d : %d",nHour,nMinite,nSecond );
     }
+#endif
     return pBuffer ;
 }

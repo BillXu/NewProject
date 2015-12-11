@@ -29,4 +29,5 @@ public:
 	uint32_t getPlayerAddCoinLowLimit( uint8_t nPlayerSvrIdx );
 	uint64_t getPlayerAddCoinUpLimit( uint8_t nPlayerSvrIdx);
 	void resetBetRoundState();
+	uint8_t getPlayerCnt();
 };

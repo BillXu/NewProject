@@ -9,16 +9,22 @@ struct stBaseRoomConfig
 	uint16_t nConfigID ;
 	uint8_t nGameType ;
 	//unsigned char nRoomLevel ;
-	unsigned short nMaxSeat ;
+	
 	//unsigned int nMinNeedToEnter ;
 	//unsigned char nWaitOperateTime ; // second ;
 	//unsigned int nCreateCount ;
 	//uint32_t nCreateFee ;
 };
 
+struct stSitableRoomConfig
+	:public stBaseRoomConfig
+{
+	unsigned short nMaxSeat ;
+};
+
 
 struct stTaxasRoomConfig
-	:public stBaseRoomConfig
+	:public stSitableRoomConfig
 {
 	uint32_t nMiniTakeInCoin;
 	uint64_t nMaxTakeInCoin ;

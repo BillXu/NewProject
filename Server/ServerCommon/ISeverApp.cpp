@@ -1,7 +1,12 @@
+#include <windows.h>
 #include "ISeverApp.h"
 #include "LogManager.h"
 #include "MessageDefine.h"
 #include "ServerMessageDefine.h"
+#include <time.h>
+#include <assert.h>
+#include <synchapi.h>
+
 #define TIME_WAIT_FOR_RECONNECT 5
 bool IServerApp::init()
 {
@@ -253,6 +258,8 @@ uint16_t IServerApp::getVerifyType()
 		return MSG_VERIFY_TAXAS;
 	case ID_MSG_PORT_DB:
 		return MSG_VERIFY_DB ;
+	case ID_MSG_PORT_NIU_NIU:
+		return MSG_VERIFY_NIU_NIU ;
 	default:
 		assert(0 && "what verify type for the svr ? " ) ;
 		break;

@@ -9,6 +9,12 @@
 #include "LogManager.h"
 #include <stdarg.h>
 #include <time.h>
+#ifndef SERVER
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+#define POKER_CLIENT
+#endif
+#endif // !SERVER
+
 #ifdef POKER_CLIENT
 #include <string>
 #else
@@ -110,7 +116,7 @@ void CLogMgr::Print(const char *sFormate, va_list va , eLogState eSate )
 	{
 		sprintf(pBuffer, "System: [%s] %s \n",pstr,sFormate);
 	}
-#ifndef POKER_CLIENT
+#if defined(_WIN64) || defined( _WIN32)
 	switch ( eSate )
 	{
 	case eLogState_Error:

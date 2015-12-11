@@ -1,6 +1,8 @@
+#include <windows.h>
 #include "CenterServer.h"
 #include "LogManager.h"
 #include "ServerMessageDefine.h"
+#include <synchapi.h>
 CCenterServerApp* CCenterServerApp::s_GateServer = NULL ;
 CCenterServerApp* CCenterServerApp::SharedCenterServer()
 {
@@ -96,6 +98,7 @@ void  CCenterServerApp::Stop()
 bool  CCenterServerApp::OnMessage( Packet* pData )
 {
 	stMsg* pMsg =(stMsg*)pData->_orgdata ;
+	std::string strIP = m_pNetwork->GetIPInfoByConnectID(pData->_connectID) ;
 	switch ( pMsg->usMsgType )
 	{
 	case MSG_VERIFY_APNS:
@@ -107,7 +110,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			}
 
 			m_vTargetServers[eSvrType_APNS] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("apns server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("apns server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_VERIYF:
@@ -119,7 +122,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			}
 
 			m_vTargetServers[eSvrType_Verify] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("verify server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("verify server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_LOGIN:
@@ -130,7 +133,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Login]);
 			}
 			m_vTargetServers[eSvrType_Login] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("login server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("login server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_LOG:
@@ -142,7 +145,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			}
 
 			m_vTargetServers[eSvrType_Log] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("log server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("log server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_DB:
@@ -154,7 +157,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			}
 
 			m_vTargetServers[eSvrType_DB] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("DB server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("DB server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_DATA:
@@ -166,7 +169,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			}
 
 			m_vTargetServers[eSvrType_Data] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("Data server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("Data server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_TAXAS:
@@ -177,7 +180,18 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Taxas]);
 			}
 			m_vTargetServers[eSvrType_Taxas] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("Taxas server connected ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("Taxas server connected ip = %s",strIP.c_str()) ;
+		}
+		break;
+	case MSG_VERIFY_NIU_NIU:
+		{
+			if ( m_vTargetServers[eSvrType_NiuNiu] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_NiuNiu close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Taxas]);
+			}
+			m_vTargetServers[eSvrType_NiuNiu] = pData->_connectID;
+			CLogMgr::SharedLogMgr()->SystemLog("Niu Niu server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_GATE:
@@ -193,14 +207,14 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 					msg.uIdx = nIdx;
 					m_vGateInfos->nIdx = nIdx ;
 					m_vGateInfos->nNetworkID = pData->_connectID ; 
-					CLogMgr::SharedLogMgr()->SystemLog("Gate server started idx = %d connected ip = %s",nIdx,m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+					CLogMgr::SharedLogMgr()->SystemLog("Gate server started idx = %d connected ip = %s",nIdx,strIP.c_str()) ;
 					break;
 				}
 			}
 
 			if ( msg.bIsGateFull )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("gate is full can not accept more gate ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("gate is full can not accept more gate ip = %s",strIP.c_str()) ;
 			}
 
 			m_pNetwork->SendMsg((char*)&msg,sizeof(msg),pData->_connectID) ;
@@ -217,7 +231,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			stGateInfo* pGateInfo = GetGateInfoByNetworkID(pData->_connectID);
 			if ( pGateInfo == NULL )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("why no gate , this peer is not gate ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("why no gate , this peer is not gate ip = %s",strIP.c_str()) ;
 				return true ;
 			}
 			pGateInfo->AddSessionID(pC->nNewSessionID) ;
@@ -231,7 +245,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			stGateInfo* pGateInfo = GetGateInfoByNetworkID(pData->_connectID);
 			if ( pGateInfo == NULL )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("why no gate , this peer is not gate ip = %s",m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("why no gate , this peer is not gate ip = %s",strIP.c_str()) ;
 				return true ;
 			}
 			pGateInfo->RemoveSessionID(pRet->nSeesionID) ;
@@ -263,7 +277,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				eServerType svr = GetServerTypeByMsgTarget(pReal->cSysIdentifer);
 				if ( eSvrType_Center == svr )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("why msg = %d process here should process above ",pReal->usMsgType ) ;
+					CLogMgr::SharedLogMgr()->ErrorLog("why msg = %d process here should process above send port = %d ",pReal->usMsgType,pTransfer->nSenderPort ) ;
 				}
 				else if ( eSvrType_Max == svr )
 				{
@@ -285,7 +299,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 		break;
 	default:
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("unknown msg id = %d , csysIdentifer = %d, ip = %s",pMsg->usMsgType,pMsg->cSysIdentifer,m_pNetwork->GetIPInfoByConnectID(pData->_connectID)) ;
+			CLogMgr::SharedLogMgr()->ErrorLog("unknown msg id = %d , csysIdentifer = %d, ip = %s",pMsg->usMsgType,pMsg->cSysIdentifer,strIP.c_str()) ;
 		}
 	}
 	return true ;

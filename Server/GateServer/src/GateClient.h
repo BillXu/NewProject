@@ -4,7 +4,7 @@ struct stGateClient
 {
 public:
 	stGateClient();
-	void Reset( unsigned int nSessionID , CONNECT_ID nNetWorkID,char* IpInfo );
+	void Reset( unsigned int nSessionID , CONNECT_ID nNetWorkID,const char* IpInfo );
 	void SetNewWorkID( CONNECT_ID& nNetWorkID );
 public:
 	unsigned int nSessionId ;
