@@ -1,13 +1,14 @@
 #pragma once
 #include "NativeTypes.h"
 #include "MessageIdentifer.h"
+#include "CommonDefine.h"
 class IRoom ;
 struct stMsg ;
 class IRoomState
 {
 public:
 	IRoomState(){ m_fStateDuring = 0 ;}
-	virtual ~IRoomState();
+	virtual ~IRoomState(){}
 	virtual void enterState(IRoom* pRoom) = 0 ;
 	virtual void leaveState(){}
 	virtual void update(float fDeta);
@@ -15,6 +16,7 @@ public:
 	virtual uint16_t getStateID() = 0 ;
 	virtual void onStateDuringTimeUp(){}
 	void setStateDuringTime( float fTime ){ m_fStateDuring = fTime ;} 
+	float getStateDuring(){ return m_fStateDuring ;}
 private:
 	float m_fStateDuring ;
 };

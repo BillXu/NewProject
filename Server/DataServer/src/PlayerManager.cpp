@@ -183,7 +183,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			{
 				CPlayer* pPlayer = GetPlayerByUserUID(pRet->nTargetID);
 				assert(pPlayer&&"this request no one to process or target id error");
-				if ( pPlayer->onCrossServerRequest(pRet,eSenderPort,pJsValue) )
+				if ( pPlayer && pPlayer->onCrossServerRequest(pRet,eSenderPort,pJsValue) )
 				{
 					return true ;
 				}
@@ -211,7 +211,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			{
 				CPlayer* pPlayer = GetPlayerByUserUID(pRet->nTargetID);
 				assert(pPlayer&&"this request no one to process or target id error");
-				if ( pPlayer->onCrossServerRequestRet(pRet,pJsValue) )
+				if ( pPlayer && pPlayer->onCrossServerRequestRet(pRet,pJsValue) )
 				{
 					return true ;
 				}

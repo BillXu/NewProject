@@ -423,6 +423,43 @@ struct stMsgPlayerBuyShopItemRet
 	unsigned int nSavedMoneyForVip ;  // a vip player can buy discont shop item , this is saved money compare to normal player ;
 };
 
+
+// room msg 
+struct stMsgToRoom
+	:public stMsg
+{
+	stMsgToRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; }
+	uint32_t nRoomID ;
+};
+
+struct stMsgToNNRoom
+	:public stMsgToRoom
+{
+	stMsgToNNRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ;}
+};
+
+struct stMsgRoomEnterNewState
+	:public stMsg
+{
+	stMsgRoomEnterNewState(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_ROOM_ENTER_NEW_STATE ; }
+	uint16_t nNewState ;   // eRoomState 
+	float m_fStateDuring ; 
+};
+
+struct stRoomRankEntry
+{
+	uint32_t nUserUID ;
+	int64_t nOffset ;
+};
+
+struct stMsgRequestRoomRankRet
+	:public stMsg
+{
+	stMsgRequestRoomRankRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_RANK ; }
+	uint8_t nCnt ;
+	PLACE_HOLDER(stRoomRankEntry*);
+};
+
 ///--------------------ablove is new , below is old------
 
 
@@ -1221,6 +1258,7 @@ struct stMsgRobotInformIdle
 {
 	stMsgRobotInformIdle(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROBOT_INFORM_IDLE ; }
 };
+
 
 // end 
 #pragma pack(pop)

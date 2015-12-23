@@ -12,6 +12,7 @@
 #include "RobotManager.h"
 #include "PlayerTaxas.h"
 #include "PlayerFriend.h"
+#include "PlayerNiuNiu.h"
 #define TIME_SAVE 60*20
 CPlayer::CPlayer( )
 {
@@ -58,6 +59,7 @@ void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
 	//m_vAllComponents[ePlayerComponent_PlayerMission] = new CPlayerMission(this);
 	//m_vAllComponents[ePlayerComponent_PlayerShop] = new CPlayerShop(this);
 	m_vAllComponents[ePlayerComponent_Friend] = new CPlayerFriend(this);
+	m_vAllComponents[ePlayerComponent_PlayerNiuNiu] = new CPlayerNiuNiu(this) ;
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
 		IPlayerComponent* p = m_vAllComponents[i] ;
@@ -604,6 +606,22 @@ bool CPlayer::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::
 		}
 	}
 	return false ;
+}
+
+bool CPlayer::isNotInAnyRoom()
+{
+	IPlayerComponent* pCom = GetComponent(ePlayerComponent_PlayerTaxas) ;
+	if ( ((CPlayerTaxas*)pCom)->getCurRoomID() )
+	{
+		return false ;
+	}
+
+	pCom = GetComponent(ePlayerComponent_PlayerNiuNiu) ;
+	if ( ((CPlayerNiuNiu*)pCom)->getCurRoomID() )
+	{
+		return false ;
+	}
+	return true ;
 }
 
 

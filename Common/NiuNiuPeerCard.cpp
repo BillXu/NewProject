@@ -1,4 +1,14 @@
 #include "NiuNiuPeerCard.h"
+#ifndef SERVER
+#include "cocos2d.h"
+#include <iostream>
+#include "Language.h"
+USING_NS_CC;
+#endif
+CNiuNiuPeerCard::CNiuNiuPeerCard(){
+    m_nAddIdx = 0;
+    m_eType = Niu_Max;
+}
 CNiuNiuPeerCard::CardGroup CNiuNiuPeerCard::s_CardGroup[10] = { 
 	CardGroup(0,1,2,3,4),
 	CardGroup(0,2,1,3,4),
@@ -16,7 +26,7 @@ CNiuNiuPeerCard::CardGroup CNiuNiuPeerCard::s_CardGroup[10] = {
 } ;
 void CNiuNiuPeerCard::addCompositCardNum( uint8_t nCardCompositNum )
 {
-	assert( (m_nAddIdx < NIUNIU_HOLD_CARD_COUNT -1) && "too many cards" ) ;
+	assert( (m_nAddIdx < NIUNIU_HOLD_CARD_COUNT) && "too many cards" ) ;
 
 	m_vHoldCards[m_nAddIdx].RsetCardByCompositeNum(nCardCompositNum) ;
 	if ( m_nAddIdx != m_nBiggestCardIdx )
@@ -35,13 +45,55 @@ void CNiuNiuPeerCard::addCompositCardNum( uint8_t nCardCompositNum )
 	}
 	++m_nAddIdx ;
 }
-
+#ifndef SERVER
+CNiuNiuPeerCard::CardGroup CNiuNiuPeerCard::getCardGroup(){
+    if ( ! isCaculated() )
+    {
+        caculateCards();
+    }
+    if(m_nGroupIdx<10){
+        return CNiuNiuPeerCard::s_CardGroup[m_nGroupIdx];
+    }
+    return CNiuNiuPeerCard::s_CardGroup[0];
+}
+#endif
 const char*  CNiuNiuPeerCard::getNameString() 
 {
 	if ( ! isCaculated() )
 	{
 		caculateCards();
 	}
+#ifndef SERVER
+    //return Language::getInstance()->get("niuniu_wuxiaoniu");
+    std::string str = "niuniu_meiniu";
+    switch (m_eType) {
+        case Niu_None:
+            break;
+        case Niu_Single:
+            str = Language::getInstance()->get(StringUtils::format("niuniu_niu_%d",m_nPoint));
+            return str.c_str();
+            break;
+        case Niu_Niu:
+            str = "niuniu_niuniu";
+            break;
+        case Niu_Silver:
+            str = "niuniu_yinniu";
+            break;
+        case Niu_Golden:
+            str = "niuniu_jinniu";
+            break;
+        case Niu_Boom:
+            str = "niuniu_zhadan";
+            break;
+        case Niu_FiveSmall:
+            str = "niuniu_wuxiaoniu";
+            break;
+        default:
+            str = "niuniu_meiniu";
+            break;
+    }
+    return Language::getInstance()->get(str);
+#endif
 	return "niu niu" ;
 }
 
@@ -84,12 +136,12 @@ uint8_t CNiuNiuPeerCard::getPoint()
 
 bool CNiuNiuPeerCard::isCaculated()
 {
-	return Niu_Max == m_eType ;
+	return Niu_Max != m_eType ;
 }
 
 void CNiuNiuPeerCard::caculateCards()
 {
-	assert(m_nAddIdx == ( NIUNIU_HOLD_CARD_COUNT - 1 ) && "cards not enough" );
+	assert(m_nAddIdx == ( NIUNIU_HOLD_CARD_COUNT ) && "cards not enough" );
 	m_eType = Niu_None ;
 	m_nPoint = 0 ;
 	if ( checkFiveSmall())
@@ -121,7 +173,9 @@ void CNiuNiuPeerCard::caculateCards()
 			{
 				m_nGroupIdx = nIdx ;
 				m_eType = Niu_Single ;
-				m_nPoint = (m_vHoldCards[ref.nTwoIdx[0]].GetCardFaceNum() + m_vHoldCards[ref.nTwoIdx[1]].GetCardFaceNum()) % 10 ;
+                uint8_t t1 = m_vHoldCards[ref.nTwoIdx[0]].GetCardFaceNum()>10?10:m_vHoldCards[ref.nTwoIdx[0]].GetCardFaceNum();
+                uint8_t t2 = m_vHoldCards[ref.nTwoIdx[1]].GetCardFaceNum()>10?10:m_vHoldCards[ref.nTwoIdx[1]].GetCardFaceNum();
+                m_nPoint = (t1 + t2) % 10 ;
 				if ( m_nPoint == 0 )
 				{
 					m_eType = Niu_Niu ;
@@ -145,7 +199,7 @@ bool CNiuNiuPeerCard::checkNiu(CardGroup& ref )
 	uint8_t nTotalPoint = 0 ;
 	for (int i = 0; i < 3; i++)
 	{
-		nTotalPoint += m_vHoldCards[ref.nThreeIdx[i]].GetCardFaceNum();
+        nTotalPoint += (m_vHoldCards[ref.nThreeIdx[i]].GetCardFaceNum()>10?10:m_vHoldCards[ref.nThreeIdx[i]].GetCardFaceNum());
 	}
 	return (nTotalPoint % 10) == 0 ;
 }
@@ -192,7 +246,7 @@ bool CNiuNiuPeerCard::checkNiuGolden()
 {
 	for ( CCard& nCard : m_vHoldCards )
 	{
-		if ( nCard.GetCardFaceNum() < 10 )
+		if ( nCard.GetCardFaceNum() <= 10 )
 		{
 			return false ;
 		}

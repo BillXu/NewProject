@@ -5,7 +5,7 @@ class CNiuNiuRoomGameResultState
 	:public IRoomState
 {
 public:
-	enum { eStateID = 0x8 };
+	enum { eStateID = eRoomState_NN_GameResult };
 public:
 	void enterState(IRoom* pRoom);
 	void onStateDuringTimeUp();

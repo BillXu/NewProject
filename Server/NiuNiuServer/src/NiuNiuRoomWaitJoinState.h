@@ -7,7 +7,7 @@ class CNiuNiuRoomWaitJoinState
 public: 
 	enum  
 	{
-		eStateID = 0x1,
+		eStateID = eRoomState_NN_WaitJoin,
 	};
 public:
 	void enterState(IRoom* pRoom) override;

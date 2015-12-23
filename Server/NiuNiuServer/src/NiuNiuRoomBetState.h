@@ -5,7 +5,7 @@ class CNiuNiuRoomBetState
 	:public IRoomState
 {
 public:
-	enum { eStateID = 0x5 };
+	enum { eStateID = eRoomState_NN_StartBet };
 public:
 	uint16_t getStateID(){ return eStateID ;}
 	void enterState(IRoom* pRoom);
@@ -13,4 +13,5 @@ public:
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
 protected:
 	CNiuNiuRoom* m_pRoom ;
+	uint8_t m_nLeftBetPlayerCnt ;
 };

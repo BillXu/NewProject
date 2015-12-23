@@ -33,12 +33,16 @@ public:
 		Niu_Max,
 	};
 public:
+    CNiuNiuPeerCard();
 	void addCompositCardNum( uint8_t nCardCompositNum ) override ;
 	const char*  getNameString() override;
 	uint32_t getWeight() override;
 	void reset() override ;
 	NiuNiuType getType();
-	uint8_t getPoint(); 
+	uint8_t getPoint();
+#ifndef SERVER
+    CNiuNiuPeerCard::CardGroup getCardGroup();
+#endif
 protected:
 	bool isCaculated();
 	void caculateCards();

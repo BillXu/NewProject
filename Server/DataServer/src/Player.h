@@ -30,6 +30,7 @@ public:
 	CPlayerBaseData* GetBaseData(){ return (CPlayerBaseData*)GetComponent(ePlayerComponent_BaseData);}
 	bool IsState( ePlayerState eState ); 
 	void SetState(ePlayerState eSate ){ m_eSate = eSate ; }
+	bool isNotInAnyRoom();
 	void OnAnotherClientLoginThisPeer(unsigned int nSessionID );
 	void PostPlayerEvent(stPlayerEvetArg* pEventArg );
 	void OnTimerSave(float fTimeElaps,unsigned int nTimerID );

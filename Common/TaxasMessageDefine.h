@@ -5,12 +5,7 @@
 #include "MessageDefine.h"
 #include "CommonData.h"
 
-struct stMsgToRoom
-	:public stMsg
-{
-	stMsgToRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; }
-	uint32_t nRoomID ;
-};
+
 
 struct stMsgCreateTaxasRoom
 	:public stMsg

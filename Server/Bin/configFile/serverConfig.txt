@@ -8,6 +8,6 @@ svrType	svrTips	svrIP	svrPort	password	account
 6	apns	118.193.52.70	8000	0	0
 7	logSvr	127.0.0.1	9000	123456	0
 8	logdataBase	127.0.0.1	3306	123456	root
-9	CenterSvr	127.0.0.1	8001	0	0
+9	CenterSvr	139.196.56.147	8001	0	0
 10	DataSvr	127.0.0.1	8002	0	0
 11	taxasPoker	127.0.0.1	8002	0	0

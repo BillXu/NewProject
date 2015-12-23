@@ -408,6 +408,7 @@ const char* CCenterServerApp::GetServerDescByType(eServerType eType )
 		"eSvrType_Center",
 		"eSvrType_Data",
 		"eSvrType_Taxas",
+		"eSvrType_NiuNiu",
 		"eSvrType_Max",
 	} ;
 	
@@ -500,6 +501,11 @@ eServerType CCenterServerApp::GetServerTypeByMsgTarget(uint16_t nTarget)
 	case ID_MSG_PORT_TAXAS:
 		{
 			return eSvrType_Taxas ;
+		}
+		break;
+	case ID_MSG_PORT_NIU_NIU:
+		{
+			return eSvrType_NiuNiu;
 		}
 		break;
 	default:

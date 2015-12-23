@@ -71,6 +71,50 @@ struct stMsgDataServerGetBaseDataRet
 	stServerBaseData stBaseData ;
 };
 
+
+struct stSaveRoomPlayerEntry
+{
+	uint32_t nUserUID ;
+	int64_t nOffset ;
+	uint32_t nPlayerTimes ;
+	int32_t nWinTimes ;
+};
+
+struct stMsgSaveRoomPlayer
+	:public stMsg
+{
+	stMsgSaveRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_ROOM_PLAYER ; }
+	bool isUpdate ; // is update or add recorder 
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+	stSaveRoomPlayerEntry savePlayer ;
+};
+
+struct  stMsgReadRoomPlayer 
+	:public stMsg
+{
+	stMsgReadRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_ROOM_PLAYER ;}
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+};
+
+struct stMsgReadRoomPlayerRet 
+	:public stMsgToRoom
+{
+	stMsgReadRoomPlayerRet(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_READ_ROOM_PLAYER ; }
+	uint8_t nCnt ;
+	bool bIsLast ;
+	PLACE_HOLDER(stSaveRoomPlayerEntry*);
+};
+
+struct stMsgRemoveRoomPlayer
+	:public stMsg
+{
+	stMsgRemoveRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_REMOVE_ROOM_PLAYER ;}
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+};
+
 // save player data ;
 struct stMsgSavePlayerInfo   
 	:public stMsg
@@ -418,13 +462,6 @@ struct stMsgCrossServerRequest
 	uint16_t nJsonsLen ;
 	PLACE_HOLDER(char* pJsonString);
 };
-
-#define CON_REQ_MSG_JSON(msgCrossReq,jsonArg,autoBuf)  Json::StyledWriter jsWrite ;\
-	std::string str = jsWrite.write(jsonArg) ; \
-	msgCrossReq.nJsonsLen = strlen(str.c_str()); \
-	CAutoBuffer autoBuf(sizeof(msgCrossReq) + msgCrossReq.nJsonsLen ); \
-	autoBuf.addContent((char*)&msgCrossReq,sizeof(msgCrossReq)); \
-	autoBuf.addContent(str.c_str(),msgCrossReq.nJsonsLen ) ;
 
 struct stMsgCrossServerRequestRet
 	:public stMsg

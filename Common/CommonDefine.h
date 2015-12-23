@@ -40,6 +40,7 @@ enum eRoomType
 	eRoom_None,
 	eRoom_PaiJiu,
 	eRoom_TexasPoker,
+	eRoom_NiuNiu,
 	eRoom_TexasPoker_Diamoned,
 	eRoom_TexasPoker_Private,
 	eRoom_Gold,
@@ -86,6 +87,16 @@ enum eRoomState
 	eRoomState_BC_AddIdleCard,
 	eRoomState_BC_AddBankerCard,
 	eRoomState_BC_Caculate,
+
+	// state for NiuNiu
+	eRoomState_NN_WaitJoin,
+	eRoomState_NN_Disribute4Card,
+	eRoomState_NN_TryBanker,
+	eRoomState_NN_RandBanker,
+	eRoomState_NN_StartBet,
+	eRoomState_NN_FinalCard,
+	eRoomState_NN_CaculateCard,
+	eRoomState_NN_GameResult,
 	eRoomState_Max,
 };
 
@@ -145,6 +156,7 @@ enum eRoomPeerState
 	eRoomPeer_WaitNextGame = ((1 << 6)|eRoomPeer_SitDown ),
 	eRoomPeer_WithdrawingCoin = (1 << 8),  // when invoke drawing coin , must be sitdown , but when staup up , maybe in drawingCoin state 
 	eRoomPeer_LackOfCoin = (1<<9)|eRoomPeer_SitDown,
+	eRoomPeer_WillLeave = (1<<10)|eRoomPeer_StandUp ,
 	eRoomPeer_Max,
 };
 
@@ -274,6 +286,16 @@ enum eRoomLevel
 #define MIN_PEERS_IN_ROOM_ROBOT 6
 #define MAX_PEERS_IN_TAXAS_ROOM 9
 #define TIME_LOW_LIMIT_FOR_NORMAL_ROOM 10
+
+// time for niuniu 
+#define TIME_NIUNIU_DISTRIBUTE_4_CARD_PER_PLAYER 1.0f 
+#define TIME_NIUNIU_TRY_BANKER 6.0f
+#define TIME_NIUNIU_RAND_BANKER_PER_WILL_BANKER 0.7f
+#define TIME_NIUNIU_PLAYER_BET 8.0f
+#define TIME_NIUNIU_DISTRIBUTE_FINAL_CARD_PER_PLAYER 0.3f
+#define TIME_NIUNIU_PLAYER_CACULATE_CARD 8.0f
+#define TIME_NIUNIU_GAME_RESULT 4.0f
+
 // baccarat define 
 enum eBaccaratBetPort
 {

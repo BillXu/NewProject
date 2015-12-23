@@ -288,6 +288,46 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			CLogMgr::SharedLogMgr()->PrintLog("remove taxas room player data room id = %u ",pRet->nRoomID);
 		}
 		break;
+	case MSG_SAVE_ROOM_PLAYER:
+		{
+			stMsgSaveRoomPlayer* pRet = (stMsgSaveRoomPlayer*)pmsg ;
+			if ( pRet->isUpdate )
+			{
+				pRequest->eType = eRequestType_Update;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"UPDATE roomplayers SET playTimes = '%u', winTimes = '%u', offsetCoin = '%lld' WHERE roomID = '%u' and playerUID = '%u'and roomType = '%u' and flag = '0' "
+					,pRet->savePlayer.nPlayerTimes,pRet->savePlayer.nWinTimes,pRet->savePlayer.nOffset,pRet->nRoomID,pRet->savePlayer.nUserUID,pRet->nRoomType) ;
+				CLogMgr::SharedLogMgr()->PrintLog("updata room player data room id = %u , uid = %u",pRet->nRoomID,pRet->savePlayer.nUserUID );
+			}
+			else
+			{
+				pRequest->eType = eRequestType_Add;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomplayers (roomID, roomType,playerUID,playTimes,winTimes,offsetCoin ) VALUES ('%u','%u' ,'%u','%u','%u','%I64d')",
+					pRet->nRoomID,pRet->nRoomType,pRet->savePlayer.nUserUID,pRet->savePlayer.nPlayerTimes,pRet->savePlayer.nWinTimes,pRet->savePlayer.nOffset) ;
+				CLogMgr::SharedLogMgr()->PrintLog("add taxas room player data room id = %u , uid = %u",pRet->nRoomID,pRet->savePlayer.nUserUID);
+			}
+		}
+		break;
+	case MSG_READ_ROOM_PLAYER:
+		{
+			stMsgReadRoomPlayer* pRet = (stMsgReadRoomPlayer*)pmsg ;
+			pRequest->eType = eRequestType_Select;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM roomplayers WHERE roomID = '%u' and flag = '0' and roomType = '%u' order by offsetCoin desc limit 90 ",pRet->nRoomID,pRet->nRoomType) ;
+			CLogMgr::SharedLogMgr()->PrintLog("read room players room id = %d , type = %d",pRet->nRoomID,pRet->nRoomType );
+			pdata->nExtenArg1 = pRet->nRoomID;
+			pdata->nExtenArg2 = eSenderPort ;
+		}
+		break;
+	case MSG_REMOVE_ROOM_PLAYER:
+		{
+			stMsgRemoveRoomPlayer* pRet = (stMsgRemoveRoomPlayer*)pmsg ;
+			pRequest->eType = eRequestType_Update;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE roomplayers SET flag = '1' WHERE roomID = '%u' and flag = '0' and roomType = %u",pRet->nRoomID,pRet->nRoomType) ;
+			CLogMgr::SharedLogMgr()->PrintLog("remove room player data room id = %u, type = %u ",pRet->nRoomID,pRet->nRoomType );
+		}
+		break;
 // 	case MSG_PLAYER_SAVE_BASE_DATA:
 // 		{
 // 			stMsgGameServerSaveBaseData* pSaveBaseData = (stMsgGameServerSaveBaseData*)pmsg ;
@@ -1042,6 +1082,49 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
+	case MSG_READ_ROOM_PLAYER:
+		{
+			stArgData* pdata = (stArgData*)pResult->pUserData ;
+			if ( pResult->nAffectRow == 0 )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("room id = %d have no history players",pdata->nExtenArg1) ;
+			}
+			else
+			{
+				uint8_t nSendCntInOnemsg  = 8;
+				uint16_t nPage = ( pResult->nAffectRow + nSendCntInOnemsg - 1 ) / nSendCntInOnemsg ;
+				for ( uint16_t nPageIdx = 0 ; nPageIdx < nPage ; ++nPageIdx )
+				{
+					uint16_t nPageStartIdx = nPageIdx * nSendCntInOnemsg ;
+					uint8_t nSendCnt = nSendCntInOnemsg ;
+					if ( nPageIdx == nPage - 1 )
+					{
+						nSendCnt = pResult->nAffectRow - nPageStartIdx ;
+					}
+
+					stMsgReadRoomPlayerRet msgRet ;
+					msgRet.cSysIdentifer = pdata->nExtenArg2 ; // send port ;
+					msgRet.nRoomID = pdata->nExtenArg1;
+					msgRet.nCnt = nSendCnt ;
+					msgRet.bIsLast = nPageIdx == nPage - 1 ;
+					CAutoBuffer auBuffer(sizeof(msgRet) + msgRet.nCnt * sizeof(stSaveRoomPlayerEntry));
+					auBuffer.addContent(&msgRet,sizeof(msgRet)) ;
+					for ( uint8_t nReadIdx = 0 ; nReadIdx < nSendCnt; ++nReadIdx )
+					{
+						CMysqlRow& pRow = *pResult->vResultRows[nPageStartIdx + nReadIdx] ;
+						stSaveRoomPlayerEntry entryData ;
+						entryData.nOffset = pRow["offsetCoin"]->IntValue64();
+						entryData.nPlayerTimes = pRow["playTimes"]->IntValue();
+						entryData.nWinTimes = pRow["winTimes"]->IntValue();
+						entryData.nUserUID = pRow["playerUID"]->IntValue() ;
+						auBuffer.addContent(&entryData,sizeof(entryData)) ;
+					}
+					m_pTheApp->sendMsg(pdata->nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize() ) ;
+					CLogMgr::SharedLogMgr()->PrintLog("read room players room id = %d, page idx = %d ",msgRet.nRoomID,nPageIdx);
+				}
+			}
+		}
+		break;
 	case MSG_SAVE_CREATE_TAXAS_ROOM_INFO:
 	case MSG_SAVE_UPDATE_TAXAS_ROOM_INFO:
 	case MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS:
@@ -1050,6 +1133,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_SAVE_FRIEND_LIST:
 	case MSG_PLAYER_SAVE_MAIL:
 	case MSG_PLAYER_SET_MAIL_STATE:
+	case MSG_SAVE_ROOM_PLAYER:
+	case MSG_REMOVE_ROOM_PLAYER:
 		{
 			if ( pResult->nAffectRow <= 0 )
 			{

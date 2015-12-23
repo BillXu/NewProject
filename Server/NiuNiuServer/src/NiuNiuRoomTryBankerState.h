@@ -7,7 +7,7 @@ class CNiuNiuRoomTryBanker
 public:
 	enum  
 	{
-		eStateID = 0x3,
+		eStateID = eRoomState_NN_TryBanker,
 	};
 public:
 	void enterState(IRoom* pRoom);
@@ -17,4 +17,5 @@ public:
 protected:
 	CNiuNiuRoom* m_pRoom ;
 	uint8_t m_nBiggestTimeTryBanker ;
+	uint8_t m_nLeftTryBankerPlayerCnt ;
 };

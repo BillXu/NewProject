@@ -2,19 +2,49 @@
 #include "NiuNiuRoomBetState.h"
 #include "NiuNiuRoom.h"
 #include "NiuNiuRoomPlayer.h"
+#include "NiuNiuMessageDefine.h"
+#include "LogManager.h"
 void CNiuNiuRoomRandBankerState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
 
 	CNiuNiuRoom::LIST_SITDOWN_PLAYERS vMaybeBanker ;
 	uint8_t nSeatCnt = m_pRoom->getSeatCount() ;
+	int64_t nLeatCoinNeedForBankerWhenNoneTryBanker = 0 ;
+	if ( m_pRoom->getBetBottomTimes() == 0 )
+	{
+		nLeatCoinNeedForBankerWhenNoneTryBanker = m_pRoom->getLeastCoinNeedForBeBanker(1) ;
+	}
+
+	CNiuNiuRoomPlayer* pRichestPlayer = nullptr ;
 	for ( uint8_t nIdx = 0 ; nIdx < nSeatCnt ; ++nIdx )
 	{
 		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getPlayerByIdx(nIdx) ;
 		if ( pPlayer && pPlayer->isHaveState(eRoomPeer_CanAct) && pPlayer->getTryBankerTimes() == m_pRoom->getBetBottomTimes() )
 		{
-			vMaybeBanker.push_back(pPlayer) ;
+			
+			if ( pPlayer->getTryBankerTimes() == 0 && (pPlayer->getCoin() >= nLeatCoinNeedForBankerWhenNoneTryBanker ) )
+			{
+				vMaybeBanker.push_back(pPlayer) ;
+			}
+
+			if ( pRichestPlayer == nullptr )
+			{
+				pRichestPlayer = pPlayer ;
+			}
+			else 
+			{
+				if ( pRichestPlayer->getCoin() < pPlayer->getCoin() )
+				{
+					pRichestPlayer = pPlayer ;
+				}
+			}
 		}
+	}
+
+	if ( vMaybeBanker.empty() )
+	{
+		vMaybeBanker.push_back(pRichestPlayer) ;
 	}
 
 	uint8_t nBankerCntIdx = rand() % vMaybeBanker.size();
@@ -24,11 +54,24 @@ void CNiuNiuRoomRandBankerState::enterState(IRoom* pRoom)
 		if ( nBankerCntIdx == nMayBankerIdx )
 		{
 			m_pRoom->setBankerIdx((*iter)->getIdx()) ;
+			m_pRoom->setBankCoinLimitForBet((*iter)->getCoin()) ;
 			break; 
 		}
 	}
 
-	setStateDuringTime( 0.5 * vMaybeBanker.size() );
+	if ( m_pRoom->getBetBottomTimes() == 0 )
+	{
+		m_pRoom->setBetBottomTimes(1) ;
+	}
+
+	setStateDuringTime( TIME_NIUNIU_RAND_BANKER_PER_WILL_BANKER * vMaybeBanker.size() );
+
+	stMsgNNRandBanker msgBanker ;
+	msgBanker.nBankerIdx = m_pRoom->getBankerIdx() ;
+	msgBanker.nBankerBetTimes = m_pRoom->getBetBottomTimes() ;
+	m_pRoom->sendRoomMsg(&msgBanker,sizeof(msgBanker)) ;
+
+	CLogMgr::SharedLogMgr()->PrintLog("rand banker idx = %d, betTimes = %d",msgBanker.nBankerIdx,msgBanker.nBankerBetTimes) ;
 }
 
 void CNiuNiuRoomRandBankerState::onStateDuringTimeUp()

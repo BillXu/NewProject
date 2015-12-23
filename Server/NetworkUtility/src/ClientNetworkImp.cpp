@@ -1,11 +1,13 @@
 #include <WinSock2.h>
 #include "ClientNetworkImp.h"
+#define CLIENT_HEAT_BET_CHECK_TIEM  (TIME_HEAT_BET + 1 )
 CClientNetworkImp::CClientNetworkImp()
-	:m_pReadIngBuffer(new CInternalBuffer())
+	:m_pReadIngBuffer(new CInternalBuffer()),m_tHeatBeat(m_io_service)
 {
 	m_socket = nullptr ;
 	m_pIOThread = nullptr ;
 	m_pEndpoint = nullptr ;
+	m_nHeatBeatTimes = 0 ;
 }
 
 CClientNetworkImp::~CClientNetworkImp()
@@ -39,7 +41,7 @@ bool CClientNetworkImp::init()
 		m_socket = new tcp::socket(m_io_service);	
 	}
 	m_nState = eState_None ;
-	
+	m_nHeatBeatTimes = 0 ;
 	return true ;
 }
 
@@ -68,6 +70,7 @@ bool CClientNetworkImp::connectToServer(const char* pIP, unsigned short nPort )
 		m_pEndpoint = nullptr ;
 	}
 	m_io_service.reset();
+	m_tHeatBeat.cancel();
 	m_nState = eState_Connecting ;
 	printf("connect ting \n");
 
@@ -148,6 +151,11 @@ void CClientNetworkImp::handleConnect(const boost::system::error_code& error)
 			boost::bind(&CClientNetworkImp::handleReadHeader, this,  
 			boost::asio::placeholders::error));  
 		printf("connected success\n");
+		m_nHeatBeatTimes = 2 ;
+
+		// start heat bet check ;
+		m_tHeatBeat.expires_from_now(boost::posix_time::seconds(CLIENT_HEAT_BET_CHECK_TIEM));
+		m_tHeatBeat.async_wait(boost::bind(&CClientNetworkImp::sendHeatBeat, this,boost::asio::placeholders::error));
 	} 
 	else
 	{
@@ -185,6 +193,11 @@ void CClientNetworkImp::handleReadBody(const boost::system::error_code& error)
 			pack->_len = m_pReadIngBuffer->bodyLength() ;
 			memcpy(pack->_orgdata,m_pReadIngBuffer->body(),m_pReadIngBuffer->bodyLength()) ;
 			addPacket(pack) ;
+		}
+		else
+		{
+			++m_nHeatBeatTimes;
+			//printf("recived heat bet\n") ;
 		}
 
 		boost::asio::async_read(*m_socket,   
@@ -232,13 +245,30 @@ void CClientNetworkImp::handleWrite(const boost::system::error_code& error)//µÚÒ
 	{  
 		doClose();  
 	}  
-}  
+} 
+
+void CClientNetworkImp::sendHeatBeat( const boost::system::error_code& ec )
+{
+	if ( !ec )
+	{
+		if ( --m_nHeatBeatTimes <= 0 )
+		{
+			doClose() ;
+			printf("heat bet check time out \n") ;
+		}
+		else
+		{
+			m_tHeatBeat.expires_from_now(boost::posix_time::seconds(CLIENT_HEAT_BET_CHECK_TIEM));
+			m_tHeatBeat.async_wait(boost::bind(&CClientNetworkImp::sendHeatBeat, this,boost::asio::placeholders::error));
+		}
+	}
+}
 
 void CClientNetworkImp::doClose()  
 {  
 	if ( m_nState != eState_Connected && m_nState != eState_Connecting )
 	{
-		printf("socket already closed") ;
+		printf("socket already closed\n") ;
 		return ;
 	}
 	m_nState = eState_None ;

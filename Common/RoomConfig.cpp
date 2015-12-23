@@ -25,19 +25,19 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	case eRoom_Gold:
 		{
 			stGoldenRoomConfig* pConfig = new stGoldenRoomConfig ;
-			pConfig->bCanDoublePK = refReaderRow["CanDoublePK"]->IntValue();
+			pConfig->bCanDoublePK = (bool)refReaderRow["CanDoublePK"]->IntValue();
 			pConfig->nChangeCardRound = refReaderRow["ChangeCardRound"]->IntValue();
 			pConfig->nMiniBet = refReaderRow["MiniBet"]->IntValue();
 			pConfig->nTitleNeedToEnter = refReaderRow["TitleNeedToEnter"]->IntValue();
-#ifdef SERVER
-			char pBuffer[256] = {0};
-			for ( int i = 0 ; i < GOLDEN_ROOM_COIN_LEVEL_CNT ; ++i )
-			{
-				memset(pBuffer,0,sizeof(pBuffer));
-				sprintf_s(pBuffer,"CoinLevel%d",i);
-				pConfig->vCoinLevels[i] = refReaderRow[pBuffer]->IntValue();
-			}
-#endif
+// #ifdef SERVER
+// 			char pBuffer[256] = {0};
+// 			for ( int i = 0 ; i < GOLDEN_ROOM_COIN_LEVEL_CNT ; ++i )
+// 			{
+// 				memset(pBuffer,0,sizeof(pBuffer));
+// 				sprintf_s(pBuffer,"CoinLevel%d",i);
+// 				pConfig->vCoinLevels[i] = refReaderRow[pBuffer]->IntValue();
+// 			}
+// #endif
 			pRoomConfig = pConfig ;
 		}
 	default:

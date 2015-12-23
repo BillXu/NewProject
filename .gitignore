@@ -380,3 +380,9 @@ DezhouPoker/
 *.exe
 *.exe
 *.exe
+Server/Bin/ServerRelease/
+*.exe
+*.exe
+Server/Bin/ServerRelease/GateServer.exe
+Server/Bin/ServerRelease/LoginServer.exe
+*.exe

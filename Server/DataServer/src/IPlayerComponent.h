@@ -12,6 +12,7 @@ enum ePlayerComponentType
 	ePlayerComponent_PlayerItemMgr,
 	ePlayerComponent_PlayerMission,
 	ePlayerComponent_PlayerTaxas,
+	ePlayerComponent_PlayerNiuNiu,
 	ePlayerComponent_Mail,            // last sit the last pos ,
 	ePlayerComponent_Max,
 };

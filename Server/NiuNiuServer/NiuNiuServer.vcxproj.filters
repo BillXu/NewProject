@@ -132,6 +132,21 @@
     <ClInclude Include="src\NiuNiuRoomGameResult.h">
       <Filter>src\Room\state</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\IRoomManager.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\httpRequest.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NiuNiuRoomManger.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\IConfigFile.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NiuNiuRoomPlayerCaculateCardState.h">
+      <Filter>src\Room\state</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
@@ -207,6 +222,21 @@
       <Filter>src\Room\state</Filter>
     </ClCompile>
     <ClCompile Include="src\NiuNiuRoomGameResult.cpp">
+      <Filter>src\Room\state</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\IRoomManager.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\httpRequest.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NiuNiuRoomManger.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Common\IConfigFile.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NiuNiuRoomPlayerCaculateCardState.cpp">
       <Filter>src\Room\state</Filter>
     </ClCompile>
   </ItemGroup>

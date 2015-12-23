@@ -4,6 +4,7 @@ IRoomPlayer::IRoomPlayer()
 	m_nSessionID = 0 ;
 	m_nUserUID = 0 ;
 	m_nStateFlag = 0 ;
+	m_nCoin = 0 ;
 }
 
 void IRoomPlayer::init(uint32_t nSessionID , uint32_t nUserUID)
@@ -11,6 +12,7 @@ void IRoomPlayer::init(uint32_t nSessionID , uint32_t nUserUID)
 	setSessionID(nSessionID) ;
 	setUserUID(nUserUID) ;
 	m_nStateFlag = 0 ;
+	m_nCoin = 0 ;
 }
 
 void IRoomPlayer::setState( uint32_t nState )

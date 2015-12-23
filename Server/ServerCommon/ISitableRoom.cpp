@@ -2,6 +2,8 @@
 #include "RoomConfig.h"
 #include "ISitableRoomPlayer.h"
 #include <cassert>
+#include "MessageDefine.h"
+#include "AutoBuffer.h"
 ISitableRoom::~ISitableRoom()
 {
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
@@ -57,15 +59,15 @@ void ISitableRoom::playerStandUp( ISitableRoomPlayer* pPlayer )
 
 uint8_t ISitableRoom::getEmptySeatCount()
 {
-	uint8_t nIdx = 0 ;
+	uint8_t nCount = 0 ;
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
 	{
 		if ( m_vSitdownPlayers[nIdx] == nullptr )
 		{
-			++nIdx ;
+			++nCount ;
 		}
 	}
-	return nIdx ;
+	return nCount ;
 }
 
 ISitableRoomPlayer* ISitableRoom::getPlayerByIdx(uint8_t nIdx )
@@ -108,4 +110,92 @@ ISitableRoomPlayer* ISitableRoom::getReuseSitableRoomPlayerObject()
 		return p ;
 	}
 	return doCreateSitableRoomPlayer();
+}
+
+uint8_t ISitableRoom::getPlayerCntWithState( uint32_t nState )
+{
+	uint8_t nCount = 0 ;
+	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+	{
+		if ( m_vSitdownPlayers[nIdx] && m_vSitdownPlayers[nIdx]->isHaveState(nState) )
+		{
+			++nCount ;
+		}
+	}
+	return nCount ;
+}
+
+ISitableRoomPlayer* ISitableRoom::getSitdownPlayerBySessionID(uint32_t nSessionID)
+{
+	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+	{
+		if ( m_vSitdownPlayers[nIdx] && m_vSitdownPlayers[nIdx]->getSessionID() == nSessionID )
+		{
+			return m_vSitdownPlayers[nIdx] ;
+		}
+	}
+	return nullptr ;
+}
+
+bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
+{
+	if ( IRoom::onMessage(prealMsg,eSenderPort,nPlayerSessionID) )
+	{
+		return false ;
+	}
+
+	switch ( prealMsg->usMsgType )
+	{
+	case MSG_REQUEST_ROOM_RANK:
+		{
+			std::map<uint32_t,stRoomRankEntry> vWillSend ;
+			sortRoomRankItem();
+			// add 15 player into list ;
+			LIST_ROOM_RANK_ITEM::iterator iter = getSortRankItemListBegin();
+			for ( uint8_t nIdx = 0 ; iter != getSortRankItemListEnd() && nIdx < 15; ++iter,++nIdx )
+			{
+				stRoomRankItem* pItem = (*iter) ;
+				stRoomRankEntry entry ;
+				entry.nOffset = pItem->nOffset ;
+				entry.nUserUID = pItem->nUserUID ;
+				vWillSend[pItem->nUserUID] = entry ;
+			}
+
+			// keep all sit down player are in willSend
+			for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+			{
+				auto sitDownPlayer = m_vSitdownPlayers[nIdx] ;
+				if ( m_vSitdownPlayers[nIdx] && m_vSitdownPlayers[nIdx]->getUserUID() != 0 )
+				{
+					auto Iter = vWillSend.find(sitDownPlayer->getUserUID()) ;
+					if ( Iter == vWillSend.end() )
+					{
+						stRoomRankEntry item ;
+						item.nOffset = sitDownPlayer->getCoin() - sitDownPlayer->getInitCoin() ;
+						item.nUserUID = sitDownPlayer->getUserUID() ;
+						vWillSend[item.nUserUID] = item ;
+					}
+					else
+					{
+						vWillSend[sitDownPlayer->getUserUID()].nOffset += (sitDownPlayer->getCoin() - sitDownPlayer->getInitCoin());
+					}
+				}
+			}
+
+			// send room info to player ;
+			stMsgRequestRoomRankRet msgRet ;
+			msgRet.nCnt = vWillSend.size() ;
+			CAutoBuffer msgBuffer(sizeof(msgRet) + msgRet.nCnt * sizeof(stRoomRankEntry));
+			msgBuffer.addContent(&msgRet,sizeof(msgRet));
+			for ( auto& itemSendPlayer : vWillSend )
+			{
+				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
+			}
+			sendMsgToPlayer((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
+		}
+		break;
+	default:
+		return false;
+	}
+	return true ;
 }

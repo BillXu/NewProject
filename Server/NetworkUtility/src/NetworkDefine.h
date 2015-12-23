@@ -2,6 +2,11 @@
 #define _MSG_BUF_LEN 2048
 typedef unsigned int CONNECT_ID ;
 #define INVALID_CONNECT_ID (unsigned int)-1
+
+#define  TIME_CHECK_FIRST_MSG 9
+// MUST big than TIME_CHECK_FIRST_MSG
+#define  TIME_HEAT_BET (TIME_CHECK_FIRST_MSG + 4)
+
 struct Packet
 {
 	CONNECT_ID _connectID ;

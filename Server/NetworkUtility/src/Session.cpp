@@ -1,9 +1,6 @@
 #include <WinSock2.h>
 #include "Session.h"
 #include "SeverNetworkImp.h"
-#define  TIME_CHECK_FIRST_MSG 9
-// MUST big than TIME_CHECK_FIRST_MSG
-#define  TIME_HEAT_BET (TIME_CHECK_FIRST_MSG + 4)
 uint32_t CSession::s_ConnectID = 1 ;
 CSession::CSession(boost::asio::io_service& io_service,CServerNetworkImp* network )
 	:m_socket(io_service),m_pNetwork(network),m_pReadIngBuffer(new CInternalBuffer()),m_tHeatBeat(io_service),m_tWaitFirstMsg(io_service)

@@ -34,6 +34,12 @@ struct stTaxasRoomConfig
 	float fDividFeeRate;  // chou shui bi li
 };
 
+struct stNiuNiuRoomConfig
+	:public stSitableRoomConfig
+{
+
+};
+
 struct stGoldenRoomConfig
 	:public stBaseRoomConfig
 {
@@ -41,7 +47,7 @@ struct stGoldenRoomConfig
 	unsigned short nTitleNeedToEnter ;
 	unsigned char nChangeCardRound; 
 	bool bCanDoublePK ;
-#ifndef GAME_SERVER
+#ifndef SERVER
 	unsigned int vCoinLevels[GOLDEN_ROOM_COIN_LEVEL_CNT];
 #endif
 };

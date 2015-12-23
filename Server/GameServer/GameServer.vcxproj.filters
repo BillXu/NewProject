@@ -37,9 +37,6 @@
     <ClInclude Include="..\..\Common\MessageIdentifer.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\GoldenMessageDefine.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\ServerCommon\ServerConfig.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
@@ -145,6 +142,9 @@
     <ClInclude Include="..\ServerCommon\AutoBuffer.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\DataServer\src\PlayerNiuNiu.h">
+      <Filter>src\Player</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
@@ -232,6 +232,9 @@
       <Filter>src\Player</Filter>
     </ClCompile>
     <ClCompile Include="..\DataServer\src\PlayerFriend.cpp">
+      <Filter>src\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\PlayerNiuNiu.cpp">
       <Filter>src\Player</Filter>
     </ClCompile>
   </ItemGroup>

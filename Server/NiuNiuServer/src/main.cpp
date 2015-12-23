@@ -66,8 +66,29 @@ void RunFunc ( IServerApp* pApp )
 }
 
 
+//#include "NiuNiuPeerCard.h"
 int main()
 {
+	//CNiuNiuPeerCard tC ;
+	//tC.reset();
+	//CCard t ;
+	//t.SetCard(CCard::eCard_Club,8);
+	//tC.addCompositCardNum(t.GetCardCompositeNum()) ;
+
+	//t.SetCard(CCard::eCard_Club,1);
+	//tC.addCompositCardNum(t.GetCardCompositeNum()) ;
+
+	//t.SetCard(CCard::eCard_Club,8);
+	//tC.addCompositCardNum(t.GetCardCompositeNum()) ;
+
+	//t.SetCard(CCard::eCard_Club,2);
+	//tC.addCompositCardNum(t.GetCardCompositeNum()) ;
+
+	//t.SetCard(CCard::eCard_Club,13);
+	//tC.addCompositCardNum(t.GetCardCompositeNum()) ;
+
+	//uint8_t n = t.GetType();
+	//return 0 ;
 
 	CNiuNiuServerApp& theApp = *CNiuNiuServerApp::getInstance() ;
 	bool bok = theApp.init() ;

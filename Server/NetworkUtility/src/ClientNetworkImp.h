@@ -42,6 +42,7 @@ private:
 
 	void handleWrite(const boost::system::error_code& error) ;
 
+	void sendHeatBeat( const boost::system::error_code& ec );
 	void doClose();
 private:  
 	boost::asio::io_service m_io_service;  
@@ -58,4 +59,7 @@ private:
 
 	boost::thread* m_pIOThread ;
 	boost::asio::ip::tcp::endpoint* m_pEndpoint ;
+
+	boost::asio::deadline_timer m_tHeatBeat;
+	int8_t m_nHeatBeatTimes ;
 };

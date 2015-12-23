@@ -14,6 +14,7 @@ enum  eLogType
 	eLog_AddMoney, // nTargetID = userUID , var[0] = isCoin , var[1] = addMoneyCnt, var[2] final coin, var[3] finalDiamond ,var[4] subType, var[5] subarg ;
 	eLog_DeductionMoney,  // nTargetID = userUID , var[0] = isCoin , var[1] = DeductionCnt, var[2] final coin, var[3] finalDiamond, var[4] subType, var[5] subarg ;
 	eLog_ResetPassword,
+	eLog_NiuNiuGameResult, // nTargetID = room id , vArg[0] = bankerUID , vArg[1] = banker Times, vArg[2] = finalBottomBet, externString: {[ {uid:234,idx:2,betTimes:4456,card0:23,card1:23,card2:23,card3:23,card4:23,offset:-32,coin:23334 },{ ... },{ ... }] } 
 	eLog_Max,
 };
 
@@ -57,10 +58,15 @@ enum  eCrossSvrReqType
 	eCrossSvrReq_DeductionMoney, //  var[0] isCoin ,var[1] needMoney, var[2] at least money,; result:  var[0] isCoin ,var[1] final deductionMoney 
 	eCrossSvrReq_AddMoney, //  var[0] isCoin ,var[1] addCoin
 	eCrossSvrReq_CreateTaxasRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID,
+	eCrossSvrReq_CreateRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID,
 	eCrossSvrReq_TaxasRoomProfit, // result: var[0] isCoin , var[1] RecvMoney;
 	eCrossSvrReq_AddRentTime, // var[0] , add days;  result var[0] add days ;
 	eCrossSvrReq_SelectTakeIn, // var[0] select player uid,  result: var[0] select player uid, var[1] isCoin, var[2] money 
 	eCrossSvrReq_Inform, // var[0] target player uid 
+	eCrossSvrReq_EnterRoom, // var[0] playerSessionID, var[1] room id ,var[2] coin, retsult: var[0] playerSessionID , var[1] roomType , var[2] roomID, ret{ 0, success , 1 can not find room };
+	eCrossSvrReq_SyncCoin, // var[0] coin var[1] room type 
+	eCrossSvrReq_ApplyLeaveRoom, // var[0] nRoomID , var[1] session id ;
+	eCrossSvrReq_LeaveRoomRet, // var[0] roomType {eRoomType} ; var[1] nRoomID ;
 	eCrossSvrReq_Max,
 };
 
@@ -73,6 +79,24 @@ enum eCrossSvrReqSubType
 	eCrossSvrReqSub_SelectPlayerData,  // ps: orgid = sessionid , not uid this situation; var[1] isDeail, result: var[3] isDetail  , json: playTimes,winTimes,singleMost;
 	eCrossSvrReqSub_Max,
 };
+
+#define FILL_CROSSE_REQUEST_BACK(resultBack,pRequest,eSenderPort)  \
+	resultBack.cSysIdentifer = eSenderPort ; \
+	resultBack.nJsonsLen = 0 ; \
+	resultBack.nReqOrigID = pRequest->nTargetID ; \
+	resultBack.nRequestSubType = pRequest->nRequestSubType ; \
+	resultBack.nRequestType = pRequest->nRequestType ; \
+	resultBack.nRet = 0 ; \
+	resultBack.nTargetID = pRequest->nReqOrigID ; \
+	memcpy(resultBack.vArg,pRequest->vArg,sizeof(resultBack.vArg)) ;
+
+
+#define CON_REQ_MSG_JSON(msgCrossReq,jsonArg,autoBuf)  Json::StyledWriter jsWrite ;\
+	std::string str = jsWrite.write(jsonArg) ; \
+	msgCrossReq.nJsonsLen = strlen(str.c_str()); \
+	CAutoBuffer autoBuf(sizeof(msgCrossReq) + msgCrossReq.nJsonsLen ); \
+	autoBuf.addContent((char*)&msgCrossReq,sizeof(msgCrossReq)); \
+	autoBuf.addContent(str.c_str(),msgCrossReq.nJsonsLen ) ;
 
 #define CHECK_MSG_SIZE(CHECK_MSG,nLen) \
 {\

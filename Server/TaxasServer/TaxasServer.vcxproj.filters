@@ -90,8 +90,8 @@
     <ClInclude Include="..\ServerCommon\ServerCommon.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="src\httpRequest.h">
-      <Filter>src</Filter>
+    <ClInclude Include="..\ServerCommon\httpRequest.h">
+      <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -140,8 +140,8 @@
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="src\httpRequest.cpp">
-      <Filter>src</Filter>
+    <ClCompile Include="..\ServerCommon\httpRequest.cpp">
+      <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

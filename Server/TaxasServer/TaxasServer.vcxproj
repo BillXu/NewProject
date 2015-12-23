@@ -101,12 +101,12 @@
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
+    <ClInclude Include="..\ServerCommon\httpRequest.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
     <ClInclude Include="..\ServerCommon\ServerCommon.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
-    <ClInclude Include="src\httpRequest.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\RoomManager.h" />
     <ClInclude Include="src\TaxasRoom.h" />
@@ -121,10 +121,10 @@
     <ClCompile Include="..\..\Common\RoomConfig.cpp" />
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\httpRequest.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
-    <ClCompile Include="src\httpRequest.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RoomManager.cpp" />
     <ClCompile Include="src\TaxasRoom.cpp" />

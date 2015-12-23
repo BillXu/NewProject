@@ -7,7 +7,7 @@ class CNiuNiuRoomDistribute4CardState
 public:
 	enum  
 	{
-		eStateID = 0x2 ,
+		eStateID = eRoomState_NN_Disribute4Card ,
 	};
 public:
 	void enterState(IRoom* pRoom);

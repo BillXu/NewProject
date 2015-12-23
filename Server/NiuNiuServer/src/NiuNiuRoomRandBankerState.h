@@ -7,7 +7,7 @@ class CNiuNiuRoomRandBankerState
 public:
 	enum  
 	{
-		eStateID = 0x4 ,
+		eStateID = eRoomState_NN_RandBanker ,
 	};
 public:
 	void enterState(IRoom* pRoom);

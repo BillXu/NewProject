@@ -96,7 +96,6 @@
     <ClInclude Include="..\..\Common\ConfigManager.h" />
     <ClInclude Include="..\..\Common\ConfigReader.h" />
     <ClInclude Include="..\..\Common\ContinueLoginConfig.h" />
-    <ClInclude Include="..\..\Common\GoldenMessageDefine.h" />
     <ClInclude Include="..\..\Common\IConfigFile.h" />
     <ClInclude Include="..\..\Common\ItemConfig.h" />
     <ClInclude Include="..\..\Common\LogManager.h" />
@@ -121,6 +120,7 @@
     <ClInclude Include="..\DataServer\src\PlayerMail.h" />
     <ClInclude Include="..\DataServer\src\PlayerManager.h" />
     <ClInclude Include="..\DataServer\src\PlayerMission.h" />
+    <ClInclude Include="..\DataServer\src\PlayerNiuNiu.h" />
     <ClInclude Include="..\DataServer\src\PlayerTaxas.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
@@ -155,6 +155,7 @@
     <ClCompile Include="..\DataServer\src\PlayerMail.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerManager.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerMission.cpp" />
+    <ClCompile Include="..\DataServer\src\PlayerNiuNiu.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerTaxas.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />

@@ -4,11 +4,14 @@
 #include "NiuNiuRoomPlayer.h"
 #include "NiuNiuRoomBetState.h"
 #include "NiuNiuRoomRandBankerState.h"
+#include "LogManager.h"
 void CNiuNiuRoomTryBanker::enterState(IRoom* pRoom)
 {
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
 	m_nBiggestTimeTryBanker = 0 ;
-	setStateDuringTime(8) ;
+	setStateDuringTime(TIME_NIUNIU_TRY_BANKER) ;
+	m_nLeftTryBankerPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
+	CLogMgr::SharedLogMgr()->PrintLog("room id = %d , try banker ",m_pRoom->getRoomID());
 }
 
 bool CNiuNiuRoomTryBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
@@ -18,10 +21,62 @@ bool CNiuNiuRoomTryBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 		return true ;
 	}
 
-	if ( prealMsg->usMsgType )
+	if ( prealMsg->usMsgType == MSG_NN_PLAYER_TRY_BANKER )
 	{
-		// recive msg ;
+		stMsgNNPlayerTryBankerRet msgBack ;
+		stMsgNNPlayerTryBanker* pTryBanker = (stMsgNNPlayerTryBanker*)prealMsg ;
+		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID) ;
+		CLogMgr::SharedLogMgr()->PrintLog("try banker uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+		if ( pPlayer == nullptr )
+		{
+			msgBack.nRet = 3 ;
+		}
+		else if ( pPlayer->isHaveState(eRoomPeer_CanAct) == false )
+		{
+			 msgBack.nRet = 1 ;
+			 CLogMgr::SharedLogMgr()->PrintLog("try banker state error uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+		}
+		else if ( pPlayer->getTryBankerTimes() != 0  )
+		{
+			msgBack.nRet = 4 ;
+			 CLogMgr::SharedLogMgr()->PrintLog("try banker one more times  error uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+		}
+		else if ( (uint64_t)pPlayer->getCoin() < m_pRoom->getLeastCoinNeedForBeBanker( pTryBanker->nTryBankerBetTimes ) )
+		{
+			msgBack.nRet = 2 ;
+			CLogMgr::SharedLogMgr()->PrintLog("try banker coin not engough uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+		}
+		else
+		{
+			--m_nLeftTryBankerPlayerCnt ;
+			msgBack.nRet = 0 ;
+			if ( m_nBiggestTimeTryBanker < pTryBanker->nTryBankerBetTimes )
+			{
+				m_nBiggestTimeTryBanker = pTryBanker->nTryBankerBetTimes ;
+			}
+			pPlayer->setTryBankerTimes(pTryBanker->nTryBankerBetTimes) ;
+		}
+
+		m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+		if ( msgBack.nRet == 0 )
+		{
+			stMsgNNTryBanker msgTry ;
+			msgTry.nTryBankerBetTimes = pTryBanker->nTryBankerBetTimes ;
+			msgTry.nTryerIdx = pPlayer->getIdx() ;
+			m_pRoom->sendRoomMsg(&msgTry,sizeof(msgTry)) ;
+			m_pRoom->setBankCoinLimitForBet(pPlayer->getCoin()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("try banker ok uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+		}
+
+		// if erveryone have bet , then end this state 
+		if ( m_nLeftTryBankerPlayerCnt <= 0 )
+		{
+			onStateDuringTimeUp();
+		}
+		CLogMgr::SharedLogMgr()->PrintLog("try banker uid = %d ",pPlayer->getUserUID() ) ;
+		return true ;
 	}
+	return false ;
 }
 
 void CNiuNiuRoomTryBanker::onStateDuringTimeUp()
@@ -41,8 +96,13 @@ void CNiuNiuRoomTryBanker::onStateDuringTimeUp()
 	if ( vMaybeBanker.size() == 1 )
 	{
 		m_pRoom->setBankerIdx(vMaybeBanker.front()->getIdx()) ;
-		m_pRoom->goToState(CNiuNiuRoomBetState::eStateID);
 		// send msg tell banker idx ;
+		stMsgNNProducedBanker msgBanker ;
+		msgBanker.nBankerBetTimes = m_nBiggestTimeTryBanker ;
+		msgBanker.nBankerIdx = m_pRoom->getBankerIdx();
+		m_pRoom->sendRoomMsg(&msgBanker,sizeof(msgBanker)) ;
+
+		m_pRoom->goToState(CNiuNiuRoomBetState::eStateID);
 	}
 	else if ( vMaybeBanker.size() > 1 )
 	{

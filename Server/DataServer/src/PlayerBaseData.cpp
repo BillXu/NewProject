@@ -441,6 +441,11 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 			CGameServerApp::SharedGameServerApp()->sendMsg(pRequest->nReqOrigID,(char*)&msgLog,sizeof(msgLog));
 		}
 		break;
+	case eCrossSvrReq_SyncCoin:
+		{
+			m_stBaseData.nCoin = pRequest->vArg[0] ;
+		}
+		break;
 	default:
 		return false;
 	}

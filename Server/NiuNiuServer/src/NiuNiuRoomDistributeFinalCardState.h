@@ -5,7 +5,7 @@ class CNiuNiuRoomDistributeFinalCardState
 	:public IRoomState
 {
 public:
-	enum { eStateID = 0x6 };
+	enum { eStateID = eRoomState_NN_FinalCard };
 public:
 	void enterState(IRoom* pRoom);
 	void onStateDuringTimeUp();

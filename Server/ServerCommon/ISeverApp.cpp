@@ -68,7 +68,13 @@ bool IServerApp::OnMessage( Packet* pMsg )
 	stMsgTransferData* pData = (stMsgTransferData*)pRet ;
 	stMsg* preal = (stMsg*)( pMsg->_orgdata + sizeof(stMsgTransferData));
 
-	return onLogicMsg(preal,(eMsgPort)pData->nSenderPort,pData->nSessionID) ;
+	if ( onLogicMsg(preal,(eMsgPort)pData->nSenderPort,pData->nSessionID) )
+	{
+		return true ;
+	}
+
+	CLogMgr::SharedLogMgr()->ErrorLog("unprocessed msg = %d , from port = %d , session id = %d",preal->usMsgType,pData->nSenderPort,pData->nSessionID) ;
+	return false ;
 }
 
 bool IServerApp::OnLostSever(Packet* pMsg)
@@ -120,8 +126,10 @@ bool IServerApp::run()
 		update(fDelta);
 		Sleep(10);
 	}
-	shutDown();
+
 	onExit();
+	Sleep(4000);
+	shutDown();
 	return true ;
 }
 

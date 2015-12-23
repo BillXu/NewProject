@@ -48,7 +48,7 @@ CTaxasRoom::~CTaxasRoom()
 		*iter = NULL;
 	}
 	m_vAllPeers.clear() ;
-	SetEnableUpdate(true) ;
+	SetEnableUpdate(false) ;
 }
 
 bool CTaxasRoom::Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig )
