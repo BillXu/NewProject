@@ -85,26 +85,36 @@ std::string CServerNetworkImp::getIPportString(uint32_t nConnectID)
 	return "" ;
 }
 
-void CServerNetworkImp::closeSession(uint32_t nConnectID )
+void CServerNetworkImp::closeSession(uint32_t nConnectID , bool bServerClose )
 {
+	//printf("closeSession id = %d\n",nConnectID);
 	WriteLock wLock ( m_SessionMutex );
 	MAP_SESSION::iterator iter = m_vActiveSessions.find(nConnectID) ;
 	if ( iter != m_vActiveSessions.end() )
 	{
 		Session_ptr pt = iter->second ;
 		std::string str = pt->getIPString();
-		Packet* pack = new Packet ;
-		pack->_brocast = false ;
-		pack->_packetType = _PACKET_TYPE_DISCONNECT ;
-		pack->_connectID = nConnectID ;
-		pack->_len = str.size();
-		memset(pack->_orgdata,0,sizeof(pack->_orgdata));
-		memcpy(pack->_orgdata,str.c_str(),pack->_len);
-		addPacket(pack);
+		if ( bServerClose == false )
+		{
+			Packet* pack = new Packet ;
+			pack->_brocast = false ;
+			pack->_packetType = _PACKET_TYPE_DISCONNECT ;
+			pack->_connectID = nConnectID ;
+			pack->_len = str.size();
+			memset(pack->_orgdata,0,sizeof(pack->_orgdata));
+			memcpy(pack->_orgdata,str.c_str(),pack->_len);
+			addPacket(pack);
+			printf(" a peer disconnected \n") ;
+		}
+		else
+		{
+			printf("server post peer closed \n") ;
+		}
 		m_vActiveSessions.erase(iter) ;
 		pt->close();
-		printf("a peer disconected \n") ;
+		//printf("a peer disconected \n") ;
 	}
+	//printf("closeSession end id = %d\n",nConnectID);
 }
 
 bool CServerNetworkImp::sendMsg(uint32_t nConnectID , const char* pData , size_t nLen )
@@ -150,6 +160,12 @@ bool CServerNetworkImp::getFirstPacket(Packet** ppPacket ) // must delete out si
 	*ppPacket = p ;
 	m_vRecivedPackets.erase(iter) ;
 	return true ;
+}
+
+void CServerNetworkImp::closePeerConnection(uint32_t nConnectID )
+{
+	//printf("post close id = %d\n",nConnectID);
+	m_ioService.post(boost::bind(&CServerNetworkImp::closeSession, this,nConnectID,true));
 }
 
 void CServerNetworkImp::addPacket(Packet* pPacket )

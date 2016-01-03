@@ -99,7 +99,7 @@ void CServerNetwork::ClosePeerConnection(CONNECT_ID& nPeerToClose)
 {
 	if ( !m_pNetPeer )
 		return ;
-	m_pNetPeer->closeSession(nPeerToClose);
+	m_pNetPeer->closePeerConnection(nPeerToClose);
 }
 
 void CServerNetwork::AddDelegate(CServerNetworkDelegate* pDelegate , unsigned int nPriority /* = 0 */ )

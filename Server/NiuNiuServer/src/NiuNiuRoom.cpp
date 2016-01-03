@@ -361,6 +361,7 @@ void CNiuNiuRoom::onGameDidEnd()
 	msgSaveLog.nLogType = eLog_NiuNiuGameResult ;
 	msgSaveLog.nTargetID = getRoomID() ;
 	msgSaveLog.nJsonExtnerLen = 0 ;
+	memset(msgSaveLog.vArg,0,sizeof(msgSaveLog.vArg));
 	msgSaveLog.vArg[0] = getPlayerByIdx(m_nBankerIdx)->getUserUID();
 	msgSaveLog.vArg[1] = m_nBetBottomTimes ;
 	msgSaveLog.vArg[2] = getBaseBet() * m_nBetBottomTimes ;

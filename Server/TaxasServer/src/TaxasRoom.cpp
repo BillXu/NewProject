@@ -28,6 +28,7 @@ CTaxasRoom::CTaxasRoom()
 	m_nInformSerial = 0 ;
 	m_bRoomInfoDirty = false ;
 	m_TimeSaveTicket = 0 ;
+	m_nTotalProfit = 0 ;
 }
 
 CTaxasRoom::~CTaxasRoom()
@@ -63,6 +64,7 @@ bool CTaxasRoom::Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig )
 	m_nCurWaitPlayerActionIdx = 0;
 	m_nCurMainBetPool = 0;
 	m_nMostBetCoinThisRound = 0;
+	m_nTotalProfit = 0 ;
 	memset(m_vPublicCardNums,0,sizeof(m_vPublicCardNums)) ;
 	m_nBetRound = 0 ;
 	memset(m_vSitDownPlayers,0,sizeof(m_vSitDownPlayers)) ;
@@ -1387,6 +1389,7 @@ uint8_t CTaxasRoom::CaculateGameResult()
 	}
 
 	uint8_t nLastPoolIdx = GetFirstCanUseVicePool().nIdx ;
+	bool bSendEndFlag = false ;
 	for ( uint8_t nIdx = 0 ; nIdx < nLastPoolIdx; ++nIdx )
 	{
 		stVicePool& pool = m_vAllVicePools[nIdx] ;
@@ -1401,13 +1404,29 @@ uint8_t CTaxasRoom::CaculateGameResult()
 		msgResult.nPoolIdx = nIdx ;
 		msgResult.nWinnerCnt = 0;
 		msgResult.bIsLastOne = (nIdx + 1) >= nLastPoolIdx ;
+		CLogMgr::SharedLogMgr()->PrintLog("game reuslt pool idx = %d  isLast one = %d",nIdx,msgResult.bIsLastOne ) ;
 		VEC_INT8::iterator iter = pool.vWinnerIdxs.begin() ;
 		for ( ; iter != pool.vWinnerIdxs.end() ; ++iter )
 		{
 			msgResult.vWinnerIdx[msgResult.nWinnerCnt++] = (*iter); 
 		}
 		SendRoomMsg(&msgResult,sizeof(msgResult)) ;
+		if ( msgResult.bIsLastOne )
+		{
+			bSendEndFlag = true ;
+		}
 	}
+
+	if ( bSendEndFlag == false )  // must have a end flag msg ;
+	{
+		stMsgTaxasRoomGameResult msgResult ;
+		msgResult.nCoinPerWinner = 0;
+		msgResult.nPoolIdx = nLastPoolIdx ;
+		msgResult.nWinnerCnt = 0;
+		msgResult.bIsLastOne = true ;
+		SendRoomMsg(&msgResult,sizeof(msgResult)) ;
+	}
+
 	didCaculateGameResult();
 	return GetFirstCanUseVicePool().nIdx ;
 }
@@ -1487,14 +1506,14 @@ void CTaxasRoom::saveUpdateRoomInfo()
 	}
 	m_bRoomInfoDirty = false ;
 
-	stMsgSaveUpdateTaxasRoomInfo msgSave ;
+	stMsgSaveUpdateRoomInfo msgSave ;
+	msgSave.nRoomType = eRoom_TexasPoker ;
 	msgSave.nAvataID = m_nAvataID ;
 	msgSave.nDeadTime = m_nDeadTime ;
 	msgSave.nInformSerial = m_nInformSerial ;
 	msgSave.nRoomID = nRoomID ;
 	msgSave.nRoomProfit = m_nRoomProfit ;
 	msgSave.nTotalProfit = m_nTotalProfit ;
-	memset(msgSave.vRoomDesc,0,sizeof(msgSave.vRoomDesc));
 	memset(msgSave.vRoomName,0,sizeof(msgSave.vRoomName));
 	//sprintf(msgSave.vRoomDesc,"%s",m_strRoomDesc.c_str());
 	sprintf(msgSave.vRoomName,"%s",m_vRoomName );

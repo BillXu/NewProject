@@ -12,10 +12,10 @@ bool CRobotControlTaxas::init(const char* cAiFile,CTaxasPokerScene* pScene)
 		printf("load ai file error %s",cAiFile);
 	}
 	m_pScene = nullptr ;
-	m_eState = eRobot_StandUp ;
+	setState(eRobot_Max,false );
 	m_nMySeatIdx = MAX_PEERS_IN_TAXAS_ROOM ;
 	m_pScene = pScene ;
-	m_fTicketForCheckCanSitDown = float(rand() % 25 ) + 8;
+	m_fTicketForCheckCanSitDown = float(rand() % 5 ) + 8;
 	printf("robot enter room \n");
 	return true ;
 }
@@ -25,7 +25,7 @@ void CRobotControlTaxas::leave()
 	stMsgTaxasPlayerLeave msgLeave ;
 	msgLeave.nRoomID = m_pScene->getPokerData()->nRoomID ;
 	m_pScene->SendMsg(&msgLeave,sizeof(msgLeave)) ;
-	m_eState = eRobot_WaitLeaving ;
+	setState(eRobot_StandingUpForLeave,true);
 }
 
 void CRobotControlTaxas::update(float fdeta )
@@ -33,41 +33,38 @@ void CRobotControlTaxas::update(float fdeta )
 	CRobotControl::update(fdeta);
 
 	// wait to sit down ;
-	if ( m_eState == eRobot_WaitPosSitDown && m_pScene->getPokerData()->nRoomID )
+	if ( eRobot_WantSitDown == m_eState )
 	{
-		TryingSitDown();
+		if ( m_pScene->getPokerData()->getPlayerCnt() >= m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
+		{
+			m_eState = eRobot_StandUp ;
+			m_fTicketForCheckCanSitDown = float(rand() % 10 ) + 5;
+
+			printf("too manay robot , i do not want sit down, just standup \n") ;
+		}
+		else
+		{
+			m_fTicketForCheckCanSitDown -= fdeta ;
+			if ( m_fTicketForCheckCanSitDown < 0 )
+			{
+				findSeatIdxSitDown();
+				m_fTicketForCheckCanSitDown = float(rand() % 10 ) + 5;
+			}
+		}
 	}
 
-	if ( eRobot_StandUp == m_eState && m_pScene->getPokerData()->getPlayerCnt() < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
+	// check want sit down 
+	if ( m_eState == eRobot_StandUp && m_pScene->getPokerData()->getPlayerCnt() < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
 	{
-		m_fTicketForCheckCanSitDown -= fdeta ;
-		if ( fdeta < 0 )
-		{
-			orderSitdown();
-			m_fTicketForCheckCanSitDown = float(rand() % 25 ) + 5;
-		}
-		
+		m_eState = eRobot_WantSitDown ;
+		printf("too few robot , i want sit down\n") ;
 	}
 
-	// check lack of coin state 
-	if ( m_eState == eRobot_Playing && isRobotSitDown() )
+	// check lack coin still sit down 
+	if ( eRobot_SitDown == m_eState && m_pScene->getPokerData()->eCurRoomState == eRoomState_TP_WaitJoin && m_pScene->getPokerData()->getPlayerCnt() >= 2 )
 	{
-		stTaxasPeerBaseData* playerData = m_pScene->getPokerData()->getTaxasPlayerData(m_nMySeatIdx);
-		if ( (playerData->nStateFlag & eRoomPeer_LackOfCoin) == eRoomPeer_LackOfCoin )
-		{
-			standUp();
-			if ( m_pScene->getPokerData()->getPlayerCnt() < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
-			{
-				m_eState = eRobot_WaitPosSitDown ;
-				printf("sit down failed , try seek other pos, target pos have other player \n");
-			}
-			else
-			{
-				m_eState = eRobot_StandUp ;
-				printf("sit down failed , enough robot so keep standup  \n");
-			}
-			printf("i lack of coin , so standup , then sitdown , retake in coin name = %s\n",playerData->cName);
-		}
+		//printf("when come here ,a bug occured \n") ;
+		onGameEnd(m_pScene->getPokerData()->getPlayerCnt());
 	}
 }
 
@@ -213,12 +210,13 @@ void CRobotControlTaxas::onSelfStandUp()
 {
 	m_nMySeatIdx = MAX_PEERS_IN_TAXAS_ROOM ;
 
-	if ( m_eState == eRobot_WaitStandUpReSitDown )
+	if ( m_eState == eRobot_StandingUpForSaveCoin )
 	{
-		m_eState = eRobot_WaitPosSitDown ;
-		printf("standup, but go in seek pos to sit down \n");
+		m_eState = eRobot_WantSitDown ;
+		printf("save coin ok, seek pos to sit down \n");
+		findSeatIdxSitDown();
 	}
-	else if ( m_eState == eRobot_WaitLeaving )
+	else if ( m_eState == eRobot_StandingUpForLeave )
 	{
 		// do nothing 
 		printf("standup for leave \n");
@@ -226,8 +224,8 @@ void CRobotControlTaxas::onSelfStandUp()
 	}
 	else
 	{
-		m_eState = eRobot_WaitPosSitDown ;
-		printf("what situation , standup here , money lose all? \n");
+		m_eState = eRobot_StandUp ;
+		printf("i stand up \n");
 	}
 }
 
@@ -247,22 +245,13 @@ void CRobotControlTaxas::onSitDownFailed( uint8_t nRet )
 {
 	if ( nRet == 1 )
 	{
-		if ( m_pScene->getPokerData()->getPlayerCnt() < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
-		{
-			m_eState = eRobot_WaitPosSitDown ;
-			printf("sit down failed , try seek other pos, target pos have other player \n");
-		}
-		else
-		{
-			m_eState = eRobot_StandUp ;
-			printf("sit down failed , enough robot so keep standup  \n");
-		}		
-		
+		m_eState = eRobot_StandUp ;	
+		printf("i do stand up, i sit down failed \n") ;
 	}
 	else if ( 2 == nRet )
 	{
 		standUp();
-		m_eState = eRobot_StandUp ;
+		m_eState = eRobot_StandingUp ;
 		printf("sit down failed , already sit down, standup again  \n");
 	}
 	else
@@ -283,37 +272,35 @@ void CRobotControlTaxas::onSelfGiveUp()
 	if ( m_pScene->getPokerData()->getPlayerCnt() >= m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
 	{
 		standUp();
-		m_eState = eRobot_StandUp ;
+		m_eState = eRobot_StandingUp ;
+		printf(" too many robot , i stand up\n") ;
+		return  ;
 	}
-	else
+ 
+	// had win too much money , so standup save coin 
+	stTaxasPeerBaseData* playerData = m_pScene->getPokerData()->getTaxasPlayerData(m_nMySeatIdx);
+	if ( playerData->nTakeInMoney > m_pScene->getPokerData()->nMaxTakeIn * ( rand() % 4 + 2 ) )
+	{
+		standUp();
+		m_eState = eRobot_StandingUpForSaveCoin ;
+
+		printf("standup for save coin, win too much haha \n");
+		return ;
+	}
+
+	// check lack of coin state 
+	if ( m_eState == eRobot_Playing && isRobotSitDown() )
 	{
 		stTaxasPeerBaseData* playerData = m_pScene->getPokerData()->getTaxasPlayerData(m_nMySeatIdx);
-		if ( playerData->nTakeInMoney > m_pScene->getPokerData()->nMaxTakeIn * 4 )
+		if ( (playerData->nTakeInMoney <= m_pScene->getPokerData()->nLittleBlind * 4 ))
 		{
 			standUp();
-			m_eState = eRobot_WaitStandUpReSitDown ;
-
-			printf("standup for save coin, win too much haha \n");
+			m_eState = eRobot_StandingUp ;
+			printf("i lack of coin , so standup , then sitdown , retake in coin name = %s\n",playerData->cName);
 		}
 	}
 }
 
-void CRobotControlTaxas::orderSitdown()
-{
-	if ( eRobot_StandUp == m_eState )
-	{
-		m_eState = eRobot_WaitPosSitDown ;
-		printf("try to sit down robot too few\n");
-	}
-}
-
-void CRobotControlTaxas::onRecivedAllRoomPlayers( uint8_t nCnt )
-{
-	if ( nCnt < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
-	{
-		orderSitdown();
-	}
-}
 
 void CRobotControlTaxas::onWithdrawMoneyFailed()
 {
@@ -333,9 +320,9 @@ void CRobotControlTaxas::standUp()
 	}
 }
 
-void CRobotControlTaxas::TryingSitDown()
+void CRobotControlTaxas::findSeatIdxSitDown()
 {
-	if ( m_eState == eRobot_WaitPosSitDown && m_pScene->getPokerData()->nRoomID )
+	if ( eRobot_WantSitDown == m_eState && m_pScene->getPokerData()->nRoomID )
 	{
 		stMsgTaxasPlayerSitDown sitDown ;
 		sitDown.nRoomID = m_pScene->getPokerData()->nRoomID ;
@@ -358,12 +345,27 @@ void CRobotControlTaxas::TryingSitDown()
 			m_pScene->SendMsg(&sitDown,sizeof(sitDown));
 			m_eState = eRobot_SitingDown;
 			printf("find a seat , sit down \n");
-		}	
+		}
+		else
+		{
+			m_eState = eRobot_WantSitDown;
+			printf("can not find seat , try find later \n");
+		}
+	}
+	else
+	{
+		printf("state = %d error , can not find pos to sit down \n", m_eState) ;
 	}
 }
 
 void CRobotControlTaxas::onGameEnd( uint8_t nCnt )
 {
+	if ( m_eState != eRobot_SitDown )
+	{
+		printf("i do not sit down , so end not onGameEnd\n") ;
+		return ;
+	}
+
 	if ( nCnt >= m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
 	{
 		printf("too many robot try leave : idx = %d \n",m_nMySeatIdx ) ;
@@ -371,7 +373,58 @@ void CRobotControlTaxas::onGameEnd( uint8_t nCnt )
 		{
 			printf("too many robot rand do standup : idx = %d \n",m_nMySeatIdx ) ;
 			standUp();
-			m_eState = eRobot_StandUp ; 
+			m_eState = eRobot_StandingUp ; 
+			return ;
 		}
+	}
+
+	// check lack of coin state 
+	if ( m_eState == eRobot_Playing && isRobotSitDown() )
+	{
+		stTaxasPeerBaseData* playerData = m_pScene->getPokerData()->getTaxasPlayerData(m_nMySeatIdx);
+		if ( (playerData->nTakeInMoney <= m_pScene->getPokerData()->nLittleBlind * 4 ))
+		{
+			standUp();
+			m_eState = eRobot_StandingUp ;
+
+			m_fTicketForCheckCanSitDown = float(rand() % 5 ) + 1;
+			printf(" on game end  i lack of coin , so standup , then sitdown , retake in coin name = %s\n",playerData->cName);
+		}
+	}
+}
+
+void CRobotControlTaxas::setState( eRobotState eState, bool isNeedSvrBack )
+{
+	m_eState = eState ; 
+//	m_bWaitingSvrResult = isNeedSvrBack ;
+}
+
+void CRobotControlTaxas::onSitdownPlayerCntChanged( uint8_t nCurCnt )
+{
+	if ( m_eState != eRobot_StandUp )
+	{
+		return ;
+	}
+
+	if ( nCurCnt < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
+	{
+		m_eState = eRobot_WantSitDown ;
+		printf("current player cnt = %d ,i want dit down \n", nCurCnt) ;
+	}
+}
+
+void CRobotControlTaxas::onEnterRoom()
+{
+	if ( m_eState != eRobot_Max )
+	{
+		return ;
+	}
+	printf("on enter room \n") ;
+	m_eState = eRobot_StandUp ;
+	if ( m_pScene->getPokerData()->getPlayerCnt() < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount )
+	{
+		printf("too few robot , i sit down enter room \n") ;
+		m_eState = eRobot_WantSitDown ;
+		findSeatIdxSitDown();
 	}
 }

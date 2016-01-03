@@ -96,6 +96,7 @@ public:
 	uint32_t getConfigID();
 	uint32_t getDeadTime();
 	void sendExpireInform();
+	void finishReadInfoInitRoom(){ m_bRoomInfoDiry = false ; }
 protected:
 	bool addRoomState(IRoomState* pRoomState );
 private:
@@ -107,6 +108,7 @@ private:
 	CPoker m_tPoker ;
 	
 	// creator info 
+	bool m_bRoomInfoDiry ;
 	uint32_t m_nRoomOwnerUID ;
 	uint32_t m_nCreateTime ;
 	uint32_t m_nDeadTime ;

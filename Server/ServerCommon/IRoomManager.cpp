@@ -98,6 +98,37 @@ bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 
 bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
 {
+	if ( MSG_READ_ROOM_INFO == prealMsg->usMsgType )
+	{
+		stMsgReadRoomInfoRet* pRet = (stMsgReadRoomInfoRet*)prealMsg ;
+		assert(pRoomConfig&&"why config is null");
+		CLogMgr::SharedLogMgr()->PrintLog("read room info room id = %d",pRet->nRoomID);
+		IRoom* pRoom = doCreateInitedRoomObject(pRet->nRoomID,pRet->nConfigID,(eRoomType)pRet->nRoomType) ;
+		m_vRooms[pRoom->getRoomID()] = pRoom ;
+		pRoom->setOwnerUID(pRet->nRoomOwnerUID);
+		pRoom->setRoomName(pRet->vRoomName);
+		pRoom->setDeadTime(pRet->nDeadTime);
+		pRoom->setProfit(pRet->nRoomProfit);
+		pRoom->setAvataID(pRet->nAvataID);
+		pRoom->setCreateTime(pRet->nCreateTime);
+		pRoom->setInformSieral(pRet->nInformSerial);
+		pRoom->setChatRoomID(pRet->nChatRoomID);
+		if ( pRet->nInformLen )
+		{
+			CAutoBuffer auBufo (pRet->nInformLen + 1 );
+			auBufo.addContent( ((char*)&pRet->nInformLen) + sizeof(pRet->nInformLen),pRet->nInformLen);
+			pRoom->setRoomInform(auBufo.getBufferPtr()) ;
+		}
+
+		if ( pRet->nRoomID > m_nMaxRoomID )
+		{
+			m_nMaxRoomID = pRet->nRoomID ;
+		}
+
+		addRoomToCreator(pRoom);
+		addRoomToConfigRooms(pRoom);
+		return true ;
+	}
 	return false ;
 }
 
@@ -198,12 +229,36 @@ void IRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 		}
 
 		IRoom* pRoom = (IRoom*)pUserData ;
-		onGetChatRoomIDResult(pRoom,bSuccess) ;
+
+		stMsgCrossServerRequestRet msgRet ;
+		msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
+		msgRet.nReqOrigID = pRoom->getRoomID();
+		msgRet.nTargetID = pRoom->getOwnerUID();
+		msgRet.nRequestType = eCrossSvrReq_CreateRoom ;
+		msgRet.nRequestSubType = eCrossSvrReqSub_Default;
+		msgRet.nRet = bSuccess ? 0 : 2 ;
+		msgRet.vArg[0] = pRoom->getConfigID() ;
+		msgRet.vArg[1] = pRoom->getRoomID() ;
+		msgRet.vArg[2] = pRoom->getRoomType() ;
+		msgRet.vArg[3] = ( pRoom->getDeadTime() - pRoom->getCreateTime() ) / (60*60*24) ;
+		sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
+
 		if ( bSuccess )
 		{
 			pRoom->setChatRoomID(nChatRoomID);
+
+			stMsgSaveCreateRoomInfo msgCreateInfo ;
+			msgCreateInfo.nRoomType = pRoom->getRoomType() ;
+			msgCreateInfo.nCreateTime = pRoom->getCreateTime();
+			msgCreateInfo.nConfigID = pRoom->getConfigID() ;
+			msgCreateInfo.nRoomID = pRoom->getRoomID();
+			msgCreateInfo.nRoomOwnerUID = pRoom->getOwnerUID() ;
+			msgCreateInfo.nChatRoomID = nChatRoomID ;
+			sendMsg(&msgCreateInfo,sizeof(msgCreateInfo),pRoom->getRoomID());
+
 			pRoom->onTimeSave(true);
 			addRoomToCreator(pRoom);
+			addRoomToConfigRooms(pRoom);
 		}
 		else
 		{
@@ -215,11 +270,6 @@ void IRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 			}
 		}
 	}
-}
-
-void IRoomManager::onGetChatRoomIDResult(IRoom* pNewRoom, bool bSuccess )
-{
-
 }
 
 bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
@@ -239,7 +289,9 @@ bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		msgRet.nRet = 0 ;
 		msgRet.vArg[0] = pRequest->vArg[0];
 		msgRet.vArg[1] = 0 ;
-		IRoom* pRoom = doCreateInitedRoomObject(++m_nMaxRoomID,nConfigID);
+		msgRet.vArg[2] = pRequest->vArg[2] ;
+		msgRet.vArg[3] = pRequest->vArg[1] ;
+		IRoom* pRoom = doCreateInitedRoomObject(++m_nMaxRoomID,nConfigID,(eRoomType)pRequest->vArg[2]);
 		if ( pRoom == nullptr )
 		{
 			--m_nMaxRoomID;
@@ -303,6 +355,22 @@ void IRoomManager::addRoomToCreator(IRoom* pRoom)
 	sInfo.nPlayerUID = pRoom->getOwnerUID() ;
 	sInfo.vRooms.push_back(pRoom) ;
 	m_vCreatorAndRooms[sInfo.nPlayerUID] = sInfo ;
+}
+
+void IRoomManager::addRoomToConfigRooms(IRoom* pRoom)
+{
+	MAP_CONFIG_ROOMS::iterator iter = m_vCongfigIDRooms.find( pRoom->getConfigID() ) ;
+	if ( iter == m_vCongfigIDRooms.end() )
+	{
+		LIST_ROOM vRooms ;
+		vRooms.push_back(pRoom);
+		m_vCongfigIDRooms[pRoom->getConfigID()] = vRooms ;
+		return ;
+	}
+
+	LIST_ROOM& vRoom = iter->second ;
+	vRoom.push_back(pRoom) ;
+	return ;
 }
 
 bool IRoomManager::getRoomCreatorRooms(uint32_t nCreatorUID, LIST_ROOM& vInfo )

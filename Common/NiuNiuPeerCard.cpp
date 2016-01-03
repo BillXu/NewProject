@@ -64,7 +64,6 @@ const char*  CNiuNiuPeerCard::getNameString()
 		caculateCards();
 	}
 #ifndef SERVER
-    //return Language::getInstance()->get("niuniu_wuxiaoniu");
     std::string str = "niuniu_meiniu";
     switch (m_eType) {
         case Niu_None:
@@ -76,11 +75,8 @@ const char*  CNiuNiuPeerCard::getNameString()
         case Niu_Niu:
             str = "niuniu_niuniu";
             break;
-        case Niu_Silver:
-            str = "niuniu_yinniu";
-            break;
-        case Niu_Golden:
-            str = "niuniu_jinniu";
+        case Niu_FiveFlower:
+            str = "niuniu_wuhuaniu";
             break;
         case Niu_Boom:
             str = "niuniu_zhadan";
@@ -149,19 +145,14 @@ void CNiuNiuPeerCard::caculateCards()
 		m_eType = Niu_FiveSmall ;
 		m_nPoint = 10 ;
 	}
+    else if ( checkFiveFlower())
+    {
+        m_eType = Niu_FiveFlower;
+        m_nPoint = 10 ;
+    }
 	else if ( checkBoom() )
 	{
 		m_eType = Niu_Boom ;
-		m_nPoint = 10 ;
-	}
-	else if ( checkNiuGolden())
-	{
-		 m_eType = Niu_Golden ;
-		 m_nPoint = 10 ;
-	}
-	else if ( checkNiuSilver() )
-	{
-		m_eType = Niu_Silver ;
 		m_nPoint = 10 ;
 	}
 	else
@@ -219,30 +210,8 @@ bool CNiuNiuPeerCard::checkFiveSmall()
 	return nTotalPoint < 10 ;
 }
 
-bool CNiuNiuPeerCard::checkNiuSilver()
-{
-	bool bFind10 = false ;
-	for ( CCard& nCard : m_vHoldCards )
-	{
-		if ( nCard.GetCardFaceNum() < 10 )
-		{
-			return false ;
-		}
-		
-		if ( nCard.GetCardFaceNum() == 10 )
-		{
-			if ( bFind10 )
-			{
-				return false ;
-			}
-			bFind10 = true ;
-		}
-	}
 
-	return bFind10 ;
-}
-
-bool CNiuNiuPeerCard::checkNiuGolden()
+bool CNiuNiuPeerCard::checkFiveFlower()
 {
 	for ( CCard& nCard : m_vHoldCards )
 	{
@@ -257,27 +226,32 @@ bool CNiuNiuPeerCard::checkNiuGolden()
 bool CNiuNiuPeerCard::checkBoom()
 {
 	uint8_t nCard1 = 0, nCard2 = 0 ;
+    uint8_t nCard1Count = 0, nCard2Count = 0 ;
 	for ( CCard& nCard : m_vHoldCards )
 	{
 		if ( nCard1 == 0 )
 		{
 			nCard1 = nCard.GetCardFaceNum() ;
+            nCard1Count++;
 			continue;
 		}
 
-		if ( nCard1 == nCard.GetCardFaceNum() )
+		if ( nCard1 == nCard.GetCardFaceNum()  && nCard2Count<=1)
 		{
+            nCard1Count++;
 			continue;
 		}
 
 		if ( nCard2 == 0 )
 		{
 			nCard2 = nCard.GetCardFaceNum() ;
+            nCard2Count++;
 			continue;
 		}
 
-		if ( nCard2 == nCard.GetCardFaceNum() )
+		if ( nCard2 == nCard.GetCardFaceNum() && nCard1Count<=1)
 		{
+            nCard2Count++;
 			continue;
 		}
 		return false ;

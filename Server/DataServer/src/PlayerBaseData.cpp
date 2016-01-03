@@ -194,6 +194,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			msgback.nRet = 0 ;
 			SendMsg(&msgback,sizeof(msgback)) ;
 			m_bPlayerInfoDataDirty = true ;
+			CLogMgr::SharedLogMgr()->SystemLog("change sex uid = %d , new sex = %d",GetPlayer()->GetUserUID(),pRet->nNewSex) ;
 		}
 		break;
 	case MSG_PUSH_APNS_TOKEN:
@@ -312,7 +313,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
  			msgBack.nFinalCoin = GetAllCoin();
  			msgBack.nGetCoin = 0;
  			msgBack.nLeftSecond = 0 ;
- 			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )
+ 			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )  
  			{
  				msgBack.nRet = 1 ;
  			}
@@ -468,7 +469,7 @@ void CPlayerBaseData::SendBaseDatToClient()
 	msg.nSessionID = GetPlayer()->GetSessionID() ;
 	SendMsg(&msg,sizeof(msg)) ;
 	CLogMgr::SharedLogMgr()->PrintLog("send base data to session id = %d ",GetPlayer()->GetSessionID() );
-	CLogMgr::SharedLogMgr()->SystemLog("send data uid = %d , final coin = %I64d",GetPlayer()->GetUserUID(),GetAllCoin());
+	CLogMgr::SharedLogMgr()->SystemLog("send data uid = %d , final coin = %I64d, sex = %d",GetPlayer()->GetUserUID(),GetAllCoin(),msg.stBaseData.nSex);
 }
 
 void CPlayerBaseData::OnProcessContinueLogin()

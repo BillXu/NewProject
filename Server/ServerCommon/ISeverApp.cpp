@@ -82,6 +82,8 @@ bool IServerApp::OnLostSever(Packet* pMsg)
 	m_nTargetSvrNetworkID = INVALID_CONNECT_ID ;
 	CLogMgr::SharedLogMgr()->ErrorLog("Target server disconnected !") ;
 	m_eConnectState = CNetWorkMgr::eConnectType_Disconnectd ;
+
+	m_fReconnectTick = TIME_WAIT_FOR_RECONNECT ;// right now start reconnect ;
 	return false ;
 }
 
@@ -242,7 +244,7 @@ void IServerApp::doConnectToTargetSvr()
 	assert(m_stConnectConfig.nPort && "please set connect config" ) ;
 	m_pNetWork->ConnectToServer(m_stConnectConfig.strIPAddress,m_stConnectConfig.nPort,m_stConnectConfig.strPassword) ;
 	m_eConnectState = CNetWorkMgr::eConnectType_Connecting ;
-	CLogMgr::SharedLogMgr()->SystemLog("connect to target svr ip = %s", m_stConnectConfig.strIPAddress );
+	CLogMgr::SharedLogMgr()->SystemLog("connecting to target svr ip = %s", m_stConnectConfig.strIPAddress );
 }
 uint16_t IServerApp::getVerifyType()
 {

@@ -6,6 +6,7 @@
 struct stRobotAI ;
 class CClientRobot
 	:public CThreadT
+	,public CNetMessageDelegate
 {
 public:
 	CClientRobot();
@@ -19,6 +20,10 @@ public:
 	unsigned int GetSessionID(){ return m_pPlayerData->GetSessionID(); }
 	void SetSessionID( unsigned int nSeseID){ nSessionID = nSeseID;}
 	CNetWorkMgr* GetNetWork(){ return &m_pNetWork ;}
+	bool OnLostSever()override ;
+	bool OnConnectStateChanged( eConnectState eSate, Packet* pMsg )override ;
+	void processReconnect( float fDelt );
+	bool OnMessage( Packet* pMsg );
 protected:
 	CNetWorkMgr m_pNetWork ;
 	CPlayerData* m_pPlayerData ;
@@ -27,4 +32,10 @@ protected:
 	unsigned int nSessionID ;
 	stRobotAI* m_pRobotAI ;
 	std::string m_strAiFile ,m_strPassword, m_strAccount;
+
+	std::string m_strTargetIP ;
+	uint16_t m_nTargetPort ;
+
+	bool m_bWaitReonnect ;
+	float m_fReconnectTick ;
 };

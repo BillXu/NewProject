@@ -68,7 +68,7 @@ public:
 	LIST_ITER GetEndIter(){ return m_vAllConfig.end();}
 	virtual void OnFinishPaseFile();
 	int GetConfigCnt();
-	stTaxasRoomConfig* GetConfigByConfigID( uint16_t nConfigID );
+	stBaseRoomConfig* GetConfigByConfigID( uint16_t nConfigID );
 protected:
 	void Clear() ;
 protected:

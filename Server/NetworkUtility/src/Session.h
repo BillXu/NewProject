@@ -31,7 +31,7 @@ public:
 
 	// handle heatBeat
 	void startWaitFirstMsg();
-	void handleCheckFirstMsg();
+	void handleCheckFirstMsg(const boost::system::error_code& ec);
 
 	void startHeartbeatTimer();
 	void sendHeatBeat( const boost::system::error_code& ec );

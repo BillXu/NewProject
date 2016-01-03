@@ -8,6 +8,7 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	stBaseRoomConfig* pRoomConfig = NULL ;
 	switch ( cType )
 	{
+	case eRoom_NiuNiu:
 	case eRoom_TexasPoker:
 	case eRoom_TexasPoker_Diamoned:
 		{
@@ -72,14 +73,14 @@ int CRoomConfigMgr::GetConfigCnt( )
 	return m_vAllConfig.size() ;
 }
 
-stTaxasRoomConfig* CRoomConfigMgr::GetConfigByConfigID( uint16_t nConfigID )
+stBaseRoomConfig* CRoomConfigMgr::GetConfigByConfigID( uint16_t nConfigID )
 {
 	LIST_ITER iter = GetBeginIter() ;
 	for ( ; iter != GetEndIter() ; ++iter )
 	{
 		if ( (*iter)->nConfigID == nConfigID )
 		{
-			return (stTaxasRoomConfig*)(*iter) ;
+			return (stBaseRoomConfig*)(*iter) ;
 		}
 	}
 	return nullptr ;

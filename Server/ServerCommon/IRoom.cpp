@@ -31,6 +31,8 @@ IRoom::IRoom()
 	m_nChatRoomID = 0;
 	m_nConfigID = 0;
 	m_bDirySorted = false ;
+
+	m_bRoomInfoDiry = false ;
 }
 
 IRoom::~IRoom()
@@ -87,6 +89,7 @@ bool IRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID )
 	msgReadRoomPlayerData.nRoomType = getRoomType() ;
 	sendMsgToPlayer(&msgReadRoomPlayerData,sizeof(msgReadRoomPlayerData),nRoomID) ;
 	CLogMgr::SharedLogMgr()->PrintLog("read room player data uid = %d",nRoomID ) ;
+	m_bRoomInfoDiry = false ;
 	return true ;
 }
 
@@ -304,6 +307,34 @@ void IRoom::onTimeSave( bool bRightNow )
 			CLogMgr::SharedLogMgr()->PrintLog("time save room player data room id = %d  , uid = %d",getRoomID(),ranData->nUserUID);
 		}
 	}
+
+	if ( m_bRoomInfoDiry )
+	{
+		m_bRoomInfoDiry = false ;
+		stMsgSaveUpdateRoomInfo msgSave ;
+		msgSave.nRoomType = getRoomType() ;
+		msgSave.nAvataID = m_nAvataID ;
+		msgSave.nDeadTime = m_nDeadTime ;
+		msgSave.nInformSerial = m_nInformSerial ;
+		msgSave.nRoomID = getRoomID() ;
+		msgSave.nRoomProfit = m_nRoomProfit ;
+		msgSave.nTotalProfit = m_nTotalProfit ;
+		memset(msgSave.vRoomName,0,sizeof(msgSave.vRoomName));
+		//sprintf(msgSave.vRoomDesc,"%s",m_strRoomDesc.c_str());
+		sprintf_s(msgSave.vRoomName,sizeof(msgSave.vRoomName),"%s",m_vRoomName );
+		msgSave.nInformLen = strlen(m_strRoomInForm.c_str());
+		if ( msgSave.nInformLen == 0 )
+		{
+			sendMsgToPlayer(&msgSave,sizeof(msgSave),0) ;
+			return ;
+		}
+
+		CAutoBuffer autoBuffer(sizeof(msgSave) + msgSave.nInformLen);
+		autoBuffer.addContent((char*)&msgSave,sizeof(msgSave)) ;
+		autoBuffer.addContent(m_strRoomInForm.c_str(),msgSave.nInformLen) ;
+		sendMsgToPlayer((stMsg*)autoBuffer.getBufferPtr(),autoBuffer.getContentSize(),0) ;
+	}
+
 }
 
 void IRoom::goToState(IRoomState* pTargetState )
@@ -357,6 +388,7 @@ void IRoom::onCreateByPlayer(uint32_t nUserUID, uint16_t nRentDays )
 	setOwnerUID(nUserUID);
 	m_nCreateTime = time(nullptr);
 	m_nDeadTime = m_nCreateTime + TIME_SECONDS_PER_DAY*nRentDays ;
+	m_bRoomInfoDiry = true ;
 }
 
 void IRoom::setOwnerUID(uint32_t nCreatorUID )
@@ -377,16 +409,19 @@ void IRoom::addLiftTime(uint32_t nDays )
 		m_nDeadTime = tNow ;
 	}
 	m_nDeadTime += TIME_SECONDS_PER_DAY*nDays ;
+	m_bRoomInfoDiry = true ;
 }
 
 void IRoom::setDeadTime(uint32_t nDeadTime)
 {
 	m_nDeadTime = nDeadTime ;
+	m_bRoomInfoDiry = true ;
 }
 
 void IRoom::setAvataID(uint32_t nAvaID )
 {
 	m_nAvataID = nAvaID ;
+	m_bRoomInfoDiry = true ;
 }
 
 void IRoom::setRoomName(const char* pRoomName)
@@ -399,6 +434,7 @@ void IRoom::setRoomName(const char* pRoomName)
 
 	memset(m_vRoomName,0,sizeof(m_vRoomName)) ;
 	memcpy_s(m_vRoomName,MAX_LEN_ROOM_NAME,pRoomName,strlen(pRoomName));
+	m_bRoomInfoDiry = true ;
 }
 
 const char* IRoom::getRoomName()
@@ -414,6 +450,7 @@ void IRoom::setRoomInform(const char* pRoomInform )
 		return ;
 	}
 	m_strRoomInForm = pRoomInform ;
+	m_bRoomInfoDiry = true ;
 }
 
 bool IRoom::isRoomAlive()
@@ -429,11 +466,13 @@ bool IRoom::isRoomAlive()
 void IRoom::setProfit(uint64_t nProfit )
 {
 	m_nRoomProfit = nProfit ;
+	m_bRoomInfoDiry = true ;
 }
 
 void IRoom::setCreateTime(uint32_t nTime)
 {
 	m_nCreateTime = nTime ;
+	m_bRoomInfoDiry = true ;
 }
 
 uint32_t IRoom::getCreateTime()
@@ -444,11 +483,13 @@ uint32_t IRoom::getCreateTime()
 void IRoom::setInformSieral(uint32_t nSieaial)
 {
 	m_nInformSerial = nSieaial ;
+	m_bRoomInfoDiry = true ;
 }
 
 void IRoom::setChatRoomID(uint64_t nChatRoomID )
 {
 	m_nChatRoomID = nChatRoomID ;
+	m_bRoomInfoDiry = true ;
 }
 
 uint32_t IRoom::getConfigID()

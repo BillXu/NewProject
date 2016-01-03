@@ -53,6 +53,7 @@ bool CLogSvrApp::init()
 }
 void CLogSvrApp::update(float fDeta)
 {
+	IServerApp::update(fDeta);
 	// process DB Result ;
 	CDBRequestQueue::VEC_DBRESULT vResultOut ;
 	CDBRequestQueue::SharedDBRequestQueue()->GetAllResult(vResultOut) ;

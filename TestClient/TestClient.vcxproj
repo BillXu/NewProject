@@ -128,6 +128,7 @@
     <ClInclude Include="..\Common\MemoryManager.h" />
     <ClInclude Include="..\Common\MessageDefine.h" />
     <ClInclude Include="..\Common\MessageIdentifer.h" />
+    <ClInclude Include="..\Common\NiuNiuMessageDefine.h" />
     <ClInclude Include="..\Common\TaxasMessageDefine.h" />
     <ClInclude Include="..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\Common\Utility.h" />

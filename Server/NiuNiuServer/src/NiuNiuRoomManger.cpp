@@ -9,7 +9,7 @@ bool CNiuNiuRoomManager::init()
 	IRoomManager::init();
 
 	// temp create room ;
-	IRoom* pRoom = doCreateInitedRoomObject(1,2);
+	IRoom* pRoom = doCreateInitedRoomObject(1,2,eRoom_NiuNiu);
 	assert(pRoom&&"create room must success");
 	if ( pRoom == nullptr )
 	{
@@ -55,7 +55,16 @@ bool CNiuNiuRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest 
 			FILL_CROSSE_REQUEST_BACK(resultBack,pRequest,eSenderPort);
 			resultBack.vArg[1] = eRoom_NiuNiu ;
 			resultBack.vArg[2] = pRequest->vArg[1] ;
-			IRoom* pRoom = GetRoomByID(pRequest->vArg[1]) ;
+			IRoom* pRoom = nullptr ;
+			if ( resultBack.vArg[3] == 0 )
+			{
+				pRoom = GetRoomByID(pRequest->vArg[1]) ;
+			}
+			else
+			{
+				pRoom = getRoomByConfigID(pRequest->vArg[1]) ;
+			}
+
 			if ( pRoom == nullptr )
 			{
 				resultBack.nRet = 1 ;
@@ -63,6 +72,8 @@ bool CNiuNiuRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest 
 				CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d , for uid = %d to enter",(uint32_t)pRequest->vArg[1],pRequest->nTargetID) ;
 				return true ;
 			}
+			resultBack.vArg[2] = pRoom->getRoomID() ;
+
 			IRoomPlayer* pPlayer = pRoom->getReusePlayerObject();
 			pPlayer->setSessionID(pRequest->vArg[0]) ;
 			pPlayer->setUserUID(pRequest->nReqOrigID);
@@ -100,12 +111,15 @@ bool CNiuNiuRoomManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pRe
 
 void CNiuNiuRoomManager::onConnectedToSvr()
 {
-
+	stMsgReadRoomInfo msgRead ;
+	msgRead.nRoomType = eRoom_NiuNiu ;
+	sendMsg(&msgRead,sizeof(msgRead),0) ;
+	CLogMgr::SharedLogMgr()->PrintLog("read niu niu room info ") ;
 }
 
-IRoom* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID ) 
+IRoom* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID ,eRoomType reqSubRoomType ) 
 {
-	stSitableRoomConfig* pConfig = CNiuNiuServerApp::getInstance()->getRoomConfigMgr()->GetConfigByConfigID(nRoomConfigID) ;
+	stSitableRoomConfig* pConfig = (stSitableRoomConfig*)CNiuNiuServerApp::getInstance()->getRoomConfigMgr()->GetConfigByConfigID(nRoomConfigID) ;
 	if ( pConfig == nullptr )
 	{
 		return nullptr ;
@@ -116,7 +130,78 @@ IRoom* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID , uint16_t 
 	return pRoom ;
 }
 
-void CNiuNiuRoomManager::onGetChatRoomIDResult(IRoom* pNewRoom, bool bSuccess )
+IRoom* CNiuNiuRoomManager::getRoomByConfigID(uint32_t nRoomConfigID )
 {
+	MAP_CONFIG_ROOMS::iterator iter = m_vCongfigIDRooms.find(nRoomConfigID) ;
+	if ( iter == m_vCongfigIDRooms.end() )
+	{
+		return nullptr ;
+	}
 
+	LIST_ROOM& vRooms = iter->second ;
+	if ( vRooms.empty() )
+	{
+		return nullptr ;
+	}
+
+	LIST_ROOM vAcitveRooms ;
+	LIST_ROOM vEmptyRooms ;
+	for ( IRoom* pRoom : vRooms )
+	{
+		if ( pRoom == nullptr || pRoom->isRoomAlive() == false )
+		{
+			continue; 
+		}
+
+		if ( ((ISitableRoom*)pRoom)->getPlayerCntWithState(eRoomPeer_SitDown) )
+		{
+			vAcitveRooms.push_back(pRoom) ;
+		}
+		else
+		{
+			vEmptyRooms.push_back(pRoom) ;
+		}
+	}
+
+	if ( vAcitveRooms.empty() )  // if all room is empty , then just rand a room to enter ;
+	{
+		vAcitveRooms.insert(vAcitveRooms.begin(),vRooms.begin(),vRooms.end()) ;
+	}
+	else if ( vAcitveRooms.size() <= 10 )  // put some empty rooms in 
+	{
+		uint8_t naddEmtpy = 0 ;
+		for ( IRoom* pRoom : vEmptyRooms )
+		{
+			if ( naddEmtpy > 8 )
+			{
+				break; ;
+			}
+
+			if ( naddEmtpy % 2 == 0 )
+			{
+				vAcitveRooms.push_back(pRoom) ;
+			}
+			else
+			{
+				vAcitveRooms.insert(vAcitveRooms.begin(),pRoom) ;
+			}
+
+			++naddEmtpy ;
+		}
+	}
+
+	uint16_t nStartIdx = rand() % vAcitveRooms.size() ;
+	uint16_t iter_idx = 0 ;
+	for( IRoom* pRoom : vAcitveRooms )
+	{
+		if ( iter_idx != nStartIdx )
+		{
+			++iter_idx ;
+			continue;
+		}
+
+		return pRoom ;
+
+	}
+	return nullptr ;
 }

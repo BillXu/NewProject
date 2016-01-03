@@ -52,8 +52,10 @@ void CSession::start()
 
 void CSession::close()
 {
+	//printf("close close\n") ;
 	m_socket.close() ;
 	m_tHeatBeat.cancel();
+	m_tWaitFirstMsg.cancel();
 }
 // handle function ;
 void CSession::handleReadHeader(const boost::system::error_code& error)
@@ -67,6 +69,7 @@ void CSession::handleReadHeader(const boost::system::error_code& error)
 	}  
 	else  
 	{  
+		//printf("handleReadHeader close\n") ;
 		m_pNetwork->closeSession(getConnectID());
 	} 
 }
@@ -89,6 +92,7 @@ void CSession::handleReadBody(const boost::system::error_code& error)
 	}  
 	else  
 	{  
+		//printf("handleReadBody close\n") ;
 		m_pNetwork->closeSession(getConnectID());
 	}  
 }
@@ -117,15 +121,18 @@ void CSession::handleWrite(const boost::system::error_code& error)
 void CSession::startWaitFirstMsg()
 {
 	m_tWaitFirstMsg.expires_from_now(boost::posix_time::seconds(TIME_CHECK_FIRST_MSG));
-	m_tWaitFirstMsg.async_wait(boost::bind(&CSession::handleCheckFirstMsg, this));
+	m_tWaitFirstMsg.async_wait(boost::bind(&CSession::handleCheckFirstMsg, this,boost::asio::placeholders::error ));
 }
 
-void CSession::handleCheckFirstMsg()
+void CSession::handleCheckFirstMsg( const boost::system::error_code& ec )
 {
-	if ( !m_bRecivedMsg )
+	if ( !ec )
 	{
-		m_pNetwork->closeSession(getConnectID());
-		printf("find a dead connect \n");
+		if ( !m_bRecivedMsg )
+		{
+			printf("find a dead connect \n");
+			m_pNetwork->closeSession(getConnectID());
+		}
 	}
 }
 

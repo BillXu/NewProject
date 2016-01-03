@@ -43,11 +43,6 @@ bool IScene::OnConnectStateChanged( eConnectState eSate, Packet* pMsg )
 	if ( eConnect_Accepted == eSate )
 	{
 		// send client verify ;
-		stMsg msg ;
-		msg.cSysIdentifer = ID_MSG_PORT_GATE ;
-		msg.usMsgType = MSG_VERIFY_CLIENT ;
-		m_pClient->GetNetWork()->SendMsg((char*)&msg,sizeof(msg));
-		CLogMgr::SharedLogMgr()->SystemLog("connected to svr") ;
 		Verifyed();
 	}
 	return false ;

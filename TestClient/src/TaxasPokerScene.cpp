@@ -34,7 +34,7 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 			stMsgTaxasRoomInfoBase* pRet = (stMsgTaxasRoomInfoBase*)pmsg ;
 			if ( pRet->eCurRoomState == eRoomState_TP_WaitJoin )
 			{
-				m_tRobotControler.orderSitdown();
+				m_tRobotControler.onEnterRoom();
 			}
 		}
 		break;
@@ -43,7 +43,7 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 			stMsgTaxasRoomInfoPlayerData* pRet = (stMsgTaxasRoomInfoPlayerData*)pmsg;
 			if ( pRet->bIsLast )
 			{
-				m_tRobotControler.onRecivedAllRoomPlayers(m_tData.getPlayerCnt());
+				m_tRobotControler.onEnterRoom();
 			}
 		}
 		break;
@@ -86,14 +86,9 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 				{
 					m_tRobotControler.onSelfStandUp() ;
 				}
-				else
-				{
-					m_tRobotControler.onRecivedAllRoomPlayers(m_tData.getPlayerCnt()) ;
-				}
 			}
 
 			m_tData.onMsg(pmsg);
-
 		}
 		break;
 	case MSG_TP_WAIT_PLAYER_ACT:
@@ -127,6 +122,7 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 			stMsgTaxasRoomGameResult* pRet = (stMsgTaxasRoomGameResult*)pmsg ;
 			if ( pRet->bIsLastOne )
 			{
+				printf("recive last result\n") ;
 				getPokerData()->resetRuntimeData();
 				m_tRobotControler.onGameEnd(m_tData.getPlayerCnt());
 			}

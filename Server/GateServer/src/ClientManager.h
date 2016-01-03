@@ -20,6 +20,7 @@ public:
 	virtual void OnPeerDisconnected( CONNECT_ID nPeerDisconnected, ConnectInfo* IpInfo );
 	stGateClient* GetGateClientBySessionID(uint32_t nSessionID);
 	void UpdateReconectClientLife();
+	void closeAllClient();
 protected:
 	void AddClientGate(stGateClient* pGateClient );
 	void RemoveClientGate(stGateClient* pGateClient );

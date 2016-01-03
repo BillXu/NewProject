@@ -76,10 +76,9 @@ bool CNetWorkMgr::ConnectToServer(const char *pSeverIP, unsigned short nPort , c
 	assert(m_pNetPeer && "Pls SetupNetwork() first! " );
     if ( !m_pNetPeer )
 	{
-		//LOGE("m_pNetPeer is null , please setup network first ");
-		return false ;
+		m_pNetPeer =  new CClientNetworkImp() ;
+		m_pNetPeer->init();
 	}
-
 	assert(m_nConnectedTo < m_nMaxConnectTo && "no more slot for new coming server" );
 	if ( m_nMaxConnectTo <= m_nConnectedTo )
 	{

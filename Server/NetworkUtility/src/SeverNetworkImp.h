@@ -23,11 +23,12 @@ public:
 	~CServerNetworkImp();
 	bool init(uint16_t nPort );
 	std::string getIPportString(uint32_t nConnectID);
-	void closeSession(uint32_t nConnectID );
 	bool sendMsg(uint32_t nConnectID , const char* pData , size_t nLen );
 	bool getAllPacket(LIST_PACKET& vOutPackets ); // must delete out side ;
 	bool getFirstPacket(Packet** ppPacket ); // must delete out side ;
+	void closePeerConnection(uint32_t nConnectID );
 protected:
+	void closeSession(uint32_t nConnectID, bool bServerClose = false );
 	void startAccept() ;
 	void handleAccept(Session_ptr session,const boost::system::error_code& error) ;
 	Session_ptr getSessionByConnectID(uint32_t nConnectID );

@@ -134,6 +134,19 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 	return true ;
 }
 
+void CGateClientMgr::closeAllClient()
+{
+	CLogMgr::SharedLogMgr()->SystemLog("close all client peers");
+	// remove all connecting ;
+	auto iter = m_vSessionGateClient.begin() ;
+	for ( ; iter != m_vSessionGateClient.end() ;  )
+	{
+		CGateServer::SharedGateServer()->GetNetWorkForClients()->ClosePeerConnection(iter->second->nNetWorkID) ;
+		RemoveClientGate(iter->second) ;
+		iter = m_vSessionGateClient.begin() ;
+	}
+}
+
 void CGateClientMgr::OnServerMsg( const char* pRealMsgData, uint16_t nDataLen,uint32_t uTargetSessionID )
 {
 	stGateClient* pClient = GetGateClientBySessionID(uTargetSessionID) ;
@@ -241,7 +254,7 @@ void CGateClientMgr::RemoveClientGate(stGateClient* pGateClient )
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("can not find session id = %d to remove",pGateClient->nSessionId ) ;
+		CLogMgr::SharedLogMgr()->PrintLog("can not find session id = %d to remove",pGateClient->nSessionId ) ;
 	}
 
 	iterS = m_vWaitToReconnect.find(pGateClient->nSessionId) ;

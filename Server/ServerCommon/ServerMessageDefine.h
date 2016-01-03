@@ -168,10 +168,39 @@ struct stMsgReadPlayerTaxasDataRet
 	PLACE_HOLDER(char* pMyOwnRooms);
 };
 
-struct stMsgSaveCreateTaxasRoomInfo
+//struct stMsgSaveCreateTaxasRoomInfo
+//	:public stMsg
+//{
+//	stMsgSaveCreateTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_CREATE_TAXAS_ROOM_INFO; }
+//	uint32_t nRoomID ;
+//	uint16_t nConfigID ;
+//	uint32_t nRoomOwnerUID ;
+//	uint32_t nCreateTime ;
+//	uint64_t nChatRoomID ;
+//};
+//
+//struct stMsgSaveUpdateTaxasRoomInfo
+//	:public stMsg
+//{
+//	stMsgSaveUpdateTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_UPDATE_TAXAS_ROOM_INFO ;}
+//	uint32_t nRoomID ;
+//	uint32_t nDeadTime ;
+//	uint16_t nAvataID ;
+//	uint32_t nInformSerial;
+//	uint64_t nRoomProfit;
+//	uint64_t nTotalProfit;
+//	char vRoomName[MAX_LEN_ROOM_NAME];
+//	char vRoomDesc[MAX_LEN_ROOM_DESC];
+//	uint16_t nInformLen ;
+//	PLACE_HOLDER(char* pRoomInfom);
+//};
+
+
+struct stMsgSaveCreateRoomInfo
 	:public stMsg
 {
-	stMsgSaveCreateTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_CREATE_TAXAS_ROOM_INFO; }
+	stMsgSaveCreateRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_CREATE_ROOM_INFO; }
+	uint8_t nRoomType ; // eRoomType ;
 	uint32_t nRoomID ;
 	uint16_t nConfigID ;
 	uint32_t nRoomOwnerUID ;
@@ -179,10 +208,11 @@ struct stMsgSaveCreateTaxasRoomInfo
 	uint64_t nChatRoomID ;
 };
 
-struct stMsgSaveUpdateTaxasRoomInfo
+struct stMsgSaveUpdateRoomInfo
 	:public stMsg
 {
-	stMsgSaveUpdateTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_UPDATE_TAXAS_ROOM_INFO ;}
+	stMsgSaveUpdateRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_UPDATE_ROOM_INFO ;}
+	uint8_t nRoomType ; // eRoomType ;
 	uint32_t nRoomID ;
 	uint32_t nDeadTime ;
 	uint16_t nAvataID ;
@@ -190,21 +220,22 @@ struct stMsgSaveUpdateTaxasRoomInfo
 	uint64_t nRoomProfit;
 	uint64_t nTotalProfit;
 	char vRoomName[MAX_LEN_ROOM_NAME];
-	char vRoomDesc[MAX_LEN_ROOM_DESC];
 	uint16_t nInformLen ;
 	PLACE_HOLDER(char* pRoomInfom);
 };
 
-struct stMsgReadTaxasRoomInfo
+struct stMsgReadRoomInfo
 	:public stMsg
 {
-	stMsgReadTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_TAXAS_ROOM_INFO ; }
+	stMsgReadRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_ROOM_INFO ; }
+	uint8_t nRoomType ; // eRoomType ;
 };
 
-struct stMsgReadTaxasRoomInfoRet
+struct stMsgReadRoomInfoRet
 	:public stMsg
 {
-	stMsgReadTaxasRoomInfoRet(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_READ_TAXAS_ROOM_INFO ; }
+	stMsgReadRoomInfoRet(){ cSysIdentifer = ID_MSG_PORT_NONE; usMsgType = MSG_READ_ROOM_INFO ; }
+	uint8_t nRoomType ;
 	uint32_t nRoomID ;
 	uint16_t nConfigID ;
 	uint32_t nRoomOwnerUID ;
@@ -215,7 +246,6 @@ struct stMsgReadTaxasRoomInfoRet
 	uint64_t nRoomProfit;
 	uint64_t nChatRoomID ;
 	char vRoomName[MAX_LEN_ROOM_NAME];
-	char vRoomDesc[MAX_LEN_ROOM_DESC];
 	uint16_t nInformLen ;
 	PLACE_HOLDER(char* pRoomInfom);
 };

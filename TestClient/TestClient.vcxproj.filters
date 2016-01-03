@@ -202,5 +202,8 @@
     <ClInclude Include="src\TaxasRobotBrain.h">
       <Filter>robot</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\NiuNiuMessageDefine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

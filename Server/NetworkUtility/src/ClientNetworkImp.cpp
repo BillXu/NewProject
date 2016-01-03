@@ -2,7 +2,7 @@
 #include "ClientNetworkImp.h"
 #define CLIENT_HEAT_BET_CHECK_TIEM  (TIME_HEAT_BET + 1 )
 CClientNetworkImp::CClientNetworkImp()
-	:m_pReadIngBuffer(new CInternalBuffer()),m_tHeatBeat(m_io_service)
+	:m_pReadIngBuffer(new CInternalBuffer()),m_tHeatBeat(m_io_service),m_tKeepIOServiecWork(m_io_service)
 {
 	m_socket = nullptr ;
 	m_pIOThread = nullptr ;
@@ -12,10 +12,18 @@ CClientNetworkImp::CClientNetworkImp()
 
 CClientNetworkImp::~CClientNetworkImp()
 {
+	m_tHeatBeat.cancel();
+	m_tKeepIOServiecWork.cancel();
+
+	if ( m_pEndpoint )
+	{
+		delete m_pEndpoint ;
+		m_pEndpoint = nullptr ;
+	}
+
 	if ( m_pIOThread )
 	{
 		m_io_service.stop() ;
-		m_pIOThread->detach() ;
 		delete m_pIOThread ;
 		m_pIOThread = nullptr ;
 	}
@@ -25,12 +33,6 @@ CClientNetworkImp::~CClientNetworkImp()
 		m_socket->close() ;
 		delete m_socket ;
 		m_socket = nullptr ;
-	}
-
-	if ( m_pEndpoint )
-	{
-		delete m_pEndpoint ;
-		m_pEndpoint = nullptr ;
 	}
 }
 
@@ -47,7 +49,7 @@ bool CClientNetworkImp::init()
 
 void CClientNetworkImp::shutdown()
 {
-	m_io_service.post(boost::bind(&CClientNetworkImp::doClose, this)); //这个close函数是客户端要主动终止时调用  do_close函数是从服务器端  
+	//m_io_service.post(boost::bind(&CClientNetworkImp::doClose, this)); //这个close函数是客户端要主动终止时调用  do_close函数是从服务器端  
 	//读数据失败时调用  
 }
 
@@ -69,7 +71,7 @@ bool CClientNetworkImp::connectToServer(const char* pIP, unsigned short nPort )
 		delete m_pEndpoint ;
 		m_pEndpoint = nullptr ;
 	}
-	m_io_service.reset();
+
 	m_tHeatBeat.cancel();
 	m_nState = eState_Connecting ;
 	printf("connect ting \n");
@@ -77,24 +79,26 @@ bool CClientNetworkImp::connectToServer(const char* pIP, unsigned short nPort )
 	m_pEndpoint =  new boost::asio::ip::tcp::endpoint( boost::asio::ip::address::from_string(pIP),nPort );
 	m_socket->async_connect(*m_pEndpoint,boost::bind(&CClientNetworkImp::handleConnect, this,  
 		boost::asio::placeholders::error));
-	//boost::asio::async_connect(*m_socket, m_pEndpoint,pNull,  
-// 		boost::bind(&CClientNetworkImp::handleConnect, this,  
-// 		boost::asio::placeholders::error)); //所有的操作都采用异步的方式 
-
-	if ( m_pIOThread )
-	{
-		delete m_pIOThread ;
-		m_pIOThread = nullptr ;
-	}
 
 	if ( m_pIOThread == nullptr )
 	{
 		m_pIOThread = new  boost::thread(boost::bind(&boost::asio::io_service::run, &m_io_service)); 
-		m_pIOThread->detach();
+
+		m_tKeepIOServiecWork.expires_from_now(boost::posix_time::seconds(888888));
+		m_tKeepIOServiecWork.async_wait(boost::bind(&CClientNetworkImp::onKeepIoServeicWork, this,boost::asio::placeholders::error));
 	}
 	
 
 	return true ;
+}
+
+void CClientNetworkImp::onKeepIoServeicWork( const boost::system::error_code& ec )
+{
+	if ( !ec )
+	{
+		m_tKeepIOServiecWork.expires_from_now(boost::posix_time::seconds(888888));
+		m_tKeepIOServiecWork.async_wait(boost::bind(&CClientNetworkImp::onKeepIoServeicWork, this,boost::asio::placeholders::error));
+	}
 }
 
 bool CClientNetworkImp::getAllPacket(LIST_PACKET& vOutPackets ) // must delete out side ;
@@ -151,7 +155,7 @@ void CClientNetworkImp::handleConnect(const boost::system::error_code& error)
 			boost::bind(&CClientNetworkImp::handleReadHeader, this,  
 			boost::asio::placeholders::error));  
 		printf("connected success\n");
-		m_nHeatBeatTimes = 2 ;
+		m_nHeatBeatTimes = 3 ;
 
 		// start heat bet check ;
 		m_tHeatBeat.expires_from_now(boost::posix_time::seconds(CLIENT_HEAT_BET_CHECK_TIEM));
@@ -163,6 +167,7 @@ void CClientNetworkImp::handleConnect(const boost::system::error_code& error)
 	}
 	m_nState = bSucce ? eState_Connected : eState_ConnectedFailed ;
 	addPacket(pack);
+	//m_tConnectTimeOut.cancel();
 }  
 
 void CClientNetworkImp::handleReadHeader(const boost::system::error_code& error)  
@@ -253,8 +258,8 @@ void CClientNetworkImp::sendHeatBeat( const boost::system::error_code& ec )
 	{
 		if ( --m_nHeatBeatTimes <= 0 )
 		{
-			doClose() ;
 			printf("heat bet check time out \n") ;
+			doClose() ;
 		}
 		else
 		{
@@ -272,6 +277,7 @@ void CClientNetworkImp::doClose()
 		return ;
 	}
 	m_nState = eState_None ;
+	m_socket->shutdown(boost::asio::socket_base::shutdown_type::shutdown_both);
 	m_socket->close();
 
 	Packet* pack = new Packet ;
@@ -280,5 +286,7 @@ void CClientNetworkImp::doClose()
 	pack->_connectID = 0 ;
 	pack->_len = 0 ;
 	addPacket(pack) ;
+
+	m_tHeatBeat.cancel();
 	printf("server dis connected\n");
 }  

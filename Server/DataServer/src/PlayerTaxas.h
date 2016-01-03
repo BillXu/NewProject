@@ -21,6 +21,8 @@ public:
 	void OnOtherDoLogined() override{sendTaxaDataToClient();}
 	void getTaxasData(stPlayerTaxasData* pData );
 	uint32_t getCurRoomID(){ return m_nCurTaxasRoomID ;}
+	void addOwnRoom(uint32_t nRoomID , uint16_t nConfigID );
+	bool isCreateRoomCntReachLimit();
 protected:
 	bool isRoomIDMyOwn(uint32_t nRoomID );
 	void sendTaxaDataToClient();

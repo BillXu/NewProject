@@ -10,6 +10,7 @@ public:
 	static CGateServer* SharedGateServer();
 	CGateServer();
 	~CGateServer();
+	bool OnLostSever(Packet* pMsg)override;
 	bool init();
 	CServerNetwork* GetNetWorkForClients(){ return m_pNetWorkForClients ;}
 	void SendMsgToClient(const char* pData , int nLength , CONNECT_ID& nSendToOrExcpet ,bool bBroadcast = false );

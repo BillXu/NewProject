@@ -38,6 +38,7 @@ public:
 	time_t GetDisconnectTime(){ return m_nDisconnectTime ;}
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest, eMsgPort eSenderPort,Json::Value* vJsValue = nullptr );
 	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
+	static uint8_t getMsgPortByRoomType(uint8_t nType );
 protected:
 	bool ProcessPublicPlayerMsg( stMsg* pMessage , eMsgPort eSenderPort );
 	void PushTestAPNs();

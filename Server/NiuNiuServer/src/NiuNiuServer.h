@@ -15,6 +15,7 @@ public:
 	CNiuNiuRoomManager* getRoomMgr(){ return &m_tRoomMgr ;}
 	void update(float fDeta )override ;
 	void onExit()override;
+	void onConnectedToSvr()override;
 protected:
 	CRoomConfigMgr m_tMgr ;
 	CNiuNiuRoomManager m_tRoomMgr ;

@@ -22,6 +22,7 @@ struct stMsgCreateTaxasRoomRet
 	stMsgCreateTaxasRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CREATE_ROOM ; }
 	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough , 5 reach your own room cnt up limit
 	uint32_t nRoomID ; 
+	uint64_t nFinalCoin ;
 };
 
 struct stMsgRequestMyOwnRooms
@@ -166,7 +167,8 @@ struct stMsgTaxasEnterRoom
 	:public stMsg
 {
 	stMsgTaxasEnterRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_ENTER_ROOM ; }
-	uint32_t nRoomID ;
+	uint8_t nIDType ; // 0 roomID , 1 RoomConfigID ;
+	uint32_t nTargetID ;
 };
 
 struct stMsgTaxasEnterRoomRet 

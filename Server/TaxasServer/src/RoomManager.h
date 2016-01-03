@@ -12,6 +12,7 @@ class CRoomManager
 public:
 	typedef std::list<CTaxasRoom*> LIST_ROOM ;
 	typedef std::map<uint32_t, CTaxasRoom*> MAP_ID_ROOM;
+	typedef std::map<uint32_t,LIST_ROOM> MAP_CONFIG_ROOMS ;
 	struct stRoomCreatorInfo
 	{
 		uint32_t nPlayerUID ;
@@ -26,6 +27,7 @@ public:
 	bool OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nRoomID );
 	bool onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID);
 	CTaxasRoom* GetRoomByID(uint32_t nRoomID );
+	CTaxasRoom* GetRoomByConfigID(uint32_t nRoomID );
 	CTaxasRoom* GetQuickEnterRoom(uint64_t nCoin );
 	void SendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID );
 	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg);
@@ -36,9 +38,11 @@ public:
 protected:
 	bool reqeustChatRoomID(CTaxasRoom* pRoom);
 	void addRoomToCreator(CTaxasRoom* pRoom);
+	void addRoomToConfigRooms(CTaxasRoom* pRoom);
 	bool getRoomCreatorRooms(uint32_t nCreatorUID,LIST_ROOM& vInfo );
 protected:
 	MAP_ID_ROOM m_vRooms ;
+	MAP_CONFIG_ROOMS m_vCongfigIDRooms ;
 	CHttpRequest m_pGoTyeAPI;
 	uint32_t m_nMaxRoomID ;
 	MAP_UID_CR m_vCreatorAndRooms ;

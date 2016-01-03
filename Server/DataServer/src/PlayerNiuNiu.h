@@ -4,6 +4,8 @@ class CPlayerNiuNiu
 	:public IPlayerComponent
 {
 public:
+	typedef std::map<uint32_t,stMyOwnRoom> MAP_ID_MYROOW ;
+public:
 	CPlayerNiuNiu(CPlayer* pPlayer):IPlayerComponent(pPlayer){ m_eType = ePlayerComponent_PlayerNiuNiu ; }
 	void Reset()override;
 	void Init()override;
@@ -16,6 +18,9 @@ public:
 	void OnReactive(uint32_t nSessionID )override;
 	void OnOtherDoLogined();
 	uint32_t getCurRoomID(){ return m_nCurRoomID ;}
+	void addOwnRoom(uint32_t nRoomID , uint16_t nConfigID );
+	bool isCreateRoomCntReachLimit();
 protected:
 	uint16_t m_nCurRoomID ;
+	MAP_ID_MYROOW m_vMyOwnRooms;
 };

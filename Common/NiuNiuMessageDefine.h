@@ -2,11 +2,13 @@
 #pragma pack(push)
 #pragma pack(1)
 #include "MessageDefine.h"
+
 struct stMsgNNEnterRoom
 	:public stMsg
 {
 	stMsgNNEnterRoom(){ cSysIdentifer = ID_MSG_PORT_DATA;usMsgType = MSG_NN_ENTER_ROOM ; }
-	uint16_t nRoomID ;
+	uint8_t nIDType ; // 0 roomID , 1 configID ;
+	uint16_t nTargetID ;
 };
 
 struct stMsgNNEnterRoomRet

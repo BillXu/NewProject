@@ -195,7 +195,7 @@ void CLogMgr::RefreshFileState()
 		time(&tCur);
 		tm t ;
 		t = *localtime(&tCur);
-		sprintf(pFileName,"%s%d_%02d_%02d_%02dh%02dm%02ds",strFilePre.c_str(),1900+t.tm_year,t.tm_mon+1,t.tm_mday,t.tm_hour,t.tm_min,t.tm_sec);
+		sprintf(pFileName,"./log/%s%d_%02d_%02d_%02dh%02dm%02ds",strFilePre.c_str(),1900+t.tm_year,t.tm_mon+1,t.tm_mday,t.tm_hour,t.tm_min,t.tm_sec);
 		strFilePre = pFileName ;
 		memset(pFileName,0,sizeof(pFileName));
 	}

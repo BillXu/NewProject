@@ -26,9 +26,8 @@ public:
 		Niu_None,
 		Niu_Single,
 		Niu_Niu,
-		Niu_Silver,
-		Niu_Golden,
-		Niu_Boom,
+        Niu_Boom,
+        Niu_FiveFlower,
 		Niu_FiveSmall,
 		Niu_Max,
 	};
@@ -48,8 +47,7 @@ protected:
 	void caculateCards();
 	bool checkNiu(CardGroup& ref );
 	bool checkFiveSmall();
-	bool checkNiuSilver();
-	bool checkNiuGolden();
+	bool checkFiveFlower();
 	bool checkBoom();
 protected:
 	static CardGroup s_CardGroup[10] ;

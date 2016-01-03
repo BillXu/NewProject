@@ -175,9 +175,9 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 		return true ;
 	}
 
-	if ( MSG_READ_TAXAS_ROOM_INFO == prealMsg->usMsgType )
+	if ( MSG_READ_ROOM_INFO == prealMsg->usMsgType )
 	{
-		stMsgReadTaxasRoomInfoRet* pRet = (stMsgReadTaxasRoomInfoRet*)prealMsg ;
+		stMsgReadRoomInfoRet* pRet = (stMsgReadRoomInfoRet*)prealMsg ;
 		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfigByConfigID(pRet->nConfigID);
 		assert(pRoomConfig&&"why config is null");
 		CLogMgr::SharedLogMgr()->PrintLog("read room info room id = %d",pRet->nRoomID);
@@ -186,7 +186,7 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 		m_vRooms[pRoom->GetRoomID()] = pRoom ;
 		pRoom->setOwnerUID(pRet->nRoomOwnerUID);
 		pRoom->setRoomName(pRet->vRoomName);
-		pRoom->setRoomDesc(pRet->vRoomDesc);
+		pRoom->setRoomDesc("unused");
 		pRoom->setDeadTime(pRet->nDeadTime);
 		pRoom->setProfit(pRet->nRoomProfit);
 		pRoom->setAvataID(pRet->nAvataID);
@@ -206,6 +206,7 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 		}
 
 		addRoomToCreator(pRoom);
+		addRoomToConfigRooms(pRoom);
 		return true ;
 	}
 
@@ -233,18 +234,26 @@ bool CRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		{
 			stMsgTaxasEnterRoom* pRel = (stMsgTaxasEnterRoom*)prealMsg ;
 			CTaxasRoom* pRoom = nullptr;
-			if ( pRel->nRoomID == 0 )
+			if ( pRel->nIDType == 0 )  // room id ;
 			{
-				pRoom = GetQuickEnterRoom(0);
+				if ( pRel->nTargetID == 0 )
+				{
+					pRoom = GetQuickEnterRoom(0);
+				}
+				else
+				{
+					pRoom = GetRoomByID(pRel->nTargetID) ;
+				}
 			}
-			else
+			else  // config id ;
 			{
-				pRoom = GetRoomByID(pRel->nRoomID) ;
+				pRoom = GetRoomByConfigID(pRel->nTargetID) ;
 			}
+
 
 			if ( !pRoom )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d",pRel->nRoomID );
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find id type = %d id = %d",pRel->nIDType,pRel->nTargetID );
 				stMsgTaxasEnterRoomRet msgBack ;
 				msgBack.nRet = 1 ;
 				CTaxasServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
@@ -349,6 +358,87 @@ CTaxasRoom*CRoomManager::GetRoomByID(uint32_t nRoomID )
 	return NULL ;
 }
 
+CTaxasRoom* CRoomManager::GetRoomByConfigID(uint32_t nRoomConfigID )
+{
+	MAP_CONFIG_ROOMS::iterator iter = m_vCongfigIDRooms.find(nRoomConfigID) ;
+	if ( iter == m_vCongfigIDRooms.end() )
+	{
+		return nullptr ;
+	}
+
+	LIST_ROOM& vRooms = iter->second ;
+	if ( vRooms.empty() )
+	{
+		return nullptr ;
+	}
+
+	LIST_ROOM vAcitveRooms ;
+	LIST_ROOM vEmptyRooms ;
+	for ( CTaxasRoom* pRoom : vRooms )
+	{
+		if ( pRoom == nullptr || pRoom->isRoomAlive() == false )
+		{
+			continue; 
+		}
+
+		if ( pRoom->GetPlayerCntWithState(eRoomPeer_SitDown) )
+		{
+			 vAcitveRooms.push_back(pRoom) ;
+		}
+		else
+		{
+			vEmptyRooms.push_back(pRoom) ;
+		}
+	}
+
+	if ( vAcitveRooms.empty() )  // if all room is empty , then just rand a room to enter ;
+	{
+		vAcitveRooms.insert(vAcitveRooms.begin(),vEmptyRooms.begin(),vEmptyRooms.end()) ;
+	}
+	else if ( vAcitveRooms.size() <= 10 )  // put some empty rooms in 
+	{
+		uint8_t naddEmtpy = 0 ;
+		for ( CTaxasRoom* pRoom : vEmptyRooms )
+		{
+			if ( naddEmtpy > 8 )
+			{
+				break; ;
+			}
+
+			if ( naddEmtpy % 2 == 0 )
+			{
+				vAcitveRooms.push_back(pRoom) ;
+			}
+			else
+			{
+				vAcitveRooms.insert(vAcitveRooms.begin(),pRoom) ;
+			}
+			
+			++naddEmtpy ;
+		}
+	}
+
+	if ( vAcitveRooms.empty() )
+	{
+		return nullptr ;
+	}
+
+	uint16_t nStartIdx = rand() % vAcitveRooms.size() ;
+	uint16_t iter_idx = 0 ;
+	for( CTaxasRoom* pRoom : vAcitveRooms )
+	{
+		if ( iter_idx != nStartIdx )
+		{
+			++iter_idx ;
+			continue;
+		}
+
+		return pRoom ;
+
+	}
+	return nullptr ;
+}
+
 CTaxasRoom* CRoomManager::GetQuickEnterRoom(uint64_t nCoin )
 {
 	LIST_ROOM vValidRooms , vLiveRooms;
@@ -437,12 +527,14 @@ void CRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 		msgRet.nRet = 0 ;
 		msgRet.vArg[0] = pRoom->getConfigID() ;
 		msgRet.vArg[1] = 0 ;
+		msgRet.vArg[2] = ( pRoom->getDeadTime() - pRoom->getCreateTime() ) / ( 60 * 60 * 24 );
 		if ( bSuccess ) // success
 		{
 			pRoom->setChatRoomID(nChatRoomID);
 			msgRet.vArg[1] = pRoom->GetRoomID() ;
 
-			stMsgSaveCreateTaxasRoomInfo msgCreateInfo ;
+			stMsgSaveCreateRoomInfo msgCreateInfo ;
+			msgCreateInfo.nRoomType = eRoom_TexasPoker;
 			msgCreateInfo.nCreateTime = pRoom->getCreateTime();
 			msgCreateInfo.nConfigID = pRoom->getConfigID() ;
 			msgCreateInfo.nRoomID = pRoom->GetRoomID();
@@ -452,6 +544,7 @@ void CRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 			pRoom->forceDirytInfo();
 			pRoom->saveUpdateRoomInfo();
 			addRoomToCreator(pRoom);
+			addRoomToConfigRooms(pRoom) ;
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d create room success",pRoom->getOwnerUID());
 		}
 		else
@@ -486,6 +579,7 @@ bool CRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		msgRet.nRet = 0 ;
 		msgRet.vArg[0] = pRequest->vArg[0];
 		msgRet.vArg[1] = 0 ;
+		msgRet.vArg[2] = pRequest->vArg[1] ;
 		stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfigByConfigID(nConfigID);
 		if ( pRoomConfig == nullptr )
 		{
@@ -538,7 +632,8 @@ void CRoomManager::onConnectedToSvr()
 {
 	if ( m_vRooms.empty() )
 	{
-		stMsgReadTaxasRoomInfo msg ;
+		stMsgReadRoomInfo msg ;
+		msg.nRoomType = eRoom_TexasPoker ;
 		SendMsg(&msg,sizeof(msg),0) ;
 		CLogMgr::SharedLogMgr()->PrintLog("request taxas rooms");
 	}
@@ -576,6 +671,22 @@ void CRoomManager::addRoomToCreator(CTaxasRoom* pRoom)
 	sInfo.nPlayerUID = pRoom->getOwnerUID() ;
 	sInfo.vRooms.push_back(pRoom) ;
 	m_vCreatorAndRooms[sInfo.nPlayerUID] = sInfo ;
+}
+
+void CRoomManager::addRoomToConfigRooms(CTaxasRoom* pRoom)
+{
+	MAP_CONFIG_ROOMS::iterator iter = m_vCongfigIDRooms.find( pRoom->getConfigID() ) ;
+	if ( iter == m_vCongfigIDRooms.end() )
+	{
+		LIST_ROOM vRooms ;
+		vRooms.push_back(pRoom);
+		m_vCongfigIDRooms[pRoom->getConfigID()] = vRooms ;
+		return ;
+	}
+
+	LIST_ROOM& vRoom = iter->second ;
+	vRoom.push_back(pRoom) ;
+	return ;
 }
 
 bool CRoomManager::getRoomCreatorRooms(uint32_t nCreatorUID, LIST_ROOM& vInfo )

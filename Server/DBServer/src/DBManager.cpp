@@ -216,35 +216,35 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				strJoinedClub.c_str(),pRet->nUserUID) ;
 		}
 		break;
-	case MSG_SAVE_CREATE_TAXAS_ROOM_INFO:
+	case MSG_SAVE_CREATE_ROOM_INFO:
 		{
-			stMsgSaveCreateTaxasRoomInfo* pRet = (stMsgSaveCreateTaxasRoomInfo*)pmsg ;
+			stMsgSaveCreateRoomInfo* pRet = (stMsgSaveCreateRoomInfo*)pmsg ;
 			pRequest->eType = eRequestType_Add;
 			
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO taxasroom (roomID, configID,ownerUID,createTime,chatRoomID) VALUES ('%d', '%u','%u','%u','%I64d')",
-			 						pRet->nRoomID,pRet->nConfigID,pRet->nRoomOwnerUID,pRet->nCreateTime,pRet->nChatRoomID) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroom ( roomType,roomID, configID,ownerUID,createTime,chatRoomID) VALUES ( '%d' ,'%d', '%u','%u','%u','%I64d')",
+			 						pRet->nRoomType,pRet->nRoomID,pRet->nConfigID,pRet->nRoomOwnerUID,pRet->nCreateTime,pRet->nChatRoomID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("save create taxas room room id = %d",pRet->nRoomID);
 		}
 		break;
-	case MSG_SAVE_UPDATE_TAXAS_ROOM_INFO:
+	case MSG_SAVE_UPDATE_ROOM_INFO:
 		{
-			stMsgSaveUpdateTaxasRoomInfo* pRet = (stMsgSaveUpdateTaxasRoomInfo*)pmsg ;
+			stMsgSaveUpdateRoomInfo* pRet = (stMsgSaveUpdateRoomInfo*)pmsg ;
 			pRequest->eType = eRequestType_Update ;
-			pRet->vRoomDesc[MAX_LEN_ROOM_DESC-1] = 0 ;
 			pRet->vRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
 			CAutoBuffer autoBuffer(pRet->nInformLen + 1 );
-			autoBuffer.addContent(((char*)&pRet) + sizeof(stMsgSaveUpdateTaxasRoomInfo),pRet->nInformLen);
+			autoBuffer.addContent(((char*)&pRet) + sizeof(stMsgSaveUpdateRoomInfo),pRet->nInformLen);
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE taxasroom SET deadTime = '%d', avataID = '%d', profit = '%I64d',totalProfit = '%I64d', roomName = '%s', roomDesc = '%s', roomInform = '%s', informSerial = '%d' WHERE roomID = '%d'"
-				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->nTotalProfit,pRet->vRoomName,pRet->vRoomDesc,autoBuffer.getBufferPtr(),pRet->nInformSerial,pRet->nRoomID) ;
+				"UPDATE gameroom SET deadTime = '%d', avataID = '%d', profit = '%I64d',totalProfit = '%I64d', roomName = '%s', roomInform = '%s', informSerial = '%d' WHERE roomID = '%d' and roomType = '%d' "
+				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->nTotalProfit,pRet->vRoomName,autoBuffer.getBufferPtr(),pRet->nInformSerial,pRet->nRoomID,pRet->nRoomType ) ;
 			CLogMgr::SharedLogMgr()->PrintLog("save taxas room update info room id = %d",pRet->nRoomID);
 		}
 		break;
-	case MSG_READ_TAXAS_ROOM_INFO:
+	case MSG_READ_ROOM_INFO:
 		{
+			stMsgReadRoomInfo* pRet = (stMsgReadRoomInfo*)pmsg ;
 			pRequest->eType = eRequestType_Select;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM taxasroom WHERE roomID != '0'") ;
+				"SELECT * FROM gameroom WHERE roomType = '%d'",pRet->nRoomType) ;
 			CLogMgr::SharedLogMgr()->PrintLog("read all room rooms");
 		}
 		break;
@@ -1012,7 +1012,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
-	case MSG_READ_TAXAS_ROOM_INFO:
+	case MSG_READ_ROOM_INFO:
 		{
 			stArgData* pdata = (stArgData*)pResult->pUserData ;
 			if ( pResult->nAffectRow <= 0 )
@@ -1025,8 +1025,10 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow ; ++nIdx )
 				{
 					CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
-					stMsgReadTaxasRoomInfoRet msgRet ;
+					stMsgReadRoomInfoRet msgRet ;
+					msgRet.cSysIdentifer = pdata->eFromPort ;
 					msgRet.nAvataID = pRow["avataID"]->IntValue();
+					msgRet.nRoomType = pRow["roomType"]->IntValue();
 					msgRet.nConfigID = pRow["configID"]->IntValue();
 					msgRet.nCreateTime = pRow["createTime"]->IntValue();
 					msgRet.nDeadTime = pRow["deadTime"]->IntValue();
@@ -1036,9 +1038,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					msgRet.nRoomProfit = pRow["profit"]->IntValue();
 					msgRet.nChatRoomID = pRow["chatRoomID"]->IntValue64();
 					memset(msgRet.vRoomName,0,sizeof(msgRet.vRoomName));
-					memset(msgRet.vRoomDesc,0,sizeof(msgRet.vRoomDesc)) ;
 					sprintf_s(msgRet.vRoomName,MAX_LEN_ROOM_NAME,"%s",pRow["roomName"]->CStringValue());
-					sprintf_s(msgRet.vRoomDesc,MAX_LEN_ROOM_DESC,"%s",pRow["roomDesc"]->CStringValue());
 					msgRet.nInformLen = pRow["roomInform"]->nBufferLen ; 
 					if ( msgRet.nInformLen > 0 )
 					{
@@ -1125,8 +1125,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
-	case MSG_SAVE_CREATE_TAXAS_ROOM_INFO:
-	case MSG_SAVE_UPDATE_TAXAS_ROOM_INFO:
+	case MSG_SAVE_CREATE_ROOM_INFO:
+	case MSG_SAVE_UPDATE_ROOM_INFO:
 	case MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS:
 	case MSG_SAVE_TAXAS_ROOM_PLAYER:
 	case MSG_SAVE_PLAYER_TAXAS_DATA:

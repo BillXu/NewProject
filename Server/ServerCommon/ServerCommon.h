@@ -57,13 +57,13 @@ enum  eCrossSvrReqType
 {
 	eCrossSvrReq_DeductionMoney, //  var[0] isCoin ,var[1] needMoney, var[2] at least money,; result:  var[0] isCoin ,var[1] final deductionMoney 
 	eCrossSvrReq_AddMoney, //  var[0] isCoin ,var[1] addCoin
-	eCrossSvrReq_CreateTaxasRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID,
-	eCrossSvrReq_CreateRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID,
+	eCrossSvrReq_CreateTaxasRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID, var[2] rent days ;
+	eCrossSvrReq_CreateRoom, // var[0] room config id, var[1] rent days; var[2] roomType{eRoomType}json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID , var[2] roomType{eRoomType} var[3] rent days,
 	eCrossSvrReq_TaxasRoomProfit, // result: var[0] isCoin , var[1] RecvMoney;
 	eCrossSvrReq_AddRentTime, // var[0] , add days;  result var[0] add days ;
 	eCrossSvrReq_SelectTakeIn, // var[0] select player uid,  result: var[0] select player uid, var[1] isCoin, var[2] money 
 	eCrossSvrReq_Inform, // var[0] target player uid 
-	eCrossSvrReq_EnterRoom, // var[0] playerSessionID, var[1] room id ,var[2] coin, retsult: var[0] playerSessionID , var[1] roomType , var[2] roomID, ret{ 0, success , 1 can not find room };
+	eCrossSvrReq_EnterRoom, // var[0] playerSessionID, var[1] targetID ,var[2] coin, var[3] target id type{0 room id , 1 ConfigID }, retsult: var[0] playerSessionID , var[1] roomType , var[2] roomID, ret{ 0, success , 1 can not find room };
 	eCrossSvrReq_SyncCoin, // var[0] coin var[1] room type 
 	eCrossSvrReq_ApplyLeaveRoom, // var[0] nRoomID , var[1] session id ;
 	eCrossSvrReq_LeaveRoomRet, // var[0] roomType {eRoomType} ; var[1] nRoomID ;

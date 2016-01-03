@@ -425,6 +425,27 @@ struct stMsgPlayerBuyShopItemRet
 
 
 // room msg 
+
+struct stMsgCreateRoom
+	:public stMsg
+{
+	stMsgCreateRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CREATE_ROOM ; }
+	uint8_t nRoomType ; // eRoomType ;
+	uint16_t nConfigID ;
+	uint16_t nDays ;
+	char vRoomName[MAX_LEN_ROOM_NAME] ;
+};
+
+struct stMsgCreateRoomRet
+	:public stMsg
+{
+	stMsgCreateRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_CREATE_ROOM ; }
+	uint8_t nRoomType ; // eRoomType ;
+	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough , 5 reach your own room cnt up limit , 6 unknown room type ;
+	uint32_t nRoomID ; 
+	uint64_t nFinalCoin ; 
+};
+
 struct stMsgToRoom
 	:public stMsg
 {

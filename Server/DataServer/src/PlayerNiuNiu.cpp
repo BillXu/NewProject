@@ -7,12 +7,14 @@ void CPlayerNiuNiu::Reset()
 {
 	IPlayerComponent::Reset();
 	m_nCurRoomID = 0 ;
+	m_vMyOwnRooms.clear();
 }
 
 void CPlayerNiuNiu::Init()
 {
 	IPlayerComponent::Init();
 	m_nCurRoomID = 0 ;
+	m_vMyOwnRooms.clear();
 }
 
 bool CPlayerNiuNiu::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
@@ -23,14 +25,19 @@ bool CPlayerNiuNiu::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 	}
 	switch ( pMessage->usMsgType )
 	{
+	case MSG_NN_CREATE_ROOM:
+		{
+
+		}
+		break;
 	case MSG_NN_ENTER_ROOM:
 		{
 			stMsgNNEnterRoom* pEnter = (stMsgNNEnterRoom*)pMessage ;
 			stMsgNNEnterRoomRet msgBack ;
-			if ( 0 && GetPlayer()->isNotInAnyRoom() == false && m_nCurRoomID != 0 )
+			if ( GetPlayer()->isNotInAnyRoom() == false  )
 			{
-				msgBack.nRet = 2 ;
-				CLogMgr::SharedLogMgr()->ErrorLog("check the cur room id ");
+				msgBack.nRet = 2 ; 
+				CLogMgr::SharedLogMgr()->ErrorLog("check the cur room id");
 				SendMsg(&msgBack,sizeof(msgBack)) ;
 				return true ;
 			}
@@ -41,13 +48,14 @@ bool CPlayerNiuNiu::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
 			msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
 			msgEnter.nRequestType = eCrossSvrReq_EnterRoom ;
-			msgEnter.nTargetID = pEnter->nRoomID ;
+			msgEnter.nTargetID = pEnter->nTargetID ;
 			msgEnter.vArg[0] = GetPlayer()->GetSessionID() ;
-			msgEnter.vArg[1] = pEnter->nRoomID ;
+			msgEnter.vArg[1] = pEnter->nTargetID ;
 			msgEnter.vArg[2] = GetPlayer()->GetBaseData()->GetAllCoin();
+			msgEnter.vArg[3] = pEnter->nIDType ;
 			SendMsg(&msgEnter,sizeof(msgEnter)) ;
 
-			m_nCurRoomID = pEnter->nRoomID ;
+			m_nCurRoomID = pEnter->nTargetID;
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d try to enter niuniu room id = %d",GetPlayer()->GetUserUID(),m_nCurRoomID) ;
 		}
 		break;
@@ -101,7 +109,7 @@ bool CPlayerNiuNiu::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,
 				if ( pResult->nRet )
 				{
 					stMsgNNEnterRoomRet msgBack ;
-					msgBack.nRet = 2 ;
+					msgBack.nRet = 1 ;
 					SendMsg(&msgBack,sizeof(msgBack)) ;
 					CLogMgr::SharedLogMgr()->PrintLog("enter niunniu room failed , cann't find room id = %d , uid = %d",m_nCurRoomID,GetPlayer()->GetUserUID()) ;
 					m_nCurRoomID = 0 ;
@@ -109,6 +117,7 @@ bool CPlayerNiuNiu::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,
 				}
 				else
 				{
+					m_nCurRoomID = pResult->vArg[2] ;
 					CLogMgr::SharedLogMgr()->PrintLog("enter niuniu room success uid = %d",GetPlayer()->GetUserUID()) ;
 				}
 			}
@@ -171,4 +180,17 @@ void CPlayerNiuNiu::OnReactive(uint32_t nSessionID )
 void CPlayerNiuNiu::OnOtherDoLogined()
 {
 
+}
+
+void CPlayerNiuNiu::addOwnRoom(uint32_t nRoomID , uint16_t nConfigID )
+{
+	stMyOwnRoom myroom ;
+	myroom.nRoomID = nRoomID ;
+	myroom.nConfigID = nConfigID;
+	m_vMyOwnRooms.insert(MAP_ID_MYROOW::value_type(myroom.nRoomID,myroom));
+}
+
+bool CPlayerNiuNiu::isCreateRoomCntReachLimit()
+{
+	return m_vMyOwnRooms.size() >= 5 ;
 }

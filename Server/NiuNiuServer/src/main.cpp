@@ -13,7 +13,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 	while(bRunning)
 	{
 		memset(pBuffer,0,sizeof(pBuffer)) ;
-		scanf_s("%s",pBuffer) ;
+		scanf_s("%s",pBuffer,sizeof(pBuffer)) ;
 		if ( strcmp(pBuffer,"exit") == 0 || strcmp(pBuffer,"Q") == 0 )
 		{
 			bRunning = false ;
@@ -23,7 +23,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 		}
 		else
 		{
-			printf("Input exit or Q , to close the app \n") ;
+			printf("Input exit or Q , to close the app, current = %s \n", pBuffer) ;
 		}
 	}
 	return 0;

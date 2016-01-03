@@ -6,6 +6,7 @@
 #include <json/json.h>
 #include "AutoBuffer.h"
 #include "TaxasPokerPeerCard.h"
+#include "RoomConfig.h"
 void CPlayerTaxas::Reset()
 {
 	IPlayerComponent::Reset();
@@ -159,10 +160,38 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 	case MSG_TP_CREATE_ROOM:
 		{
 			stMsgCreateTaxasRoomRet msgBack ;
+			msgBack.nFinalCoin = GetPlayer()->GetBaseData()->GetAllCoin() ;
+
 			stMsgCreateTaxasRoom* pRet = (stMsgCreateTaxasRoom*)pMessage ;
-			//stBaseRoomConfig* pRoomConfig = CTaxasServerApp::SharedGameServerApp()->GetConfigMgr()->GetRoomConfig(eRoom_TexasPoker,pRet->nConfigID);
-			CLogMgr::SharedLogMgr()->ErrorLog("create room pls kou qian, bu neng chongfu , wan cheng yi ge , then next var[1] var[2]");
+			CRoomConfigMgr* pConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room);
+			stTaxasRoomConfig* pRoomConfig = (stTaxasRoomConfig*)pConfigMgr->GetConfigByConfigID(pRet->nConfigID) ;
+			if ( pRoomConfig == nullptr )
+			{
+				msgBack.nRet = 1 ;
+				msgBack.nRoomID = 0 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			// check if create room count reach limit ;
+			if ( isCreateRoomCntReachLimit() )
+			{
+				msgBack.nRet = 5 ;
+				msgBack.nRoomID = 0 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
 			
+			// check coin weather engough 
+			if ( GetPlayer()->GetBaseData()->GetAllCoin() < pRoomConfig->nRentFeePerDay * pRet->nDays )
+			{
+				msgBack.nRet = 4 ;
+				msgBack.nRoomID = 0 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			GetPlayer()->GetBaseData()->ModifyMoney( -1 * pRoomConfig->nRentFeePerDay * pRet->nDays );
 			//if ( pRoomConfig == nullptr )
 			//{
 			//	msgBack.nRet = 1 ;
@@ -321,20 +350,29 @@ bool CPlayerTaxas::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 		stMsgCreateTaxasRoomRet msgBack ;
 		msgBack.nRet = pResult->nRet ;
 		msgBack.nRoomID = pResult->vArg[1];
-		SendMsg(&msgBack,sizeof(msgBack)) ;
 		if ( pResult->nRet == 0 )
 		{
-			stMyOwnRoom myroom ;
-			myroom.nRoomID = msgBack.nRoomID ;
-			myroom.nConfigID = pResult->vArg[0];
-			m_vMyOwnRooms.insert(MAP_ID_MYROOW::value_type(myroom.nRoomID,myroom));
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d , create room id = %d , config id = %d", GetPlayer()->GetUserUID(),myroom.nRoomID,myroom.nConfigID) ;
+			addOwnRoom(msgBack.nRoomID,pResult->vArg[0]) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d , create room id = %d , config id = %d", GetPlayer()->GetUserUID(),msgBack.nRoomID,pResult->vArg[0]) ;
 		}
 		else
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("create failed give back coin uid = %d",GetPlayer()->GetUserUID());
+			CLogMgr::SharedLogMgr()->PrintLog("create failed give back coin uid = %d",GetPlayer()->GetUserUID());
+
+			CRoomConfigMgr* pConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room);
+
+			stTaxasRoomConfig* pRoomConfig = (stTaxasRoomConfig*)pConfigMgr->GetConfigByConfigID(pResult->vArg[0]) ;
+			if ( pRoomConfig == nullptr )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("fuck arument error must fix now , room config id , can not find") ;
+				return true ;
+			}
+
+			GetPlayer()->GetBaseData()->ModifyMoney(pRoomConfig->nRentFeePerDay *  pResult->vArg[2]);
 		}
 
+		msgBack.nFinalCoin = GetPlayer()->GetBaseData()->GetAllCoin() ;
+		SendMsg(&msgBack,sizeof(msgBack)) ;
 		return true ;
 	}
 
@@ -472,4 +510,17 @@ bool CPlayerTaxas::isRoomIDMyOwn(uint32_t nRoomID )
 void CPlayerTaxas::getTaxasData(stPlayerTaxasData* pData )
 {
 	memcpy(pData,&m_tData,sizeof(m_tData)) ;
+}
+
+void CPlayerTaxas::addOwnRoom(uint32_t nRoomID , uint16_t nConfigID )
+{
+	stMyOwnRoom myroom ;
+	myroom.nRoomID = nRoomID ;
+	myroom.nConfigID = nConfigID;
+	m_vMyOwnRooms.insert(MAP_ID_MYROOW::value_type(myroom.nRoomID,myroom));
+}
+
+bool CPlayerTaxas::isCreateRoomCntReachLimit()
+{
+	return m_vMyOwnRooms.size() >= 5 ;
 }

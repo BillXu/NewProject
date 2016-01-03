@@ -49,3 +49,9 @@ void CNiuNiuServerApp::onExit()
 	IServerApp::onExit();
 	m_tRoomMgr.onTimeSave();
 }
+
+void CNiuNiuServerApp::onConnectedToSvr()
+{
+	IServerApp::onConnectedToSvr();
+	m_tRoomMgr.onConnectedToSvr();
+}

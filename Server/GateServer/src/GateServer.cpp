@@ -34,6 +34,15 @@ CGateServer::~CGateServer()
 	s_GateServer = NULL ;
 }
 
+bool CGateServer::OnLostSever(Packet* pMsg)
+{
+	IServerApp::OnLostSever(pMsg);
+
+	m_pGateManager->closeAllClient() ;
+
+	return false ;
+}
+
 bool CGateServer::init()
 {
 	IServerApp::init();
@@ -58,7 +67,7 @@ bool CGateServer::init()
 
 void CGateServer::update(float fDeta )
 {
-	//IServerApp::update(fDeta);  we do not the gate svr do the reconnect 
+	IServerApp::update(fDeta);  
 	if ( m_pNetWorkForClients )
 	{
 		m_pNetWorkForClients->RecieveMsg() ;
@@ -127,9 +136,13 @@ bool CGateServer::OnMessage( Packet* pPacket )
 		m_nCurMaxSessionID = m_nSvrIdx ;
 		// start gate svr for client to connected 
 		stServerConfig* pGateConfig = m_stSvrConfigMgr.GetGateServerConfig(m_nSvrIdx) ;
-		m_pNetWorkForClients = new CServerNetwork ;
-		m_pNetWorkForClients->StartupNetwork(pGateConfig->nPort,MAX_INCOME_PLAYER,pGateConfig->strPassword);
-		m_pNetWorkForClients->AddDelegate(m_pGateManager) ;
+		if ( nullptr == m_pNetWorkForClients )
+		{
+			m_pNetWorkForClients = new CServerNetwork ;
+			m_pNetWorkForClients->StartupNetwork(pGateConfig->nPort,MAX_INCOME_PLAYER,pGateConfig->strPassword);
+			m_pNetWorkForClients->AddDelegate(m_pGateManager) ;
+		}
+
 		CLogMgr::SharedLogMgr()->SystemLog("setup network for clients to client ok " );
 		CLogMgr::SharedLogMgr()->SystemLog("Gate Server Start ok idx = %d !",m_nSvrIdx ) ;
 	}
