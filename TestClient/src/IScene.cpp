@@ -6,6 +6,7 @@ void IScene::OnEnterScene()
 {
 	if ( m_bRunning )return ;
 	m_pClient->GetNetWork()->AddMessageDelegate(this) ;
+	m_bRunning = true ;
 }
 
 void IScene::OnEixtScene()
@@ -13,6 +14,7 @@ void IScene::OnEixtScene()
 	if ( !m_bRunning )
 		return ;
 	m_pClient->GetNetWork()->RemoveMessageDelegate(this);
+	m_bRunning = false ;
 }
 
 bool IScene::OnMessage( Packet* pPacket )

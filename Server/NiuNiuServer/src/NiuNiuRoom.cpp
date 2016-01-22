@@ -17,10 +17,13 @@
 bool CNiuNiuRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID )
 {
 	ISitableRoom::init(pConfig,nRoomID) ;
+	m_nBaseBet = ((stNiuNiuRoomConfig*)pConfig)->nBaseBet;
+	m_nDeskFee = pConfig->nDeskFee ;
 	// create room state ;
 	IRoomState* vState[] = {
 							new CNiuNiuRoomWaitJoinState() , new CNiuNiuRoomDistribute4CardState(),new CNiuNiuRoomTryBanker(),new CNiuNiuRoomRandBankerState(),
-							new CNiuNiuRoomBetState(),new CNiuNiuRoomDistributeFinalCardState(),new CNiuNiuRoomStatePlayerCaculateCardState() ,new CNiuNiuRoomGameResultState()
+							new CNiuNiuRoomBetState(),new CNiuNiuRoomDistributeFinalCardState(),new CNiuNiuRoomStatePlayerCaculateCardState() ,new CNiuNiuRoomGameResultState(),
+							new IRoomStateDead()
 							};
 	for ( uint8_t nIdx = 0 ; nIdx < sizeof(vState) / sizeof(IRoomState*); ++nIdx )
 	{
@@ -52,6 +55,43 @@ bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 
 	switch ( prealMsg->usMsgType )
 	{
+	case MSG_REQUEST_ROOM_INFORM:
+		{
+			std::string strInform = getRoomInform() ;
+			stMsgRequestNiuNiuRoomInformRet msg ;
+
+			msg.nLen = strlen(strInform.c_str() );
+			if ( msg.nLen == 0 )
+			{
+				sendMsgToPlayer(&msg,sizeof(msg),nPlayerSessionID) ;
+				return true ;
+			}
+
+			uint16_t nLen = sizeof(msg) + msg.nLen ;
+			char* pBuffer = new char[nLen];
+			memcpy(pBuffer,&msg,sizeof(msg));
+			memcpy(pBuffer + sizeof(msg),strInform.c_str(),msg.nLen);
+			sendMsgToPlayer((stMsg*)pBuffer,nLen,nPlayerSessionID) ;
+			delete[] pBuffer ;
+		}
+		break;
+	case MSG_NN_MODIFY_ROOM_NAME:
+		{
+			stMsgModifyNiuNiuRoomNameRet msgBack ;
+			if ( isRoomAlive() == false )
+			{
+				msgBack.nRet = 2 ;
+				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+				return true;
+			}
+			stMsgModifyNiuNiuRoomName* pRet = (stMsgModifyNiuNiuRoomName*)prealMsg ;
+			msgBack.nRet = 0 ;
+			pRet->vNewRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
+			setRoomName(pRet->vNewRoomName);
+			sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+			return true;
+		}
+		break;
 	case MSG_NN_REQUEST_ROOM_INFO:
 		{
 			sendRoomInfoToPlayer(nPlayerSessionID);
@@ -108,6 +148,13 @@ bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 			if ( pSitDownTwice )
 			{
 				msgBack.nRet = 4;
+				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+				return true ;
+			}
+
+			if ( pp->getCoin() < getBaseBet() * getMaxRate() + m_nDeskFee )
+			{
+				msgBack.nRet = 2;
 				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 				return true ;
 			}
@@ -181,6 +228,24 @@ void CNiuNiuRoom::playerStandUp( ISitableRoomPlayer* pSitDown )
 		msgSyncMoney.vArg[0] = pBaseRoomPeer->getCoin();
 		msgSyncMoney.vArg[1] = eRoom_NiuNiu ;
 		sendMsgToPlayer(&msgSyncMoney,sizeof(msgSyncMoney),getRoomID()) ;
+
+		// sync data ;
+		if ( ((CNiuNiuRoomPlayer*)pSitDown)->getData()->nPlayTimes )
+		{
+			// send 
+			stMsgCrossServerRequest msg ;
+			msg.cSysIdentifer = ID_MSG_PORT_DATA ;
+			msg.nJsonsLen = 0 ;
+			msg.nReqOrigID = getRoomID();
+			msg.nRequestSubType = eCrossSvrReqSub_Default;
+			msg.nRequestType = eCrossSvrReq_SyncNiuNiuData;
+			msg.nTargetID = pSitDown->getUserUID() ;
+			memset(msg.vArg,0,sizeof(msg.vArg)) ;
+			msg.vArg[0] = ((CNiuNiuRoomPlayer*)pSitDown)->getData()->nPlayTimes ;
+			msg.vArg[1] = ((CNiuNiuRoomPlayer*)pSitDown)->getData()->nWinTimes ;
+			msg.vArg[2] = ((CNiuNiuRoomPlayer*)pSitDown)->getData()->nSingleWinMost ;
+			sendMsgToPlayer(&msg,sizeof(msg),getRoomID()) ;
+		}
 
 		// so some rank in room recorder ;
 		updatePlayerOffset(pSitDown->getUserUID(),pSitDown->getCoin() - pSitDown->getInitCoin() ) ;
@@ -261,6 +326,7 @@ void CNiuNiuRoom::sendRoomInfoToPlayer(uint32_t nSessionID)
 	stMsgNNRoomInfo msgInfo ;
 	msgInfo.nBankerBetTimes = m_nBetBottomTimes ;
 	msgInfo.nBankerIdx = m_nBankerIdx ;
+	msgInfo.nDeskFee =  m_nDeskFee ;
 	msgInfo.nBlind = getBaseBet() ;
 	msgInfo.nBottomBet = getBaseBet();
 	msgInfo.nChatRoomID = getChatRoomID() ;
@@ -300,6 +366,88 @@ void CNiuNiuRoom::onTimeSave(bool bRightNow)
 	ISitableRoom::onTimeSave();
 }
 
+void CNiuNiuRoom::onMatchFinish()
+{
+	uint32_t nChampionUID = 0;
+	sortRoomRankItem();
+	auto champ = getSortRankItemListBegin();
+	stRoomRankItem* pPlayerChampion = nullptr ;
+	if ( champ != getSortRankItemListEnd() )
+	{
+		pPlayerChampion = *champ ;
+		nChampionUID = pPlayerChampion->nUserUID ;
+	}
+	
+	// save log ;
+	stMsgSaveLog msgLog ;
+	msgLog.nJsonExtnerLen = 0 ;
+	msgLog.nLogType = eLog_MatchResult ;
+	msgLog.nTargetID = getRoomID() ;
+	memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+	msgLog.vArg[0] = getRoomType() ;
+	msgLog.vArg[1] = nChampionUID ;
+	if ( pPlayerChampion != nullptr )
+	{
+		msgLog.vArg[2] = pPlayerChampion->nOffset ;
+	}
+	msgLog.vArg[3] = getProfit() ;
+	sendMsgToPlayer(&msgLog,sizeof(msgLog),getRoomID()) ;
+	if ( pPlayerChampion == nullptr )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("room id = %d , type = %d , have no champion",getRoomID(),getRoomType()) ;
+		return ;
+	}
+
+	// send reward inform ;
+	stMsgCrossServerRequest msgReq ;
+	msgReq.cSysIdentifer = ID_MSG_PORT_DATA ;
+	msgReq.nReqOrigID = getRoomID();
+	msgReq.nTargetID = nChampionUID;
+	msgReq.nRequestType = eCrossSvrReq_Inform ;
+	msgReq.nRequestSubType = eCrossSvrReqSub_Default ;
+
+	std::string str = "恭喜您获得[%s]冠军,我们将在一个工作日发放奖品,任何疑问请加微信咨询管理员." ;
+	char pBuffer[200] = {0} ;
+	sprintf_s(pBuffer,sizeof(pBuffer),str.c_str(),getRoomName()) ;
+	msgReq.nJsonsLen = strlen(pBuffer) ;
+	CAutoBuffer aub(sizeof(msgReq) + msgReq.nJsonsLen );
+	aub.addContent(&msgReq,sizeof(msgReq)) ;
+	aub.addContent(pBuffer,msgReq.nJsonsLen) ;
+	sendMsgToPlayer((stMsg*)aub.getBufferPtr(),aub.getContentSize(),0) ;
+
+	// set room inform ;
+	memset(pBuffer,0,sizeof(pBuffer));
+	sprintf_s(pBuffer,sizeof(pBuffer),"【ID:%d】获得上届冠军,好厉害啊!",nChampionUID);
+	setRoomInform(pBuffer);
+	stMsgRemindNiuNiuRoomNewInform msgRemind ;
+	sendMsgToPlayer(&msgRemind,sizeof(msgRemind),0) ;
+}
+
+void CNiuNiuRoom::onMatchRestart()
+{
+	// reset room profit ;
+	setProfit(0);
+	// reset all history in db;
+	stMsgRemoveRoomPlayer msgPlayer ;
+	msgPlayer.nRoomID = getRoomID();
+	msgPlayer.nRoomType = getRoomType();
+	sendMsgToPlayer(&msgPlayer,sizeof(msgPlayer),0) ;
+
+	// remove all histroy 
+	removeAllRankItemPlayer();
+
+	// update sit down player;
+	uint8_t nSeatCnt = getSeatCount() ;
+	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
+	{
+		ISitableRoomPlayer* pp = getPlayerByIdx(nIdx) ;
+		if ( pp )
+		{
+			 pp->setInitCoin(pp->getCoin()) ;
+		}
+	}
+}
+
 IRoomPlayer* CNiuNiuRoom::doCreateRoomPlayerObject()
 {
 	return new IRoomPlayer();
@@ -312,7 +460,7 @@ uint8_t CNiuNiuRoom::getMaxRate()
 
 uint32_t CNiuNiuRoom::getBaseBet()
 {
-	return 20 ;
+	return m_nBaseBet ;
 }
 
 uint64_t& CNiuNiuRoom::getBankCoinLimitForBet()
@@ -348,6 +496,8 @@ void CNiuNiuRoom::onGameWillBegin()
 		ISitableRoomPlayer* pp = getPlayerByIdx(nIdx) ;
 		if ( pp )
 		{
+			pp->setCoin(pp->getCoin() - m_nDeskFee ) ;
+			setProfit(getProfit() + m_nDeskFee ) ;
 			pp->onGameBegin();
 		}
 	}
@@ -410,6 +560,12 @@ void CNiuNiuRoom::onGameDidEnd()
 		{
 			CLogMgr::SharedLogMgr()->PrintLog(" game end player uid = %d should stand up  ",pSitDown->getUserUID()) ;
 			playerStandUp(pSitDown) ;
+		}
+		else if ( pSitDown->getCoin() < getBaseBet() * getMaxRate() + m_nDeskFee )
+		{
+			pSitDown->setState(eRoomPeer_StandUp);
+			CLogMgr::SharedLogMgr()->PrintLog(" game end player uid = %d should stand up  coin is not enough",pSitDown->getUserUID()) ;
+			playerStandUp(pSitDown);
 		}
 		else
 		{

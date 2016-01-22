@@ -106,7 +106,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				}
 				else
 				{
-					ModifyMoney(pItem->nCount) ;
+					AddMoney(pItem->nCount) ;
 					CLogMgr::SharedLogMgr()->SystemLog("add coin with shop id = %d for buyer uid = %d ",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
 				}
 			}
@@ -123,6 +123,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 	case MSG_ON_PLAYER_BIND_ACCOUNT:
 		{
 			m_stBaseData.isRegister = true ;
+			m_bPlayerInfoDataDirty = true ;
 			CLogMgr::SharedLogMgr()->PrintLog("player bind account ok uid = %u",GetPlayer()->GetUserUID());
 		}
 		break;
@@ -327,7 +328,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
  				msgBack.nGetCoin = COIN_FOR_CHARITY;
  				msgBack.nLeftSecond = TIME_GET_CHARITY_ELAPS ;
  				m_stBaseData.tLastTakeCharityCoinTime = time(NULL) ;
-				ModifyMoney(msgBack.nGetCoin);
+				AddMoney(msgBack.nGetCoin);
 				msgBack.nFinalCoin = GetAllCoin();
 				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get charity",GetPlayer()->GetUserUID());
 				m_bCommonLogicDataDirty = true ;
@@ -580,6 +581,7 @@ void CPlayerBaseData::TimerSave()
 		m_bPlayerInfoDataDirty = false ;
 		stMsgSavePlayerInfo msgSaveInfo ;
 		msgSaveInfo.nPhotoID = m_stBaseData.nPhotoID ;
+		msgSaveInfo.nIsRegister = m_stBaseData.isRegister ;
 		msgSaveInfo.nUserUID = GetPlayer()->GetUserUID() ;
 		memcpy(msgSaveInfo.vName,m_stBaseData.cName,sizeof(msgSaveInfo.vName));
 		memcpy(msgSaveInfo.vSigure,m_stBaseData.cSignature,sizeof(msgSaveInfo.vSigure));
@@ -629,25 +631,38 @@ bool CPlayerBaseData::onPlayerRequestMoney(uint64_t& nCoinOffset,uint64_t nAtLea
 	return true ;
 }
 
-bool CPlayerBaseData::ModifyMoney(int64_t nOffset,bool bDiamond  )
+bool CPlayerBaseData::AddMoney(int64_t nOffset,bool bDiamond  )
 {
 	if ( bDiamond )
 	{
-		if ( nOffset < 0 && (-1*nOffset) > m_stBaseData.nDiamoned )
-		{
-			return false ;
-		}
-
 		m_stBaseData.nDiamoned += (int)nOffset ;
 	}
 	else
 	{
-		if ( nOffset < 0 && (-1*nOffset) > m_stBaseData.nCoin )
+		m_stBaseData.nCoin += nOffset ;
+	}
+	m_bMoneyDataDirty = true ;
+	return true ;
+}
+
+bool CPlayerBaseData::decressMoney(int64_t nOffset,bool bDiamond )
+{
+	if ( bDiamond )
+	{
+		if ( m_stBaseData.nDiamoned < nOffset )
 		{
 			return false ;
 		}
-		m_stBaseData.nCoin += nOffset ;
+		m_stBaseData.nDiamoned -= nOffset ;
+		m_bMoneyDataDirty = true ;
+		return true ;
 	}
+
+	if ( m_stBaseData.nCoin < nOffset )
+	{
+		return false ;
+	}
+	m_stBaseData.nCoin -= nOffset ;
 	m_bMoneyDataDirty = true ;
 	return true ;
 }

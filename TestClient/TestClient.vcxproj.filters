@@ -110,6 +110,15 @@
     <ClCompile Include="src\TaxasRobotBrain.cpp">
       <Filter>robot</Filter>
     </ClCompile>
+    <ClCompile Include="src\NiuNiuScene.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NiuNiuData.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RobotControlNiuNiu.cpp">
+      <Filter>robot</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\CommonDefine.h">
@@ -204,6 +213,15 @@
     </ClInclude>
     <ClInclude Include="..\Common\NiuNiuMessageDefine.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NiuNiuScene.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NiuNiuData.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RobotControlNiuNiu.h">
+      <Filter>robot</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

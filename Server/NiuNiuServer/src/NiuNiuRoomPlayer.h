@@ -2,6 +2,7 @@
 #include "CommonDefine.h"
 #include "ISitableRoomPlayer.h"
 #include "NiuNiuPeerCard.h"
+#include "CommonData.h"
 class CNiuNiuRoomPlayer
 	:public ISitableRoomPlayer
 {
@@ -18,8 +19,9 @@ public:
 	void setTryBankerTimes(uint8_t nTimes );
 	uint8_t getBetTimes();
 	void setBetTimes(uint8_t nTimes);
-	void setCoinOffsetThisGame(int32_t nOffset ){ m_nOffsetCoinThisGame = nOffset ; }
+	void setCoinOffsetThisGame(int32_t nOffset );
 	int32_t getCoinOffsetThisGame(){ return m_nOffsetCoinThisGame ;}
+	stPlayerNiuNiuData* getData(){ return &m_tHistoryData ;}
 private:
 	void willLeave()override ;
 protected:
@@ -28,4 +30,6 @@ protected:
 	uint8_t m_vCards[NIUNIU_HOLD_CARD_COUNT];
 	CNiuNiuPeerCard m_tPeerCard ;
 	int32_t m_nOffsetCoinThisGame ;
+
+	stPlayerNiuNiuData m_tHistoryData ;
 };

@@ -107,7 +107,7 @@ bool CDataBaseThread::ProcessRequest()
 		pResult->nAffectRow = 0 ;
 		if ( mysql_real_query(m_pMySql,pRequest->pSqlBuffer,pRequest->nSqlBufferLen) )
 		{
-			printf("query DB Error Info , Operate UID = %d : %s \n", pRequest->nRequestUID, mysql_error(m_pMySql));
+			printf("query DB Error Info , Operate UID = %d : %s . sql: = %s\n", pRequest->nRequestUID, mysql_error(m_pMySql),pRequest->pSqlBuffer);
 			pResult->nAffectRow = 0 ;
 			continue; 
 		}

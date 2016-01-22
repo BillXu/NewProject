@@ -4,6 +4,7 @@
 #include "TaxasMessageDefine.h"
 #include "ServerMessageDefine.h"
 #include "TaxasServerApp.h"
+#include <time.h>
 CTaxasBaseRoomState::CTaxasBaseRoomState()
 {
 	m_fDuringTime = 0 ;
@@ -125,14 +126,46 @@ void CTaxasStateDead::EnterState(CTaxasRoom* pRoom )
 {
 	CTaxasBaseRoomState::EnterState(pRoom);
 	// send inform ;
+	if ( pRoom->getOwnerUID() == MATCH_MGR_UID )  // match room 
+	{
+		pRoom->onMatchFinish();
+		m_MatchRoomDuringTime = pRoom->getDeadTime() - pRoom->getCreateTime();
+		m_fMatchRestarTime = TIME_MATCH_PAUSE ; // 30 min later start new match ;
+	}
+	else
+	{
+		pRoom->sendExpireInform();
+	}
 }
 
 void CTaxasStateDead::Update(float fDelte )
 {
+	if ( m_pRoom->isDeleteRoom() == false && m_pRoom->getOwnerUID() != MATCH_MGR_UID )
+	{
+		time_t deadTime = m_pRoom->getDeadTime() ;
+		if ( time(nullptr) - deadTime > 8640*3 ) // 3 days ;
+		{
+			m_pRoom->deleteRoom();
+		}
+	}
+
 	if ( m_pRoom->isRoomAlive() )
 	{
 		m_pRoom->GoToState(eRoomState_TP_WaitJoin) ;
 		return ;
+	}
+	else
+	{
+		if ( m_pRoom->getOwnerUID() == MATCH_MGR_UID )
+		{
+			m_fMatchRestarTime -= fDelte;
+			if ( m_fMatchRestarTime <= 0 )
+			{
+				m_pRoom->setCreateTime(time(nullptr));
+				m_pRoom->setDeadTime(m_pRoom->getCreateTime() + m_MatchRoomDuringTime) ;
+				m_pRoom->onMatchRestart();
+			}
+		}
 	}
 }
 

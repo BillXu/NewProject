@@ -105,7 +105,6 @@ bool CSelectPlayerDataCacher::getPlayerData(uint32_t nUID , stPlayerBrifData* pD
 	return true ;
 }
 
-
 CPlayerManager::CPlayerManager()
 {
 	m_vOfflinePlayers.clear() ;

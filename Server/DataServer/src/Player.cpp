@@ -16,7 +16,7 @@
 #include "ServerCommon.h"
 #include "AutoBuffer.h"
 #include "RoomConfig.h"
-#define TIME_SAVE 60*20
+#define TIME_SAVE 60*10
 CPlayer::CPlayer( )
 {
 	m_nUserUID = 0 ;
@@ -249,6 +249,8 @@ void CPlayer::OnPlayerDisconnect()
 		}
 	}
 
+	OnTimerSave(0,0);
+
 	if ( m_pTimerSave )
 	{
 		m_pTimerSave->Stop();
@@ -323,6 +325,154 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 {
 	switch ( pMsg->usMsgType )
 	{
+	case MSG_ADD_RENT_TIME:
+		{
+			stMsgAddRoomRentTime* pRet = (stMsgAddRoomRentTime*)pMsg ;
+			CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_ADD_RENT_TIME check room id , and kou qian  do not forget ");
+
+			stMsgAddRoomRentTimeRet msgBack ;
+			msgBack.nAddDays = pRet->nAddDays ;
+			msgBack.nRet = 0 ;
+			msgBack.nRoomID = pRet->nRoomID ;
+			msgBack.nRoomType = pRet->nRoomType ;
+
+			uint16_t nRoomConfigID = 0 ;
+			if ( eRoom_NiuNiu == pRet->nRoomType )
+			{
+				nRoomConfigID = ((CPlayerNiuNiu*)GetComponent(ePlayerComponent_PlayerNiuNiu))->getMyOwnRoomConfig(pRet->nRoomID) ;
+			}
+			else if ( eRoom_TexasPoker == pRet->nRoomType )
+			{
+				nRoomConfigID = ((CPlayerTaxas*)GetComponent(ePlayerComponent_PlayerTaxas))->getMyOwnRoomConfig(pRet->nRoomID) ;
+			}
+			else
+			{
+				msgBack.nRet = 3 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			CRoomConfigMgr* pConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room);
+			stBaseRoomConfig* pRoomConfig = pConfigMgr->GetConfigByConfigID(nRoomConfigID) ;
+			if ( pRoomConfig == nullptr )
+			{
+				msgBack.nRet = 1 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			if ( GetBaseData()->GetAllCoin() < pRet->nAddDays * pRoomConfig->nRentFeePerDay )
+			{
+				msgBack.nRet = 2 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			GetBaseData()->decressMoney(pRet->nAddDays * pRoomConfig->nRentFeePerDay);
+
+			stMsgCrossServerRequest msgRoomProfitReq ;
+			msgRoomProfitReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
+			msgRoomProfitReq.nReqOrigID = GetUserUID() ;
+			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
+			msgRoomProfitReq.nRequestType = eCrossSvrReq_AddRentTime ;
+			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
+			msgRoomProfitReq.vArg[0] = pRet->nAddDays ;
+			msgRoomProfitReq.vArg[1] = pRet->nRoomType ;
+			msgRoomProfitReq.vArg[2] = pRet->nAddDays * pRoomConfig->nRentFeePerDay ;
+			SendMsgToClient((char*)&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
+		}
+		break;
+	case MSG_CACULATE_ROOM_PROFILE:
+		{
+			stMsgCaculateTaxasRoomProfit* pRet = (stMsgCaculateTaxasRoomProfit*)pMsg ;
+
+			stMsgCaculateTaxasRoomProfitRet msgBack ;
+			msgBack.nRoomType = pRet->nRoomType ;
+			msgBack.bDiamond = false ;
+			msgBack.nProfitMoney = 0 ;
+			msgBack.nRet = 0 ;
+
+			msgBack.nRoomID = pRet->nRoomID ;
+			bool bIsOwnRoom = false ;
+			if ( eRoom_NiuNiu == pRet->nRoomType )
+			{
+				bIsOwnRoom = ((CPlayerNiuNiu*)GetComponent(ePlayerComponent_PlayerNiuNiu))->isRoomIDMyOwn(pRet->nRoomID) ;
+			}
+			else if ( eRoom_TexasPoker == pRet->nRoomType )
+			{
+				bIsOwnRoom = ((CPlayerTaxas*)GetComponent(ePlayerComponent_PlayerTaxas))->isRoomIDMyOwn(pRet->nRoomID) ;
+			}
+			else
+			{
+				msgBack.nRet = 2 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			if ( !bIsOwnRoom )
+			{
+				msgBack.nRet = 1 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			stMsgCrossServerRequest msgRoomProfitReq ;
+			msgRoomProfitReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
+			msgRoomProfitReq.nReqOrigID = GetUserUID() ;
+			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
+			msgRoomProfitReq.nRequestType = eCrossSvrReq_RoomProfit ;
+			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
+			SendMsgToClient((char*)&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
+			return true;
+		}
+		break;
+	case MSG_DELETE_ROOM:
+		{
+			stMsgDeleteRoomRet msgBack ;
+			stMsgDeleteRoom* pRet = (stMsgDeleteRoom*)pMsg ;
+			msgBack.nRoomID = pRet->nRoomID ;
+			msgBack.nRoomType = pRet->nRoomType ;
+			bool bDeleted = false ;
+			if ( eRoom_NiuNiu == pRet->nRoomType )
+			{
+				bDeleted = ((CPlayerNiuNiu*)GetComponent(ePlayerComponent_PlayerNiuNiu))->deleteOwnRoom(pRet->nRoomID) ;
+			}
+			else if ( eRoom_TexasPoker == pRet->nRoomType )
+			{
+				bDeleted = ((CPlayerTaxas*)GetComponent(ePlayerComponent_PlayerTaxas))->deleteOwnRoom(pRet->nRoomID) ;
+			}
+			else
+			{
+				msgBack.nRet = 2 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			if ( !bDeleted )
+			{
+				msgBack.nRet = 1 ;
+				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+				return true ;
+			}
+
+			// do delete room ;
+			stMsgCrossServerRequest msgReq ;
+			msgReq.nJsonsLen = 0 ;
+			msgReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
+			msgReq.nReqOrigID = GetUserUID() ;
+			msgReq.nRequestSubType = eCrossSvrReqSub_Default;
+			msgReq.nRequestType = eCrossSvrReq_DeleteRoom ;
+			msgReq.nTargetID = 0 ;
+			memset(msgReq.vArg,0,sizeof(msgReq.vArg)) ;
+			msgReq.vArg[0] = pRet->nRoomType ;
+			msgReq.vArg[1] = pRet->nRoomID ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(msgReq.nReqOrigID, (char*)&msgReq,sizeof(msgReq)) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d , delete room = %d , type = %d",GetUserUID(),pRet->nRoomID,pRet->nRoomType) ;
+
+			msgBack.nRet = 0 ;
+			SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+		}
+		break;
 	case MSG_CREATE_ROOM:
 		{
 			stMsgCreateRoom* pRet = (stMsgCreateRoom*)pMsg ;
@@ -361,7 +511,7 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 				return true ;
 			}
 
-			if ( bReachLimit )
+			if ( bReachLimit && GetUserUID() != MATCH_MGR_UID )
 			{
 				msgBack.nRet = 5 ;
 				msgBack.nRoomID = 0 ;
@@ -388,7 +538,7 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 				return true ;
 			}
 
-			GetBaseData()->ModifyMoney( -1 * pRoomConfig->nRentFeePerDay * pRet->nDays );
+			GetBaseData()->decressMoney(pRoomConfig->nRentFeePerDay * pRet->nDays );
 
 			msgReq.nReqOrigID = GetUserUID() ;
 			msgReq.nRequestSubType = eCrossSvrReqSub_Default;
@@ -718,10 +868,58 @@ bool CPlayer::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::
 				return true ;
 			}
 
-			GetBaseData()->ModifyMoney( pRoomConfig->nRentFeePerDay *  pResult->vArg[3]);
+			GetBaseData()->AddMoney( pRoomConfig->nRentFeePerDay *  pResult->vArg[3]);
 			msgBack.nFinalCoin = GetBaseData()->GetAllCoin() ;
 		}
 		SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+		return true ;
+	}
+
+	if ( eCrossSvrReq_RoomProfit == pResult->nRequestType )
+	{
+		stMsgCaculateRoomProfitRet msgBack ;
+		msgBack.nRoomID = pResult->nReqOrigID ;
+		msgBack.bDiamond = !pResult->vArg[0] ;
+		msgBack.nProfitMoney = pResult->vArg[1] ;
+		msgBack.nRoomType = pResult->vArg[2] ;
+		msgBack.nRet = pResult->nRet ? 3 : 0 ;
+		SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+		if ( msgBack.nRet )
+		{
+			return true ;
+		}
+		GetBaseData()->AddMoney(msgBack.nProfitMoney,msgBack.bDiamond);
+		// save log 
+		stMsgSaveLog msgLog ;
+		memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+		msgLog.nJsonExtnerLen = 0 ;
+		msgLog.nLogType = eLog_AddMoney ;
+		msgLog.nTargetID = GetUserUID() ;
+		msgLog.vArg[0] = !msgBack.bDiamond ;
+		msgLog.vArg[1] = msgBack.nProfitMoney;
+		msgLog.vArg[2] = GetBaseData()->GetData()->nCoin;
+		msgLog.vArg[3] = GetBaseData()->GetData()->nDiamoned ;
+		msgLog.vArg[4] = eCrossSvrReq_RoomProfit ;
+		msgLog.vArg[5] = pResult->nReqOrigID ;
+		CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nReqOrigID,(char*)&msgLog,sizeof(msgLog));
+
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d get profit = %llu",GetUserUID(),msgBack.nProfitMoney) ;
+		return true ;
+	}
+
+	if ( eCrossSvrReq_AddRentTime == pResult->nRequestType )
+	{
+		stMsgAddRoomRentTimeRet msgRet ;
+		msgRet.nRet = pResult->nRet ? 4 : 0  ;
+		msgRet.nAddDays = pResult->vArg[0] ;
+		msgRet.nRoomID = pResult->nReqOrigID ;
+		msgRet.nRoomType = pResult->vArg[1] ;
+		SendMsgToClient((char*)&msgRet,sizeof(msgRet)) ;
+		if ( msgRet.nRet )
+		{
+			GetBaseData()->AddMoney(pResult->vArg[2]) ;
+		}
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d add rent time = %d",GetUserUID(),msgRet.nAddDays) ;
 		return true ;
 	}
 

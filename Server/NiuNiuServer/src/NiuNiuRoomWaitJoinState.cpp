@@ -10,6 +10,12 @@ void CNiuNiuRoomWaitJoinState::enterState(IRoom* pRoom)
 
 void CNiuNiuRoomWaitJoinState::update( float fDeta )
 {
+	if ( m_pRoom && m_pRoom->isRoomAlive() == false )
+	{
+		m_pRoom->goToState(IRoomStateDead::eStateID);
+		return ;
+	}
+
 	if ( m_pRoom && m_pRoom->getPlayerCntWithState(eRoomPeer_WaitNextGame) >= 2 )
 	{
 		m_pRoom->goToState(CNiuNiuRoomDistribute4CardState::eStateID);

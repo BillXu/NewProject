@@ -8,7 +8,7 @@ void CNiuNiuRoomBetState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (CNiuNiuRoom*)pRoom ;	
 	setStateDuringTime(TIME_NIUNIU_PLAYER_BET) ;
-	m_nLeftBetPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
+	m_nLeftBetPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) - 1;
 	CLogMgr::SharedLogMgr()->PrintLog("room id = %d start bet ",m_pRoom->getRoomID()) ;
 }
 
@@ -53,7 +53,7 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 			m_pRoom->setBankCoinLimitForBet(m_pRoom->getBankCoinLimitForBet() - nBetCoin ) ;
 		}
 		m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
-		if ( --m_nLeftBetPlayerCnt == 0 )  // end bet state ;
+		if ( --m_nLeftBetPlayerCnt <= 0 )  // end bet state ;
 		{
 			onStateDuringTimeUp() ;
 		}

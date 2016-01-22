@@ -104,10 +104,13 @@
     <ClCompile Include="src\IScene.cpp" />
     <ClCompile Include="src\LoginScene.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\NiuNiuData.cpp" />
+    <ClCompile Include="src\NiuNiuScene.cpp" />
     <ClCompile Include="src\PlayerData.cpp" />
     <ClCompile Include="src\robot.cpp" />
     <ClCompile Include="src\RobotAIConfig.cpp" />
     <ClCompile Include="src\RobotConfig.cpp" />
+    <ClCompile Include="src\RobotControlNiuNiu.cpp" />
     <ClCompile Include="src\RobotControlTaxas.cpp" />
     <ClCompile Include="src\robotControl.cpp" />
     <ClCompile Include="src\TaxasPokerData.cpp" />
@@ -139,10 +142,13 @@
     <ClInclude Include="src\IScene.h" />
     <ClInclude Include="src\LoginScene.h" />
     <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\NiuNiuData.h" />
+    <ClInclude Include="src\NiuNiuScene.h" />
     <ClInclude Include="src\PlayerData.h" />
     <ClInclude Include="src\robot.h" />
     <ClInclude Include="src\RobotAIConfig.h" />
     <ClInclude Include="src\RobotConfig.h" />
+    <ClInclude Include="src\RobotControlNiuNiu.h" />
     <ClInclude Include="src\RobotControlTaxas.h" />
     <ClInclude Include="src\robotControl.h" />
     <ClInclude Include="src\TaxasPokerData.h" />

@@ -65,7 +65,7 @@ public:
 	virtual uint8_t getRoomType() = 0 ;
 	virtual void onGameWillBegin(){}
 	virtual void onGameDidEnd(){}
-	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr){ return false ;}
+	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
 	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr ){ return false ;}
 
 	virtual void onTimeSave( bool isRightNow = false );
@@ -86,17 +86,27 @@ public:
 	void setRoomName(const char* pRoomName);
 	const char* getRoomName();
 	void setRoomInform(const char* pRoomInform );
+	std::string getRoomInform(){ return m_strRoomInForm ;}
 	bool isRoomAlive();
 	void setProfit(uint64_t nProfit );
+	uint64_t getProfit(){ return m_nRoomProfit ;}
+	uint64_t getTotalProfit(){ return m_nTotalProfit ;}
+	void addTotoalProfit(uint64_t nAdd ){ m_nTotalProfit += nAdd ;}
+	void setTotalProfit( uint64_t nProfit ){ m_nTotalProfit = nProfit ;}
 	void setCreateTime(uint32_t nTime);
 	uint32_t getCreateTime();
 	void setInformSieral(uint32_t nSieaial);
-	void setChatRoomID(uint64_t nChatRoomID );
-	uint64_t getChatRoomID(){ return m_nChatRoomID ; }
+	void setChatRoomID(uint32_t nChatRoomID );
+	uint32_t getChatRoomID(){ return m_nChatRoomID ; }
 	uint32_t getConfigID();
 	uint32_t getDeadTime();
 	void sendExpireInform();
 	void finishReadInfoInitRoom(){ m_bRoomInfoDiry = false ; }
+	void deleteRoom();
+	bool isDeleteRoom();
+	void removeAllRankItemPlayer();
+	virtual void onMatchFinish(){}
+	virtual void onMatchRestart(){};
 protected:
 	bool addRoomState(IRoomState* pRoomState );
 private:
@@ -106,7 +116,8 @@ private:
 	IRoomState* m_pCurRoomState ;
 	MAP_ID_ROOM_STATE m_vRoomStates ;
 	CPoker m_tPoker ;
-	
+
+	bool m_bIsDelte ;
 	// creator info 
 	bool m_bRoomInfoDiry ;
 	uint32_t m_nRoomOwnerUID ;
@@ -118,7 +129,7 @@ private:
 	uint32_t m_nInformSerial;
 	uint64_t m_nRoomProfit;
 	uint64_t m_nTotalProfit ;
-	uint64_t m_nChatRoomID ;
+	uint32_t m_nChatRoomID ;
 	uint16_t m_nConfigID ;
 
 	MAP_UID_ROOM_RANK_ITEM m_vRoomRankHistroy ;

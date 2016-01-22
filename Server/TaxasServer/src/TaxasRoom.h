@@ -117,6 +117,7 @@ public:
 	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t& nValue );  // return error code , 0 success ;
 	stTaxasPeerData* GetSitDownPlayerData(uint8_t nSeatIdx);
 	stTaxasPeerData* GetSitDownPlayerDataByUID(uint32_t nUserUID);
+	uint32_t getChampionUID();
 
 	// room life and attribute
 	void onCreateByPlayer(uint32_t nUserUID, uint16_t nRentDays );
@@ -132,13 +133,19 @@ public:
 	void setRoomInform(const char* pRoomInform );
 	bool isRoomAlive();
 	void setProfit(uint64_t nProfit );
+	uint64_t getProfit(){return m_nRoomProfit ;}
+	void addTotoalProfit(uint64_t nAdd ){ m_nTotalProfit += nAdd ;}
+	void setTotalProfit( uint64_t nProfit ){ m_nTotalProfit = nProfit ;}
 	void setCreateTime(uint32_t nTime);
 	uint32_t getCreateTime(){ return m_nCreateTime;}
 	void setInformSieral(uint32_t nSieaial);
-	void setChatRoomID(uint64_t nChatRoomID ){ m_nChatRoomID = nChatRoomID ;}
+	void setChatRoomID(uint32_t nChatRoomID ){ m_nChatRoomID = nChatRoomID ;}
+	uint32_t getChatRoomID(){ return m_nChatRoomID ;}
 	uint32_t getConfigID(){ return m_stRoomConfig.nConfigID ; }
 	uint32_t getDeadTime(){ return m_nDeadTime ;}
 	void sendExpireInform();
+	void onMatchFinish();
+	void onMatchRestart();
 
 	// logic function 
 	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
@@ -170,6 +177,9 @@ public:
 	uint32_t getMaxTakeIn(){ return m_stRoomConfig.nMaxTakeInCoin ; }
 
 	void didCaculateGameResult();
+	void deleteRoom();
+	bool isDeleteRoom();
+	eRoomState getCurRoomState();
 private:
 	bool addInroomPlayerInternal(stTaxasInRoomPeerDataExten* pAdd );
 protected:
@@ -202,9 +212,10 @@ protected:
 	uint32_t m_nInformSerial;
 	uint64_t m_nRoomProfit;
 	uint64_t m_nTotalProfit ;
-	uint64_t m_nChatRoomID ;
+	uint32_t m_nChatRoomID ;
 
 	// running members ;
+	bool m_bIsDelte ;
 	eRoomState m_eCurRoomState ; // eRoomState ;
 	uint8_t m_nBankerIdx ;
 	uint8_t m_nLittleBlindIdx ;

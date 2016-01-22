@@ -1,0 +1,254 @@
+<Solution>
+  <PropertyGroup Name="MainUI" Version="2.3.3.0" Type="CocosStudio" />
+  <SolutionFolder>
+    <Group ctype="ResourceGroup">
+      <RootFolder Name=".">
+        <Project Name="MainUI.csd" Type="Layer" />
+        <Image Name="border.png" />
+        <Image Name="desk.png" />
+        <Image Name="filter.png" />
+        <Image Name="me.png" />
+        <Image Name="mine.png" />
+        <Image Name="rank.png" />
+        <Image Name="square.png" />
+        <Project Name="TaxasRoomItem.csd" Type="Layer" />
+        <Image Name="collection.png" />
+        <Image Name="edit.png" />
+        <Image Name="full.png" />
+        <Image Name="hot.png" />
+        <Image Name="2.jpg" />
+        <Image Name="1.jpg" />
+        <Project Name="TaxasRoomItemByMyCreate.csd" Type="Layer" />
+        <Project Name="CreateRoomItem.csd" Type="Layer" />
+        <Project Name="CreateRoomLayer.csd" Type="Layer" />
+        <Image Name="head_mask.png" />
+        <Project Name="StatisticsLayer.csd" Type="Layer" />
+        <Image Name="icon_account.png" />
+        <Image Name="icon_buychips1.png" />
+        <Image Name="icon_buychips2.png" />
+        <Image Name="icon_buychips3.png" />
+        <Image Name="icon_buychips4.png" />
+        <Image Name="icon_buychips5.png" />
+        <Image Name="icon_female.png" />
+        <Image Name="icon_male.png" />
+        <Image Name="icon_more.png" />
+        <Image Name="icon_rate.png" />
+        <Image Name="icon_setting.png" />
+        <Image Name="icon_statistics.png" />
+        <PlistImageFolder Image="cards.png" PListFile="cards.plist" Name=".cards_PList.Dir">
+          <PlistImageFile Name="card-102.png" Key="card-102.png" />
+          <PlistImageFile Name="card-103.png" Key="card-103.png" />
+          <PlistImageFile Name="card-104.png" Key="card-104.png" />
+          <PlistImageFile Name="card-105.png" Key="card-105.png" />
+          <PlistImageFile Name="card-106.png" Key="card-106.png" />
+          <PlistImageFile Name="card-107.png" Key="card-107.png" />
+          <PlistImageFile Name="card-108.png" Key="card-108.png" />
+          <PlistImageFile Name="card-109.png" Key="card-109.png" />
+          <PlistImageFile Name="card-10a.png" Key="card-10a.png" />
+          <PlistImageFile Name="card-10b.png" Key="card-10b.png" />
+          <PlistImageFile Name="card-10c.png" Key="card-10c.png" />
+          <PlistImageFile Name="card-10d.png" Key="card-10d.png" />
+          <PlistImageFile Name="card-10e.png" Key="card-10e.png" />
+          <PlistImageFile Name="card-202.png" Key="card-202.png" />
+          <PlistImageFile Name="card-203.png" Key="card-203.png" />
+          <PlistImageFile Name="card-204.png" Key="card-204.png" />
+          <PlistImageFile Name="card-205.png" Key="card-205.png" />
+          <PlistImageFile Name="card-206.png" Key="card-206.png" />
+          <PlistImageFile Name="card-207.png" Key="card-207.png" />
+          <PlistImageFile Name="card-208.png" Key="card-208.png" />
+          <PlistImageFile Name="card-209.png" Key="card-209.png" />
+          <PlistImageFile Name="card-20a.png" Key="card-20a.png" />
+          <PlistImageFile Name="card-20b.png" Key="card-20b.png" />
+          <PlistImageFile Name="card-20c.png" Key="card-20c.png" />
+          <PlistImageFile Name="card-20d.png" Key="card-20d.png" />
+          <PlistImageFile Name="card-20e.png" Key="card-20e.png" />
+          <PlistImageFile Name="card-302.png" Key="card-302.png" />
+          <PlistImageFile Name="card-303.png" Key="card-303.png" />
+          <PlistImageFile Name="card-304.png" Key="card-304.png" />
+          <PlistImageFile Name="card-305.png" Key="card-305.png" />
+          <PlistImageFile Name="card-306.png" Key="card-306.png" />
+          <PlistImageFile Name="card-307.png" Key="card-307.png" />
+          <PlistImageFile Name="card-308.png" Key="card-308.png" />
+          <PlistImageFile Name="card-309.png" Key="card-309.png" />
+          <PlistImageFile Name="card-30a.png" Key="card-30a.png" />
+          <PlistImageFile Name="card-30b.png" Key="card-30b.png" />
+          <PlistImageFile Name="card-30c.png" Key="card-30c.png" />
+          <PlistImageFile Name="card-30d.png" Key="card-30d.png" />
+          <PlistImageFile Name="card-30e.png" Key="card-30e.png" />
+          <PlistImageFile Name="card-402.png" Key="card-402.png" />
+          <PlistImageFile Name="card-403.png" Key="card-403.png" />
+          <PlistImageFile Name="card-404.png" Key="card-404.png" />
+          <PlistImageFile Name="card-405.png" Key="card-405.png" />
+          <PlistImageFile Name="card-406.png" Key="card-406.png" />
+          <PlistImageFile Name="card-407.png" Key="card-407.png" />
+          <PlistImageFile Name="card-408.png" Key="card-408.png" />
+          <PlistImageFile Name="card-409.png" Key="card-409.png" />
+          <PlistImageFile Name="card-40a.png" Key="card-40a.png" />
+          <PlistImageFile Name="card-40b.png" Key="card-40b.png" />
+          <PlistImageFile Name="card-40c.png" Key="card-40c.png" />
+          <PlistImageFile Name="card-40d.png" Key="card-40d.png" />
+          <PlistImageFile Name="card-40e.png" Key="card-40e.png" />
+          <PlistImageFile Name="card-back-small.png" Key="card-back-small.png" />
+          <PlistImageFile Name="card-back.png" Key="card-back.png" />
+        </PlistImageFolder>
+        <Project Name="MyInfoLayer.csd" Type="Layer" />
+        <Project Name="BuyChipsLayer.csd" Type="Layer" />
+        <Image Name="icon_back.png" />
+        <Image Name="icon_switch_off.png" />
+        <Image Name="icon_switch_on.png" />
+        <Project Name="SetLayer.csd" Type="Layer" />
+        <Project Name="UpdateGenderLayer.csd" Type="Layer" />
+        <Image Name="icon_check.png" />
+        <Image Name="bg_chat_input.png" />
+        <Image Name="divider1.png" />
+        <Image Name="icon_chat.png" />
+        <Image Name="icon_follow.png" />
+        <Image Name="notification1.png" />
+        <Project Name="FriendService.csd" Type="Layer" />
+        <Image Name="avatar-7.png" />
+        <Project Name="FriendItem.csd" Type="Layer" />
+        <Project Name="ChatLayer.csd" Type="Layer" />
+        <Image Name="bg_chat1.png" />
+        <Image Name="bg_chat2.png" />
+        <Image Name="bg_enter_voice.png" />
+        <Image Name="icon_chat_voice.png" />
+        <Image Name="icon_keyboard.png" />
+        <Image Name="icon_smile.png" />
+        <Image Name="icon_voice.png" />
+        <Image Name="icon_word.png" />
+        <Image Name="icon_voiceByNew.png" />
+        <Project Name="FriendChatItem.csd" Type="Layer" />
+        <Project Name="FriendChatMyItem.csd" Type="Layer" />
+        <Image Name="1.png" />
+        <Image Name="10.png" />
+        <Image Name="11.png" />
+        <Image Name="12.png" />
+        <Image Name="2.png" />
+        <Image Name="3.png" />
+        <Image Name="4.png" />
+        <Image Name="5.png" />
+        <Image Name="6.png" />
+        <Image Name="7.png" />
+        <Image Name="8.png" />
+        <Image Name="9.png" />
+        <Image Name="bg_voice.png" />
+        <Image Name="voicerecording.png" />
+        <Image Name="chipsLog.png" />
+        <Project Name="DelayedLayer.csd" Type="Layer" />
+        <Image Name="avatar_cover.png" />
+        <Image Name="shadow1.png" />
+        <Project Name="bindAccount.csd" Type="Layer" />
+        <Image Name="12.jpg" />
+        <Image Name="button_enter.png" />
+        <Image Name="button_enter2.png" />
+        <Image Name="circleslogo.png" />
+        <Image Name="icon_freechips.png" />
+        <Image Name="icon_quickstart.png" />
+        <Image Name="icon_selectdesk.png" />
+        <Image Name="icon_shop.png" />
+        <Project Name="SelectTaxasTableLayer.csd" Type="Layer" />
+        <Image Name="select.png" />
+        <Image Name="selectbutton1.png" />
+        <Image Name="shiyi.jpg" />
+        <Image Name="Minus.png" />
+        <Image Name="plus.png" />
+        <Image Name="ButtonBG.png" />
+        <Image Name="bg_enter.png" />
+        <Image Name="line.png" />
+        <Image Name="icon1_off.png" />
+        <Image Name="icon1_on.png" />
+        <Image Name="icon2_off.png" />
+        <Image Name="icon2_on.png" />
+        <Image Name="icon3_off.png" />
+        <Image Name="icon3_on.png" />
+        <Image Name="icon4_off.png" />
+        <Image Name="icon4_on.png" />
+        <Image Name="icon_club.png" />
+        <Image Name="icon_diamond.png" />
+        <Image Name="icon_heart.png" />
+        <Image Name="icon_spade.png" />
+        <Image Name="icon5_off.png" />
+        <Image Name="icon5_on.png" />
+        <Image Name="line_buttom.png" />
+        <Project Name="UpdateUserDataLayer.csd" Type="Layer" />
+        <Image Name="choose_bg.png" />
+        <Image Name="choose_divider.png" />
+        <Image Name="empty.png" />
+        <Project Name="ShopItem.csd" Type="Layer" />
+        <Image Name="choose_bg.jpg" />
+        <Image Name="price_bg.png" />
+        <Project Name="ImagePickerLayer.csd" Type="Layer" />
+        <Image Name="BlackBg.png" />
+        <Image Name="chip_icon.png" />
+        <Image Name="enter1.png" />
+        <Image Name="enter2.png" />
+        <Image Name="enter3.png" />
+        <Image Name="enter4.png" />
+        <Image Name="HomeBg.jpg" />
+        <Image Name="level_icon.png" />
+        <Image Name="list.png" />
+        <Image Name="spade.png" />
+        <Image Name="star.png" />
+        <Image Name="123.jpg" />
+        <Image Name="321.jpg" />
+        <Image Name="arrow.png" />
+        <Image Name="121.jpg" />
+        <Image Name="122.jpg" />
+        <Image Name="1234.jpg" />
+        <Image Name="132.jpg" />
+        <Image Name="field_full.png" />
+        <Image Name="fired_empty.png" />
+        <Image Name="Icon_list.png" />
+        <Image Name="Icon_minbuyin.png" />
+        <Image Name="Icon_playnow.png" />
+        <Image Name="Icon_squre.png" />
+        <TTF Name="SERIBLI_.ttf" />
+        <Image Name="squre1.png" />
+        <Image Name="squre10.png" />
+        <Image Name="squre11.png" />
+        <Image Name="squre12.png" />
+        <Image Name="squre13.png" />
+        <Image Name="squre14.png" />
+        <Image Name="squre15.png" />
+        <Image Name="squre2.png" />
+        <Image Name="squre3.png" />
+        <Image Name="squre4.png" />
+        <Image Name="squre5.png" />
+        <Image Name="squre6.png" />
+        <Image Name="squre7.png" />
+        <Image Name="squre8.png" />
+        <Image Name="squre9.png" />
+        <Project Name="RoomDetailsDataLayer.csd" Type="Layer" />
+        <Image Name="CommonButton2.png" />
+        <Image Name="CommonButton1.png" />
+        <Project Name="DrawCoinLayer.csd" Type="Layer" />
+        <Project Name="SelectCreateRoomTypeLayer.csd" Type="Layer" />
+        <Image Name="sliderBg.png" />
+        <Image Name="sliderButton.png" />
+        <Image Name="sliderOver.png" />
+        <Project Name="CreateNiuNiuRoomLayer.csd" Type="Layer" />
+        <Image Name="FindtableField.png" />
+        <Image Name="Icon_search.png" />
+        <Project Name="PlaygroundLayer.csd" Type="Layer" />
+        <Project Name="MyCreateRoomLayer.csd" Type="Layer" />
+        <Image Name="Icon_mytable.png" />
+        <Project Name="MatchRoomItem.csd" Type="Layer" />
+        <Project Name="SelectNiuNiuTableLayer.csd" Type="Layer" />
+        <Image Name="erji1_n.png" />
+        <Image Name="erji2_n.png" />
+        <Image Name="erji3_n.png" />
+        <Image Name="erji5_n.png" />
+        <Image Name="share01c.png" />
+        <Project Name="CircleItem.csd" Type="Layer" />
+        <Project Name="CircleDetailsLayer.csd" Type="Layer" />
+        <Image Name="Iconplus.png" />
+        <Image Name="IconCrown.png" />
+        <Image Name="IconHelp.png" />
+        <Project Name="CircleCreateLayer.csd" Type="Layer" />
+        <Image Name="IconMatch1.png" />
+        <Image Name="IconMatch2.png" />
+        <Project Name="MatchRuleLayer.csd" Type="Layer" />
+      </RootFolder>
+    </Group>
+  </SolutionFolder>
+</Solution>

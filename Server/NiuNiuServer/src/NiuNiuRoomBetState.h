@@ -13,5 +13,5 @@ public:
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
 protected:
 	CNiuNiuRoom* m_pRoom ;
-	uint8_t m_nLeftBetPlayerCnt ;
+	int8_t m_nLeftBetPlayerCnt ;
 };

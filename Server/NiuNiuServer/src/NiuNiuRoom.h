@@ -27,6 +27,9 @@ public:
 	void playerStandUp( ISitableRoomPlayer* pPlayer )override ;
 	void doPlayerLeave(uint32_t nSession );
 	uint8_t getRoomType()override{ return eRoom_NiuNiu ;}
+
+	void onMatchFinish()override;
+	void onMatchRestart()override;
 protected:
 	IRoomPlayer* doCreateRoomPlayerObject() override ;
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;
@@ -34,6 +37,8 @@ protected:
 	uint8_t m_nBankerIdx ;
 	uint8_t m_nBetBottomTimes ;
 	uint64_t m_nBankerCoinLimitForBet ; // 
+	uint32_t m_nBaseBet ;
+	uint32_t m_nDeskFee ;
 
 	Json::Value m_arrPlayers ;
 };

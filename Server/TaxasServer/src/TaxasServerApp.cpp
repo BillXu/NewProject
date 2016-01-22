@@ -82,3 +82,9 @@ void CTaxasServerApp::onConnectedToSvr()
 		m_pRoomMgr->onConnectedToSvr() ;
 	}
 }
+
+void CTaxasServerApp::update(float fDeta )
+{
+	IServerApp::update(fDeta) ;
+	m_pRoomMgr->onUpdate(fDeta);
+}

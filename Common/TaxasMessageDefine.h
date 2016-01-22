@@ -29,6 +29,7 @@ struct stMsgRequestMyOwnRooms
 	:public stMsg
 {
 	stMsgRequestMyOwnRooms(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_REQUEST_MY_OWN_ROOMS; }
+	uint8_t nRoomType ;
 };
 
 struct stMsgRequestMyOwnRoomsRet
@@ -36,6 +37,7 @@ struct stMsgRequestMyOwnRoomsRet
 {
 	stMsgRequestMyOwnRoomsRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MY_OWN_ROOMS ; }
 	uint16_t nCnt ;
+	uint8_t nRoomType ;
 	PLACE_HOLDER(uint32_t* pRoomIDs);
 };
 
@@ -49,6 +51,8 @@ struct stMsgRequestMyOwnRoomDetailRet
 	:public stMsg
 {
 	stMsgRequestMyOwnRoomDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
+	uint8_t nRet ; // 0 success , 1 can not find room ;
+	uint8_t nRoomType ; 
 	char vRoomName[MAX_LEN_ROOM_NAME] ;
 	uint32_t nRoomID ;
 	uint16_t nConfigID ;
@@ -58,17 +62,18 @@ struct stMsgRequestMyOwnRoomDetailRet
 	uint32_t nFollows ; 
 };
 
-struct stMsgModifyTaxasRoomName
-	:public stMsgToRoom
-{
-	stMsgModifyTaxasRoomName(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_MODIFY_ROOM_NAME ; }
-	char vNewRoomName[MAX_LEN_ROOM_NAME] ;
-};
 
 struct stMsgRequestTaxasRoomInfo
 	:public stMsgToRoom
 {
 	stMsgRequestTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_REQUEST_ROOM_INFO ; }
+};
+
+struct stMsgModifyTaxasRoomName
+	:public stMsgToRoom
+{
+	stMsgModifyTaxasRoomName(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_MODIFY_ROOM_NAME ; }
+	char vNewRoomName[MAX_LEN_ROOM_NAME] ;
 };
 
 struct stMsgModifyTaxasRoomNameRet
@@ -109,39 +114,8 @@ struct stMsgModifyTaxasInformRet
 	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 room is dead , please pay rent fee ; 3 , you are not in room;
 };
 
-struct stMsgCaculateTaxasRoomProfit
-	:public stMsg
-{
-	stMsgCaculateTaxasRoomProfit(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
-	uint32_t nRoomID ;
-};
-
-struct stMsgCaculateTaxasRoomProfitRet
-	:public stMsg
-{
-	stMsgCaculateTaxasRoomProfitRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
-	uint8_t nRet ; // 0 sucess , 1 you are not creator  ;
-	uint32_t nRoomID ;
-	bool bDiamond ;
-	uint64_t nProfitMoney;
-};
-
-struct stMsgAddTaxasRoomRentTime
-	:public stMsg
-{
-	stMsgAddTaxasRoomRentTime(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_ADD_RENT_TIME ; }
-	uint32_t nRoomID ;
-	uint16_t nAddDays ;
-};
-
-struct  stMsgAddTaxasRoomRentTimeRet
-	: public stMsg
-{
-	stMsgAddTaxasRoomRentTimeRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ADD_RENT_TIME ; }
-	uint8_t nRet ; // 0 success , 1 you are not creator , 2 coin not enough 
-	uint32_t nRoomID ;
-	uint16_t nAddDays ;
-};
+typedef stMsgCaculateRoomProfit stMsgCaculateTaxasRoomProfit;
+typedef stMsgCaculateRoomProfitRet stMsgCaculateTaxasRoomProfitRet ;
 
 struct stMsgRemindTaxasRoomNewInform
 	:public stMsg
@@ -405,7 +379,8 @@ struct stRoomListItem
 struct stMsgRequestRoomListRet
 	:public stMsg
 {
-	stMsgRequestRoomListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_REQUEST_ROOM_LIST ; }
+	stMsgRequestRoomListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_LIST ; }
+	uint8_t nRoomType ;
 	bool bFinal;
 	uint8_t nListCnt ;
 	PLACE_HOLDER(stRoomListItem* pRoomItem );

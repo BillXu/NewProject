@@ -8,6 +8,9 @@ struct stBaseRoomConfig
 {
 	uint16_t nConfigID ;
 	uint8_t nGameType ;
+	uint32_t nRentFeePerDay;
+	uint32_t nDeskFee;
+	float fDividFeeRate;  // chou shui bi li
 	//unsigned char nRoomLevel ;
 	
 	//unsigned int nMinNeedToEnter ;
@@ -19,6 +22,7 @@ struct stBaseRoomConfig
 struct stSitableRoomConfig
 	:public stBaseRoomConfig
 {
+	uint32_t nMiniTakeInCoin;
 	unsigned short nMaxSeat ;
 };
 
@@ -26,18 +30,14 @@ struct stSitableRoomConfig
 struct stTaxasRoomConfig
 	:public stSitableRoomConfig
 {
-	uint32_t nMiniTakeInCoin;
 	uint64_t nMaxTakeInCoin ;
 	uint64_t nBigBlind ;
-	uint32_t nRentFeePerDay;
-	uint32_t nDeskFee;
-	float fDividFeeRate;  // chou shui bi li
 };
 
 struct stNiuNiuRoomConfig
 	:public stSitableRoomConfig
 {
-
+	uint64_t nBaseBet ;
 };
 
 struct stGoldenRoomConfig
@@ -69,6 +69,10 @@ public:
 	virtual void OnFinishPaseFile();
 	int GetConfigCnt();
 	stBaseRoomConfig* GetConfigByConfigID( uint16_t nConfigID );
+#ifndef SERVER
+    int GetConfigCntByRoomType(int roomType);
+    stBaseRoomConfig* GetConfigByConfigID( uint16_t idx , int roomType);
+#endif
 protected:
 	void Clear() ;
 protected:

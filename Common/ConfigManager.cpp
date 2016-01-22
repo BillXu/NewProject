@@ -57,7 +57,7 @@ void CConfigManager::LoadAllConfigFile( const char* pConfigRootPath )
 	//m_vConfigs[eConfig_SlotMachine] = new CSlotMachine ;
 
 	// room config
-	//m_vConfigs[eConfig_Room] = new CRoomConfigMgr ;
+	m_vConfigs[eConfig_Room] = new CRoomConfigMgr ;
 #endif 
 	// shop config 
 	m_vConfigs[eConfig_Shop] = new CShopConfigMgr ;

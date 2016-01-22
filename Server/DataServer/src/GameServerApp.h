@@ -3,6 +3,7 @@
 #include "PlayerManager.h"
 #include "ConfigManager.h"
 #include "ServerConfig.h"
+#include "PokerCircle.h"
 class CBrocaster ;
 class CGameServerApp
 	:public IServerApp
@@ -24,6 +25,7 @@ public:
 protected:
 	CPlayerManager* m_pPlayerManager ;
 	CConfigManager* m_pConfigManager ;
+	CPokerCircle m_tPokerCircle ;
 	// check NewDay ;
 	unsigned int m_nCurDay ;
 };

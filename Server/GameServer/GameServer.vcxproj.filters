@@ -145,6 +145,9 @@
     <ClInclude Include="..\DataServer\src\PlayerNiuNiu.h">
       <Filter>src\Player</Filter>
     </ClInclude>
+    <ClInclude Include="..\DataServer\src\PokerCircle.h">
+      <Filter>src\App</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
@@ -236,6 +239,9 @@
     </ClCompile>
     <ClCompile Include="..\DataServer\src\PlayerNiuNiu.cpp">
       <Filter>src\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\PokerCircle.cpp">
+      <Filter>src\App</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

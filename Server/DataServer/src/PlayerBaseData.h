@@ -23,10 +23,11 @@ public:
 	void SaveCoin();
 	void OnProcessContinueLogin();
 	void OnPlayerDisconnect();
-	virtual void TimerSave();
+	void TimerSave()override;
 	uint64_t GetAllCoin(){ return m_stBaseData.nCoin;}
 	uint64_t GetAllDiamoned(){ return m_stBaseData.nDiamoned;}
-	bool ModifyMoney(int64_t nOffset,bool bDiamond = false );
+	bool AddMoney(int64_t nOffset,bool bDiamond = false );
+	bool decressMoney(int64_t nOffset,bool bDiamond = false );
 	bool OnPlayerEvent(stPlayerEvetArg* pArg);
 	//void AddWinTimes(){ ++m_stBaseData.nWinTimes;}
 	//void AddLoseTimes(){ ++m_stBaseData.nLoseTimes;}

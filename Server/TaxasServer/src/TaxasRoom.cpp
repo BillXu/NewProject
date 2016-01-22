@@ -29,6 +29,7 @@ CTaxasRoom::CTaxasRoom()
 	m_bRoomInfoDirty = false ;
 	m_TimeSaveTicket = 0 ;
 	m_nTotalProfit = 0 ;
+	m_bIsDelte = false ;
 }
 
 CTaxasRoom::~CTaxasRoom()
@@ -428,6 +429,8 @@ bool CTaxasRoom::OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 	case MSG_REQUEST_MY_OWN_ROOM_DETAIL:
 		{
 			stMsgRequestMyOwnRoomDetailRet msgRet ;
+			msgRet.nRet = 0 ;
+			msgRet.nRoomType = eRoom_TexasPoker ;
 			msgRet.nCanWithdrawProfit = m_nRoomProfit ;
 			msgRet.nConfigID = m_stRoomConfig.nConfigID ;
 			msgRet.nDeadTime = m_nDeadTime ;
@@ -841,6 +844,34 @@ stTaxasPeerData* CTaxasRoom::GetSitDownPlayerDataByUID(uint32_t nUserUID)
 	return nullptr ;
 }
 
+uint32_t CTaxasRoom::getChampionUID()
+{
+	if ( m_vAllPeers.empty() )
+	{
+		return 0 ;
+	}
+
+	int64_t nChapionCoin = 0 ;
+	uint32_t nChampionUID = 0 ;
+	for (stTaxasInRoomPeerDataExten* pR : m_vAllPeers )
+	{
+		int64_t nC = pR->nFinalLeftInThisRoom - pR->nTotalBuyInThisRoom ;
+		if ( nChapionCoin == 0 )
+		{
+			nChapionCoin = nC ;
+			nChampionUID = pR->nUserUID ;
+			continue;
+		}
+
+		if ( nChapionCoin < nC )
+		{
+			nChapionCoin = nC ;
+			nChampionUID = pR->nUserUID ;
+		}
+	}
+	return nChampionUID ;
+}
+
 // attribute and life
 void CTaxasRoom::onCreateByPlayer(uint32_t nUserUID , uint16_t nRentDays )
 {
@@ -905,6 +936,7 @@ void CTaxasRoom::setRoomInform(const char* pRoomInform )
 		return ;
 	}
 	m_strRoomInForm = pRoomInform ;
+	++m_nInformSerial;
 }
 
 bool CTaxasRoom::isRoomAlive()
@@ -914,7 +946,7 @@ bool CTaxasRoom::isRoomAlive()
 		return true ;
 	}
 
-	return time(NULL) <= m_nDeadTime ;
+	return time(NULL) <= m_nDeadTime && m_bIsDelte == false;
 }
 
 void CTaxasRoom::setProfit(uint64_t nProfit )
@@ -1581,6 +1613,21 @@ void CTaxasRoom::didCaculateGameResult()
 
 }
 
+void CTaxasRoom::deleteRoom()
+{
+	m_bIsDelte = true ;
+}
+
+bool CTaxasRoom::isDeleteRoom()
+{
+	return m_bIsDelte ;
+}
+
+eRoomState CTaxasRoom::getCurRoomState()
+{
+	return m_eCurRoomState ;
+}
+
 bool CTaxasRoom::addInroomPlayerInternal(stTaxasInRoomPeerDataExten* pAdd )
 {
 	for ( stTaxasInRoomPeerDataExten* pPlayer : m_vAllPeers )
@@ -1949,27 +1996,109 @@ void CTaxasRoom::sendExpireInform()
 	CTaxasServerApp::SharedGameServerApp()->sendMsg(0,aub.getBufferPtr(),aub.getContentSize()) ;
 }
 
+void CTaxasRoom::onMatchFinish()
+{
+	uint32_t nChampionUID = getChampionUID();
+	if ( nChampionUID == 0 )
+	{
+		return ;
+	}
+
+	// save log ;
+	stMsgSaveLog msgLog ;
+	msgLog.nJsonExtnerLen = 0 ;
+	msgLog.nLogType = eLog_MatchResult ;
+	msgLog.nTargetID = GetRoomID() ;
+	memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+	msgLog.vArg[0] = eRoom_TexasPoker ;
+	msgLog.vArg[1] = nChampionUID ;
+	auto peer = GetInRoomPlayerDataByUID(nChampionUID) ;
+	if ( peer != nullptr )
+	{
+		msgLog.vArg[2] = peer->nFinalLeftInThisRoom - peer->nTotalBuyInThisRoom ;
+	}
+	msgLog.vArg[3] = getProfit() ;
+	SendMsgToPlayer(0,&msgLog,sizeof(msgLog)) ;
+
+	if ( peer == nullptr )
+	{
+		return  ;
+	}
+
+	// send reward inform ;
+	stMsgCrossServerRequest msgReq ;
+	msgReq.cSysIdentifer = ID_MSG_PORT_DATA ;
+	msgReq.nReqOrigID = GetRoomID();
+	msgReq.nTargetID = nChampionUID;
+	msgReq.nRequestType = eCrossSvrReq_Inform ;
+	msgReq.nRequestSubType = eCrossSvrReqSub_Default ;
+
+	std::string str = "恭喜您获得[%s]冠军,我们将在一个工作日发放奖品,任何疑问请加微信咨询管理员." ;
+	char pBuffer[200] = {0} ;
+	sprintf(pBuffer,str.c_str(),getRoomName()) ;
+	msgReq.nJsonsLen = strlen(pBuffer) ;
+	CAutoBuffer aub(sizeof(msgReq) + msgReq.nJsonsLen );
+	aub.addContent(&msgReq,sizeof(msgReq)) ;
+	aub.addContent(pBuffer,msgReq.nJsonsLen) ;
+	CTaxasServerApp::SharedGameServerApp()->sendMsg(0,aub.getBufferPtr(),aub.getContentSize()) ;
+
+	// set room inform ;
+	memset(pBuffer,0,sizeof(pBuffer));
+	sprintf_s(pBuffer,sizeof(pBuffer),"【%s】获得上届冠军,好厉害啊!",peer->cName);
+	setRoomInform(pBuffer);
+	stMsgRemindTaxasRoomNewInform msgRemind ;
+	SendRoomMsg(&msgRemind,sizeof(msgRemind)) ;
+	++m_nInformSerial ;
+	m_bRoomInfoDirty = true ;
+}
+
+void CTaxasRoom::onMatchRestart()
+{
+	// reset room profit ;
+	setProfit(0);
+	// reset all history ;
+	stMsgSaveRemoveTaxasRoomPlayers msgPlayer ;
+	msgPlayer.nRoomID = GetRoomID();
+	SendMsgToPlayer(0,&msgPlayer,sizeof(msgPlayer)) ;
+
+	auto iter = m_vAllPeers.begin() ;
+	VEC_IN_ROOM_PEERS vKeepPeers ;
+	for ( ; iter != m_vAllPeers.end() ; ++iter )
+	{
+		auto pPeer = *iter ;
+		if ( pPeer->nSessionID )
+		{
+			vKeepPeers.push_back(pPeer) ;
+			pPeer->nFinalLeftInThisRoom = 0 ;
+			pPeer->nTotalBuyInThisRoom = 0 ;
+			pPeer->bDataDirty = true ;
+			pPeer->nPlayeTimesInThisRoom = 0 ;
+			pPeer->nWinTimesInThisRoom = 0 ;
+		}
+		else
+		{
+			delete pPeer ;
+		}
+	}
+	m_vAllPeers.clear() ;
+	m_vAllPeers.assign(vKeepPeers.begin(),vKeepPeers.end()) ;
+
+	// update sit down player;
+	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
+	{
+		if ( m_vSitDownPlayers[nIdx].IsInvalid() )
+		{
+			continue;
+		}
+		m_vSitDownPlayers[nIdx].pHistoryData->nTotalBuyInThisRoom = m_vSitDownPlayers[nIdx].nTakeInMoney;
+		m_vSitDownPlayers[nIdx].pHistoryData->nFinalLeftInThisRoom = m_vSitDownPlayers[nIdx].nTakeInMoney;
+	}
+}
+
 bool CTaxasRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
 {
 	switch ( pRequest->nRequestType )
 	{
-	case eCrossSvrReq_TaxasRoomProfit:
-		{
-			stMsgCrossServerRequestRet msgRet ;
-			msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
-			msgRet.nReqOrigID = pRequest->nTargetID ;
-			msgRet.nTargetID = pRequest->nReqOrigID ;
-			msgRet.nRequestType = pRequest->nRequestType ;
-			msgRet.nRequestSubType = pRequest->nRequestSubType ;
-			msgRet.nRet = 0 ;
-			msgRet.vArg[0] = true ;
-			msgRet.vArg[1] = m_nRoomProfit ;
-			m_nTotalProfit += m_nRoomProfit ;
-			m_nRoomProfit = 0 ;
-			m_bRoomInfoDirty = true ;
-			CTaxasServerApp::SharedGameServerApp()->sendMsg(msgRet.nTargetID,(char*)&msgRet,sizeof(msgRet)) ;
-		}
-		break;
 	case eCrossSvrReq_AddRentTime:
 		{
 			stMsgCrossServerRequestRet msgRet ;
@@ -1980,6 +2109,8 @@ bool CTaxasRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPo
 			msgRet.nRequestSubType = pRequest->nRequestSubType ;
 			msgRet.nRet = 0 ;
 			msgRet.vArg[0] = pRequest->vArg[0] ;
+			msgRet.vArg[1] = pRequest->vArg[1] ;
+			msgRet.vArg[2] = pRequest->vArg[2] ;
 			addLiftTime(pRequest->vArg[0]) ;
 			m_bRoomInfoDirty = true ;
 			CTaxasServerApp::SharedGameServerApp()->sendMsg(msgRet.nTargetID,(char*)&msgRet,sizeof(msgRet)) ;

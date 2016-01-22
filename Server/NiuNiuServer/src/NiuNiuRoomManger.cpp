@@ -4,19 +4,11 @@
 #include "NiuNiuMessageDefine.h"
 #include "NiuNiuRoomPlayer.h"
 #include "LogManager.h"
+#define ROOM_LIST_ITEM_CNT_PER_PAGE 5 
+#include "AutoBuffer.h"
 bool CNiuNiuRoomManager::init()
 {
 	IRoomManager::init();
-
-	// temp create room ;
-	IRoom* pRoom = doCreateInitedRoomObject(1,2,eRoom_NiuNiu);
-	assert(pRoom&&"create room must success");
-	if ( pRoom == nullptr )
-	{
-		return true ;
-	}
-	m_vRooms[pRoom->getRoomID()] = pRoom ;
-	// temp code 
 	return true ;
 }
 
@@ -29,10 +21,103 @@ bool CNiuNiuRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , ui
 
 	switch ( prealMsg->usMsgType )
 	{
-	default:
+	case MSG_REQUEST_MATCH_ROOM_LIST:
+		{
+			auto iter = m_vCreatorAndRooms.find(MATCH_MGR_UID);
+			stRoomCreatorInfo& pC = iter->second ;
+			LIST_ROOM& vMatchRooms = pC.vRooms ;
+			stMsgRequestMatchRoomListRet msgRet ;
+			msgRet.nItemCnt = vMatchRooms.size() ;
+			msgRet.nRoomType = eRoom_NiuNiu ;
+			if ( m_vRooms.empty() == false )
+			{
+				msgRet.nRoomType = m_vRooms.begin()->second->getRoomType();
+			}
+
+			CAutoBuffer buffer(sizeof(msgRet) + sizeof(stMsgMatchRoomItem) * msgRet.nItemCnt );
+			buffer.addContent(&msgRet,sizeof(msgRet)) ;
+			for ( IRoom* pRoom : vMatchRooms )
+			{
+				CNiuNiuRoom* pNiuRoom = (CNiuNiuRoom*)pRoom ;
+				stMsgMatchRoomItem msgItem ;
+				msgItem.nBaseBet = pNiuRoom->getBaseBet() ;
+				msgItem.nEndTime = pRoom->getDeadTime();
+				msgItem.nChapionUID = 0 ;
+				pRoom->sortRoomRankItem();
+				auto firt = pRoom->getSortRankItemListBegin();
+				if ( firt != pRoom->getSortRankItemListEnd() )
+				{
+					msgItem.nChapionUID = (*firt)->nUserUID ;
+				}
+				msgItem.nRoomID = pRoom->getRoomID() ;
+				memset(msgItem.pRoomName,0,sizeof(msgItem.pRoomName)) ;
+				memcpy(msgItem.pRoomName,pRoom->getRoomName(),strlen(pRoom->getRoomName()));
+				buffer.addContent(&msgItem,sizeof(msgItem));
+			}
+			sendMsg((stMsg*)buffer.getBufferPtr(),buffer.getContentSize(),nSessionID) ;
+		}
 		break;
+	case MSG_REQUEST_ROOM_LIST:
+		{
+			std::vector<IRoom*> vActiveRoom ;
+			MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
+			for ( ; iter != m_vRooms.end(); ++iter )
+			{
+				if ( iter->second->isRoomAlive() )
+				{
+					vActiveRoom.push_back(iter->second) ;
+				}
+			}
+
+			uint16_t nPageCnt = ( vActiveRoom.size() + ROOM_LIST_ITEM_CNT_PER_PAGE -1  ) / ROOM_LIST_ITEM_CNT_PER_PAGE ; 
+			for ( uint16_t nPageIdx = 0 ; nPageIdx < nPageCnt ; ++nPageIdx )
+			{
+				stMsgRequestRoomListRet msgRet ;
+				msgRet.nRoomType = eRoom_NiuNiu ;
+				msgRet.bFinal = nPageIdx == (nPageCnt - 1 );
+				msgRet.nListCnt = msgRet.bFinal ? ( vActiveRoom.size() - ( ROOM_LIST_ITEM_CNT_PER_PAGE * nPageIdx ) ) : ROOM_LIST_ITEM_CNT_PER_PAGE ;
+				CAutoBuffer auBuffer(sizeof(msgRet) + sizeof(stRoomListItem) * msgRet.nListCnt );
+				auBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+				for ( uint8_t nIdx = 0 ; nIdx < ROOM_LIST_ITEM_CNT_PER_PAGE; ++nIdx )
+				{
+					uint16_t nRoomIdx = nPageIdx*ROOM_LIST_ITEM_CNT_PER_PAGE + nIdx ;
+					if ( nRoomIdx >= vActiveRoom.size() )
+					{
+						break;
+					}
+
+					CNiuNiuRoom* pRoom = (CNiuNiuRoom*)vActiveRoom[nRoomIdx];
+					stRoomListItem stItem ;
+					memset(&stItem,0,sizeof(stItem));
+					stItem.nCreatOwnerUID = pRoom->getOwnerUID() ;
+					stItem.nCurrentCount = pRoom->getPlayerCntWithState(eRoomPeer_SitDown);
+					stItem.nRoomID = pRoom->getRoomID();
+					stItem.nSmiallBlind = pRoom->getBaseBet();
+					stItem.nSeatCnt = pRoom->getSeatCount();
+					stItem.nDeadTime = pRoom->getDeadTime();
+					sprintf_s(stItem.vRoomName,sizeof(stItem.vRoomName),"%s",pRoom->getRoomName());
+					//sprintf_s(stItem.vDesc,sizeof(stItem.vDesc),"%s",pRoom->getRoomDesc());
+					auBuffer.addContent((char*)&stItem,sizeof(stItem)) ;
+				}
+				sendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID);
+				CLogMgr::SharedLogMgr()->PrintLog("send msg niuniu room list ") ;
+			}
+
+			if ( nPageCnt == 0 )
+			{
+				stMsgRequestRoomListRet msgRet ;
+				msgRet.nRoomType = eRoom_NiuNiu ;
+				msgRet.bFinal = true ;
+				msgRet.nListCnt = 0 ;
+				sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
+				CLogMgr::SharedLogMgr()->PrintLog("send msg niuniu room list zero") ;
+			}
+		}  
+		break;
+	default:
+		return false;
 	}
-	return false ;
+	return true ;
 }
 
 void CNiuNiuRoomManager::sendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID )
@@ -111,10 +196,13 @@ bool CNiuNiuRoomManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pRe
 
 void CNiuNiuRoomManager::onConnectedToSvr()
 {
-	stMsgReadRoomInfo msgRead ;
-	msgRead.nRoomType = eRoom_NiuNiu ;
-	sendMsg(&msgRead,sizeof(msgRead),0) ;
-	CLogMgr::SharedLogMgr()->PrintLog("read niu niu room info ") ;
+	if ( m_vRooms.empty() )
+	{
+		stMsgReadRoomInfo msgRead ;
+		msgRead.nRoomType = eRoom_NiuNiu ;
+		sendMsg(&msgRead,sizeof(msgRead),0) ;
+		CLogMgr::SharedLogMgr()->PrintLog("read niu niu room info ") ;
+	}
 }
 
 IRoom* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID ,eRoomType reqSubRoomType ) 
@@ -163,9 +251,14 @@ IRoom* CNiuNiuRoomManager::getRoomByConfigID(uint32_t nRoomConfigID )
 		}
 	}
 
+	if ( vAcitveRooms.empty() && vEmptyRooms.empty() )
+	{
+		return nullptr ;
+	}
+
 	if ( vAcitveRooms.empty() )  // if all room is empty , then just rand a room to enter ;
 	{
-		vAcitveRooms.insert(vAcitveRooms.begin(),vRooms.begin(),vRooms.end()) ;
+		vAcitveRooms.insert(vAcitveRooms.begin(),vEmptyRooms.begin(),vEmptyRooms.end()) ;
 	}
 	else if ( vAcitveRooms.size() <= 10 )  // put some empty rooms in 
 	{

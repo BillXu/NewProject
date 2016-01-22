@@ -5,7 +5,7 @@
 #include "MessageIdentifer.h"
 #include "CommonData.h"
 #define PLACE_HOLDER(X)
-// WARNNING:变长字符串，我们不包括终结符 \0 ;
+// WARNNING:卤鈥扳墺搂鈼娒封垜藲楼脝拢篓艗鈥溾垰芦鈮ぢ垶赂驴庐梅鈥櫸┞封垜藲 \0 ;           
 struct stMsg
 {
 	unsigned char cSysIdentifer ;  // msg target eServerType
@@ -48,15 +48,23 @@ public:
 	stMsgPlayerLogout(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_LOGOUT ;}
 };
 
+struct stMsgControlFlag
+	:public stMsg
+{
+public:
+	stMsgControlFlag(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_CONTROL_FLAG ; }
+	uint32_t nFlag ;  // 0 , not in check , 1 , means in check , should hide something ;
+};
+
 // register an login ;
 struct stMsgRegister
 	:public stMsg
 {
 	stMsgRegister(){cSysIdentifer = ID_MSG_PORT_LOGIN ; usMsgType = MSG_PLAYER_REGISTER ; }
-	unsigned char cRegisterType ; // 0 表示游客登录，1表示正常注册 , 2 绑定账号 
+	unsigned char cRegisterType ; // 0 卤脤聽忙鈥澟捗该暵德郝Ｂ?卤脤聽忙鈥櫵濃墺拢鈼娐⑩墹路 , 2 鈭灻涒垈庐鈥櫭�鈭増 
 	char cAccount[MAX_LEN_ACCOUNT] ;
 	char cPassword[MAX_LEN_PASSWORD] ;
-	unsigned char nChannel; // 渠道标示，0. appstore  1. pp 助手，2.  91商店 3. 360商店 4.winphone store
+	unsigned char nChannel; // 芦藳碌驴卤脥聽忙拢篓0. appstore  1. pp 梅藱聽梅拢篓2.  91鈥γ兟得?3. 360鈥γ兟得?4.winphone store
 };
 
 struct stMsgRegisterRet
@@ -68,7 +76,7 @@ struct stMsgRegisterRet
 		usMsgType = MSG_PLAYER_REGISTER ;
 	}
 	char nRet ; // 0 success ;  1 . account have exsit ;
-	unsigned char cRegisterType ; // 0 表示游客登录，1表示正常注册 , 2 绑定账号 
+	unsigned char cRegisterType ; // 0 卤脤聽忙鈥澟捗该暵德郝Ｂ?卤脤聽忙鈥櫵濃墺拢鈼娐⑩墹路 , 2 鈭灻涒垈庐鈥櫭�鈭増 
 	char cAccount[MAX_LEN_ACCOUNT] ;
 	char cPassword[MAX_LEN_PASSWORD] ;
 	unsigned int nUserID ;
@@ -159,6 +167,13 @@ struct stMsgPlayerBaseDataTaxas
 {
 	stMsgPlayerBaseDataTaxas(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_BASE_DATA_TAXAS ; }
 	stPlayerTaxasData tTaxasData ;
+};
+
+struct stMsgPlayerBaseDataNiuNiu
+	:public stMsg
+{
+	stMsgPlayerBaseDataNiuNiu(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_BASE_DATA_NIUNIU ; }
+	stPlayerNiuNiuData tNiuNiuData ;
 };
 
 struct stMsgRequestPlayerData
@@ -446,6 +461,61 @@ struct stMsgCreateRoomRet
 	uint64_t nFinalCoin ; 
 };
 
+struct stMsgDeleteRoom
+	:public stMsg
+{
+	stMsgDeleteRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_DELETE_ROOM ; }
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+};
+
+struct stMsgDeleteRoomRet
+	:public stMsg
+{
+	stMsgDeleteRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_DELETE_ROOM ; }
+	uint8_t nRet ; // 0 success , 1 you don't have target room , 2 unknown room type 
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+};
+
+struct stMsgCaculateRoomProfit
+	:public stMsg
+{
+	stMsgCaculateRoomProfit(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
+	uint32_t nRoomID ;
+	uint8_t nRoomType ;
+};
+
+struct stMsgCaculateRoomProfitRet
+	:public stMsg
+{
+	stMsgCaculateRoomProfitRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CACULATE_ROOM_PROFILE ; }
+	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 unknown room type , 3 can not find room ;
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+	bool bDiamond ;
+	uint64_t nProfitMoney;
+};
+
+struct stMsgAddRoomRentTime
+	:public stMsg
+{
+	stMsgAddRoomRentTime(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_ADD_RENT_TIME ; }
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+	uint16_t nAddDays ;
+};
+
+struct  stMsgAddRoomRentTimeRet
+	: public stMsg
+{
+	stMsgAddRoomRentTimeRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_ADD_RENT_TIME ; }
+	uint8_t nRet ; // 0 success , 1 you are not creator , 2 coin not enough , 3 unknown room Type, 4 can not find room ;
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+	uint16_t nAddDays ;
+};
+
 struct stMsgToRoom
 	:public stMsg
 {
@@ -480,6 +550,102 @@ struct stMsgRequestRoomRankRet
 	uint8_t nCnt ;
 	PLACE_HOLDER(stRoomRankEntry*);
 };
+
+
+struct stMsgRequestNiuNiuMatchRoomList
+	:public stMsg
+{
+public:
+	stMsgRequestNiuNiuMatchRoomList(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_REQUEST_MATCH_ROOM_LIST;}
+
+};
+
+struct stMsgRequestTaxasMatchRoomList
+	:public stMsg
+{
+public:
+	stMsgRequestTaxasMatchRoomList(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_MATCH_ROOM_LIST;}
+
+};
+
+struct stMsgMatchRoomItem 
+{
+	uint32_t nRoomID ;
+	char pRoomName[MAX_LEN_ROOM_NAME];
+	uint32_t nBaseBet ; // or small bet ;
+	uint32_t nChapionUID ;
+	uint32_t nEndTime ;
+};
+
+struct stMsgRequestMatchRoomListRet
+	:public stMsg
+{
+	stMsgRequestMatchRoomListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MATCH_ROOM_LIST;}
+	uint8_t nRoomType ;
+	uint8_t nItemCnt ;
+	PLACE_HOLDER(stMsgMatchRoomItem*) ;
+};
+
+// poker circle 
+struct stMsgPublishTopic
+	:public stMsg
+{
+	stMsgPublishTopic(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CIRCLE_PUBLISH_TOPIC ;}
+	uint16_t nContentLen ;
+	PLACE_HOLDER(char* jsonFormatContentString);
+};
+
+struct stMsgPublishTopicRet
+	:public stMsg
+{
+	stMsgPublishTopicRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_CIRCLE_PUBLISH_TOPIC ; }
+	uint8_t nRet ; // 0 success , 1 coin not enough, 2 reach limit , 3 you are not register ;
+	uint64_t nTopicID ;
+};
+
+struct stMsgDeleteTopic
+	:public stMsg
+{
+	stMsgDeleteTopic(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CIRCLE_DELETE_TOPIC ; }
+	uint64_t nDelTopicID ;
+};
+
+struct stMsgRequestTopicList
+	:public stMsg
+{
+	stMsgRequestTopicList(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CIRCLE_REQUEST_TOPIC_LIST ; }
+	uint16_t nPageIdx ;
+};
+
+struct stMsgRequestTopicListRet
+	:public stMsg
+{
+	stMsgRequestTopicListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_CIRCLE_REQUEST_TOPIC_LIST ; }
+	uint8_t nRet ; // 0 success , 1 overflow pageIdx ;
+	uint16_t nPageIdx ;
+	uint16_t nTotalPageCnt ;
+	uint64_t vTopicIDs[CIRCLE_TOPIC_CNT_PER_PAGE];
+};
+
+struct stMsgRequestTopicDetail
+	:public stMsg
+{
+	stMsgRequestTopicDetail(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CIRCLE_REQUEST_TOPIC_DETAIL ; }
+	uint64_t nTopicID ;
+};
+
+struct stMsgRequestTopicDetailRet
+	:public stMsg
+{
+	stMsgRequestTopicDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_CIRCLE_REQUEST_TOPIC_DETAIL ; }
+	uint8_t nRet ; // 0 success , 1 can not find topic 
+	uint64_t nTopicID ;
+	uint32_t nAuthorUID ;
+	uint32_t nPublishTime ; // utc time 
+	uint16_t nContentLen ;
+	PLACE_HOLDER(char* pContent);
+};
+
 
 ///--------------------ablove is new , below is old------
 

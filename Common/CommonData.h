@@ -24,6 +24,13 @@ struct stPlayerTaxasData
 	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
 };
 
+struct stPlayerNiuNiuData
+{
+	uint32_t nWinTimes ;
+	uint32_t nPlayTimes ;
+	uint64_t nSingleWinMost ;
+};
+
 struct stPlayerDetailData
 	:public stPlayerBrifData
 {

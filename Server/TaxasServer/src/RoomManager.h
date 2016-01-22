@@ -35,11 +35,14 @@ public:
 	bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 	void onConnectedToSvr();
 	void onPlayerChangeRoom(uint32_t nCurRoomID , uint32_t nPlayerSessionID );
+	void onUpdate(float fDelta );
 protected:
 	bool reqeustChatRoomID(CTaxasRoom* pRoom);
 	void addRoomToCreator(CTaxasRoom* pRoom);
 	void addRoomToConfigRooms(CTaxasRoom* pRoom);
 	bool getRoomCreatorRooms(uint32_t nCreatorUID,LIST_ROOM& vInfo );
+	void removeRoom(CTaxasRoom* pRoom );
+	void doDeleteRoom(CTaxasRoom* pRoom );
 protected:
 	MAP_ID_ROOM m_vRooms ;
 	MAP_CONFIG_ROOMS m_vCongfigIDRooms ;

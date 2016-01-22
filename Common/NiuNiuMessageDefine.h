@@ -52,6 +52,7 @@ struct stMsgNNRoomInfo
 	uint8_t nRoomState ;
     uint32_t nChatRoomID;
     uint32_t nBlind;
+	uint32_t nDeskFee ;
 	PLACE_HOLDER(stNNRoomInfoPayerItem*) ;
 };
 
@@ -217,6 +218,53 @@ struct stMsgNNRequestRoomRankRet
 	:public stMsgRequestRoomRankRet
 {
     
+};
+
+struct stMsgRequestMyOwnNiuNiuRoomDetail
+	:public stMsgToNNRoom
+{
+	stMsgRequestMyOwnNiuNiuRoomDetail(){ usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
+};
+
+struct stMsgRequestNiuNiuRoomList
+	:public stMsgToNNRoom
+{
+	stMsgRequestNiuNiuRoomList(){ usMsgType = MSG_REQUEST_ROOM_LIST; }
+};
+
+struct stMsgModifyNiuNiuRoomName
+	:public stMsgToRoom
+{
+	stMsgModifyNiuNiuRoomName(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU; usMsgType = MSG_NN_MODIFY_ROOM_NAME ; }
+	char vNewRoomName[MAX_LEN_ROOM_NAME] ;
+};
+
+struct stMsgModifyNiuNiuRoomNameRet
+	:public stMsg
+{
+	stMsgModifyNiuNiuRoomNameRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_NN_MODIFY_ROOM_NAME ; }
+	uint8_t nRet ; // 0 sucess , 1 you are not creator , 2 room is dead , please pay rent fee 3 , you are not in room;
+};
+
+// room inform ;
+struct stMsgRemindNiuNiuRoomNewInform
+	:public stMsg
+{
+	stMsgRemindNiuNiuRoomNewInform(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REMIND_NEW_ROOM_INFORM ; }
+};
+
+struct stMsgRequestNiuNiuRoomInform
+	:public stMsgToRoom
+{
+	stMsgRequestNiuNiuRoomInform(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_REQUEST_ROOM_INFORM ; }
+};
+
+struct  stMsgRequestNiuNiuRoomInformRet
+	:public stMsg
+{
+	stMsgRequestNiuNiuRoomInformRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_INFORM ; }
+	uint16_t nLen ;
+	PLACE_HOLDER(char* pInform);
 };
 
 #pragma pack(pop)

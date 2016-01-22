@@ -3,6 +3,7 @@
 #define LOG_ARG_CNT 6
 #define CROSS_SVR_REQ_ARG 4
 #define RESEVER_GAME_SERVER_PLAYERS 100 
+#define TIME_MATCH_PAUSE 60*30
 enum  eLogType
 {
 	eLog_Register, // externString, {ip:"ipdizhi"}
@@ -15,6 +16,7 @@ enum  eLogType
 	eLog_DeductionMoney,  // nTargetID = userUID , var[0] = isCoin , var[1] = DeductionCnt, var[2] final coin, var[3] finalDiamond, var[4] subType, var[5] subarg ;
 	eLog_ResetPassword,
 	eLog_NiuNiuGameResult, // nTargetID = room id , vArg[0] = bankerUID , vArg[1] = banker Times, vArg[2] = finalBottomBet, externString: {[ {uid:234,idx:2,betTimes:4456,card0:23,card1:23,card2:23,card3:23,card4:23,offset:-32,coin:23334 },{ ... },{ ... }] } 
+	eLog_MatchResult, // nTargetID = room id , var[0] = room type , var[1] champion UID , var[2] = offsetCoin , var[3] room profit;
 	eLog_Max,
 };
 
@@ -59,14 +61,16 @@ enum  eCrossSvrReqType
 	eCrossSvrReq_AddMoney, //  var[0] isCoin ,var[1] addCoin
 	eCrossSvrReq_CreateTaxasRoom, // var[0] room config id, var[1] rent days; json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID, var[2] rent days ;
 	eCrossSvrReq_CreateRoom, // var[0] room config id, var[1] rent days; var[2] roomType{eRoomType}json arg:"roonName", result: var[0] room config id, var[1] newCreateRoomID , var[2] roomType{eRoomType} var[3] rent days,
-	eCrossSvrReq_TaxasRoomProfit, // result: var[0] isCoin , var[1] RecvMoney;
-	eCrossSvrReq_AddRentTime, // var[0] , add days;  result var[0] add days ;
+	eCrossSvrReq_RoomProfit, // result: var[0] isCoin , var[1] RecvMoney, var[2] roomType{eRoomType};
+	eCrossSvrReq_AddRentTime, // var[0] add days, var[1] nRoomType,var[2] comsume coin;  result var[0] add days, var[1] nRoomType,var[2] comsume coin ;
 	eCrossSvrReq_SelectTakeIn, // var[0] select player uid,  result: var[0] select player uid, var[1] isCoin, var[2] money 
 	eCrossSvrReq_Inform, // var[0] target player uid 
 	eCrossSvrReq_EnterRoom, // var[0] playerSessionID, var[1] targetID ,var[2] coin, var[3] target id type{0 room id , 1 ConfigID }, retsult: var[0] playerSessionID , var[1] roomType , var[2] roomID, ret{ 0, success , 1 can not find room };
 	eCrossSvrReq_SyncCoin, // var[0] coin var[1] room type 
 	eCrossSvrReq_ApplyLeaveRoom, // var[0] nRoomID , var[1] session id ;
 	eCrossSvrReq_LeaveRoomRet, // var[0] roomType {eRoomType} ; var[1] nRoomID ;
+	eCrossSvrReq_DeleteRoom, // var[0] roomType {eRoomType} ; var[1] nRoomID ;
+	eCrossSvrReq_SyncNiuNiuData, // var[0] player times , var[1] win times , var[2] SingleWinMoset ;
 	eCrossSvrReq_Max,
 };
 

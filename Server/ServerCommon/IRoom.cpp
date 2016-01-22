@@ -33,6 +33,8 @@ IRoom::IRoom()
 	m_bDirySorted = false ;
 
 	m_bRoomInfoDiry = false ;
+
+	m_bIsDelte = false ;
 }
 
 IRoom::~IRoom()
@@ -66,6 +68,11 @@ IRoom::~IRoom()
 	}
 	m_vRoomStates.clear() ;
 
+	removeAllRankItemPlayer();
+}
+
+void IRoom::removeAllRankItemPlayer()
+{
 	auto mapIter = m_vRoomRankHistroy.begin() ;
 	for ( ; mapIter != m_vRoomRankHistroy.end() ; ++mapIter )
 	{
@@ -249,6 +256,34 @@ void IRoom::sendRoomMsg( stMsg* pmsg , uint16_t nLen )
 	{
 		sendMsgToPlayer(pmsg,nLen,iter->second->getSessionID()) ;
 	}
+}
+
+bool IRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue )
+{
+	switch ( pRequest->nRequestType )
+	{
+	case eCrossSvrReq_RoomProfit:
+		{
+			stMsgCrossServerRequestRet msgRet ;
+			msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
+			msgRet.nReqOrigID = pRequest->nTargetID ;
+			msgRet.nTargetID = pRequest->nReqOrigID ;
+			msgRet.nRequestType = pRequest->nRequestType ;
+			msgRet.nRequestSubType = pRequest->nRequestSubType ;
+			msgRet.nRet = 0 ;
+			msgRet.vArg[0] = true ;
+			msgRet.vArg[1] = m_nRoomProfit ;
+			msgRet.vArg[2] = eRoom_TexasPoker ;
+			m_nTotalProfit += m_nRoomProfit ;
+			m_nRoomProfit = 0 ;
+			m_bRoomInfoDiry = true ;
+			sendMsgToPlayer(&msgRet,sizeof(msgRet),msgRet.nTargetID ) ;
+		}
+		break;
+	default:
+		return false;
+	}
+	return true ;
 }
 
 bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
@@ -451,6 +486,7 @@ void IRoom::setRoomInform(const char* pRoomInform )
 	}
 	m_strRoomInForm = pRoomInform ;
 	m_bRoomInfoDiry = true ;
+	++m_nInformSerial;
 }
 
 bool IRoom::isRoomAlive()
@@ -460,7 +496,7 @@ bool IRoom::isRoomAlive()
 		return true ;
 	}
 
-	return time(NULL) <= m_nDeadTime ;
+	return time(NULL) <= m_nDeadTime && m_bIsDelte == false;
 }
 
 void IRoom::setProfit(uint64_t nProfit )
@@ -486,7 +522,7 @@ void IRoom::setInformSieral(uint32_t nSieaial)
 	m_bRoomInfoDiry = true ;
 }
 
-void IRoom::setChatRoomID(uint64_t nChatRoomID )
+void IRoom::setChatRoomID(uint32_t nChatRoomID )
 {
 	m_nChatRoomID = nChatRoomID ;
 	m_bRoomInfoDiry = true ;
@@ -520,4 +556,14 @@ void IRoom::sendExpireInform()
 	aub.addContent(&msgReq,sizeof(msgReq)) ;
 	aub.addContent(pBuffer,msgReq.nJsonsLen) ;
 	sendMsgToPlayer((stMsg*)aub.getBufferPtr(),aub.getContentSize(),0) ;
+}
+
+void IRoom::deleteRoom()
+{
+	m_bIsDelte = true ;
+}
+
+bool IRoom::isDeleteRoom()
+{
+	return m_bIsDelte ;
 }

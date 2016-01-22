@@ -23,8 +23,10 @@ public:
 	uint32_t getCurRoomID(){ return m_nCurTaxasRoomID ;}
 	void addOwnRoom(uint32_t nRoomID , uint16_t nConfigID );
 	bool isCreateRoomCntReachLimit();
+	bool deleteOwnRoom(uint32_t nRoomID );
+	uint16_t getMyOwnRoomConfig( uint32_t nRoomID ) ;
+	bool isRoomIDMyOwn(uint32_t nRoomID);
 protected:
-	bool isRoomIDMyOwn(uint32_t nRoomID );
 	void sendTaxaDataToClient();
 protected:
 	uint32_t m_nCurTaxasRoomID ;

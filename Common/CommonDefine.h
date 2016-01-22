@@ -1,6 +1,6 @@
 #pragma once
 #include "NativeTypes.h"
-#define MAX_LEN_ACCOUNT 25   // can not big then unsigned char max = 255
+#define MAX_LEN_ACCOUNT 40   // can not big then unsigned char max = 255
 #define  MAX_LEN_PASSWORD 25 // can not big then unsigned char max = 255
 #define MAX_LEN_CHARACTER_NAME 25 // can not big then unsigned char  max = 255
 #define MAX_LEN_SIGURE 60   // can not big then unsigned char  max = 255
@@ -20,6 +20,8 @@
 #define MAX_UPLOAD_PIC 4
 #define MAX_JOINED_CLUB_CNT 10
 
+#define MATCH_MGR_UID 1349
+
 #define NIUNIU_HOLD_CARD_COUNT 5
 
 
@@ -35,6 +37,9 @@
 #endif
 
 #define MAX_IP_STRING_LEN 17
+
+#define CIRCLE_TOPIC_CNT_PER_PAGE 7
+#define MAX_CIRCLE_CONTENT_LEN 700
 enum eRoomType
 {
 	eRoom_None,
@@ -51,15 +56,17 @@ enum eRoomType
 enum eRoomState
 {
 	eRoomState_None,
+	eRoomState_Dead,
+	eRoomState_WaitJoin,
 	// state for texas poker
-	eRoomState_TP_WaitJoin = eRoomState_None,
+	eRoomState_TP_Dead = eRoomState_Dead,
+	eRoomState_TP_WaitJoin = eRoomState_WaitJoin,
 	eRoomState_TP_BetBlind,
 	eRoomState_TP_PrivateCard,
 	eRoomState_TP_Beting,
 	eRoomState_TP_OneRoundBetEndResult,
 	eRoomState_TP_PublicCard,
 	eRoomState_TP_GameResult,
-	eRoomState_TP_Dead,
 	eRoomState_TP_MAX,
 	// state for golden 
 	eRoomState_Golden_WaitPeerToJoin = eRoomState_None,
@@ -89,7 +96,7 @@ enum eRoomState
 	eRoomState_BC_Caculate,
 
 	// state for NiuNiu
-	eRoomState_NN_WaitJoin,
+	eRoomState_NN_WaitJoin = eRoomState_WaitJoin ,
 	eRoomState_NN_Disribute4Card,
 	eRoomState_NN_TryBanker,
 	eRoomState_NN_RandBanker,
@@ -157,6 +164,7 @@ enum eRoomPeerState
 	eRoomPeer_WithdrawingCoin = (1 << 8),  // when invoke drawing coin , must be sitdown , but when staup up , maybe in drawingCoin state 
 	eRoomPeer_LackOfCoin = (1<<9)|eRoomPeer_SitDown,
 	eRoomPeer_WillLeave = (1<<10)|eRoomPeer_StandUp ,
+	eRoomPeer_WillStandUp = (1<<11),
 	eRoomPeer_Max,
 };
 
@@ -294,7 +302,8 @@ enum eRoomLevel
 #define TIME_NIUNIU_PLAYER_BET 8.0f
 #define TIME_NIUNIU_DISTRIBUTE_FINAL_CARD_PER_PLAYER 0.3f
 #define TIME_NIUNIU_PLAYER_CACULATE_CARD 8.0f
-#define TIME_NIUNIU_GAME_RESULT 4.0f
+#define TIME_NIUNIU_GAME_RESULT_PER_PLAYER 0.8f
+#define TIME_NIUNIU_GAME_RESULT_EXT 1.2f
 
 // baccarat define 
 enum eBaccaratBetPort

@@ -24,8 +24,12 @@ class CTaxasStateDead
 	:public CTaxasBaseRoomState
 {
 public:
+	CTaxasStateDead(){ m_fMatchRestarTime = 0 ; m_MatchRoomDuringTime = 0 ;}
 	virtual void EnterState(CTaxasRoom* pRoom );
 	void Update(float fDelte );
+protected:
+	float m_fMatchRestarTime ;
+	uint32_t m_MatchRoomDuringTime ;
 };
 
 // wait join state 

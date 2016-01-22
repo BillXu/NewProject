@@ -62,6 +62,33 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	CLogMgr::SharedLogMgr()->PrintLog("recive db req = %d",pmsg->usMsgType);
 	switch( pmsg->usMsgType )
 	{
+	case MSG_CIRCLE_SAVE_ADD_TOPIC:
+		{
+			stMsgSaveAddCircleTopic* pRet = (stMsgSaveAddCircleTopic*)pmsg ;
+			pRequest->eType = eRequestType_Add;
+			CAutoBuffer auBuffer(pRet->item.nContentLen + 1 );
+			auBuffer.addContent((char*)pmsg + sizeof(stMsgSaveAddCircleTopic),pRet->item.nContentLen) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO circletopic (topicID, authorUID,publishTime,content) VALUES ('%I64d', '%u','%u','%s')",
+				pRet->item.nTopicID,pRet->item.nAuthorUID,pRet->item.nPublishTime,auBuffer.getBufferPtr()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("save  circle topic topicID = %d",pRet->item.nTopicID);
+			pdata->nExtenArg1 = pRet->item.nTopicID;
+		}
+		break;
+	case MSG_CIRCLE_SAVE_DELETE_TOPIC:
+		{
+			stMsgSaveDeleteCircleTopic* pRet = (stMsgSaveDeleteCircleTopic*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE circletopic SET isDelete = '1' WHERE topicID = '%d' and isDelete = '0' ",pRet->nTopicID) ;
+		}
+		break;
+	case MSG_CIRCLE_READ_TOPICS:
+		{
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM circletopic WHERE isDelete = '0' order by publishTime desc limit 250") ;
+		}
+		break;
 	case MSG_SELECT_DB_PLAYER_DATA:
 		{
 			stMsgSelectPlayerData* pRet = (stMsgSelectPlayerData*)pmsg ;
@@ -162,11 +189,20 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 		break;
 	case MSG_READ_PLAYER_TAXAS_DATA:
 		{
-			stMsgDataServerGetBaseData* pRet = (stMsgDataServerGetBaseData*)pmsg ;
+			stMsgReadPlayerTaxasData* pRet = (stMsgReadPlayerTaxasData*)pmsg ;
 			pdata->nExtenArg1 = pRet->nUserUID ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"SELECT * FROM playertaxasdata WHERE userUID = '%d'",pRet->nUserUID) ;
+		}
+		break;
+	case MSG_READ_PLAYER_NIUNIU_DATA:
+		{
+			stMsgReadPlayerNiuNiuData* pRet = (stMsgReadPlayerNiuNiuData*)pmsg ;
+			pdata->nExtenArg1 = pRet->nUserUID ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM playerniuniudata WHERE userUID = '%d'",pRet->nUserUID) ;
 		}
 		break;
 	case MSG_PLAYER_SAVE_PLAYER_INFO:
@@ -175,7 +211,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->eType = eRequestType_Update ;
 			std::string strUploadPic = stMysqlField::UnIntArraryToString(pRet->vUploadedPic,MAX_UPLOAD_PIC) ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE playerbasedata SET playerName = '%s', signature = '%s',vUploadedPic = '%s',photoID = '%d' WHERE userUID = '%d'",pRet->vName,pRet->vSigure,strUploadPic.c_str(),pRet->nPhotoID,pRet->nUserUID) ;
+				"UPDATE playerbasedata SET playerName = '%s', signature = '%s',vUploadedPic = '%s',photoID = '%d',isRegister = '%d' WHERE userUID = '%d'",pRet->vName,pRet->vSigure,strUploadPic.c_str(),pRet->nIsRegister,pRet->nPhotoID,pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_PLAYER_MONEY:
@@ -201,6 +237,14 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			std::string strMaxcard = stMysqlField::UnIntArraryToString(pRet->tData.vMaxCards,MAX_TAXAS_HOLD_CARD) ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"UPDATE playertaxasdata SET winTimes = '%d', playTimes = '%d', singleWinMost = '%I64d', maxCard = '%s',myOwnRooms = '%s',followedRooms = '%s' WHERE userUID = '%d'",pRet->tData.nWinTimes,pRet->tData.nPlayTimes,pRet->tData.nSingleWinMost,strMaxcard.c_str(),myOwnRooms.getBufferPtr(),FollowedRooms.getBufferPtr(),pRet->nUserUID) ;
+		}
+		break;
+	case MSG_SAVE_PLAYER_NIUNIU_DATA:
+		{
+			stMsgSavePlayerNiuNiuData* pRet = (stMsgSavePlayerNiuNiuData*)pmsg ;
+			pRequest->eType = eRequestType_Update ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE playerniuniudata SET winTimes = '%d', playTimes = '%d', singleWinMost = '%I64d' WHERE userUID = '%d'",pRet->tData.nWinTimes,pRet->tData.nPlayTimes,pRet->tData.nSingleWinMost,pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_COMMON_LOGIC_DATA:
@@ -231,11 +275,14 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgSaveUpdateRoomInfo* pRet = (stMsgSaveUpdateRoomInfo*)pmsg ;
 			pRequest->eType = eRequestType_Update ;
 			pRet->vRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
-			CAutoBuffer autoBuffer(pRet->nInformLen + 1 );
-			autoBuffer.addContent(((char*)&pRet) + sizeof(stMsgSaveUpdateRoomInfo),pRet->nInformLen);
+			
+			char* pBuffer = new char[pRet->nInformLen + 1];
+			memset(pBuffer,0,pRet->nInformLen + 1);
+			memcpy(pBuffer,((char*)pRet) + sizeof(stMsgSaveUpdateRoomInfo),pRet->nInformLen);
+
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"UPDATE gameroom SET deadTime = '%d', avataID = '%d', profit = '%I64d',totalProfit = '%I64d', roomName = '%s', roomInform = '%s', informSerial = '%d' WHERE roomID = '%d' and roomType = '%d' "
-				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->nTotalProfit,pRet->vRoomName,autoBuffer.getBufferPtr(),pRet->nInformSerial,pRet->nRoomID,pRet->nRoomType ) ;
+				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->nTotalProfit,pRet->vRoomName,pBuffer,pRet->nInformSerial,pRet->nRoomID,pRet->nRoomType ) ;
 			CLogMgr::SharedLogMgr()->PrintLog("save taxas room update info room id = %d",pRet->nRoomID);
 		}
 		break;
@@ -244,8 +291,18 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadRoomInfo* pRet = (stMsgReadRoomInfo*)pmsg ;
 			pRequest->eType = eRequestType_Select;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM gameroom WHERE roomType = '%d'",pRet->nRoomType) ;
+				"SELECT * FROM gameroom WHERE roomType = '%d' and isDelete = '0' ",pRet->nRoomType) ;
 			CLogMgr::SharedLogMgr()->PrintLog("read all room rooms");
+		}
+		break;
+	case MSG_DELETE_ROOM:
+		{
+			stMsgSaveDeleteRoom* pRet = (stMsgSaveDeleteRoom*)pmsg ;
+			pRequest->eType = eRequestType_Update;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"UPDATE gameroom SET isDelete = '1' WHERE roomID = '%d' and roomType = '%d' ",pRet->nRoomID,pRet->nRoomType) ;
+			CLogMgr::SharedLogMgr()->PrintLog("read taxas room players room id = %d",pRet->nRoomID);
+			pdata->nExtenArg1 = pRet->nRoomID;
 		}
 		break;
 	case MSG_SAVE_TAXAS_ROOM_PLAYER:
@@ -756,6 +813,45 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	CLogMgr::SharedLogMgr()->PrintLog("processed db ret = %d",pResult->nRequestUID);
 	switch ( pResult->nRequestUID )
 	{
+	case MSG_CIRCLE_READ_TOPICS:
+		{
+			uint16_t nPageCnt = ( pResult->nAffectRow + CIRCLE_TOPIC_CNT_PER_PAGE - 1 )  / CIRCLE_TOPIC_CNT_PER_PAGE ;
+			for ( uint16_t nPageIdx = 0 ; nPageIdx < nPageCnt ; ++nPageIdx )
+			{
+				stMsgReadCircleTopicsRet msgBack ;
+				msgBack.nCnt = pResult->nAffectRow - nPageIdx * CIRCLE_TOPIC_CNT_PER_PAGE ;
+				if ( msgBack.nCnt > CIRCLE_TOPIC_CNT_PER_PAGE )
+				{
+					msgBack.nCnt = CIRCLE_TOPIC_CNT_PER_PAGE ;
+				}
+
+				CAutoBuffer auBuffer( sizeof(msgBack) + (sizeof(stCircleTopicItem) + 150 ) * msgBack.nCnt ) ;
+				auBuffer.addContent(&msgBack,sizeof(msgBack)) ;
+				for ( uint8_t nIdx = 0 ; nIdx < CIRCLE_TOPIC_CNT_PER_PAGE ; ++nIdx )
+				{
+					uint16_t nDataIdx = nPageIdx * CIRCLE_TOPIC_CNT_PER_PAGE + nIdx ;
+					if ( nDataIdx >= pResult->nAffectRow )
+					{
+						break; 
+					}
+					CMysqlRow& pRow = *pResult->vResultRows[nDataIdx] ;
+					stCircleTopicItem item ;
+					item.nAuthorUID = pRow["authorUID"]->IntValue();
+					item.nContentLen = pRow["content"]->nBufferLen;
+					item.nPublishTime = pRow["publishTime"]->IntValue();
+					item.nTopicID = pRow["topicID"]->IntValue() ;
+					auBuffer.addContent(&item,sizeof(item));
+					auBuffer.addContent(pRow["content"]->BufferData(),pRow["content"]->nBufferLen);
+				}
+				m_pTheApp->sendMsg(pdata->nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+			}
+
+			if ( nPageCnt == 0 )
+			{
+				CLogMgr::SharedLogMgr()->SystemLog("poker circle topic cnt = 0") ;
+			}
+		}
+		break;
 	case MSG_SELECT_DB_PLAYER_DATA:
 		{
 			stMsgSelectPlayerDataRet msgBack;
@@ -866,7 +962,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msgRet.pMails.nContentLen = pRow["mailContent"]->nBufferLen ;
 				if ( msgRet.pMails.nContentLen == 0 )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("why this mail len is null uid = %d , post time = %u",pRow["userUID"]->IntValue(),msgRet.pMails.nPostTime);
+					CLogMgr::SharedLogMgr()->ErrorLog("why this mail len is null uid = %d type = %d, post time = %u",pRow["userUID"]->IntValue(),msgRet.pMails.eType,msgRet.pMails.nPostTime);
 				}
  
 				if ( msgRet.pMails.nContentLen > 0 )
@@ -1012,6 +1108,28 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
+	case MSG_READ_PLAYER_NIUNIU_DATA:
+		{
+			stArgData* pdata = (stArgData*)pResult->pUserData ;
+			stMsgReadPlayerNiuNiuDataRet msg ;
+			msg.nRet = 0 ;
+			msg.nUserUID = pdata->nExtenArg1 ;
+			if ( pResult->nAffectRow <= 0 )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find NIU NIU data with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
+				msg.nRet = 1 ;
+				memset(&msg.tData,0,sizeof(msg.tData)) ;
+			}
+			else
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[0] ;
+				msg.tData.nPlayTimes = pRow["playTimes"]->IntValue();
+				msg.tData.nWinTimes = pRow["winTimes"]->IntValue();
+				msg.tData.nSingleWinMost = pRow["singleWinMost"]->IntValue64();
+			}
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
+		}
+		break;
 	case MSG_READ_ROOM_INFO:
 		{
 			stArgData* pdata = (stArgData*)pResult->pUserData ;
@@ -1037,6 +1155,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					msgRet.nRoomOwnerUID = pRow["ownerUID"]->IntValue();
 					msgRet.nRoomProfit = pRow["profit"]->IntValue();
 					msgRet.nChatRoomID = pRow["chatRoomID"]->IntValue64();
+					msgRet.nTotalProfit = pRow["totalProfit"]->IntValue64();
 					memset(msgRet.vRoomName,0,sizeof(msgRet.vRoomName));
 					sprintf_s(msgRet.vRoomName,MAX_LEN_ROOM_NAME,"%s",pRow["roomName"]->CStringValue());
 					msgRet.nInformLen = pRow["roomInform"]->nBufferLen ; 
@@ -1135,6 +1254,11 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_PLAYER_SET_MAIL_STATE:
 	case MSG_SAVE_ROOM_PLAYER:
 	case MSG_REMOVE_ROOM_PLAYER:
+	case MSG_DELETE_ROOM:
+	case MSG_SAVE_PLAYER_MONEY:
+	case MSG_SAVE_PLAYER_NIUNIU_DATA:
+	case MSG_CIRCLE_SAVE_DELETE_TOPIC:
+	case MSG_CIRCLE_SAVE_ADD_TOPIC:
 		{
 			if ( pResult->nAffectRow <= 0 )
 			{

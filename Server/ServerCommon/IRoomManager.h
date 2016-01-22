@@ -39,6 +39,8 @@ protected:
 	void addRoomToCreator(IRoom* pRoom);
 	void addRoomToConfigRooms(IRoom* pRoom);
 	bool getRoomCreatorRooms(uint32_t nCreatorUID,LIST_ROOM& vInfo );
+	void removeRoom(IRoom* pRoom );
+	void doDeleteRoom(IRoom* pRoom );
 protected:
 	MAP_ID_ROOM m_vRooms ;
 	MAP_CONFIG_ROOMS m_vCongfigIDRooms ;

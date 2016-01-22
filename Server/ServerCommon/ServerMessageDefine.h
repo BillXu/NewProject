@@ -125,6 +125,7 @@ struct stMsgSavePlayerInfo
 	char vSigure[MAX_LEN_SIGURE] ;
 	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
 	uint16_t nPhotoID ;
+	uint8_t nIsRegister ;
 };
 
 struct stMsgSavePlayerMoney
@@ -168,6 +169,31 @@ struct stMsgReadPlayerTaxasDataRet
 	PLACE_HOLDER(char* pMyOwnRooms);
 };
 
+
+struct stMsgSavePlayerNiuNiuData
+	:public stMsg
+{
+	stMsgSavePlayerNiuNiuData(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_NIUNIU_DATA ; }
+	uint32_t nUserUID ;
+	stPlayerNiuNiuData tData ;
+};
+
+struct stMsgReadPlayerNiuNiuData
+	:public stMsg
+{
+	stMsgReadPlayerNiuNiuData(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_PLAYER_NIUNIU_DATA ; }
+	uint32_t nUserUID ;
+};
+
+struct stMsgReadPlayerNiuNiuDataRet
+	:public stMsg
+{
+	stMsgReadPlayerNiuNiuDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_PLAYER_NIUNIU_DATA ; }
+	uint8_t nRet ;
+	uint32_t nUserUID ;
+	stPlayerNiuNiuData tData ;
+};
+
 //struct stMsgSaveCreateTaxasRoomInfo
 //	:public stMsg
 //{
@@ -195,6 +221,14 @@ struct stMsgReadPlayerTaxasDataRet
 //	PLACE_HOLDER(char* pRoomInfom);
 //};
 
+struct stMsgSaveDeleteRoom
+	:public stMsg
+{
+public:
+	stMsgSaveDeleteRoom(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_DELETE_ROOM ; }
+	uint8_t nRoomType ; // eRoomType ;
+	uint32_t nRoomID ;
+};
 
 struct stMsgSaveCreateRoomInfo
 	:public stMsg
@@ -245,6 +279,7 @@ struct stMsgReadRoomInfoRet
 	uint32_t nInformSerial;
 	uint64_t nRoomProfit;
 	uint64_t nChatRoomID ;
+	uint64_t nTotalProfit;
 	char vRoomName[MAX_LEN_ROOM_NAME];
 	uint16_t nInformLen ;
 	PLACE_HOLDER(char* pRoomInfom);
@@ -351,6 +386,13 @@ struct stMsgReadMyOwnTaxasRooms
 	uint32_t nUserUID ;
 };
 
+struct stMsgReadMyOwnRooms
+	:public stMsg
+{
+	stMsgReadMyOwnRooms(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_READ_MY_OWN_ROOMS ; }
+	uint32_t nUserUID ;
+};
+
 struct stMyOwnRoom
 {
 	uint32_t nRoomID;
@@ -361,6 +403,16 @@ struct stMsgReadMyOwnTaxasRoomsRet
 	:public stMsg
 {
 	stMsgReadMyOwnTaxasRoomsRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_READ_MY_OWN_ROOMS ; }
+	uint8_t nRoomType ;
+	uint16_t nCnt ;
+	PLACE_HOLDER(stMyOwnRoom* vMyOwnRooms);
+};
+
+struct stMsgReadMyOwnRoomsRet
+	:public stMsg
+{
+	stMsgReadMyOwnRoomsRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_MY_OWN_ROOMS ; }
+	uint8_t nRoomType ;
 	uint16_t nCnt ;
 	PLACE_HOLDER(stMyOwnRoom* vMyOwnRooms);
 };
@@ -571,6 +623,44 @@ struct  stMsgSavePlayerAdvice
 	uint32_t nUserUID ;
 	uint16_t nLen ;
 	PLACE_HOLDER(char* pContent);
+};
+
+// poker circle 
+struct stCircleTopicItem
+{
+	uint64_t nTopicID ;
+	uint32_t nAuthorUID ;
+	uint32_t nPublishTime ;
+	uint16_t nContentLen ;
+	PLACE_HOLDER(char* pContent);
+};
+
+struct stMsgSaveAddCircleTopic
+	:public stMsg
+{
+	stMsgSaveAddCircleTopic(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_CIRCLE_SAVE_ADD_TOPIC ; }
+	stCircleTopicItem item ;
+};
+
+struct stMsgSaveDeleteCircleTopic
+	:public stMsg
+{
+	stMsgSaveDeleteCircleTopic(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_CIRCLE_SAVE_DELETE_TOPIC ; }
+	uint64_t nTopicID ;
+};
+
+struct stMsgReadCircleTopics
+	:public stMsg
+{
+	stMsgReadCircleTopics(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_CIRCLE_READ_TOPICS ; }
+};
+
+struct stMsgReadCircleTopicsRet
+	:public stMsg
+{
+	stMsgReadCircleTopicsRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CIRCLE_READ_TOPICS ; }
+	uint8_t nCnt ;
+	PLACE_HOLDER(stCircleTopicItem* pItems);
 };
 
 //----above is new , below is old---------

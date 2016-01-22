@@ -9,6 +9,14 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	switch ( cType )
 	{
 	case eRoom_NiuNiu:
+		{
+			stNiuNiuRoomConfig* pConfig = new stNiuNiuRoomConfig ;
+			pConfig->nBaseBet = refReaderRow["BigBlind"]->IntValue();
+			pConfig->nMiniTakeInCoin = refReaderRow["miniTakeIn"]->IntValue() ;
+			pConfig->nMaxSeat = refReaderRow["MaxSeat"]->IntValue();
+			pRoomConfig = pConfig ;
+		}
+		break;
 	case eRoom_TexasPoker:
 	case eRoom_TexasPoker_Diamoned:
 		{
@@ -16,9 +24,6 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 			pConfig->nBigBlind = refReaderRow["BigBlind"]->IntValue();
 			pConfig->nMaxTakeInCoin = refReaderRow["maxTakeIn"]->IntValue() ;
 			pConfig->nMiniTakeInCoin = refReaderRow["miniTakeIn"]->IntValue() ;
-			pConfig->nRentFeePerDay = refReaderRow["RendFeePerDay"]->IntValue() ;
-			pConfig->nDeskFee = refReaderRow["DeskFee"]->IntValue() ;
-			pConfig->fDividFeeRate = refReaderRow["DividFeeRate"]->FloatValue() ;
 			pConfig->nMaxSeat = refReaderRow["MaxSeat"]->IntValue();
 			pRoomConfig = pConfig ;
 		}
@@ -47,6 +52,9 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	}
 	pRoomConfig->nGameType = cType ;
 	pRoomConfig->nConfigID = refReaderRow["configID"]->IntValue();
+	pRoomConfig->nRentFeePerDay = refReaderRow["RendFeePerDay"]->IntValue() ;
+	pRoomConfig->nDeskFee = refReaderRow["DeskFee"]->IntValue() ;
+	pRoomConfig->fDividFeeRate = refReaderRow["DividFeeRate"]->FloatValue() ;
 	m_vAllConfig.push_back(pRoomConfig) ;
 	return true ;
 }
@@ -85,3 +93,34 @@ stBaseRoomConfig* CRoomConfigMgr::GetConfigByConfigID( uint16_t nConfigID )
 	}
 	return nullptr ;
 }
+
+#ifndef SERVER
+int CRoomConfigMgr::GetConfigCntByRoomType(int roomType){
+    int count = 0;
+    LIST_ITER iter = GetBeginIter() ;
+    for ( ; iter != GetEndIter() ; ++iter )
+    {
+        if ( (*iter)->nGameType == roomType)
+        {
+            count++;
+        }
+    }
+    return count;
+}
+stBaseRoomConfig* CRoomConfigMgr::GetConfigByConfigID( uint16_t idx , int roomType){
+    LIST_ITER iter = GetBeginIter() ;
+    for ( ; iter != GetEndIter() ; ++iter )
+    {
+        if ( (*iter)->nGameType == roomType )
+        {
+            idx--;
+            if (!idx) {
+                return (stBaseRoomConfig*)(*iter) ;
+            }
+        }
+    }
+    return nullptr ;
+}
+#endif
+
+

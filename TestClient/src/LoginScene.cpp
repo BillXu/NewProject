@@ -8,6 +8,7 @@
 #include "BacScene.h"
 #include "TaxasMessageDefine.h"
 #include "Client.h"
+#include "NiuNiuScene.h"
 CLoginScene::CLoginScene(CClientRobot* pNetWork ):IScene(pNetWork)
 { 
 	m_eSceneType = eScene_Login ;
@@ -117,15 +118,37 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			//SendMsg(&msgRoomList,sizeof(msgRoomList));
 
 			printf("recived base data\n");
-			stMsgTaxasEnterRoom msg ;
-			msg.nIDType = 0 ;
-			msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
-			///msg.nType = 0 ;
-			///msg.nLevel = 0 ;
-			SendMsg(&msg,sizeof(msg));
-			printf("enter room taxas...\n");
+			if ( 0 )
+			{
+				stMsgTaxasEnterRoom msg ;
+				msg.nIDType = 0 ;
+				msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
+				SendMsg(&msg,sizeof(msg));
+				printf("enter room taxas...\n");
+			}
+			else
+			{
+				stMsgNNEnterRoom msg ;
+				msg.nIDType = 0 ;
+				msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
+				SendMsg(&msg,sizeof(msg));
+				printf("enter niuniu room id = %d \n",msg.nTargetID) ;
+			}
 		}
 		break; ;
+	case MSG_NN_ENTER_ROOM:
+		{
+			stMsgNNEnterRoomRet* pRet = (stMsgNNEnterRoomRet*)pMsg ;
+			if ( pRet->nRet )
+			{
+				printf("enter niuniu room failed ret = %d\n",pRet->nRet) ;
+			}
+			else
+			{
+				printf("enter niuniu room success\n") ;
+			}
+		}
+		break;
 	case MSG_TP_ENTER_ROOM:
 		{
 			// 0 success ; 1 do not meet room condition , 2 aready in room ; 3  unknown error ; 4 waiting last game settlement ;
@@ -178,6 +201,15 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			char pBuffer[255] = { 0 };
 			sprintf_s(pBuffer,"../ConfigFile/%s",m_pClient->GetPlayerData()->pRobotItem->strAiFileName.c_str());
 			pScene->init(pBuffer);
+			m_pClient->ChangeScene(pScene) ;
+			pScene->OnMessage(pPacket) ;
+			return true ;
+		}
+		break;
+	case MSG_NN_ROOM_INFO:
+		{
+			CNiuNiuScene* pScene = new CNiuNiuScene(m_pClient) ;
+			pScene->init(nullptr) ;
 			m_pClient->ChangeScene(pScene) ;
 			pScene->OnMessage(pPacket) ;
 			return true ;

@@ -1,6 +1,7 @@
 #include "NiuNiuRoomPlayer.h"
 #include <string>
 #include "LogManager.h"
+#include "ServerMessageDefine.h"
 void CNiuNiuRoomPlayer::init(uint32_t nSessionID , uint32_t nUserUID)
 {
 	ISitableRoomPlayer::init(nSessionID,nUserUID) ;
@@ -8,6 +9,7 @@ void CNiuNiuRoomPlayer::init(uint32_t nSessionID , uint32_t nUserUID)
 	m_nBetTimes = 0 ;
 	memset(m_vCards,0,sizeof(m_vCards)) ;
 	m_tPeerCard.reset();
+	memset(&m_tHistoryData,0,sizeof(m_tHistoryData)) ;
 }
 
 void CNiuNiuRoomPlayer::willLeave()
@@ -31,16 +33,32 @@ void CNiuNiuRoomPlayer::onGameBegin()
 	memset(m_vCards,0,sizeof(m_vCards)) ;
 	m_tPeerCard.reset();
 	setState(eRoomPeer_CanAct) ;
+	++m_tHistoryData.nPlayTimes;
+}
+
+void CNiuNiuRoomPlayer::setCoinOffsetThisGame(int32_t nOffset )
+{ 
+	m_nOffsetCoinThisGame = nOffset ;
+
+	if ( nOffset > 0 )
+	{
+		++m_tHistoryData.nWinTimes ;
+		if ( m_tHistoryData.nSingleWinMost < nOffset )
+		{
+			m_tHistoryData.nSingleWinMost = nOffset ;
+		}
+	}
 }
 
 void CNiuNiuRoomPlayer::doSitdown(uint8_t nIdx )
 {
 	setIdx(nIdx) ;
+	memset(&m_tHistoryData,0,sizeof(m_tHistoryData)) ;
 }
 
 void CNiuNiuRoomPlayer::willStandUp()
 {
-	
+
 }
 
 void CNiuNiuRoomPlayer::onGetCard( uint8_t nIdx , uint8_t nCard )

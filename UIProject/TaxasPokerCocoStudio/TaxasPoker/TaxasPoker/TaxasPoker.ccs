@@ -1,0 +1,12 @@
+<Solution>
+  <PropertyGroup Name="TaxasPoker" Version="2.3.2.0" Type="CocosStudio" />
+  <SolutionFolder>
+    <Group ctype="ResourceGroup">
+      <RootFolder Name=".">
+        <Project Name="LoginAndRegister.csd" Type="Scene" />
+        <Project Name="LoginAndRegisterLayer.csd" Type="Layer" />
+        <Project Name="Layer.csd" Type="Layer" />
+      </RootFolder>
+    </Group>
+  </SolutionFolder>
+</Solution>

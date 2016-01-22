@@ -20,7 +20,14 @@ public:
 	uint32_t getCurRoomID(){ return m_nCurRoomID ;}
 	void addOwnRoom(uint32_t nRoomID , uint16_t nConfigID );
 	bool isCreateRoomCntReachLimit();
+	bool deleteOwnRoom(uint32_t nRoomID );
+	uint16_t getMyOwnRoomConfig( uint32_t nRoomID ) ;
+	bool isRoomIDMyOwn(uint32_t nRoomID);
+protected:
+	void sendNiuNiuDataToClient();
 protected:
 	uint16_t m_nCurRoomID ;
+	stPlayerNiuNiuData m_tData ;
 	MAP_ID_MYROOW m_vMyOwnRooms;
+	bool m_bDirty ;
 };

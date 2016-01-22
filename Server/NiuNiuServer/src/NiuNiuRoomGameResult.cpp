@@ -70,7 +70,7 @@ void CNiuNiuRoomGameResultState::enterState(IRoom* pRoom)
 
 	m_pRoom->sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
 
-	setStateDuringTime(TIME_NIUNIU_GAME_RESULT) ;
+	setStateDuringTime(TIME_NIUNIU_GAME_RESULT_PER_PLAYER * msgResult.nPlayerCnt + TIME_NIUNIU_GAME_RESULT_EXT ) ;
 }
 
 void CNiuNiuRoomGameResultState::onStateDuringTimeUp()

@@ -60,6 +60,11 @@ bool CGameServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 		return true ;
 	}
 
+	if ( m_tPokerCircle.onMessage(prealMsg,eSenderPort,nSessionID) )
+	{
+		return true ;
+	}
+
 	if ( ProcessPublicMsg(prealMsg,eSenderPort,nSessionID ) )
 	{
 		return true ;

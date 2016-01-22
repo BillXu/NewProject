@@ -68,7 +68,6 @@ void RunFunc ( CGameServerApp* pApp )
 
 int main()
 {
-
 	CGameServerApp theApp ;
 	bool bok = theApp.init() ;
 	if ( !bok )

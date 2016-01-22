@@ -191,7 +191,7 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				return true ;
 			}
 
-			GetPlayer()->GetBaseData()->ModifyMoney( -1 * pRoomConfig->nRentFeePerDay * pRet->nDays );
+			GetPlayer()->GetBaseData()->decressMoney( pRoomConfig->nRentFeePerDay * pRet->nDays );
 			//if ( pRoomConfig == nullptr )
 			//{
 			//	msgBack.nRet = 1 ;
@@ -250,7 +250,14 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 		break;
 	case MSG_REQUEST_MY_OWN_ROOMS:
 		{
+			stMsgRequestMyOwnRooms* pRet = (stMsgRequestMyOwnRooms*)pMessage ;
+			if ( pRet->nRoomType != eRoom_TexasPoker )
+			{
+				return false ;
+			}
+
 			stMsgRequestMyOwnRoomsRet msgRet ;
+			msgRet.nRoomType = pRet->nRoomType ;
 			msgRet.nCnt = m_vMyOwnRooms.size() ;
 			if ( msgRet.nCnt == 0 )
 			{
@@ -269,50 +276,13 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			SendMsg((stMsg*)autoBuffer.getBufferPtr(),autoBuffer.getContentSize()) ;
 		}
 		break;
-	case MSG_TP_CACULATE_ROOM_PROFILE:
-		{
-			stMsgCaculateTaxasRoomProfitRet msgBack ;
-			msgBack.bDiamond = false ;
-			msgBack.nProfitMoney = 0 ;
-			msgBack.nRet = 0 ;
-
-			stMsgCaculateTaxasRoomProfit* pRet = (stMsgCaculateTaxasRoomProfit*)pMessage ;
-			msgBack.nRoomID = pRet->nRoomID ;
-			if ( !isRoomIDMyOwn(pRet->nRoomID) )
-			{
-				msgBack.nRet = 1 ;
-				SendMsg(&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			stMsgCrossServerRequest msgRoomProfitReq ;
-			msgRoomProfitReq.cSysIdentifer = ID_MSG_PORT_TAXAS ;
-			msgRoomProfitReq.nReqOrigID = GetPlayer()->GetUserUID() ;
-			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
-			msgRoomProfitReq.nRequestType = eCrossSvrReq_TaxasRoomProfit ;
-			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
-			SendMsg(&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
-			return true;
-		}
-		break;
-	case MSG_TP_ADD_RENT_TIME:
-		{
-			stMsgAddTaxasRoomRentTime* pRet = (stMsgAddTaxasRoomRentTime*)pMessage ;
-			CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_ADD_RENT_TIME check room id , and kou qian  do not forget ");
-			
-			stMsgCrossServerRequest msgRoomProfitReq ;
-			msgRoomProfitReq.cSysIdentifer = ID_MSG_PORT_TAXAS ;
-			msgRoomProfitReq.nReqOrigID = GetPlayer()->GetUserUID() ;
-			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
-			msgRoomProfitReq.nRequestType = eCrossSvrReq_AddRentTime ;
-			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
-			msgRoomProfitReq.vArg[0] = pRet->nAddDays ;
-			SendMsg(&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
-		}
-		break;
 	case MSG_TP_READ_MY_OWN_ROOMS:
 		{
 			stMsgReadMyOwnTaxasRoomsRet* pRet = (stMsgReadMyOwnTaxasRoomsRet*)pMessage ;
+			if ( pRet->nRoomType != eRoom_TexasPoker )
+			{
+				return false;
+			}
 			stMyOwnRoom* pRoomPtr = (stMyOwnRoom*)((char*)pMessage + sizeof(stMsgReadMyOwnTaxasRoomsRet));
 			while ( pRet->nCnt-- )
 			{
@@ -368,49 +338,11 @@ bool CPlayerTaxas::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 				return true ;
 			}
 
-			GetPlayer()->GetBaseData()->ModifyMoney(pRoomConfig->nRentFeePerDay *  pResult->vArg[2]);
+			GetPlayer()->GetBaseData()->AddMoney(pRoomConfig->nRentFeePerDay *  pResult->vArg[2]);
 		}
 
 		msgBack.nFinalCoin = GetPlayer()->GetBaseData()->GetAllCoin() ;
 		SendMsg(&msgBack,sizeof(msgBack)) ;
-		return true ;
-	}
-
-	if ( eCrossSvrReq_TaxasRoomProfit == pResult->nRequestType )
-	{
-		stMsgCaculateTaxasRoomProfitRet msgBack ;
-		msgBack.nRoomID = pResult->nReqOrigID ;
-		msgBack.bDiamond = !pResult->vArg[0] ;
-		msgBack.nProfitMoney = pResult->vArg[1] ;
-		msgBack.nRet = 0 ;
-		SendMsg(&msgBack,sizeof(msgBack)) ;
-		GetPlayer()->GetBaseData()->ModifyMoney(msgBack.nProfitMoney,msgBack.bDiamond);
-		// save log 
-		stMsgSaveLog msgLog ;
-		memset(msgLog.vArg,0,sizeof(msgLog.vArg));
-		msgLog.nJsonExtnerLen = 0 ;
-		msgLog.nLogType = eLog_AddMoney ;
-		msgLog.nTargetID = GetPlayer()->GetUserUID() ;
-		msgLog.vArg[0] = !msgBack.bDiamond ;
-		msgLog.vArg[1] = msgBack.nProfitMoney;
-		msgLog.vArg[2] = GetPlayer()->GetBaseData()->GetData()->nCoin;
-		msgLog.vArg[3] = GetPlayer()->GetBaseData()->GetData()->nDiamoned ;
-		msgLog.vArg[4] = eCrossSvrReq_TaxasRoomProfit ;
-		msgLog.vArg[5] = pResult->nReqOrigID ;
-		CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nReqOrigID,(char*)&msgLog,sizeof(msgLog));
-
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d get profit = %llu",GetPlayer()->GetUserUID(),msgBack.nProfitMoney) ;
-		return true ;
-	}
-
-	if ( eCrossSvrReq_AddRentTime == pResult->nRequestType )
-	{
-		stMsgAddTaxasRoomRentTimeRet msgRet ;
-		msgRet.nRet = 0 ;
-		msgRet.nAddDays = pResult->vArg[0] ;
-		msgRet.nRoomID = pResult->nReqOrigID ;
-		SendMsg(&msgRet,sizeof(msgRet)) ;
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d add rent time = %d",GetPlayer()->GetUserUID(),msgRet.nAddDays) ;
 		return true ;
 	}
 	return false ;
@@ -524,3 +456,25 @@ bool CPlayerTaxas::isCreateRoomCntReachLimit()
 {
 	return m_vMyOwnRooms.size() >= 5 ;
 }
+
+bool CPlayerTaxas::deleteOwnRoom(uint32_t nRoomID )
+{
+	auto iter = m_vMyOwnRooms.find(nRoomID) ;
+	if ( iter != m_vMyOwnRooms.end() )
+	{
+		m_vMyOwnRooms.erase(iter) ;
+		return true ;
+	}
+	return false ;
+}
+
+uint16_t CPlayerTaxas::getMyOwnRoomConfig( uint32_t nRoomID ) 
+{
+	MAP_ID_MYROOW::iterator iter = m_vMyOwnRooms.find(nRoomID) ;
+	if ( iter != m_vMyOwnRooms.end() )
+	{
+		return iter->second.nConfigID ;
+	}
+	return 0 ;
+}
+

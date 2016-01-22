@@ -75,6 +75,8 @@ void CClientRobot::ChangeScene(IScene* pTargetScene )
 		m_pCurentScene = m_pCurentScene;
 	}
 	pTargetScene->OnEnterScene() ;
+	delete m_pCurentScene ;
+	m_pCurentScene = nullptr ;
 	m_pCurentScene = pTargetScene ;
 }
 
@@ -108,7 +110,7 @@ bool CClientRobot::OnConnectStateChanged( eConnectState eSate, Packet* pMsg )
 bool CClientRobot::OnLostSever()
 {
 	m_bWaitReonnect = true ;
-	m_fReconnectTick = 0 ;
+	m_fReconnectTick = TIME_FOR_RECONNECT ;
 	return true ;
 }
 

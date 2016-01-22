@@ -141,7 +141,7 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 {
 	if ( IRoom::onMessage(prealMsg,eSenderPort,nPlayerSessionID) )
 	{
-		return false ;
+		return true ;
 	}
 
 	switch ( prealMsg->usMsgType )
