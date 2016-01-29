@@ -369,9 +369,9 @@ int main()
 	CConfigReader::s_SkillRow = 1 ;
 	nRobotConfige.LoadFile("../ConfigFile/RobotConfig.txt");
 	CConfigReader::s_SkillRow = 0 ;
-	int i = 0 ;
+	int i = 1 ;
 	CRobotConfigFile::stRobotItem* pitem = NULL ;
-	while ( (pitem = nRobotConfige.EnumConfigItem() ))
+	while ( (pitem = nRobotConfige.EnumConfigItem() ) )
 	{
 		pClient = new CClientRobot ;
 		bool bR = pClient->Init(GATE_IP);

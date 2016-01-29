@@ -3,6 +3,7 @@
 #include "LogManager.h"
 #include "ServerMessageDefine.h"
 #include "RoomManager.h"
+#include "ServerStringTable.h"
 CTaxasServerApp* CTaxasServerApp::s_TaxasServerApp = NULL ;
 CTaxasServerApp* CTaxasServerApp::SharedGameServerApp()
 {
@@ -45,6 +46,8 @@ bool CTaxasServerApp::init()
 		return false;
 	}
 	setConnectServerConfig(pConfig);
+
+	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
 
 	m_pRoomConfig = new CRoomConfigMgr ;
 	m_pRoomConfig->LoadFile("../configFile/RoomConfig.txt") ;

@@ -307,7 +307,7 @@ bool CRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
 			for ( ; iter != m_vRooms.end(); ++iter )
 			{
-				if ( iter->second->isRoomAlive() )
+				if ( iter->second->isRoomAlive() && iter->second->getOwnerUID() != MATCH_MGR_UID )
 				{
 					vActiveRoom.push_back(iter->second) ;
 				}

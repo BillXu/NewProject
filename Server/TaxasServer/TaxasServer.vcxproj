@@ -106,6 +106,7 @@
     <ClInclude Include="..\ServerCommon\ServerCommon.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
+    <ClInclude Include="..\ServerCommon\ServerStringTable.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\RoomManager.h" />
@@ -124,6 +125,7 @@
     <ClCompile Include="..\ServerCommon\httpRequest.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RoomManager.cpp" />

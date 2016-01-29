@@ -9,15 +9,20 @@
 #include "TaxasMessageDefine.h"
 #include "Client.h"
 #include "NiuNiuScene.h"
+#define  TIME_DELAY_ENTER_ROOM (60*2)
+#define  TIME_DELAY_LOGIN (2*60)
 CLoginScene::CLoginScene(CClientRobot* pNetWork ):IScene(pNetWork)
 { 
 	m_eSceneType = eScene_Login ;
+	m_fDelyTick = 0 ;
+	m_eCurState = els_Normal ;
 }
 
 void CLoginScene::OnEnterScene()
 {
 	IScene::OnEnterScene();
 	//InformIdle();
+	m_eCurState = els_Normal ;
 }
 
 void CLoginScene::OnEixtScene()
@@ -118,22 +123,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			//SendMsg(&msgRoomList,sizeof(msgRoomList));
 
 			printf("recived base data\n");
-			if ( 0 )
-			{
-				stMsgTaxasEnterRoom msg ;
-				msg.nIDType = 0 ;
-				msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
-				SendMsg(&msg,sizeof(msg));
-				printf("enter room taxas...\n");
-			}
-			else
-			{
-				stMsgNNEnterRoom msg ;
-				msg.nIDType = 0 ;
-				msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
-				SendMsg(&msg,sizeof(msg));
-				printf("enter niuniu room id = %d \n",msg.nTargetID) ;
-			}
+			doEnterGame();
 		}
 		break; ;
 	case MSG_NN_ENTER_ROOM:
@@ -142,6 +132,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			if ( pRet->nRet )
 			{
 				printf("enter niuniu room failed ret = %d\n",pRet->nRet) ;
+				delayEnterRoom() ;
 			}
 			else
 			{
@@ -153,6 +144,11 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 		{
 			// 0 success ; 1 do not meet room condition , 2 aready in room ; 3  unknown error ; 4 waiting last game settlement ;
 			stMsgRoomEnterRet* pRetMsg = (stMsgRoomEnterRet*)pMsg ;
+			if ( pRetMsg->nRet )
+			{
+				delayEnterRoom() ;
+			}
+
 			switch ( pRetMsg->nRet )
 			{
 			case 0:
@@ -234,6 +230,38 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 	return false ;
 }
 
+void CLoginScene::doEnterGame()
+{
+	if ( m_pClient->GetPlayerData()->getDstGameType() == eRoom_TexasPoker )
+	{
+		stMsgTaxasEnterRoom msg ;
+		msg.nIDType = 0 ;
+		msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
+		SendMsg(&msg,sizeof(msg));
+		printf("enter room taxas...\n");
+	}
+	else if ( m_pClient->GetPlayerData()->getDstGameType() == eRoom_NiuNiu )
+	{
+		stMsgNNEnterRoom msg ;
+		msg.nIDType = 0 ;
+		msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
+		SendMsg(&msg,sizeof(msg));
+		printf("enter niuniu room id = %d \n",msg.nTargetID) ;
+	}
+	else
+	{
+		printf("unknown target room type = %d\n",m_pClient->GetPlayerData()->getDstGameType() ) ;
+	}
+	
+	m_eCurState = els_Normal ;
+}
+
+void CLoginScene::delayEnterRoom()
+{
+	m_fDelyTick = TIME_DELAY_ENTER_ROOM ;
+	m_eCurState = els_WaitEnterRoom ;
+}
+
 void CLoginScene::Verifyed()
 {
 	srand(m_pClient->GetPlayerData()->pRobotItem->nRobotID);
@@ -281,4 +309,33 @@ void CLoginScene::Register( const char* pName ,const char* pAccound , const char
 		sprintf_s(msg.cPassword,"%s",pPassword) ;
 	}
 	m_pClient->GetNetWork()->SendMsg((char*)&msg,sizeof(msg)) ;
+}
+
+void CLoginScene::OnUpdate(float fDeltaTime )
+{
+	IScene::OnUpdate(fDeltaTime);
+
+	if ( els_Normal != m_eCurState )
+	{
+		m_fDelyTick -= fDeltaTime ;
+	}
+	else 
+	{
+		return ;
+	}
+
+	if ( m_fDelyTick < 0 )
+	{
+		if ( els_WaitEnterRoom == m_eCurState )
+		{
+			printf("try again to enter room \n") ;
+			doEnterGame() ;
+		}
+		else if ( els_WaitLogin == m_eCurState )
+		{
+			Login(m_pClient->GetPlayerData()->pRobotItem->strAccount.c_str(),m_pClient->GetPlayerData()->pRobotItem->strPassword.c_str());
+			m_eCurState = els_Normal ;
+		}
+	}
+
 }

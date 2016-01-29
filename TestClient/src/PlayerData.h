@@ -23,6 +23,7 @@ public:
 	const char* GetName(){ return stBaseData.cName ;}
 	unsigned int getUserUID(){ return stBaseData.nUserUID ;}
 	unsigned int getDstRoomID(){ return pRobotItem->nDstRoomID; }
+	unsigned int getDstGameType(){ return pRobotItem->nDstGameType ;}
 public:
 	unsigned int nSessionID ;
 	stCommonBaseData stBaseData ;

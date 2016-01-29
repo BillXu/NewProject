@@ -68,6 +68,14 @@ void RunFunc ( CGameServerApp* pApp )
 
 int main()
 {
+	//-----
+	//char p[20] = {0} ;
+	//sprintf_s(p,"12E44E54") ;
+	//std::string str (p,20);
+	//std::string strNo = str.substr(0,str.find_first_of('E')) ;
+	//int a = atoi(strNo.c_str());
+	//printf("%d",a);
+	//-----
 	CGameServerApp theApp ;
 	bool bok = theApp.init() ;
 	if ( !bok )

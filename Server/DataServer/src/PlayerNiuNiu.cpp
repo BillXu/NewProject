@@ -280,6 +280,11 @@ void CPlayerNiuNiu::addOwnRoom(uint32_t nRoomID , uint16_t nConfigID )
 
 bool CPlayerNiuNiu::isCreateRoomCntReachLimit()
 {
+	if ( GetPlayer()->GetUserUID() == MATCH_MGR_UID )
+	{
+		return false ;
+	}
+
 	return m_vMyOwnRooms.size() >= 5 ;
 }
 

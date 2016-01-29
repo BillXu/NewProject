@@ -19,10 +19,12 @@ void CNiuNiuRoomDistribute4CardState::enterState(IRoom* pRoom)
 		if ( pRoomPlayer && pRoomPlayer->isHaveState(eRoomPeer_CanAct))
 		{
 			uint8_t nCardCount = NIUNIU_HOLD_CARD_COUNT - 1 ;
+			uint8_t nCardIdx = 0 ;
 			++nPlayerCnt;
-			while ( nCardCount-- )
+			while ( nCardIdx < nCardCount )
 			{
-				pRoomPlayer->onGetCard(nCardCount,m_pRoom->getPoker()->GetCardWithCompositeNum()) ;
+				pRoomPlayer->onGetCard(nCardIdx,m_pRoom->getPoker()->GetCardWithCompositeNum()) ;
+				++nCardIdx ;
 			}
 		}
 	}

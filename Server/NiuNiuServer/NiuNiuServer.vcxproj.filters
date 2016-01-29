@@ -147,6 +147,9 @@
     <ClInclude Include="src\NiuNiuRoomPlayerCaculateCardState.h">
       <Filter>src\Room\state</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerStringTable.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
@@ -238,6 +241,9 @@
     </ClCompile>
     <ClCompile Include="src\NiuNiuRoomPlayerCaculateCardState.cpp">
       <Filter>src\Room\state</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp">
+      <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

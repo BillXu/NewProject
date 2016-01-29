@@ -33,7 +33,7 @@ bool CClientRobot::Init(const char* pIPString, unsigned short nPort )
 	m_pCurentScene->OnEnterScene();
 	m_pNetWork.ConnectToServer(pIPString,nPort,"123456") ;  // inner net ;-
 	//m_pNetWork.ConnectToServer("203.186.75.136",50001,"123456") ;  // Out net ;
-	m_pNetWork.AddMessageDelegate(this) ;
+	m_pNetWork.AddMessageDelegate(this,2) ;
 	m_pNetWork.AddMessageDelegate(m_pPlayerData) ;
 	m_strTargetIP = pIPString ;
 	m_nTargetPort = nPort ;
@@ -91,13 +91,13 @@ bool CClientRobot::OnConnectStateChanged( eConnectState eSate, Packet* pMsg )
 		GetNetWork()->SendMsg((char*)&msg,sizeof(msg));
 		printf("connected to svr \n") ;
 
-		if ( GetSessionID() != 0 )  // means reconnect ;
-		{
-			stMsgReconnect msgRec ;
-			msgRec.nSessionID = GetSessionID();
-			GetNetWork()->SendMsg((char*)&msgRec,sizeof(msgRec));
-			return true ;
-		}
+		//if ( GetSessionID() != 0 )  // means reconnect ;
+		//{
+		//	stMsgReconnect msgRec ;
+		//	msgRec.nSessionID = GetSessionID();
+		//	GetNetWork()->SendMsg((char*)&msgRec,sizeof(msgRec));
+		//	return true ;
+		//}
 
 	}
 	else if ( eConnect_Failed == eSate )
@@ -111,6 +111,10 @@ bool CClientRobot::OnLostSever()
 {
 	m_bWaitReonnect = true ;
 	m_fReconnectTick = TIME_FOR_RECONNECT ;
+
+	printf("lost server connect , change to login scene\n") ;
+	auto au = new CLoginScene(this);
+	ChangeScene(au);
 	return true ;
 }
 

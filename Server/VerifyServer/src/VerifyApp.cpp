@@ -26,10 +26,12 @@ void CVerifyApp::update(float fDeta )
 	}
 
 	// check Apple Verify ;
-	LIST_VERIFY_REQUEST vOutAppleResult , vMiResult;
+	LIST_VERIFY_REQUEST vOutAppleResult , vMiResult,weChatResult;
 	m_AppleVerifyMgr.GetProcessedRequest(vOutAppleResult) ;
 	m_MiVerifyMgr.GetProcessedRequest(vMiResult);
+	m_tWechtVerifyMgr.GetProcessedRequest(weChatResult);
 	vOutAppleResult.insert(vOutAppleResult.begin(),vMiResult.begin(),vMiResult.end());
+	vOutAppleResult.insert(vOutAppleResult.begin(),weChatResult.begin(),weChatResult.end());
 	stVerifyRequest* pVerifyRequest = NULL ;
 	LIST_VERIFY_REQUEST::iterator iter = vOutAppleResult.begin() ;
 	for ( ; iter != vOutAppleResult.end(); ++iter )
@@ -64,6 +66,25 @@ void CVerifyApp::update(float fDeta )
 		PushVerifyRequestToReuse(pVerifyRequest) ;
 	}
 	vOutAppleResult.clear() ;
+
+	// check order request ;
+	LIST_ORDER_REQUEST vOrderResult;
+	m_tWechatOrderMgr.GetProcessedRequest(vOrderResult);
+	for ( stShopItemOrderRequest* pOrder : vOrderResult )
+	{
+		stMsgVerifyItemOrderRet msgRet ;
+		memset(msgRet.cPrepayId,0,sizeof(msgRet.cPrepayId));
+		memset(msgRet.cOutTradeNo,0,sizeof(msgRet.cOutTradeNo));
+		memcpy(msgRet.cOutTradeNo,pOrder->cOutTradeNo,sizeof(pOrder->cOutTradeNo));
+		memcpy(msgRet.cPrepayId,pOrder->cPrepayId,sizeof(msgRet.cPrepayId));
+		msgRet.nChannel = pOrder->nChannel ;
+		msgRet.nRet = pOrder->nRet ;
+		sendMsg(pOrder->nSessionID,(char*)&msgRet,sizeof(msgRet));
+		CLogMgr::SharedLogMgr()->SystemLog("finish order for sessionid = %d, ret = %d ",pOrder->nSessionID,pOrder->nRet) ;
+		delete pOrder ;
+		pOrder = nullptr ;
+	}
+	vOrderResult.clear() ;
 }
 
 bool CVerifyApp::init()
@@ -84,7 +105,10 @@ bool CVerifyApp::init()
 	m_AppleVerifyMgr.Init() ;
 	m_MiVerifyMgr.Init();
 	m_DBVerifyMgr.Init();
+	m_tWechatOrderMgr.Init() ;
+	m_tWechtVerifyMgr.Init() ;
 	CLogMgr::SharedLogMgr()->SystemLog("START verify server !") ;
+
 	return true;
 }
 
@@ -177,6 +201,23 @@ bool CVerifyApp::onLogicMsg( stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSess
 		return true ;
 	}
 
+	if ( MSG_VERIFY_ITEM_ORDER == pMsg->usMsgType )
+	{
+		stMsgVerifyItemOrder* pOrder = (stMsgVerifyItemOrder*)pMsg ;
+
+		stShopItemOrderRequest* pRe = new stShopItemOrderRequest ;
+		memset(pRe,0,sizeof(stShopItemOrderRequest)) ;
+		sprintf_s(pRe->cShopDesc,50,pOrder->cShopDesc);
+		sprintf_s(pRe->cOutTradeNo,32,pOrder->cOutTradeNo);
+		pRe->nPrize = pOrder->nPrize;
+		sprintf_s(pRe->cTerminalIp,17,pOrder->cTerminalIp);
+		pRe->nChannel = pOrder->nChannel ;
+		pRe->nFromPlayerUserUID =  0 ;
+		pRe->nSessionID = nSessionID ;
+		m_tWechatOrderMgr.AddRequest(pRe);
+		return true ;
+	}
+
 	if ( pMsg->usMsgType == MSG_VERIFY_TANSACTION )
 	{
 		stMsgToVerifyServer* pReal = (stMsgToVerifyServer*)pMsg ;
@@ -184,23 +225,45 @@ bool CVerifyApp::onLogicMsg( stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSess
 		pRequest->nFromPlayerUserUID = pReal->nBuyerPlayerUserUID ;
 		pRequest->nShopItemID = pReal->nShopItemID;
 		pRequest->nBuyedForPlayerUserUID = pReal->nBuyForPlayerUserUID ;
-		pRequest->nRequestType = 0 ;  // now just apple ;
+		pRequest->nChannel = pReal->nChannel ;  // now just apple ;
 		pRequest->nSessionID = nSessionID ;
 		pRequest->nMiUserUID = pReal->nMiUserUID ;
-		if ( pRequest->nMiUserUID )
+		if ( pRequest->nMiUserUID && pRequest->nChannel == ePay_XiaoMi )
 		{
 			memcpy(pRequest->pBufferVerifyID,((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
 			m_MiVerifyMgr.AddRequest(pRequest) ;
 		}
-		else
+		else if ( pRequest->nChannel == ePay_AppStore )
 		{
 			std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
 			//std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),20);
 			memcpy(pRequest->pBufferVerifyID,str.c_str(),strlen(str.c_str()));
 			m_AppleVerifyMgr.AddRequest(pRequest) ;
 		}
+		else if ( ePay_WeChat == pRequest->nChannel )
+		{
+			memcpy(pRequest->pBufferVerifyID,((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
 
-		printf("recived a transfaction need to verify shop id = %d useruid = %d\n",pReal->nShopItemID,pReal->nBuyerPlayerUserUID);
+			std::string strTradeNo(pRequest->pBufferVerifyID);
+			std::string shopItem = strTradeNo.substr(0,strTradeNo.find_first_of('E')) ;
+			if ( atoi(shopItem.c_str()) != pRequest->nShopItemID )
+			{
+				printf("shop id and verify id not the same \n") ;
+				pRequest->eResult = eVerify_Apple_Error ;
+				m_tWechtVerifyMgr.AddProcessedResult(pRequest) ;
+			}
+			else
+			{
+				m_tWechtVerifyMgr.AddRequest(pRequest) ;
+			}
+		}
+		else
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("unknown pay channecl = %d, uid = %d",pRequest->nChannel,pReal->nBuyerPlayerUserUID ) ;
+			PushVerifyRequestToReuse(pRequest) ;
+		}
+
+		printf("recived a transfaction need to verify shop id = %d useruid = %d channel id = %d\n",pReal->nShopItemID,pReal->nBuyerPlayerUserUID,pReal->nChannel );
 	}
 	else
 	{

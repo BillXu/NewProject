@@ -35,7 +35,7 @@ void CDBVerifyManager::AddRequest(stVerifyRequest* pRequest )
 	stDBRequest* pDBRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest() ;
 	pDBRequest->eType = eRequestType_Add ;
 	pDBRequest->nRequestUID = 10 ;
-	pDBRequest->nSqlBufferLen = sprintf_s(pDBRequest->pSqlBuffer,"INSERT INTO `transnum` (`type`, `transId`) VALUES ('%d', '%s');",pRequest->nRequestType,pRequest->pBufferVerifyID) ;
+	pDBRequest->nSqlBufferLen = sprintf_s(pDBRequest->pSqlBuffer,"INSERT INTO `transnum` (`type`, `transId`) VALUES ('%d', '%s');",pRequest->nChannel,pRequest->pBufferVerifyID) ;
 	pDBRequest->pUserData = pRequest ;
 	CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pDBRequest) ;
 	///-----

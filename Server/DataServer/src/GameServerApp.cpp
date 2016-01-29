@@ -103,3 +103,8 @@ void CGameServerApp::CheckNewDay()
 		CEventCenter::SharedEventCenter()->PostEvent(eEvent_NewDay,&tmNow) ;
 	}
 }
+
+void CGameServerApp::onConnectedToSvr()
+{
+	m_tPokerCircle.readTopics();
+}

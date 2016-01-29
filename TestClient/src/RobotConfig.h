@@ -18,6 +18,7 @@ public:
 		float fActDelayBegin;
 		float fActDelayEnd ;
 		unsigned int nDstRoomID ;
+		unsigned int nDstGameType ;
 	};
 public:
 	typedef std::list<stRobotItem*> LIST_ROBOT_ITEM ;

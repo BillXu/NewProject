@@ -28,6 +28,12 @@
     <Filter Include="AppleVerify\HMac">
       <UniqueIdentifier>{b38b380d-3eeb-4f78-a692-8ed0336d93bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AppleVerify\tinyXml">
+      <UniqueIdentifier>{fd6417c5-6019-4e4a-8b46-ae60111f46d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AppleVerify\MD5">
+      <UniqueIdentifier>{2646de32-6299-466c-ba16-ebfae5e8638f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\LogManager.cpp">
@@ -101,6 +107,27 @@
     </ClCompile>
     <ClCompile Include="src\SHA1.cpp">
       <Filter>AppleVerify\HMac</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WeChatVerifyManager.cpp">
+      <Filter>AppleVerify</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WeChatShopItemOrder.cpp">
+      <Filter>AppleVerify</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tinyxml\tinystr.cpp">
+      <Filter>AppleVerify\tinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tinyxml\tinyxml.cpp">
+      <Filter>AppleVerify\tinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tinyxml\tinyxmlerror.cpp">
+      <Filter>AppleVerify\tinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tinyxml\tinyxmlparser.cpp">
+      <Filter>AppleVerify\tinyXml</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Md5.cpp">
+      <Filter>AppleVerify\MD5</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -199,6 +226,21 @@
     </ClInclude>
     <ClInclude Include="src\SHA1.h">
       <Filter>AppleVerify\HMac</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WeChatVerifyManager.h">
+      <Filter>AppleVerify</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WeChatShopItemOrder.h">
+      <Filter>AppleVerify</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tinyxml\tinystr.h">
+      <Filter>AppleVerify\tinyXml</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tinyxml\tinyxml.h">
+      <Filter>AppleVerify\tinyXml</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Md5.h">
+      <Filter>AppleVerify\MD5</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -145,6 +145,13 @@ void CGateClientMgr::closeAllClient()
 	auto iter = m_vSessionGateClient.begin() ;
 	for ( ; iter != m_vSessionGateClient.end() ;  )
 	{
+		// tell other server the peer disconnect
+		{
+			stMsgClientDisconnect msgdis ;
+			msgdis.nSeesionID = iter->second->nSessionId ;
+			CGateServer::SharedGateServer()->SendMsgToCenterServer((char*)&msgdis,sizeof(msgdis));
+		}
+
 		CGateServer::SharedGateServer()->GetNetWorkForClients()->ClosePeerConnection(iter->second->nNetWorkID) ;
 		RemoveClientGate(iter->second) ;
 		iter = m_vSessionGateClient.begin() ;
@@ -166,6 +173,7 @@ void CGateClientMgr::OnServerMsg( const char* pRealMsgData, uint16_t nDataLen,ui
 		CLogMgr::SharedLogMgr()->PrintLog("client is waiting for reconnected session id = %d, msg = %d",uTargetSessionID,pReal->usMsgType) ;
 		return ;
 	}
+
 	CGateServer::SharedGateServer()->SendMsgToClient(pRealMsgData,nDataLen,pClient->nNetWorkID ) ;
 }
 

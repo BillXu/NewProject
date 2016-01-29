@@ -69,7 +69,10 @@ bool CPlayerMailComponent::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				GetPlayer()->PostPlayerEvent(&arg);
 				InformRecievedUnreadMails();
 				CLogMgr::SharedLogMgr()->PrintLog("read mail finish uid = %d",GetPlayer()->GetUserUID());
-				m_vAllMail.sort(arrageMailByTime);
+				if ( m_vAllMail.empty() == false )
+				{
+					m_vAllMail.sort(arrageMailByTime);
+				}
 			}
 
 		}
@@ -354,22 +357,48 @@ void CPlayerMailComponent::ProcessOfflineEvent()
 
 	if ( bNeedDel )
 	{
+		bool bDelOffline = false ;
+		bool bDelTimeTag = false ;
 		LIST_MAIL::iterator iter = m_vAllMail.begin() ;
 		for ( ; iter != m_vAllMail.end();  )
 		{
-			if ( (*iter).eType  == eMail_SysOfflineEvent )
+			if ( (*iter).eType  == eMail_SysOfflineEvent || (*iter).eType  == eMail_ReadTimeTag )
 			{
+				if ( (*iter).eType  == eMail_SysOfflineEvent )
+				{
+					bDelOffline = true ;
+				}
+
+				if ( (*iter).eType  == eMail_ReadTimeTag )
+				{
+					bDelTimeTag = true ;
+				}
+				
 				m_vAllMail.erase(iter) ;
 				iter = m_vAllMail.begin() ;
 				continue;
 			}
 			++iter ;
 		}
-		// tell db set state 
-		stMsgResetMailsState msgReset ;
-		msgReset.nUserUID = GetPlayer()->GetUserUID() ;
-		msgReset.tMailType = eMail_SysOfflineEvent ;
-		SendMsg(&msgReset,sizeof(msgReset)) ;
+
+		if ( bDelOffline )
+		{
+			// tell db set state 
+			stMsgResetMailsState msgReset ;
+			msgReset.nUserUID = GetPlayer()->GetUserUID() ;
+			msgReset.tMailType = eMail_SysOfflineEvent ;
+			SendMsg(&msgReset,sizeof(msgReset)) ;
+		}
+
+		if ( bDelTimeTag )
+		{
+			// tell db set state 
+			stMsgResetMailsState msgReset ;
+			msgReset.nUserUID = GetPlayer()->GetUserUID() ;
+			msgReset.tMailType = eMail_ReadTimeTag ;
+			SendMsg(&msgReset,sizeof(msgReset)) ;
+		}
+
 	}
 }
 

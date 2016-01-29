@@ -8,6 +8,7 @@
 #include "TaxasServerApp.h"
 #include "RoomManager.h"
 #include "AutoBuffer.h"
+#include "ServerStringTable.h"
 #define TIME_SECONDS_PER_DAY (60*60*24)
 #define TIME_SAVE_ROOM_INFO 60*30
 CTaxasRoom::CTaxasRoom()
@@ -2033,7 +2034,7 @@ void CTaxasRoom::onMatchFinish()
 	msgReq.nRequestType = eCrossSvrReq_Inform ;
 	msgReq.nRequestSubType = eCrossSvrReqSub_Default ;
 
-	std::string str = "恭喜您获得[%s]冠军,我们将在一个工作日发放奖品,任何疑问请加微信咨询管理员." ;
+	std::string str = CServerStringTable::getInstance()->getStringByID(1) ;
 	char pBuffer[200] = {0} ;
 	sprintf(pBuffer,str.c_str(),getRoomName()) ;
 	msgReq.nJsonsLen = strlen(pBuffer) ;
@@ -2044,7 +2045,7 @@ void CTaxasRoom::onMatchFinish()
 
 	// set room inform ;
 	memset(pBuffer,0,sizeof(pBuffer));
-	sprintf_s(pBuffer,sizeof(pBuffer),"【%s】获得上届冠军,好厉害啊!",peer->cName);
+	sprintf_s(pBuffer,sizeof(pBuffer),"uid = %d",peer->nUserUID);
 	setRoomInform(pBuffer);
 	stMsgRemindTaxasRoomNewInform msgRemind ;
 	SendRoomMsg(&msgRemind,sizeof(msgRemind)) ;

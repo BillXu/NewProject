@@ -109,10 +109,17 @@
     <ClCompile Include="src\lib_json\json_value.cpp" />
     <ClCompile Include="src\lib_json\json_writer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Md5.cpp" />
     <ClCompile Include="src\MiVerifyManager.cpp" />
     <ClCompile Include="src\SHA1.cpp" />
+    <ClCompile Include="src\tinyxml\tinystr.cpp" />
+    <ClCompile Include="src\tinyxml\tinyxml.cpp" />
+    <ClCompile Include="src\tinyxml\tinyxmlerror.cpp" />
+    <ClCompile Include="src\tinyxml\tinyxmlparser.cpp" />
     <ClCompile Include="src\VerifyApp.cpp" />
     <ClCompile Include="src\VerifyRequest.cpp" />
+    <ClCompile Include="src\WeChatShopItemOrder.cpp" />
+    <ClCompile Include="src\WeChatVerifyManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\ConfigReader.h" />
@@ -143,10 +150,15 @@
     <ClInclude Include="src\json\value.h" />
     <ClInclude Include="src\json\writer.h" />
     <ClInclude Include="src\lib_json\json_batchallocator.h" />
+    <ClInclude Include="src\Md5.h" />
     <ClInclude Include="src\MiVerifyManager.h" />
     <ClInclude Include="src\SHA1.h" />
+    <ClInclude Include="src\tinyxml\tinystr.h" />
+    <ClInclude Include="src\tinyxml\tinyxml.h" />
     <ClInclude Include="src\VerifyApp.h" />
     <ClInclude Include="src\VerifyRequest.h" />
+    <ClInclude Include="src\WeChatShopItemOrder.h" />
+    <ClInclude Include="src\WeChatVerifyManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\lib_json\json_internalarray.inl" />

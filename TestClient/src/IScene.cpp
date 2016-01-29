@@ -5,7 +5,7 @@
 void IScene::OnEnterScene()
 {
 	if ( m_bRunning )return ;
-	m_pClient->GetNetWork()->AddMessageDelegate(this) ;
+	m_pClient->GetNetWork()->AddMessageDelegate(this,1) ;
 	m_bRunning = true ;
 }
 

@@ -70,7 +70,6 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			auBuffer.addContent((char*)pmsg + sizeof(stMsgSaveAddCircleTopic),pRet->item.nContentLen) ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO circletopic (topicID, authorUID,publishTime,content) VALUES ('%I64d', '%u','%u','%s')",
 				pRet->item.nTopicID,pRet->item.nAuthorUID,pRet->item.nPublishTime,auBuffer.getBufferPtr()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("save  circle topic topicID = %d",pRet->item.nTopicID);
 			pdata->nExtenArg1 = pRet->item.nTopicID;
 		}
 		break;
@@ -211,7 +210,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->eType = eRequestType_Update ;
 			std::string strUploadPic = stMysqlField::UnIntArraryToString(pRet->vUploadedPic,MAX_UPLOAD_PIC) ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE playerbasedata SET playerName = '%s', signature = '%s',vUploadedPic = '%s',photoID = '%d',isRegister = '%d' WHERE userUID = '%d'",pRet->vName,pRet->vSigure,strUploadPic.c_str(),pRet->nIsRegister,pRet->nPhotoID,pRet->nUserUID) ;
+				"UPDATE playerbasedata SET playerName = '%s', signature = '%s',vUploadedPic = '%s',photoID = '%d',isRegister = '%d',sex = '%d' WHERE userUID = '%d'",pRet->vName,pRet->vSigure,strUploadPic.c_str(),pRet->nIsRegister,pRet->nPhotoID,pRet->nSex,pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_PLAYER_MONEY:

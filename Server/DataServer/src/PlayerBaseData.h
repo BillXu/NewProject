@@ -19,7 +19,7 @@ public:
 	bool OnMessage( stMsg* pMessage , eMsgPort eSenderPort );
 	void SendBaseDatToClient();
 	void Reset();
-	virtual void OnOtherDoLogined(){SendBaseDatToClient();OnProcessContinueLogin();}
+	virtual void OnOtherDoLogined();
 	void SaveCoin();
 	void OnProcessContinueLogin();
 	void OnPlayerDisconnect();
@@ -53,6 +53,7 @@ protected:
 	void OnNewDay(stEventArg* pArg);
 private:
 	stServerBaseData m_stBaseData ;
+	std::string m_strCurIP ; // ip address ; used by wechat pay ;
 	// not store in db 
 	bool m_bGivedLoginReward ;
 

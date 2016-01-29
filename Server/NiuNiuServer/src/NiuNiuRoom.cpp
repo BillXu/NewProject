@@ -14,6 +14,7 @@
 #include "AutoBuffer.h"
 #include "CardPoker.h"
 #include "NiuNiuRoomPlayerCaculateCardState.h"
+#include "ServerStringTable.h"
 bool CNiuNiuRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID )
 {
 	ISitableRoom::init(pConfig,nRoomID) ;
@@ -368,6 +369,18 @@ void CNiuNiuRoom::onTimeSave(bool bRightNow)
 
 void CNiuNiuRoom::onMatchFinish()
 {
+	// update ranker data 
+	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+	{
+		auto sitDownPlayer = m_vSitdownPlayers[nIdx] ;
+		if ( m_vSitdownPlayers[nIdx] && m_vSitdownPlayers[nIdx]->getUserUID() != 0 )
+		{
+			updatePlayerOffset(m_vSitdownPlayers[nIdx]->getUserUID(),m_vSitdownPlayers[nIdx]->getCoin() - m_vSitdownPlayers[nIdx]->getInitCoin() ) ;
+			m_vSitdownPlayers[nIdx]->setInitCoin(m_vSitdownPlayers[nIdx]->getCoin()) ;
+		}
+	}
+
+	// send ranker data ;
 	uint32_t nChampionUID = 0;
 	sortRoomRankItem();
 	auto champ = getSortRankItemListBegin();
@@ -406,7 +419,7 @@ void CNiuNiuRoom::onMatchFinish()
 	msgReq.nRequestType = eCrossSvrReq_Inform ;
 	msgReq.nRequestSubType = eCrossSvrReqSub_Default ;
 
-	std::string str = "恭喜您获得[%s]冠军,我们将在一个工作日发放奖品,任何疑问请加微信咨询管理员." ;
+	std::string str = CServerStringTable::getInstance()->getStringByID(1) ;
 	char pBuffer[200] = {0} ;
 	sprintf_s(pBuffer,sizeof(pBuffer),str.c_str(),getRoomName()) ;
 	msgReq.nJsonsLen = strlen(pBuffer) ;
@@ -417,7 +430,7 @@ void CNiuNiuRoom::onMatchFinish()
 
 	// set room inform ;
 	memset(pBuffer,0,sizeof(pBuffer));
-	sprintf_s(pBuffer,sizeof(pBuffer),"【ID:%d】获得上届冠军,好厉害啊!",nChampionUID);
+	sprintf_s(pBuffer,sizeof(pBuffer),"uid = %d",nChampionUID);
 	setRoomInform(pBuffer);
 	stMsgRemindNiuNiuRoomNewInform msgRemind ;
 	sendMsgToPlayer(&msgRemind,sizeof(msgRemind),0) ;

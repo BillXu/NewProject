@@ -86,7 +86,7 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			stMsgRequestTaxasPlayerDataRet msgBack ;
 			msgBack.nRet = 0 ;
 			msgBack.tData.nSessionID = GetPlayer()->GetSessionID() ;
-			if ( m_nCurTaxasRoomID )
+			if ( GetPlayer()->isNotInAnyRoom() == false )
 			{
 				msgBack.nRet = 2 ;
 				CGameServerApp::SharedGameServerApp()->sendMsg(pData->nRoomID,(char*)&msgBack,sizeof(msgBack)) ;
@@ -454,7 +454,12 @@ void CPlayerTaxas::addOwnRoom(uint32_t nRoomID , uint16_t nConfigID )
 
 bool CPlayerTaxas::isCreateRoomCntReachLimit()
 {
-	return m_vMyOwnRooms.size() >= 5 ;
+	if ( GetPlayer()->GetUserUID() == MATCH_MGR_UID )
+	{
+		return false ;
+	}
+
+	return m_vMyOwnRooms.size() >= 1 ;
 }
 
 bool CPlayerTaxas::deleteOwnRoom(uint32_t nRoomID )

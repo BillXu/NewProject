@@ -126,6 +126,7 @@ struct stMsgSavePlayerInfo
 	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
 	uint16_t nPhotoID ;
 	uint8_t nIsRegister ;
+	uint8_t nSex ;
 };
 
 struct stMsgSavePlayerMoney
@@ -497,6 +498,7 @@ struct stMsgToVerifyServer
 	unsigned int nBuyForPlayerUserUID ;
 	unsigned short nShopItemID ; // for mutilp need to verify ;
 	uint32_t nMiUserUID ;
+	uint8_t nChannel ; 
 	unsigned short nTranscationIDLen ;
 	char* ptransactionID ;   // base64 ed ;
 };
@@ -509,6 +511,28 @@ struct stMsgFromVerifyServer
 	unsigned int nBuyForPlayerUserUID ;
 	unsigned short nShopItemID ; // for mutilp need to verify ;
 	unsigned char nRet ; // 0 apple check error iap free crack ,2 duplicate tansactionid  , 4 Success ;
+};
+
+
+struct stMsgVerifyItemOrder
+	:public stMsg
+{
+	stMsgVerifyItemOrder(){ cSysIdentifer = ID_MSG_PORT_VERIFY ; usMsgType = MSG_VERIFY_ITEM_ORDER ; }
+	char cShopDesc[50] ;
+	char cOutTradeNo[32] ; // [shopItemID]E[playerUID]E[utc time] 
+	uint32_t nPrize ; // fen wei dan wei ;
+	char cTerminalIp[17] ;
+	uint8_t nChannel ;
+};
+
+struct stMsgVerifyItemOrderRet
+	:public stMsg
+{
+	stMsgVerifyItemOrderRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_VERIFY_ITEM_ORDER ; }
+	uint8_t nRet ; // 0 success , 1 argument error ;
+	char cPrepayId[64] ;
+	char cOutTradeNo[32] ; // [shopItemID]E[playerUID]E[utc time] 
+	uint8_t nChannel ;
 };
 
 // request ipAddress ;
@@ -661,6 +685,22 @@ struct stMsgReadCircleTopicsRet
 	stMsgReadCircleTopicsRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CIRCLE_READ_TOPICS ; }
 	uint8_t nCnt ;
 	PLACE_HOLDER(stCircleTopicItem* pItems);
+};
+
+
+// get client ip ;
+struct stMsgRequestClientIp
+	:public stMsg
+{
+	stMsgRequestClientIp(){ cSysIdentifer = ID_MSG_PORT_GATE ; usMsgType = MSG_REQUEST_CLIENT_IP ; }
+};
+
+struct stMsgRequestClientIpRet
+	:public stMsg
+{
+	stMsgRequestClientIpRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_REQUEST_CLIENT_IP ; }
+	uint8_t nRet ; // can not find client ;
+	char vIP[17];
 };
 
 //----above is new , below is old---------

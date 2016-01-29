@@ -2,6 +2,7 @@
 #include "MessageDefine.h"
 #include <ctime>
 #include "LogManager.h"
+#include "ServerStringTable.h"
 bool CNiuNiuServerApp::init()
 {
 	IServerApp::init();
@@ -16,8 +17,9 @@ bool CNiuNiuServerApp::init()
 		return false;
 	}
 	setConnectServerConfig(pConfig);
-
 	m_tMgr.LoadFile("../configFile/RoomConfig.txt") ;
+
+	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
 
 	m_tRoomMgr.init();
 	return true ;

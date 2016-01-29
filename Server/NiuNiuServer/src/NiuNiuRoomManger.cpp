@@ -63,7 +63,7 @@ bool CNiuNiuRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , ui
 			MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
 			for ( ; iter != m_vRooms.end(); ++iter )
 			{
-				if ( iter->second->isRoomAlive() )
+				if ( iter->second->isRoomAlive() && iter->second->getOwnerUID() != MATCH_MGR_UID  )
 				{
 					vActiveRoom.push_back(iter->second) ;
 				}
@@ -134,6 +134,51 @@ bool CNiuNiuRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest 
 
 	switch ( pRequest->nRequestType )
 	{
+	case eCrossSvrReq_ApplyLeaveRoom:
+		{
+			CNiuNiuRoom* pRoom = (CNiuNiuRoom*)GetRoomByID(pRequest->nTargetID) ;
+			if ( pRoom == nullptr )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d ,process eCrossSvrReq_ApplyLeaveRoom",pRequest->nTargetID) ;
+				return true ;
+			}
+
+			IRoomPlayer* pp = pRoom->getPlayerByUserUID(pRequest->nReqOrigID) ;
+			if ( pp )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("ApplyLeaveRoom cur session id = %d , old sessionid = %d , uid = %d , i let you leave",(uint32_t)pRequest->vArg[1],pp->getSessionID(),pRequest->nReqOrigID);
+				ISitableRoomPlayer* pPlayer = pRoom->getSitdownPlayerBySessionID(pp->getSessionID()) ;
+				if ( pPlayer )
+				{
+					pPlayer->addState(eRoomPeer_WillLeave) ;
+				}
+
+				if ( pPlayer == nullptr || pPlayer->isHaveState(eRoomPeer_CanAct) == false )
+				{
+					CLogMgr::SharedLogMgr()->PrintLog("player uid = %d apply leave ,direct do leave ",pRequest->nReqOrigID) ;
+					pRoom->doPlayerLeave(pp->getSessionID()) ;
+				}
+				else
+				{
+					CLogMgr::SharedLogMgr()->PrintLog("player uid = %d apply leave ,but pls wait game end ",pRequest->nReqOrigID) ;
+				}
+			}
+			else
+			{
+				stMsgCrossServerRequest msgEnter ;
+				msgEnter.cSysIdentifer = ID_MSG_PORT_DATA ;
+				msgEnter.nJsonsLen = 0 ;
+				msgEnter.nReqOrigID = pRoom->getRoomID();
+				msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
+				msgEnter.nRequestType = eCrossSvrReq_LeaveRoomRet ;
+				msgEnter.nTargetID = pRequest->nReqOrigID ;
+				msgEnter.vArg[0] = eRoom_NiuNiu ;
+				msgEnter.vArg[1] = pRoom->getRoomID() ;
+				pRoom->sendMsgToPlayer(&msgEnter,sizeof(msgEnter),pRoom->getRoomID()) ;
+				CLogMgr::SharedLogMgr()->PrintLog("you are not in room but i let you go!") ;
+			}
+		}
+		break;
 	case eCrossSvrReq_EnterRoom:
 		{
 			stMsgCrossServerRequestRet resultBack ;

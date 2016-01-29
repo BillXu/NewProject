@@ -24,6 +24,7 @@ CPlayerBaseData::CPlayerBaseData(CPlayer* player )
 	m_eType = ePlayerComponent_BaseData ;
 	memset(&m_stBaseData,0,sizeof(m_stBaseData)) ;
 	m_bGivedLoginReward = false ;
+	m_strCurIP = "" ;
 }
 
 CPlayerBaseData::~CPlayerBaseData()
@@ -40,11 +41,14 @@ void CPlayerBaseData::Init()
 	m_bMoneyDataDirty = false;
 	m_bCommonLogicDataDirty = false;
 	m_bPlayerInfoDataDirty = false;
+
+	m_strCurIP = "" ;
 	Reset();
 }
 
 void CPlayerBaseData::Reset()
 {
+	m_strCurIP = "" ;
 	m_bGivedLoginReward = false ;
 
 	m_bMoneyDataDirty = false;
@@ -60,6 +64,10 @@ void CPlayerBaseData::Reset()
 	CLogMgr::SharedLogMgr()->PrintLog("requesting userdata for uid = %d",msg.nUserUID);
 	// register new day event ;
 	CEventCenter::SharedEventCenter()->RegisterEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
+
+	stMsgRequestClientIp msgReq ;
+	SendMsg(&msgReq,sizeof(msgReq)) ;
+	CLogMgr::SharedLogMgr()->PrintLog("send request ip , sessioni id = %d",GetPlayer()->GetSessionID()) ;
 }
 
 bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
@@ -71,6 +79,106 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 	switch( pMsg->usMsgType )
 	{
+	case MSG_REQUEST_CLIENT_IP:
+		{
+			stMsgRequestClientIpRet* pRet = (stMsgRequestClientIpRet*)pMsg ;
+			if ( pRet->nRet == 0 )
+			{
+				m_strCurIP = pRet->vIP ;
+				CLogMgr::SharedLogMgr()->PrintLog("get client ip = %s session id = %d",m_strCurIP.c_str(),GetPlayer()->GetSessionID()) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("cant not request client ip , uid = %d",GetPlayer()->GetUserUID()) ;
+			}
+		}
+		break;
+	case MSG_SHOP_BUY_ITEM_ORDER:
+		{
+			stMsgPlayerShopBuyItemOrder* pRet = (stMsgPlayerShopBuyItemOrder*)pMsg ;
+			stMsgPlayerShopBuyItemOrderRet msgBack ;
+			msgBack.nChannel = pRet->nChannel ;
+			msgBack.nShopItemID = pRet->nShopItemID ;
+			msgBack.nRet = 0 ;
+			memset(msgBack.cOutTradeNo,0,sizeof(msgBack.cOutTradeNo)) ;
+			memset(msgBack.cPrepayId,0,sizeof(msgBack.cPrepayId)) ;
+			CShopConfigMgr* pMgr = (CShopConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Shop);
+			stShopItem* pItem = pMgr->GetShopItem(pRet->nShopItemID);
+			if ( pItem == nullptr )
+			{
+				msgBack.nRet = 1 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find shop item , for order uid = %d",GetPlayer()->GetUserUID()) ;
+				break;
+			}
+
+			if ( msgBack.nChannel != ePay_WeChat )
+			{
+				msgBack.nRet = 4 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("current must be wechat channel for order channel = %d, uid = %d",msgBack.nChannel,GetPlayer()->GetUserUID() );
+				break;
+			}
+
+			if ( m_strCurIP.empty() )
+			{
+				msgBack.nRet = 2 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("cur rent ip = null , for order uid = %d",GetPlayer()->GetUserUID()) ;
+				break;
+			}
+
+			stMsgVerifyItemOrder msgOrder ;
+			memset(msgOrder.cShopDesc,0,sizeof(msgOrder.cShopDesc));
+			sprintf_s(msgOrder.cShopDesc,sizeof(msgOrder.cShopDesc),"%s",pItem->strItemName.c_str()) ;
+
+			memset(msgOrder.cOutTradeNo,0,sizeof(msgOrder.cOutTradeNo));
+			sprintf_s(msgOrder.cOutTradeNo,sizeof(msgOrder.cOutTradeNo),"%dE%dE%u",pItem->nShopItemID,GetPlayer()->GetUserUID(),(uint32_t)time(nullptr)) ;
+			
+			msgOrder.nPrize = pItem->nPrize * 100 ; 
+			msgOrder.nChannel = pRet->nChannel ;
+
+			memset(msgOrder.cTerminalIp,0,sizeof(msgOrder.cTerminalIp));
+			sprintf_s(msgOrder.cTerminalIp,sizeof(msgOrder.cTerminalIp),"%s",m_strCurIP.c_str()) ;
+			
+			SendMsg(&msgOrder,sizeof(msgOrder)) ;
+			CLogMgr::SharedLogMgr()->SystemLog("order shop item to verify shop item = %d , uid = %d",pItem->nShopItemID,GetPlayer()->GetUserUID()) ;
+		} 
+		break;
+	case MSG_VERIFY_ITEM_ORDER:
+		{
+			stMsgVerifyItemOrderRet* pRet = (stMsgVerifyItemOrderRet*)pMsg ;
+			stMsgPlayerShopBuyItemOrderRet msgBack ;
+			memset(msgBack.cOutTradeNo,0,sizeof(msgBack.cOutTradeNo)) ;
+			memset(msgBack.cPrepayId,0,sizeof(msgBack.cPrepayId)) ;
+			msgBack.nChannel = pRet->nChannel ;
+			
+			std::string strTradeNo(pRet->cOutTradeNo,sizeof(pRet->cOutTradeNo));
+			std::string shopItem = strTradeNo.substr(0,strTradeNo.find_first_of('E')) ;
+			if ( shopItem.empty() )
+			{
+				msgBack.nShopItemID = 0 ;
+				CLogMgr::SharedLogMgr()->ErrorLog("outTradeNo shop item is null , uid = %d",GetPlayer()->GetUserUID()) ;
+			}
+			else
+			{
+				msgBack.nShopItemID = atoi(shopItem.c_str()) ;
+			}
+			
+			if ( pRet->nRet )
+			{
+				msgBack.nRet = 3 ;
+			}
+			else
+			{
+				msgBack.nRet = 0;
+				memcpy(msgBack.cOutTradeNo,pRet->cOutTradeNo,sizeof(pRet->cOutTradeNo));
+				memcpy(msgBack.cPrepayId,pRet->cPrepayId,sizeof(pRet->cPrepayId));
+			}
+			CLogMgr::SharedLogMgr()->SystemLog("shopitem id = %d shop order ret = %d, uid = %d",msgBack.nShopItemID,pRet->nRet,GetPlayer()->GetUserUID()) ;
+			SendMsg(&msgBack,sizeof(msgBack)) ;
+		}
+		break;
 	case MSG_BUY_SHOP_ITEM:
 		{
 			stMsgPlayerBuyShopItem* pRet = (stMsgPlayerBuyShopItem*)pMsg ;
@@ -80,6 +188,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			msgVerify.nMiUserUID = pRet->nMiUserUID ;
 			msgVerify.nShopItemID = pRet->nShopItemID ;
 			msgVerify.nTranscationIDLen = pRet->nBufLen ;
+			msgVerify.nChannel = pRet->nChannelID ;
 			CAutoBuffer buffer(sizeof(stMsgPlayerBuyShopItem) + pRet->nBufLen ) ;
 			buffer.addContent(&msgVerify,sizeof(msgVerify));
 			buffer.addContent(((char*)pRet) + sizeof(stMsgPlayerBuyShopItem),pRet->nBufLen);
@@ -582,6 +691,7 @@ void CPlayerBaseData::TimerSave()
 		stMsgSavePlayerInfo msgSaveInfo ;
 		msgSaveInfo.nPhotoID = m_stBaseData.nPhotoID ;
 		msgSaveInfo.nIsRegister = m_stBaseData.isRegister ;
+		msgSaveInfo.nSex = m_stBaseData.nSex ;
 		msgSaveInfo.nUserUID = GetPlayer()->GetUserUID() ;
 		memcpy(msgSaveInfo.vName,m_stBaseData.cName,sizeof(msgSaveInfo.vName));
 		memcpy(msgSaveInfo.vSigure,m_stBaseData.cSignature,sizeof(msgSaveInfo.vSigure));
@@ -708,5 +818,19 @@ void CPlayerBaseData::OnReactive(uint32_t nSessionID )
 	CEventCenter::SharedEventCenter()->RegisterEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
 	CLogMgr::SharedLogMgr()->PrintLog("player reactive send base data");
 	SendBaseDatToClient();
+
+	stMsgRequestClientIp msgReq ;
+	SendMsg(&msgReq,sizeof(msgReq)) ; 
+	CLogMgr::SharedLogMgr()->PrintLog("send request ip , sessioni id = %d",GetPlayer()->GetSessionID()) ;
+}
+
+void CPlayerBaseData::OnOtherDoLogined()
+{ 	
+	stMsgRequestClientIp msgReq ;
+	SendMsg(&msgReq,sizeof(msgReq)) ; 
+	CLogMgr::SharedLogMgr()->PrintLog("send request ip , sessioni id = %d",GetPlayer()->GetSessionID()) ;
+
+	SendBaseDatToClient();
+	OnProcessContinueLogin();
 }
 

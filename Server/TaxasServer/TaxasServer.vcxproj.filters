@@ -93,6 +93,9 @@
     <ClInclude Include="..\ServerCommon\httpRequest.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\ServerStringTable.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -141,6 +144,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\httpRequest.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>

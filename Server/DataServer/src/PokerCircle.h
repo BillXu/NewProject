@@ -18,6 +18,7 @@ public:
 public:
 	CPokerCircle();
 	~CPokerCircle();
+	void readTopics();
 	bool onMessage(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID);
 	stTopicDetail* getTopicByID(uint64_t nTopicID );
 protected:

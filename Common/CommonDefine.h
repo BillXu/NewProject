@@ -40,6 +40,15 @@
 
 #define CIRCLE_TOPIC_CNT_PER_PAGE 7
 #define MAX_CIRCLE_CONTENT_LEN 700
+enum ePayChannel
+{
+	ePay_AppStore,
+	ePay_WeChat,
+	ePay_ZhiFuBao,
+	ePay_XiaoMi,
+	ePay_Max,
+};
+
 enum eRoomType
 {
 	eRoom_None,

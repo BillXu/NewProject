@@ -82,6 +82,7 @@ void CGateServer::update(float fDeta )
 void CGateServer::onExit()
 {
 	m_pNetWorkForClients->ShutDown() ;
+	m_pGateManager->closeAllClient();
 }
 
 void CGateServer::SendMsgToClient(const char* pData , int nLength , CONNECT_ID& nSendToOrExcpet ,bool bBroadcast )
@@ -179,6 +180,31 @@ void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort , ui
 		memcpy(pBuffer + sizeof(msg),pClient->strIPAddress.c_str(),msg.nJsonExtnerLen);
 		sendMsg(pClient->nSessionId,pBuffer,nLen);
 		delete[] pBuffer ;
+	}
+
+	if ( MSG_REQUEST_CLIENT_IP == pmsg->usMsgType )
+	{
+		stGateClient* pClient = m_pGateManager->GetGateClientBySessionID(uTargetSessionID) ;
+		stMsgRequestClientIpRet msgRet ;
+		msgRet.nRet = 0 ;
+		memset(msgRet.vIP,0,sizeof(msgRet.vIP)) ;
+		if ( pClient == nullptr || pClient->tTimeForRemove  )
+		{
+			msgRet.nRet = 1 ;
+		}
+		else
+		{
+			sprintf_s(msgRet.vIP,sizeof(msgRet.vIP),"%s",pClient->strIPAddress.c_str()) ;
+		}
+
+		// transer dat to center svr  ;
+		Packet tPacket ;
+		tPacket._brocast = false ;
+		tPacket._connectID = pClient->nNetWorkID ;
+		tPacket._len = sizeof(msgRet);
+		memcpy(tPacket._orgdata,(char*)&msgRet,sizeof(msgRet)) ;
+		m_pGateManager->OnMessage(&tPacket) ;
+		return ;
 	}
 }
 

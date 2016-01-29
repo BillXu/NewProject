@@ -27,6 +27,7 @@ bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
 	pItem->fActDelayBegin = refReaderRow["ActDelayBegin"]->FloatValue();
 	pItem->fActDelayEnd = refReaderRow["ActDelayEnd"]->FloatValue() ;
 	pItem->nDstRoomID = refReaderRow["dstRoomID"]->IntValue();
+	pItem->nDstGameType = refReaderRow["nDstGameType"]->IntValue() ;
 	pItem->fActDelayBegin = pItem->fActDelayBegin < pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
 	pItem->fActDelayEnd = pItem->fActDelayBegin > pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
 	m_vListRobot.push_back(pItem) ;

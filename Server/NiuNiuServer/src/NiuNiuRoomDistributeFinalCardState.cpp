@@ -17,7 +17,7 @@ void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 		CNiuNiuRoomPlayer* pRoomPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getPlayerByIdx(nIdx) ;
 		if ( pRoomPlayer && pRoomPlayer->isHaveState(eRoomPeer_CanAct))
 		{
-			pRoomPlayer->onGetCard(0,m_pRoom->getPoker()->GetCardWithCompositeNum()) ;
+			pRoomPlayer->onGetCard(4,m_pRoom->getPoker()->GetCardWithCompositeNum()) ;
 			++nPlayerCnt;
 		}
 	}
@@ -33,7 +33,7 @@ void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 		if ( pRoomPlayer && pRoomPlayer->isHaveState(eRoomPeer_CanAct))
 		{
 			stDistributeFinalCardItem item ;
-			item.nCardCompsitNum = pRoomPlayer->getCardByIdx(0) ;
+			item.nCardCompsitNum = pRoomPlayer->getCardByIdx(4) ;
 			item.nPlayerIdx = pRoomPlayer->getIdx() ;
 			auBuffer.addContent(&item,sizeof(item)) ;
 			CLogMgr::SharedLogMgr()->PrintLog("final card for idx = %d , card = %d",item.nPlayerIdx,item.nCardCompsitNum) ;

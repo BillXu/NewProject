@@ -6,6 +6,8 @@
 #include "ServerConfig.h"
 #include "ISeverApp.h"
 #include "MiVerifyManager.h"
+#include "WeChatShopItemOrder.h"
+#include "WeChatVerifyManager.h"
 class CVerifyApp
 	:public IServerApp
 {
@@ -25,4 +27,6 @@ protected:
 	CAppleVerifyManager m_AppleVerifyMgr ;
 	CMiVerifyManager m_MiVerifyMgr ;
 	CDBVerifyManager m_DBVerifyMgr ;
+	CWechatShopItemOrder m_tWechatOrderMgr ;
+	CWeChatVerifyManager m_tWechtVerifyMgr ;
 };

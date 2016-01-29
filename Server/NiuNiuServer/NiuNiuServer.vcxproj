@@ -114,6 +114,7 @@
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerDefine.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
+    <ClInclude Include="..\ServerCommon\ServerStringTable.h" />
     <ClInclude Include="..\ServerCommon\Singleton.h" />
     <ClInclude Include="..\ServerCommon\ISitableRoom.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
@@ -147,6 +148,7 @@
     <ClCompile Include="..\ServerCommon\ISitableRoomPlayer.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\ISitableRoom.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\NiuNiuRoom.cpp" />

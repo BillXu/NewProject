@@ -1,6 +1,6 @@
-ShopItemID	ShopItemName	ItemID	Count	ShopItemIcon	ShopItemType	AppStroeIdentifer	Flag	PrizeType	OrigPrize	CurPrize	CanBuyTimes	BeginTime	EndTime
-1	1Ç§³ïÂë	0	1000	0	1	TaxasPoker_1	0	0	0	1	0	0	0
-2	6Ç§8³ïÂë	0	6800	0	1	TaxasPoker_2	0	0	0	6	0	0	0
-3	8Íò³ïÂë	0	80000	0	1	TaxasPoker_3	0	0	0	68	0	0	0
-4	25Íò³ïÂë	0	250000	0	1	TaxasPoker_4	0	0	0	198	0	0	0
-5	85Íò³ïÂë	0	850000	0	1	TaxasPoker_5	0	0	0	648	0	0	0
+ï»¿ShopItemID	ShopItemName	ItemID	Count	ShopItemIcon	ShopItemType	AppStroeIdentifer	Flag	PrizeType	OrigPrize	CurPrize	CanBuyTimes	BeginTime	EndTime
+1	1k coin	0	1000	0	1	TaxasPoker_1	0	0	0	1	0	0	0
+2	6k coin	0	6800	0	1	TaxasPoker_2	0	0	0	6	0	0	0
+3	8w coin	0	80000	0	1	TaxasPoker_3	0	0	0	68	0	0	0
+4	25w coin	0	250000	0	1	TaxasPoker_4	0	0	0	198	0	0	0
+5	85w coin	0	850000	0	1	TaxasPoker_5	0	0	0	648	0	0	0

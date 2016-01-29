@@ -42,6 +42,7 @@ public:
 #ifndef SERVER
     CNiuNiuPeerCard::CardGroup getCardGroup();
 #endif
+    uint8_t getAddIdx(){return m_nAddIdx;}
 protected:
 	bool isCaculated();
 	void caculateCards();

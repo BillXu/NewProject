@@ -5,6 +5,7 @@
 #include "PlayerBaseData.h"
 #include "AutoBuffer.h"
 #include "LogManager.h"
+#include <algorithm>  
 CPokerCircle::CPokerCircle()
 {
 	m_vListTopics.clear() ;
@@ -19,6 +20,21 @@ CPokerCircle::~CPokerCircle()
 		pD = nullptr ;
 	}
 	m_vListTopics.clear() ;
+}
+
+void CPokerCircle::readTopics()
+{
+	if ( m_vListTopics.empty() == false )
+	{
+		return ;
+	}
+	stMsgReadCircleTopics msg ;
+	CGameServerApp::SharedGameServerApp()->sendMsg(0,(char*)&msg,sizeof(msg)) ;
+}
+
+bool TopicSort(CPokerCircle::stTopicDetail* pLeft , CPokerCircle::stTopicDetail* pRight )
+{
+	return pLeft->nTopicID < pRight->nTopicID ;
 }
 
 bool CPokerCircle::onMessage(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
@@ -45,6 +61,8 @@ bool CPokerCircle::onMessage(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 				{
 					m_nMaxTopicUID = pDetail->nTopicID ;
 				}
+				//CLogMgr::SharedLogMgr()->SystemLog("read topic id = %d , content: %s",pDetail->nTopicID,pDetail->strContent.c_str()) ;
+				std::sort(m_vListTopics.begin(),m_vListTopics.end(),TopicSort);
 			}
 		}
 		break;
@@ -97,7 +115,7 @@ bool CPokerCircle::onMessage(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 			CAutoBuffer auAddTopic(sizeof(msgAdd) + msgAdd.item.nContentLen );
 			auAddTopic.addContent(&msgAdd,sizeof(msgAdd)) ;
 			auAddTopic.addContent(pDetail->strContent.c_str(),msgAdd.item.nContentLen) ;
-			CGameServerApp::SharedGameServerApp()->sendMsg(0,(char*)&msgAdd,sizeof(msgAdd)) ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(0,auAddTopic.getBufferPtr(),auAddTopic.getContentSize()) ;
 		}
 		break;
 	case MSG_CIRCLE_DELETE_TOPIC:

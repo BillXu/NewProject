@@ -421,7 +421,7 @@ public:
 	unsigned int nCount ;
 	// below only used when RMB purchase 
 	uint32_t nMiUserUID ;
-	unsigned char nChannelID ; // 0 appStore , 1 91 market ;
+	unsigned char nChannelID ; // ePayChannel 
 	unsigned short nBufLen ;   // based64 string , for app store purchase ;, or xiao mi cporder id , other may not use ;
 	PLACE_HOLDER(char* pBuffer);
 };
@@ -438,6 +438,24 @@ struct stMsgPlayerBuyShopItemRet
 	unsigned int nSavedMoneyForVip ;  // a vip player can buy discont shop item , this is saved money compare to normal player ;
 };
 
+struct stMsgPlayerShopBuyItemOrder
+	:public stMsg
+{
+	stMsgPlayerShopBuyItemOrder(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_SHOP_BUY_ITEM_ORDER ; }
+	uint16_t nShopItemID ;
+	uint8_t nChannel ; // ePayChannel 
+};
+
+struct stMsgPlayerShopBuyItemOrderRet
+	:public stMsg
+{
+	stMsgPlayerShopBuyItemOrderRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_SHOP_BUY_ITEM_ORDER ; }
+	uint8_t nRet ; // 0 success , 1 can not find shop item ,2 client ip is null ,3 argument error ; 
+	uint16_t nShopItemID ;
+	uint8_t nChannel ; // ePayChannel 
+	char cPrepayId[64] ;
+	char cOutTradeNo[32];
+};
 
 // room msg 
 
