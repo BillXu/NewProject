@@ -26,7 +26,7 @@ bool CNiuNiuRoomTryBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 		stMsgNNPlayerTryBankerRet msgBack ;
 		stMsgNNPlayerTryBanker* pTryBanker = (stMsgNNPlayerTryBanker*)prealMsg ;
 		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID) ;
-		CLogMgr::SharedLogMgr()->PrintLog("try banker uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+		//SCLogMgr::SharedLogMgr()->PrintLog("try banker uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
 		if ( pPlayer == nullptr )
 		{
 			msgBack.nRet = 3 ;
@@ -73,7 +73,7 @@ bool CNiuNiuRoomTryBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 		{
 			onStateDuringTimeUp();
 		}
-		CLogMgr::SharedLogMgr()->PrintLog("try banker uid = %d ",pPlayer->getUserUID() ) ;
+		//CLogMgr::SharedLogMgr()->PrintLog("try banker uid = %d ",pPlayer->getUserUID() ) ;
 		return true ;
 	}
 	return false ;

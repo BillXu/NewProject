@@ -51,13 +51,14 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 			msgRoomBet.nPlayerIdx = pPlayer->getIdx() ;
 			m_pRoom->sendRoomMsg(&msgRoomBet,sizeof(msgRoomBet)) ;
 			m_pRoom->setBankCoinLimitForBet(m_pRoom->getBankCoinLimitForBet() - nBetCoin ) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d bet times = %d, ret = %d",pPlayer->getUserUID(),pBet->nBetTimes,msgBack.nRet) ;
 		}
 		m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 		if ( --m_nLeftBetPlayerCnt <= 0 )  // end bet state ;
 		{
 			onStateDuringTimeUp() ;
 		}
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d bet times = %d, ret = %d",pPlayer->getUserUID(),pBet->nBetTimes,msgBack.nRet) ;
+		
 		return true ;
 	}
 	return false ;
