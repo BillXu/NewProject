@@ -4,6 +4,7 @@
 #include <cassert>
 #include "MessageDefine.h"
 #include "AutoBuffer.h"
+#include "ServerMessageDefine.h"
 ISitableRoom::~ISitableRoom()
 {
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
@@ -44,6 +45,17 @@ bool ISitableRoom::playerSitDown(ISitableRoomPlayer* pPlayer , uint8_t nIdx )
 		m_vSitdownPlayers[nIdx] = pPlayer ;
 		pPlayer->doSitdown(nIdx) ;
 		pPlayer->setIdx(nIdx);
+
+		// save standup log ;
+		stMsgSaveLog msgLog ;
+		msgLog.nJsonExtnerLen = 0 ;
+		msgLog.nLogType = eLog_PlayerSitDown ;
+		msgLog.nTargetID = pPlayer->getUserUID() ;
+		memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+		msgLog.vArg[0] = getRoomType() ;
+		msgLog.vArg[1] = getRoomID() ;
+		msgLog.vArg[2] = pPlayer->getCoin() ;
+		sendMsgToPlayer(&msgLog,sizeof(msgLog),getRoomID()) ;
 		return true ;
 	}
 	return false ;

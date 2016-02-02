@@ -30,6 +30,7 @@ public:
 
 	void onMatchFinish()override;
 	void onMatchRestart()override;
+	uint64_t getLeastCoinForPlayGame();
 protected:
 	IRoomPlayer* doCreateRoomPlayerObject() override ;
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;

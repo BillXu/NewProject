@@ -498,6 +498,13 @@ void CPlayerManager::OnPlayerOffline( CPlayer*pPlayer )
 	}
 	m_vAllActivePlayers.erase(iter) ;
 
+	// do not cacher player 
+	delete pPlayer ;
+	pPlayer = nullptr ;
+	return  ;
+
+	// do not cacher player 
+	 
 	MAP_UID_PLAYERS::iterator iterOffline = m_vOfflinePlayers.find(pPlayer->GetUserUID()) ;
 	if ( iterOffline != m_vOfflinePlayers.end() )
 	{

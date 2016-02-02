@@ -155,6 +155,9 @@ bool CPlayerTaxas::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 		{
 			m_nCurTaxasRoomID = 0 ;
 			CLogMgr::SharedLogMgr()->PrintLog("be told uid = %d leave taxas room ",GetPlayer()->GetUserUID());
+			stMsgTaxasRoomLeave msgRet ;
+			msgRet.nUserUID = GetPlayer()->GetUserUID() ;
+			SendMsg(&msgRet,sizeof(msgRet)) ;
 		}
 		break;
 	case MSG_TP_CREATE_ROOM:

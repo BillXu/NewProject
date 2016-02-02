@@ -44,6 +44,7 @@ public:
 	void onEnterRoom();
 	void onGameEnd( uint8_t nCnt);
 	void setState( eRobotState eState, bool isNeedSvrBack = true );
+	void onRoomDead();
 protected:
 	void standUp();
 	void findSeatIdxSitDown();
@@ -54,4 +55,5 @@ protected:
 	eRobotState m_eState ;
 	uint8_t m_nMySeatIdx ;
 	float m_fTicketForCheckCanSitDown ;
+	float m_fBugStateTime ;
 };

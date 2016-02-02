@@ -8,7 +8,7 @@ class CPlayerData
 	:public CNetMessageDelegate
 {
 public:
-	CPlayerData(){ memset(&stBaseData,0,sizeof(stBaseData)); nSessionID = 0 ; }
+	CPlayerData(){ memset(&stBaseData,0,sizeof(stBaseData)); nSessionID = 0 ; m_bIsLackOfCoin = false ; }
 	~CPlayerData(){}
 	void SetLoginConfig( CRobotConfigFile::stRobotItem* pItem ){ pRobotItem = pItem ;}
 	bool OnMessage( Packet* pMsg ) ;
@@ -24,8 +24,11 @@ public:
 	unsigned int getUserUID(){ return stBaseData.nUserUID ;}
 	unsigned int getDstRoomID(){ return pRobotItem->nDstRoomID; }
 	unsigned int getDstGameType(){ return pRobotItem->nDstGameType ;}
+	bool isLackOfCoin(){ return m_bIsLackOfCoin ; }
+	void setIsLackOfCoin( bool isLack ){ m_bIsLackOfCoin = isLack ;}
 public:
 	unsigned int nSessionID ;
 	stCommonBaseData stBaseData ;
 	CRobotConfigFile::stRobotItem* pRobotItem ;
+	bool m_bIsLackOfCoin ;
 };

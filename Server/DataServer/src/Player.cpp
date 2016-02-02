@@ -259,6 +259,16 @@ void CPlayer::OnPlayerDisconnect()
 	m_nDisconnectTime = time(NULL) ;
 	SetState(ePlayerState_Offline) ;
 	CLogMgr::SharedLogMgr()->ErrorLog("player disconnect should inform other sever");
+
+	// save log 
+	stMsgSaveLog msgLog ;
+	memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+	msgLog.nJsonExtnerLen = 0 ;
+	msgLog.nLogType = eLog_PlayerLogOut ;
+	msgLog.nTargetID = GetUserUID() ;
+	memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+	msgLog.vArg[0] = GetBaseData()->GetAllCoin() ;
+	SendMsgToClient((char*)&msgLog,sizeof(msgLog));
 }
 
 void CPlayer::PostPlayerEvent(stPlayerEvetArg* pEventArg )
@@ -560,16 +570,16 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 // 			CRobotManager::SharedRobotMgr()->AddIdleRobotPlayer(this) ;
 // 		}
 // 		break;
-// 	case MSG_ROBOT_ADD_MONEY:
-// 		{
-// 			stMsgRobotAddMoney* pAdd = (stMsgRobotAddMoney*)pMsg ;
-// 			GetBaseData()->ModifyMoney(pAdd->nWantCoin) ;
-// 			stMsgRobotAddMoneyRet msgBack ;
-// 			msgBack.cRet = 0 ;
-// 			msgBack.nFinalCoin = GetBaseData()->GetAllCoin();
-// 			SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-// 		}
-// 		break;
+	case MSG_ROBOT_ADD_MONEY:
+		{
+			stMsgRobotAddMoney* pAdd = (stMsgRobotAddMoney*)pMsg ;
+			GetBaseData()->AddMoney(pAdd->nWantCoin);
+			stMsgRobotAddMoneyRet msgBack ;
+			msgBack.cRet = 0 ;
+			msgBack.nFinalCoin = GetBaseData()->GetAllCoin();
+			SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+		}
+		break;
 // 	case MSG_REQUEST_RANK:
 // 		{
 // 			stMsgPlayerRequestRank* pMsgRet = (stMsgPlayerRequestRank*)pMsg ;

@@ -8,6 +8,7 @@ class CLoginScene
 	enum eLoginState
 	{
 		els_Normal,
+		els_WaitCoin,
 		els_WaitEnterRoom ,
 		els_WaitLogin,
 		els_Max,

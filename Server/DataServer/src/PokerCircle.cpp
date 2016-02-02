@@ -79,13 +79,13 @@ bool CPokerCircle::onMessage(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 				return true ;
 			}
 
-			if ( pPlayer->GetBaseData()->GetData()->isRegister == 0 )
-			{
-				msgBack.nRet = 3 ;
-				msgBack.nTopicID = 0 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
+			//if ( pPlayer->GetBaseData()->GetData()->isRegister == 0 )
+			//{
+			//	msgBack.nRet = 3 ;
+			//	msgBack.nTopicID = 0 ;
+			//	CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			//	return true ;
+			//}
 
 			if ( pPlayer->GetBaseData()->GetAllCoin() < 200 )
 			{

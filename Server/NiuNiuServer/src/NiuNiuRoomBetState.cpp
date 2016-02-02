@@ -28,13 +28,13 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 	{
 		stMsgNNPlayerBet* pBet = (stMsgNNPlayerBet*)prealMsg ;
 		stMsgNNPlayerBetRet msgBack ;
-		uint64_t nBetCoin = m_pRoom->getBaseBet() * m_pRoom->getBetBottomTimes() * pBet->nBetTimes ;
+		int64_t nBetCoin = m_pRoom->getBaseBet() * m_pRoom->getBetBottomTimes() * pBet->nBetTimes ;
 		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID);
 		if ( pPlayer == nullptr || pPlayer->isHaveState(eRoomPeer_CanAct) == false )
 		{
 			msgBack.nRet = 3 ;
 		}
-		else if ( (uint64_t)pPlayer->getCoin() < nBetCoin )
+		else if ( pPlayer->getCoin() < nBetCoin )
 		{
 			msgBack.nRet = 2 ;
 		}

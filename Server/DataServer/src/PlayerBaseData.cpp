@@ -218,6 +218,17 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 					AddMoney(pItem->nCount) ;
 					CLogMgr::SharedLogMgr()->SystemLog("add coin with shop id = %d for buyer uid = %d ",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
 				}
+
+				// save log 
+				stMsgSaveLog msgLog ;
+				memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+				msgLog.nJsonExtnerLen = 0 ;
+				msgLog.nLogType = eLog_Purchase ;
+				msgLog.nTargetID = GetPlayer()->GetUserUID() ;
+				memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+				msgLog.vArg[0] = GetAllCoin() ;
+				msgLog.vArg[1] = pRet->nShopItemID ;
+				SendMsg(&msgLog,sizeof(msgLog)) ;
 			}
 			else
 			{
@@ -441,6 +452,17 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				msgBack.nFinalCoin = GetAllCoin();
 				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get charity",GetPlayer()->GetUserUID());
 				m_bCommonLogicDataDirty = true ;
+				m_bMoneyDataDirty = true ;
+
+				// save log 
+				stMsgSaveLog msgLog ;
+				memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+				msgLog.nJsonExtnerLen = 0 ;
+				msgLog.nLogType = eLog_GetCharity ;
+				msgLog.nTargetID = GetPlayer()->GetUserUID() ;
+				memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+				msgLog.vArg[0] = GetAllCoin() ;
+				SendMsg(&msgLog,sizeof(msgLog)) ;
  			}
 			CLogMgr::SharedLogMgr()->SystemLog("uid = %d , final coin = %I64d",GetPlayer()->GetUserUID(),GetAllCoin());
  			SendMsg(&msgBack,sizeof(msgBack)) ;
@@ -555,6 +577,16 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 	case eCrossSvrReq_SyncCoin:
 		{
 			m_stBaseData.nCoin = pRequest->vArg[0] ;
+			if ( m_stBaseData.nCoin < 0 )
+			{
+				m_stBaseData.nCoin = 0 ;
+				m_bMoneyDataDirty = true ;
+			}
+
+			if ( pRequest->vArg[0] )
+			{
+				m_bMoneyDataDirty = true ;
+			}
 		}
 		break;
 	default:
@@ -662,7 +694,7 @@ void CPlayerBaseData::TimerSave()
 		msgSaveMoney.nDiamoned = m_stBaseData.nDiamoned;
 		msgSaveMoney.nUserUID = GetPlayer()->GetUserUID() ;
 		SendMsg((stMsgSavePlayerMoney*)&msgSaveMoney,sizeof(msgSaveMoney)) ;
-		CLogMgr::SharedLogMgr()->PrintLog("player do time save coin uid = %d coin = %I64d",msgSaveMoney.nUserUID,msgSaveMoney.nCoin );
+		CLogMgr::SharedLogMgr()->SystemLog("player do time save coin uid = %d coin = %I64d",msgSaveMoney.nUserUID,msgSaveMoney.nCoin );
 	}
 
 	if ( m_bCommonLogicDataDirty )

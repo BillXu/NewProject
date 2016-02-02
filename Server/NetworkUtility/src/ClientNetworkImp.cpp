@@ -201,7 +201,7 @@ void CClientNetworkImp::handleReadBody(const boost::system::error_code& error)
 		}
 		else
 		{
-			++m_nHeatBeatTimes;
+			m_nHeatBeatTimes = 3;
 			//printf("recived heat bet\n") ;
 		}
 

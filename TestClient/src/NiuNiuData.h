@@ -19,5 +19,6 @@ public:
 	uint32_t getLeftCanBetCoin();
 	bool onMsg(stMsg* pmsg);
 	stNNRoomInfoPayerItem* getPlayerByIdx(uint8_t nIdx );
+	bool isHaveNiu(uint8_t nIdx );
 	uint8_t getRandEmptySeatIdx();
 };

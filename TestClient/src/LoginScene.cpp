@@ -9,8 +9,8 @@
 #include "TaxasMessageDefine.h"
 #include "Client.h"
 #include "NiuNiuScene.h"
-#define  TIME_DELAY_ENTER_ROOM (60*2)
-#define  TIME_DELAY_LOGIN (2*60)
+#define  TIME_DELAY_ENTER_ROOM (40 )
+#define  TIME_DELAY_LOGIN (45)
 CLoginScene::CLoginScene(CClientRobot* pNetWork ):IScene(pNetWork)
 { 
 	m_eSceneType = eScene_Login ;
@@ -23,6 +23,14 @@ void CLoginScene::OnEnterScene()
 	IScene::OnEnterScene();
 	//InformIdle();
 	m_eCurState = els_Normal ;
+	if ( m_pClient->GetPlayerData()->isLackOfCoin() )
+	{
+		m_eCurState = els_WaitCoin ;
+
+		stMsgRobotAddMoney msg ;
+		msg.nWantCoin = 60000 ;
+		SendMsg((char*)&msg,sizeof(msg)) ;
+	}
 }
 
 void CLoginScene::OnEixtScene()
@@ -216,8 +224,8 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			stMsgRobotAddMoneyRet* pRet = (stMsgRobotAddMoneyRet*)pMsg ;
 			m_pClient->GetPlayerData()->stBaseData.nCoin = pRet->nFinalCoin ;
 			printf("received add coin !\n") ;
-			stMsgRobotInformIdle msg ;
-			SendMsg((char*)&msg,sizeof(msg)) ;
+			delayEnterRoom();
+			m_pClient->GetPlayerData()->setIsLackOfCoin(false) ;
 			return true;
 		}
 		break;
@@ -315,7 +323,7 @@ void CLoginScene::OnUpdate(float fDeltaTime )
 {
 	IScene::OnUpdate(fDeltaTime);
 
-	if ( els_Normal != m_eCurState )
+	if ( els_Normal != m_eCurState && els_WaitCoin != m_eCurState )
 	{
 		m_fDelyTick -= fDeltaTime ;
 	}

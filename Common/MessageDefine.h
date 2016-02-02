@@ -664,6 +664,24 @@ struct stMsgRequestTopicDetailRet
 	PLACE_HOLDER(char* pContent);
 };
 
+struct stMsgRobotAddMoney
+	:public stMsg
+{
+	stMsgRobotAddMoney()
+	{
+		cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_ROBOT_ADD_MONEY ;
+	}
+	int32_t nWantCoin ;
+};
+
+struct stMsgRobotAddMoneyRet
+	:public stMsg
+{
+	stMsgRobotAddMoneyRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_ROBOT_ADD_MONEY ; }
+	uint8_t cRet ; // 0 success ;
+	uint64_t nFinalCoin ;
+};
+
 
 ///--------------------ablove is new , below is old------
 
@@ -1405,23 +1423,23 @@ struct stMsgPlayerRequestOnlineBoxStateRet
 };
 
 // robot message 
-struct stMsgRobotAddMoney
-	:public stMsg
-{
-	stMsgRobotAddMoney()
-	{
-		cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROBOT_ADD_MONEY ;
-	}
-	unsigned int nWantCoin ;
-};
-
-struct stMsgRobotAddMoneyRet
-	:public stMsg
-{
-	stMsgRobotAddMoneyRet(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_ROBOT_ADD_MONEY ; }
-	unsigned char cRet ; // 0 success ;
-	uint64_t nFinalCoin ;
-};
+//struct stMsgRobotAddMoney
+//	:public stMsg
+//{
+//	stMsgRobotAddMoney()
+//	{
+//		cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_ROBOT_ADD_MONEY ;
+//	}
+//	int nWantCoin ;
+//};
+//
+//struct stMsgRobotAddMoneyRet
+//	:public stMsg
+//{
+//	stMsgRobotAddMoneyRet(){ cSysIdentifer = ID_MSG_GAME2C; usMsgType = MSG_ROBOT_ADD_MONEY ; }
+//	unsigned char cRet ; // 0 success ;
+//	uint64_t nFinalCoin ;
+//};
 
 struct stMsgRobotOrderToEnterRoom
 	:public stMsg

@@ -24,6 +24,12 @@ struct stMsgNNLeaveRoom
 	stMsgNNLeaveRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_NN_LEAVE_ROOM ; }
 };
 
+struct stMsgNNLeaveRoomRet
+	:public stMsg
+{
+	stMsgNNLeaveRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_NN_LEAVE_ROOM ; }
+};
+
 struct stMsgNNRequestRoomInfo
 	:public stMsgToNNRoom
 {

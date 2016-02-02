@@ -15,7 +15,7 @@ public:
 	void removeState(uint32_t nState );
 	void setSessionID(uint32_t nSessionID );
 	void setUserUID( uint32_t nUserUID );
-	void setCoin( int64_t nCoin ){ m_nCoin = nCoin ;}
+	void setCoin( int64_t nCoin ){ if ( nCoin < 0 ) nCoin = 0 ; m_nCoin = nCoin ;}
 	int64_t getCoin(){ return m_nCoin ;}
 	uint32_t getUserUID(){ return m_nUserUID ; }
 	uint32_t getSessionID(){ return m_nSessionID ; }

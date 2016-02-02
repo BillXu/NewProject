@@ -1,5 +1,6 @@
 #include "NiuNiuData.h"
 #include <string>
+#include "CardPoker.h"
 stNiuNiuData::stNiuNiuData()
 {
 	nRoomID = 0;
@@ -95,6 +96,35 @@ stNNRoomInfoPayerItem* stNiuNiuData::getPlayerByIdx(uint8_t nIdx )
 	return &vPlayers[nIdx];
 }
 
+bool stNiuNiuData::isHaveNiu(uint8_t nIdx )
+{
+	stNNRoomInfoPayerItem* pPlayerItem = getPlayerByIdx(nIdx) ;
+	if ( nullptr == pPlayerItem )
+	{
+		return false ;
+	}
+
+	unsigned char vPoint[4] = { 0 } ;
+	CCard tSingle ;
+	for ( uint8_t nIdx = 0 ; nIdx < 4 ; ++nIdx )
+	{
+		if ( (pPlayerItem->vHoldChard[nIdx] > 0 && pPlayerItem->vHoldChard[nIdx] <= 54) != true )
+		{
+			printf("recived card error can not tell wheth have niu , num = %d\n") ;
+			return false ;
+		}
+
+		tSingle.RsetCardByCompositeNum(pPlayerItem->vHoldChard[nIdx]) ;
+		vPoint[nIdx] = tSingle.GetCardFaceNum(false);
+		if ( vPoint[nIdx] > 10 )
+		{
+			vPoint[nIdx] = 10 ;
+		}
+	}
+
+	return ( (vPoint[0] + vPoint[1] + vPoint[2] ) % 10 == 0 ) || ( (vPoint[0] + vPoint[3] + vPoint[2] ) % 10 == 0 ) || ( (vPoint[0] + vPoint[1] + vPoint[3] ) % 10 == 0 ) ;
+}
+
 bool stNiuNiuData::onMsg(stMsg* pmsg)
 {
 	switch ( pmsg->usMsgType )
@@ -103,6 +133,21 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 		{
 			stMsgRoomEnterNewState* pRet = (stMsgRoomEnterNewState*)pmsg ;
 			nRoomState = pRet->nNewState ;
+		}
+		break;
+	case MSG_NN_DISTRIBUTE_4_CARD:
+		{
+			stMsgNNDistriute4Card* pRet = (stMsgNNDistriute4Card*)pmsg ;
+			stDistriuet4CardItem* pItem = (stDistriuet4CardItem*)(((char*)pmsg) + sizeof(stMsgNNDistriute4Card));
+			while ( pRet->nPlayerCnt-- )
+			{
+				if ( pItem->nSeatIdx >= 5 )
+				{
+					continue; ;
+				}
+
+				memcpy(vPlayers[pItem->nSeatIdx].vHoldChard,pItem->vCardCompsitNum,sizeof(pItem->vCardCompsitNum));
+			}
 		}
 		break;
 	case MSG_NN_ROOM_INFO:
@@ -151,6 +196,7 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 
 			for ( stNNRoomInfoPayerItem& pPlayer : vPlayers )
 			{
+				memset(pPlayer.vHoldChard,0,sizeof(pPlayer.vHoldChard)) ;
 				if ( pPlayer.nUserUID == 0 )
 				{
 					continue;

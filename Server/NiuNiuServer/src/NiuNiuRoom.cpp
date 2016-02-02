@@ -153,7 +153,7 @@ bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 				return true ;
 			}
 
-			if ( pp->getCoin() < getBaseBet() * getMaxRate() + m_nDeskFee )
+			if ( pp->getCoin() < getLeastCoinForPlayGame() )
 			{
 				msgBack.nRet = 2;
 				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
@@ -225,10 +225,21 @@ void CNiuNiuRoom::playerStandUp( ISitableRoomPlayer* pSitDown )
 		msgSyncMoney.nReqOrigID = getRoomID() ;
 		msgSyncMoney.nRequestSubType = eCrossSvrReqSub_Default;
 		msgSyncMoney.nRequestType = eCrossSvrReq_SyncCoin ;
-		msgSyncMoney.nTargetID = pBaseRoomPeer->getUserUID() ;
-		msgSyncMoney.vArg[0] = pBaseRoomPeer->getCoin();
+		msgSyncMoney.nTargetID = pSitDown->getUserUID() ;
+		msgSyncMoney.vArg[0] = pSitDown->getCoin();
 		msgSyncMoney.vArg[1] = eRoom_NiuNiu ;
 		sendMsgToPlayer(&msgSyncMoney,sizeof(msgSyncMoney),getRoomID()) ;
+
+		// save standup log ;
+		stMsgSaveLog msgLog ;
+		msgLog.nJsonExtnerLen = 0 ;
+		msgLog.nLogType = eLog_PlayerStandUp ;
+		msgLog.nTargetID = pSitDown->getUserUID() ;
+		memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+		msgLog.vArg[0] = getRoomType() ;
+		msgLog.vArg[1] = getRoomID() ;
+		msgLog.vArg[2] = pSitDown->getCoin() ;
+		sendMsgToPlayer(&msgLog,sizeof(msgLog),getRoomID()) ;
 
 		// sync data ;
 		if ( ((CNiuNiuRoomPlayer*)pSitDown)->getData()->nPlayTimes )
@@ -507,7 +518,7 @@ void CNiuNiuRoom::onGameWillBegin()
 	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
 	{
 		ISitableRoomPlayer* pp = getPlayerByIdx(nIdx) ;
-		if ( pp )
+		if ( pp && pp->getCoin() > getLeastCoinForPlayGame() )
 		{
 			pp->setCoin(pp->getCoin() - m_nDeskFee ) ;
 			setProfit(getProfit() + m_nDeskFee ) ;
@@ -564,6 +575,12 @@ void CNiuNiuRoom::onGameDidEnd()
 
 		pSitDown->removeState(eRoomPeer_CanAct);
 
+		//if ( pSitDown->getCoin() < getLeastCoinForPlayGame() )
+		//{
+		//	pSitDown->addState(eRoomPeer_StandUp);
+		//	CLogMgr::SharedLogMgr()->SystemLog("uid = %d , coin = %I64d not enough must standup",pSitDown->getUserUID(),pSitDown->getCoin() ) ;
+		//}
+			 
 		if ( pSitDown->isHaveState(eRoomPeer_WillLeave) )
 		{
 			CLogMgr::SharedLogMgr()->PrintLog("game end ,player uid = %d should leave ",pSitDown->getUserUID()) ;
@@ -574,10 +591,10 @@ void CNiuNiuRoom::onGameDidEnd()
 			CLogMgr::SharedLogMgr()->PrintLog(" game end player uid = %d should stand up  ",pSitDown->getUserUID()) ;
 			playerStandUp(pSitDown) ;
 		}
-		else if ( pSitDown->getCoin() < getBaseBet() * getMaxRate() + m_nDeskFee )
+		else if ( pSitDown->getCoin() < getLeastCoinForPlayGame() )
 		{
 			pSitDown->setState(eRoomPeer_StandUp);
-			CLogMgr::SharedLogMgr()->PrintLog(" game end player uid = %d should stand up  coin is not enough",pSitDown->getUserUID()) ;
+			CLogMgr::SharedLogMgr()->SystemLog(" game end player uid = %d should stand up  coin is not enough",pSitDown->getUserUID()) ;
 			playerStandUp(pSitDown);
 		}
 		else
@@ -642,4 +659,9 @@ void CNiuNiuRoom::doPlayerLeave(uint32_t nPlayerSessionID )
 		pp->willLeave();
 		removePlayer(pp) ;
 	}
+}
+
+uint64_t CNiuNiuRoom::getLeastCoinForPlayGame()
+{
+	return getBaseBet()* 4 * getMaxRate() * 25 * 2 + m_nDeskFee ;
 }

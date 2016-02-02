@@ -3,6 +3,7 @@
 #include <iostream>
 #include <WinDef.h>
 #include <Dbghelp.h>
+#include "LogManager.h"
 #pragma comment( lib, "DbgHelp" )
 #pragma comment(lib,"JsonDll.lib")
 
@@ -78,6 +79,7 @@ int main()
 	//-----
 	CGameServerApp theApp ;
 	bool bok = theApp.init() ;
+	CLogMgr::SharedLogMgr()->SetOutputFile("DataSvr");
 	if ( !bok )
 	{
 		printf("init data svr error , start up error\n");

@@ -4,6 +4,7 @@
 #include "RobotConfig.h"
 #include "PlayerData.h"
 #include "ClientRobot.h"
+#include "LoginScene.h"
 bool CRobotControlNiuNiu::init(CNiuNiuScene* pScene )
 {
 	CRobotControl::init() ;
@@ -40,17 +41,13 @@ void CRobotControlNiuNiu::onGameEnd()
 {
 	// check if we need standup ;
 	float fStandUpRate = 0 ;
-	if ( m_pScene->getPokerData()->getSitDownPlayerCnt() < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount ) 
+	if ( m_pScene->getPokerData()->getSitDownPlayerCnt() > m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount ) 
 	{
-		fStandUpRate = 0.11;
-	}
-	else
-	{
-		fStandUpRate = 0.36 ;
+		fStandUpRate = 0.3;
 	}
 	
 	float nRate = (float)rand() / float(RAND_MAX);
-	if ( nRate <= fStandUpRate )
+	if ( nRate < fStandUpRate )
 	{
 		printf("rate me to stand up , fStandRate = %02f\n",fStandUpRate) ;
 		standUp() ;
@@ -59,11 +56,33 @@ void CRobotControlNiuNiu::onGameEnd()
 
 void CRobotControlNiuNiu::doDelayAction(void* pUserData )
 {
-	uint32_t nType = (uint32_t)pUserData ;
-	if ( nType == 1 ) // try banker 
+	if ( this == nullptr )
 	{
+		printf("why this is null \n") ;
+		return ;
+	}
+
+	if ( m_pScene->getPokerData()->getPlayerByIdx(m_nSelfIdx) == nullptr )
+	{
+		printf("this is self player is null \n") ;
+		return ;
+	}
+
+	uint32_t nType = (uint32_t)pUserData ;
+	if ( 3 == nType )
+	{
+		m_pScene->getClientApp()->GetPlayerData()->setIsLackOfCoin(true) ;
+		auto au = new CLoginScene(m_pScene->getClientApp());
+		m_pScene->getClientApp()->ChangeScene(au);
+		printf("do change room to get coin \n");
+		return ;
+	}
+	else if ( nType == 1 ) // try banker 
+	{
+		bool bHaveNiu = m_pScene->getPokerData()->getPlayerByIdx(m_nSelfIdx);
+		float fTargetRate = bHaveNiu ? 0.8 : 0.15;
 		float nRate = (float)rand() / float(RAND_MAX); 
-		bool bTryBanker = nRate < 0.3 ;
+		bool bTryBanker = nRate <= fTargetRate ;
 		if ( !bTryBanker )
 		{
 			stMsgNNPlayerTryBanker msgTryBanker ;
@@ -78,7 +97,10 @@ void CRobotControlNiuNiu::doDelayAction(void* pUserData )
 		vTimes.push_back(1);
 		vTimes.push_back(2);
 		vTimes.push_back(3);
-		vTimes.push_back(4);
+		if ( bHaveNiu || ( rand() % 100 <= 40 ) )
+		{
+			vTimes.push_back(4);
+		}
 
 		while( vTimes.empty() == false )
 		{
@@ -114,12 +136,16 @@ void CRobotControlNiuNiu::doDelayAction(void* pUserData )
 	}
 	else if ( 2 == nType ) // bet 
 	{
+		bool bHaveNiu = m_pScene->getPokerData()->getPlayerByIdx(m_nSelfIdx);
 		// 5 , 10 , 15 , 20, 25 
 		std::vector<uint8_t> vTimes ;
 		vTimes.push_back(5);
 		vTimes.push_back(10);
-		vTimes.push_back(15);
-		vTimes.push_back(25);
+		if ( bHaveNiu || ( rand() % 100 <= 30 ) )
+		{
+			vTimes.push_back(15);
+			vTimes.push_back(25);
+		}
 
 		while ( vTimes.empty() == false )
 		{
@@ -136,7 +162,7 @@ void CRobotControlNiuNiu::doDelayAction(void* pUserData )
 			}
 		}
 
-		uint8_t nBetTimes  = 0 ;
+		uint8_t nBetTimes  = 5 ;
 		if ( vTimes.empty() == false )
 		{
 			uint8_t nIdx = rand() % vTimes.size() ;
@@ -164,10 +190,10 @@ void CRobotControlNiuNiu::updateWaitSitdown(float fdeta )
 	{
 		if ( (m_fWaitSitDownTicket -= fdeta ) <= 0 ) // do sholud sit down operatertion 
 		{
-			if ( m_pScene->getPokerData()->getSitDownPlayerCnt() < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount ) 
+			if ( m_pScene->getPokerData()->getSitDownPlayerCnt() < m_pScene->getClientApp()->GetPlayerData()->pRobotItem->nApplyLeaveWhenPeerCount && m_pScene->getPokerData()->nRoomState != eRoomState_Dead ) 
 			{
 				float fRate = (float)rand() / float(RAND_MAX);  
-				if ( fRate < 0.45 )  // 40% rate i sit down , this time
+				if ( fRate < 0.6 )  // 40% rate i sit down , this time
 				{
 					// sit down 
 					m_eState = eRcs_SitingDown ;
@@ -204,19 +230,51 @@ bool CRobotControlNiuNiu::onMsg(stMsg* pmsg)
 			waitToSitdown() ;
 		}
 		break;
+	case MSG_ROOM_ENTER_NEW_STATE:
+		{
+			stMsgRoomEnterNewState* pRet = (stMsgRoomEnterNewState*)pmsg ;
+			if ( eRoomState_Dead == pRet->nNewState )
+			{
+				standUp();
+			}
+		}
+		break;
 	case MSG_NN_PLAYER_SITDOWN:
 		{
 			stMsgNNPlayerSitDownRet* pRet = (stMsgNNPlayerSitDownRet*)pmsg ;
 			if ( pRet->nRet )
 			{
 				printf("sit down failed , i go on wait to sit down ret = %d\n",pRet->nRet) ;
-				waitToSitdown() ;
+				if ( pRet->nRet == 2 ) 
+				{
+					m_eState = eRcs_Leave ;	
+					stMsgNNLeaveRoom msgLeave ;
+					msgLeave.nRoomID = m_pScene->getPokerData()->nRoomID ;
+					m_pScene->SendMsg(&msgLeave,sizeof(msgLeave) );
+					printf("lack of money , i just leave room to get money \n") ;
+
+					uint32_t nType = 3 ;
+					fireDelayAction(15,(void*)nType);
+				}
+				else
+				{
+					waitToSitdown() ;
+				}
+				
 			}
 			else
 			{
 				m_eState = eRcs_SitDown ;
 				printf("i sit down ok , player game \n") ;
 			}
+		}
+		break;
+	case MSG_NN_LEAVE_ROOM:
+		{
+			m_pScene->getClientApp()->GetPlayerData()->setIsLackOfCoin(true) ;
+			auto au = new CLoginScene(m_pScene->getClientApp());
+			m_pScene->getClientApp()->ChangeScene(au);
+			printf("do change room to get coin \n");
 		}
 		break;
 	case MSG_NN_SITDOWN:
@@ -230,9 +288,25 @@ bool CRobotControlNiuNiu::onMsg(stMsg* pmsg)
 			}
 		}
 		break;
+	case MSG_NN_PLAYER_BET:
+		{
+			stMsgNNPlayerSitDownRet* pRet = (stMsgNNPlayerSitDownRet*)pmsg ;
+			if ( pRet->nRet == 2 )
+			{
+				m_eState = eRcs_StandUp ;	
+				stMsgNNLeaveRoom msgLeave ;
+				msgLeave.nRoomID = m_pScene->getPokerData()->nRoomID ;
+				m_pScene->SendMsg(&msgLeave,sizeof(msgLeave) );
+				printf("lack of money , i just leave room to get money bet failed\n") ;
+
+				uint32_t nType = 3 ;
+				fireDelayAction(15,(void*)nType);
+			}
+		}
+		break;
 	case MSG_NN_STANDUP:
 		{
-			if ( m_eState == eRcs_StandingUp )
+			//if ( m_eState == eRcs_StandingUp )
 			{
 				stMsgNNStandUp* pStandUp = (stMsgNNStandUp*)pmsg ;
 				if ( pStandUp->nPlayerIdx == m_nSelfIdx )
@@ -240,6 +314,7 @@ bool CRobotControlNiuNiu::onMsg(stMsg* pmsg)
 					m_nSelfIdx = MAX_PEERS_IN_TAXAS_ROOM ;
 
 					printf("i was standup , wait to sit down again \n") ;
+
 					waitToSitdown() ;
 				}
 			}

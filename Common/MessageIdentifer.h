@@ -253,7 +253,8 @@ enum eMsgType
 	MSG_CIRCLE_REQUEST_TOPIC_DETAIL,
 	MSG_CIRCLE_REQUEST_TOPIC_LIST,
 
-
+	// robot specail msg 
+	MSG_ROBOT_ADD_MONEY = 1300, 
 
 
 
@@ -378,7 +379,7 @@ enum eMsgType
 	MSG_ROBOT_APPLY_TO_LEAVE,
 	MSG_ROBOT_CHECK_BIGGIEST,
 	MSG_ROBOT_INFORM_IDLE,
-	MSG_ROBOT_ADD_MONEY,
+	
 	// all room msg above ,
 
 	// golden room 

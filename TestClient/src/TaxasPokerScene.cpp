@@ -138,6 +138,7 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 			stMsgTaxasRoomLeave* pLeveRet = (stMsgTaxasRoomLeave*)pmsg ;
 			if ( pLeveRet->nUserUID == getClientApp()->GetPlayerData()->getUserUID() )
 			{
+				getClientApp()->GetPlayerData()->setIsLackOfCoin(true);
 				CLoginScene* CurentScene = new CLoginScene(m_pClient);
 				m_pClient->ChangeScene(CurentScene) ;
 			}
@@ -158,6 +159,15 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 		{
 			stMsgPlayerBeAddedFriendReplyRet* pret = (stMsgPlayerBeAddedFriendReplyRet*)pmsg ;
 			printf("recive replay ret = %d , new friend uid = %d\n",pret->nRet,pret->nNewFriendUserUID) ;
+		}
+		break;
+	case MSG_TP_ENTER_STATE:
+		{
+			stMsgTaxasRoomEnterState* pRet = (stMsgTaxasRoomEnterState*)pmsg ;
+			if ( pRet->nNewState == eRoomState_Dead )
+			{
+				m_tRobotControler.onRoomDead() ;
+			}
 		}
 		break;
 	default:

@@ -150,8 +150,8 @@ void CSession::handleWriteHeartbeat(const boost::system::error_code& ec)
 	}
 	else{
 		// close ;
-		m_pNetwork->closeSession(getConnectID());
 		printf("heat beat failed \n");
+		m_pNetwork->closeSession(getConnectID());
 	}
 }
 

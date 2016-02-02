@@ -160,6 +160,9 @@ bool CPlayerNiuNiu::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMs
 			if ( pRequest->vArg[0] == eRoom_NiuNiu )
 			{
 				m_nCurRoomID = 0 ;
+
+				stMsgNNLeaveRoomRet msgLeave;
+				SendMsg(&msgLeave,sizeof(msgLeave));
 				return true ;
 			}
 			else

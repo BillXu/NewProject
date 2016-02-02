@@ -57,6 +57,7 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 		pGateClient->Reset(CGateServer::SharedGateServer()->GenerateSessionID(),pData->_connectID,pIPInfo.c_str()) ;
 		AddClientGate(pGateClient);
 		CLogMgr::SharedLogMgr()->SystemLog("a Client connected ip = %s Session id = %d",pGateClient->strIPAddress.c_str(),pGateClient->nSessionId ) ;
+		CLogMgr::SharedLogMgr()->SystemLog("current online cnt = %d", m_vSessionGateClient.size() - m_vWaitToReconnect.size() ) ;
 
 		stMsgControlFlag msgFlag ;
 		msgFlag.nFlag = 1 ;

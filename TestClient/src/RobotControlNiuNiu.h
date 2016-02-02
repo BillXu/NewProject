@@ -9,6 +9,7 @@ public:
 	enum  eRobotControlState
 	{
 		eRcs_StandUp,
+		eRcs_Leave,
 		eRcs_StandingUp,
 		eRcs_SitingDown,
 		eRcs_SitDown,
