@@ -1,22 +1,38 @@
 #pragma once
-#include "IRoomPlayer.h"
+#include "ServerCommon.h"
+#include "IRoom.h"
 class ISitableRoomPlayer
-	:public IRoomPlayer
 {
 public:
 	uint8_t getIdx(){return m_nIdx ;}
 	void setIdx( uint8_t nIdx){ m_nIdx = nIdx ;}
 	virtual void doSitdown(uint8_t nIdx ){}
 	virtual void willStandUp(){}
+	virtual void onGameEnd() ;
+	virtual void onGameBegin(){}
 	bool isHaveState( uint32_t nStateFlag ){ return ( m_nState & nStateFlag ) == nStateFlag ;}
 	void removeState( uint32_t nStateFlag ) { m_nState &=(~nStateFlag); }
 	void addState( uint32_t nStateFlag ){ m_nState |=(nStateFlag); }
 	void setState( uint32_t nStateFlag ){ m_nState = nStateFlag ;}
 	uint32_t getState(){ return m_nState ; }
-	void setInitCoin(uint64_t nCoin ){ m_nInitCoin = nCoin ; }
-	uint64_t getInitCoin() { return m_nInitCoin ; }
+	uint64_t getCoin(){ return nCoin ;}
+	void setCoin( int64_t nNewCoin ){ nCoin += nNewCoin ;}
+	uint32_t getUserUID(){ return nUserUID ; }
+	uint32_t getSessionID(){ return nSessionID ; }
+	virtual void reset(IRoom::stStandPlayer* pPlayer);
+	bool isHaveHalo();
+	virtual void switchPeerCard(ISitableRoomPlayer* pPlayer ) = 0;
+	uint8_t getHaloWeight(){ return nNewPlayerHaloWeight ; }
 private:
 	uint8_t m_nIdx ;
 	uint32_t m_nState ;
-	uint64_t m_nInitCoin ; // used for cacualte offset ;
+	uint8_t m_nHaloState ; // 0 not invoke , 1 in effect , 2 not in effect ;
+
+	uint64_t nCoin ;
+	uint32_t nUserUID ;
+	uint32_t nSessionID ;
+	uint8_t nNewPlayerHaloWeight;
+	uint32_t nPlayTimes ;
+	uint32_t nWinTimes ;
+	uint64_t nSingleWinMost ;
 };

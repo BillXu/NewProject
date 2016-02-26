@@ -79,6 +79,10 @@ bool CRoomManager::OnMsgFromOtherSvr( stMsg* prealMsg , eMsgPort eSenderPort , u
 		{
 			CTaxasRoom* pRoom = GetRoomByID(pRet->nTargetID);
 			assert(pRoom&&"this request no one to process or target id error");
+			if ( pRoom == nullptr )
+			{
+				return false ;
+			}
 			return pRoom->onCrossServerRequest(pRet,eSenderPort,pJsValue);
 		}
 

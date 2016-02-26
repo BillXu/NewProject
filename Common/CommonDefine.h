@@ -66,10 +66,15 @@ enum eRoomState
 {
 	eRoomState_None,
 	eRoomState_Dead,
-	eRoomState_WaitJoin,
-	// state for texas poker
 	eRoomState_TP_Dead = eRoomState_Dead,
+	eRoomState_WaitJoin,
+	eRoomState_NN_WaitJoin = eRoomState_WaitJoin ,
 	eRoomState_TP_WaitJoin = eRoomState_WaitJoin,
+	eRoomState_Close,
+	eRoomState_DidGameOver,
+	eRoomState_StartGame,
+	eRoomState_NN_Disribute4Card = eRoomState_StartGame,
+	// state for texas poker
 	eRoomState_TP_BetBlind,
 	eRoomState_TP_PrivateCard,
 	eRoomState_TP_Beting,
@@ -77,24 +82,6 @@ enum eRoomState
 	eRoomState_TP_PublicCard,
 	eRoomState_TP_GameResult,
 	eRoomState_TP_MAX,
-	// state for golden 
-	eRoomState_Golden_WaitPeerToJoin = eRoomState_None,
-	eRoomState_Golden_WaitPeerReady,
-	eRoomState_Golden_DistributeCard,
-	eRoomState_Golden_WaitPeerAction,
-	eRoomState_Golden_PKing,
-	eRoomState_Golden_ShowingResult,
-	// state for pai_jiu
-	eRoomState_PJ_WaitBanker,
-	eRoomState_PJWaitNewBankerChoseShuffle,
-	eRoomState_PJ_Shuffle,   // xi pai
-	eRoomState_PJ_WaitForBet,
-	eRoomState_PJ_Dice, // shuai zi 
-	eRoomState_PJ_Distribute,
-	eRoomState_PJ_ShowCard,   // fan kai xian jia de pai 
-	eRoomState_PJ_Settlement, // jie suan ;
-	eRoomState_PJ_BankerSelectGoOn,
-
 
 	// state for Baccarat ;
 	eRoomState_BC_Shuffle,
@@ -105,8 +92,6 @@ enum eRoomState
 	eRoomState_BC_Caculate,
 
 	// state for NiuNiu
-	eRoomState_NN_WaitJoin = eRoomState_WaitJoin ,
-	eRoomState_NN_Disribute4Card,
 	eRoomState_NN_TryBanker,
 	eRoomState_NN_RandBanker,
 	eRoomState_NN_StartBet,

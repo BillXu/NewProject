@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include "CommonDefine.h"
+#include "ServerDefine.h"
 class IRoomState ;
 class IRoomPlayer ;
 struct stMsg ;
@@ -19,41 +20,55 @@ namespace Json
 class IRoom
 {
 public:
+	typedef	stEnterRoomData stStandPlayer;
 	struct stRoomRankItem
 	{
 		uint32_t nUserUID ;
-		int64_t nOffset ;
-		uint32_t nPlayerTimes ;
-		uint32_t nWinTimes ;
+		int64_t nGameOffset ;
+		int64_t nOtherOffset ;
 		bool bIsDiryt ;
 	};
 public:
-	typedef std::list<IRoomPlayer*> LIST_ROOM_PLAYER ;
-	typedef std::map<uint32_t,IRoomPlayer*> MAP_UID_ROOM_PLAYER ;
+	typedef std::list<stStandPlayer*> LIST_STAND_PLAYER ;
+	typedef std::map<uint32_t,stStandPlayer*> MAP_UID_STAND_PLAYER ;
 	typedef std::map<uint16_t,IRoomState*>	MAP_ID_ROOM_STATE;
 	typedef std::map<uint32_t,stRoomRankItem*> MAP_UID_ROOM_RANK_ITEM ;
 	typedef std::list<stRoomRankItem*> LIST_ROOM_RANK_ITEM ;
-	typedef MAP_UID_ROOM_PLAYER::iterator PLAYER_ITER ;
+	typedef MAP_UID_STAND_PLAYER::iterator STAND_PLAYER_ITER ;
 public:
 	IRoom();
 	virtual ~IRoom();
-	virtual bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID );
+	virtual bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue );
+	virtual void serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue );
+	virtual void willSerializtionToDB(Json::Value& vOutJsValue);
+	virtual void prepareState();
+	void serializationToDB(bool bIsNewCreate = false);
 	uint32_t getRoomID();
 	virtual void update(float fDelta);
 
-	bool addRoomPlayer(IRoomPlayer* pPlayer );
-	void removePlayer(IRoomPlayer* pPlayer );
-	IRoomPlayer* getPlayerByUserUID(uint32_t nUserUID );
-	IRoomPlayer* getPlayerBySessionID(uint32_t nSessionID );
-	bool isPlayerInRoom(IRoomPlayer* pPlayer );
+	// event function 
+	virtual uint8_t canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer );  // return 0 means ok ;
+	virtual void onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer );
+	virtual void onPlayerWillLeaveRoom(stStandPlayer* pPlayer );
+	virtual void playerDoLeaveRoom(uint32_t nPlayerUID );
+	virtual bool canStartGame() = 0 ;
+	uint32_t getOpenTime(){ return m_nOpenTime ; }
+	uint32_t getDeadTime(){ return m_nDeadTime ;}
+	uint32_t getCloseTime(){ return m_nOpenTime + m_nDuringTime  ;}
+	uint32_t getDeskFee(){ return m_nDeskFree ;}
+private:
+	bool addRoomPlayer(stStandPlayer* pPlayer );
+	void removePlayer(stStandPlayer* pPlayer );
+public:
+	stStandPlayer* getPlayerByUserUID(uint32_t nUserUID );
+	stStandPlayer* getPlayerBySessionID(uint32_t nSessionID );
+	bool isPlayerInRoom(stStandPlayer* pPlayer );
 	bool isPlayerInRoomWithSessionID(uint32_t nSessioID );
 	bool isPlayerInRoomWithUserUID(uint32_t nUserUID );
 	uint16_t getPlayerCount();
-	IRoomPlayer* getReusePlayerObject();
-	virtual IRoomPlayer* doCreateRoomPlayerObject() = 0 ;
-	PLAYER_ITER beginIterForPlayers();
-	PLAYER_ITER endIterForPlayers();
-	void updatePlayerOffset(uint32_t nUserUID , int64_t nOffsetThisOnce );
+	STAND_PLAYER_ITER beginIterForPlayers();
+	STAND_PLAYER_ITER endIterForPlayers();
+	void updatePlayerOffset(uint32_t nUserUID , int64_t nOffsetGame, int64_t nOtherOffset = 0 );
 	void sortRoomRankItem();
 	LIST_ROOM_RANK_ITEM::iterator getSortRankItemListBegin(){ return m_vSortedRankItems.begin() ;}
 	LIST_ROOM_RANK_ITEM::iterator getSortRankItemListEnd(){ return m_vSortedRankItems.end() ; }
@@ -77,60 +92,61 @@ public:
 	CPoker* getPoker(){ return &m_tPoker ; }
 
 	// room life and attribute
-	void onCreateByPlayer(uint32_t nUserUID, uint16_t nRentDays );
 	void setOwnerUID(uint32_t nCreatorUID );
 	uint32_t getOwnerUID();
-	void addLiftTime(uint32_t nDays );
+	void addLiftTime(uint32_t nMinites );
 	void setDeadTime(uint32_t nDeadTime);
-	void setAvataID(uint32_t nAvaID );
 	void setRoomName(const char* pRoomName);
 	const char* getRoomName();
-	void setRoomInform(const char* pRoomInform );
-	std::string getRoomInform(){ return m_strRoomInForm ;}
+	void setRewardDesc(const char* pRewardDesc );
+	std::string getRewardDesc(){ return m_strRewardDesc ;}
 	bool isRoomAlive();
 	void setProfit(uint64_t nProfit );
-	uint64_t getProfit(){ return m_nRoomProfit ;}
+	uint64_t getProfit(){ return m_nCurProfit ;}
 	uint64_t getTotalProfit(){ return m_nTotalProfit ;}
-	void addTotoalProfit(uint64_t nAdd ){ m_nTotalProfit += nAdd ;}
+	void addTotoalProfit(uint64_t nAdd ){ m_nTotalProfit += nAdd ; m_bRoomInfoDiry = true; }
 	void setTotalProfit( uint64_t nProfit ){ m_nTotalProfit = nProfit ;}
 	void setCreateTime(uint32_t nTime);
 	uint32_t getCreateTime();
-	void setInformSieral(uint32_t nSieaial);
 	void setChatRoomID(uint32_t nChatRoomID );
 	uint32_t getChatRoomID(){ return m_nChatRoomID ; }
 	uint32_t getConfigID();
-	uint32_t getDeadTime();
 	void sendExpireInform();
-	void finishReadInfoInitRoom(){ m_bRoomInfoDiry = false ; }
 	void deleteRoom();
 	bool isDeleteRoom();
 	void removeAllRankItemPlayer();
-	virtual void onMatchFinish(){}
-	virtual void onMatchRestart(){};
+	virtual void onRoomClosed();
+	virtual void onRoomOpened();
 protected:
 	bool addRoomState(IRoomState* pRoomState );
+	bool isOmitNewPlayerHalo(){ return m_isOmitNewPlayerHalo ; }
 private:
+	bool m_bRoomInfoDiry ;
 	uint32_t m_nRoomID ;
-	LIST_ROOM_PLAYER m_vReseverPlayerObjects;
-	MAP_UID_ROOM_PLAYER m_vInRoomPlayers ;
+	LIST_STAND_PLAYER m_vReseverPlayerObjects;
+
+	MAP_UID_STAND_PLAYER m_vInRoomPlayers ;
 	IRoomState* m_pCurRoomState ;
 	MAP_ID_ROOM_STATE m_vRoomStates ;
 	CPoker m_tPoker ;
 
 	bool m_bIsDelte ;
+	stEnterRoomLimitCondition m_stLimitConition ;
 	// creator info 
-	bool m_bRoomInfoDiry ;
 	uint32_t m_nRoomOwnerUID ;
 	uint32_t m_nCreateTime ;
 	uint32_t m_nDeadTime ;
-	uint16_t m_nAvataID ;
+	uint32_t m_nOpenTime ;
+	uint32_t m_nDuringTime ; // by seconds ;
+
 	char m_vRoomName[MAX_LEN_ROOM_NAME] ;
-	std::string m_strRoomInForm ;
-	uint32_t m_nInformSerial;
-	uint64_t m_nRoomProfit;
+	std::string m_strRewardDesc ;
+	uint64_t m_nCurProfit;
 	uint64_t m_nTotalProfit ;
 	uint32_t m_nChatRoomID ;
 	uint16_t m_nConfigID ;
+	uint32_t m_nDeskFree ;
+	bool m_isOmitNewPlayerHalo ;
 
 	MAP_UID_ROOM_RANK_ITEM m_vRoomRankHistroy ;
 	LIST_ROOM_RANK_ITEM m_vSortedRankItems ;

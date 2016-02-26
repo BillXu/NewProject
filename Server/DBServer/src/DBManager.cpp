@@ -272,17 +272,22 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	case MSG_SAVE_UPDATE_ROOM_INFO:
 		{
 			stMsgSaveUpdateRoomInfo* pRet = (stMsgSaveUpdateRoomInfo*)pmsg ;
-			pRequest->eType = eRequestType_Update ;
-			pRet->vRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
-			
-			char* pBuffer = new char[pRet->nInformLen + 1];
-			memset(pBuffer,0,pRet->nInformLen + 1);
-			memcpy(pBuffer,((char*)pRet) + sizeof(stMsgSaveUpdateRoomInfo),pRet->nInformLen);
-
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE gameroom SET deadTime = '%d', avataID = '%d', profit = '%I64d',totalProfit = '%I64d', roomName = '%s', roomInform = '%s', informSerial = '%d' WHERE roomID = '%d' and roomType = '%d' "
-				,pRet->nDeadTime,pRet->nAvataID,pRet->nRoomProfit,pRet->nTotalProfit,pRet->vRoomName,pBuffer,pRet->nInformSerial,pRet->nRoomID,pRet->nRoomType ) ;
-			CLogMgr::SharedLogMgr()->PrintLog("save taxas room update info room id = %d",pRet->nRoomID);
+			CAutoBuffer aBuffer(pRet->nJsonLen+1);
+			aBuffer.addContent(((char*)pRet) + sizeof(stMsgSaveUpdateRoomInfo),pRet->nJsonLen) ;
+			if ( pRet->bIsNewCreate )
+			{
+				pRequest->eType = eRequestType_Add ;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroom ( roomType,roomID,ownerUID,jsonDetail) VALUES ( '%d' ,'%d','%u','%s')",
+					pRet->nRoomType,pRet->nRoomID,pRet->nRoomOwnerUID,aBuffer.getBufferPtr()) ;
+			}
+			else
+			{
+				pRequest->eType = eRequestType_Update ;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"UPDATE gameroom SET jsonDetail = '%s' WHERE roomID = '%d' and roomType = '%d' and isDelete = '0' "
+					,aBuffer.getBufferPtr(),pRet->nRoomID,pRet->nRoomType ) ;
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("save room update info room id = %d",pRet->nRoomID);
 		}
 		break;
 	case MSG_READ_ROOM_INFO:
@@ -351,15 +356,15 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			{
 				pRequest->eType = eRequestType_Update;
 				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-					"UPDATE roomplayers SET playTimes = '%u', winTimes = '%u', offsetCoin = '%lld' WHERE roomID = '%u' and playerUID = '%u'and roomType = '%u' and flag = '0' "
-					,pRet->savePlayer.nPlayerTimes,pRet->savePlayer.nWinTimes,pRet->savePlayer.nOffset,pRet->nRoomID,pRet->savePlayer.nUserUID,pRet->nRoomType) ;
+					"UPDATE roomplayers SET offsetCoin = '%lld',otherOffset = '%lld' WHERE roomID = '%u' and playerUID = '%u'and roomType = '%u' and flag = '0' "
+					,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset,pRet->nRoomID,pRet->savePlayer.nUserUID,pRet->nRoomType) ;
 				CLogMgr::SharedLogMgr()->PrintLog("updata room player data room id = %u , uid = %u",pRet->nRoomID,pRet->savePlayer.nUserUID );
 			}
 			else
 			{
 				pRequest->eType = eRequestType_Add;
-				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomplayers (roomID, roomType,playerUID,playTimes,winTimes,offsetCoin ) VALUES ('%u','%u' ,'%u','%u','%u','%I64d')",
-					pRet->nRoomID,pRet->nRoomType,pRet->savePlayer.nUserUID,pRet->savePlayer.nPlayerTimes,pRet->savePlayer.nWinTimes,pRet->savePlayer.nOffset) ;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomplayers (roomID, roomType,playerUID,offsetCoin,otherOffset ) VALUES ('%u','%u' ,'%u','%I64d','%I64d')",
+					pRet->nRoomID,pRet->nRoomType,pRet->savePlayer.nUserUID,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset) ;
 				CLogMgr::SharedLogMgr()->PrintLog("add taxas room player data room id = %u , uid = %u",pRet->nRoomID,pRet->savePlayer.nUserUID);
 			}
 		}
@@ -1144,30 +1149,21 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
 					stMsgReadRoomInfoRet msgRet ;
 					msgRet.cSysIdentifer = pdata->eFromPort ;
-					msgRet.nAvataID = pRow["avataID"]->IntValue();
 					msgRet.nRoomType = pRow["roomType"]->IntValue();
-					msgRet.nConfigID = pRow["configID"]->IntValue();
-					msgRet.nCreateTime = pRow["createTime"]->IntValue();
-					msgRet.nDeadTime = pRow["deadTime"]->IntValue();
-					msgRet.nInformSerial = pRow["informSerial"]->IntValue();
 					msgRet.nRoomID = pRow["roomID"]->IntValue();
 					msgRet.nRoomOwnerUID = pRow["ownerUID"]->IntValue();
-					msgRet.nRoomProfit = pRow["profit"]->IntValue();
-					msgRet.nChatRoomID = pRow["chatRoomID"]->IntValue64();
-					msgRet.nTotalProfit = pRow["totalProfit"]->IntValue64();
-					memset(msgRet.vRoomName,0,sizeof(msgRet.vRoomName));
-					sprintf_s(msgRet.vRoomName,MAX_LEN_ROOM_NAME,"%s",pRow["roomName"]->CStringValue());
-					msgRet.nInformLen = pRow["roomInform"]->nBufferLen ; 
-					if ( msgRet.nInformLen > 0 )
+					msgRet.nJsonLen = pRow["jsonDetail"]->nBufferLen ; 
+					if ( msgRet.nJsonLen > 0 )
 					{
 						buffer.clearBuffer();
 						buffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
-						buffer.addContent(pRow["roomInform"]->BufferData(),msgRet.nInformLen);
+						buffer.addContent(pRow["jsonDetail"]->BufferData(),msgRet.nJsonLen);
 						m_pTheApp->sendMsg(pdata->nSessionID,buffer.getBufferPtr(),buffer.getContentSize()) ;
 					}
 					else
 					{
-						m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet)) ;
+						//m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet)) ;
+						CLogMgr::SharedLogMgr()->PrintLog("read old formate room id = %d",msgRet.nRoomID);
 					}
 					CLogMgr::SharedLogMgr()->PrintLog("read taxas room id = %d",msgRet.nRoomID);
 				}
@@ -1231,9 +1227,10 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					{
 						CMysqlRow& pRow = *pResult->vResultRows[nPageStartIdx + nReadIdx] ;
 						stSaveRoomPlayerEntry entryData ;
-						entryData.nOffset = pRow["offsetCoin"]->IntValue64();
-						entryData.nPlayerTimes = pRow["playTimes"]->IntValue();
-						entryData.nWinTimes = pRow["winTimes"]->IntValue();
+						entryData.nGameOffset = pRow["offsetCoin"]->IntValue64();
+						entryData.nOtherOffset = pRow["otherOffset"]->IntValue64();
+						//entryData.nPlayerTimes = pRow["playTimes"]->IntValue();
+						//entryData.nWinTimes = pRow["winTimes"]->IntValue();
 						entryData.nUserUID = pRow["playerUID"]->IntValue() ;
 						auBuffer.addContent(&entryData,sizeof(entryData)) ;
 					}

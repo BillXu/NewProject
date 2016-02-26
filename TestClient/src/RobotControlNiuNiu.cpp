@@ -12,6 +12,7 @@ bool CRobotControlNiuNiu::init(CNiuNiuScene* pScene )
 	m_eState = eRcs_StandUp ;
 	m_fWaitSitDownTicket = 0 ;
 	m_nSelfIdx = MAX_PEERS_IN_TAXAS_ROOM ;
+	m_nSkipGameCnt = 0 ;
 	return true ;
 }
 
@@ -213,7 +214,18 @@ void CRobotControlNiuNiu::updateWaitSitdown(float fdeta )
 			else
 			{
 				// go on wait to sit down 
-				printf("too many player , i go wait to sit down \n") ;
+				printf("too many player , i go wait to sit down , room id = %d ,curCnt = %d\n",m_pScene->getPokerData()->nRoomID,m_pScene->getPokerData()->getSitDownPlayerCnt()) ;
+				if ( eRoomState_WaitJoin == m_pScene->getPokerData()->nRoomState )
+				{
+					m_eState = eRcs_SitingDown ;
+					stMsgNNPlayerSitDown msgSitDown ;
+					msgSitDown.nRoomID = m_pScene->getPokerData()->nRoomID ;
+					msgSitDown.nSeatIdx = m_pScene->getPokerData()->getRandEmptySeatIdx();
+					m_pScene->SendMsg((char*)&msgSitDown,sizeof(msgSitDown)) ;
+					printf("have player ,why not start game ? room id = %d\n",m_pScene->getPokerData()->nRoomID) ;
+					m_pScene->getPokerData()->resetAllStandupPlayer();
+					return ;
+				}
 				waitToSitdown() ;
 			}
 
@@ -317,6 +329,50 @@ bool CRobotControlNiuNiu::onMsg(stMsg* pmsg)
 
 					waitToSitdown() ;
 				}
+			}
+		}
+		break;
+	case MSG_NN_DISTRIBUTE_4_CARD:
+		{
+			stMsgNNDistriute4Card* pRet = (stMsgNNDistriute4Card*)pmsg ;
+			stDistriuet4CardItem* pItem = (stDistriuet4CardItem*)(((char*)pmsg) + sizeof(stMsgNNDistriute4Card));
+			bool isHaveMe = false ;
+			while ( pRet->nPlayerCnt-- )
+			{
+				if ( pItem->nSeatIdx >= 5 )
+				{
+					continue; ;
+				}
+
+				if ( m_nSelfIdx == pItem->nSeatIdx )
+				{
+					isHaveMe = true ;
+					break ;
+				}
+			}
+
+			if ( isHaveMe == false )
+			{
+				++m_nSkipGameCnt;
+			}
+			else
+			{
+				m_nSkipGameCnt = 0 ;
+			}
+
+			if ( m_nSkipGameCnt >= 2 )
+			{
+				m_nSkipGameCnt = 0 ;
+				standUp();
+
+				m_eState = eRcs_Leave ;	
+				stMsgNNLeaveRoom msgLeave ;
+				msgLeave.nRoomID = m_pScene->getPokerData()->nRoomID ;
+				m_pScene->SendMsg(&msgLeave,sizeof(msgLeave) );
+				printf("do not distrbute card to me , i just leave room to get money room id = %d \n",m_pScene->getPokerData()->nRoomID) ;
+
+				uint32_t nType = 3 ;
+				fireDelayAction(15,(void*)nType);
 			}
 		}
 		break;

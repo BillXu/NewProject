@@ -128,7 +128,6 @@
     <ClInclude Include="src\NiuNiuRoomPlayerCaculateCardState.h" />
     <ClInclude Include="src\NiuNiuRoomRandBankerState.h" />
     <ClInclude Include="src\NiuNiuRoomTryBankerState.h" />
-    <ClInclude Include="src\NiuNiuRoomWaitJoinState.h" />
     <ClInclude Include="src\NiuNiuServer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -160,7 +159,6 @@
     <ClCompile Include="src\NiuNiuRoomPlayerCaculateCardState.cpp" />
     <ClCompile Include="src\NiuNiuRoomRandBankerState.cpp" />
     <ClCompile Include="src\NiuNiuRoomTryBankerState.cpp" />
-    <ClCompile Include="src\NiuNiuRoomWaitJoinState.cpp" />
     <ClCompile Include="src\NiuNiuServer.cpp" />
     <ClCompile Include="src\NiuNiuRoomDistributeFinalCardState.cpp" />
   </ItemGroup>

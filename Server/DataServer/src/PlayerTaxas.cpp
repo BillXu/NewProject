@@ -308,6 +308,8 @@ bool CPlayerTaxas::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 	{
 		return true ;
 	}
+
+
 	return false ;
 }
 
@@ -354,30 +356,30 @@ bool CPlayerTaxas::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 void CPlayerTaxas::OnPlayerDisconnect()
 {
 	IPlayerComponent::OnPlayerDisconnect();
-	if ( m_nCurTaxasRoomID != 0 )  // order to leave 
-	{
-		stMsgOrderTaxasPlayerLeave msgLeave ;
-		msgLeave.nRoomID = m_nCurTaxasRoomID ;
-		msgLeave.nSessionID = GetPlayer()->GetSessionID();
-		msgLeave.nUserUID = GetPlayer()->GetUserUID();
-		CGameServerApp::SharedGameServerApp()->sendMsg(m_nCurTaxasRoomID,(char*)&msgLeave,sizeof(msgLeave) ) ;
-		m_nCurTaxasRoomID = 0 ;
-	}
+	//if ( m_nCurTaxasRoomID != 0 )  // order to leave 
+	//{
+	//	stMsgOrderTaxasPlayerLeave msgLeave ;
+	//	msgLeave.nRoomID = m_nCurTaxasRoomID ;
+	//	msgLeave.nSessionID = GetPlayer()->GetSessionID();
+	//	msgLeave.nUserUID = GetPlayer()->GetUserUID();
+	//	CGameServerApp::SharedGameServerApp()->sendMsg(m_nCurTaxasRoomID,(char*)&msgLeave,sizeof(msgLeave) ) ;
+	//	m_nCurTaxasRoomID = 0 ;
+	//}
 	TimerSave();
 }
 
 void CPlayerTaxas::OnOtherWillLogined()
 {
 	IPlayerComponent::OnOtherWillLogined();
-	if ( m_nCurTaxasRoomID != 0 )  // order to leave 
-	{
-		stMsgOrderTaxasPlayerLeave msgLeave ;
-		msgLeave.nRoomID = m_nCurTaxasRoomID ;
-		msgLeave.nSessionID = GetPlayer()->GetSessionID();
-		msgLeave.nUserUID = GetPlayer()->GetUserUID();
-		CGameServerApp::SharedGameServerApp()->sendMsg(m_nCurTaxasRoomID,(char*)&msgLeave,sizeof(msgLeave) ) ;
-		m_nCurTaxasRoomID = 0 ;
-	}
+	//if ( m_nCurTaxasRoomID != 0 )  // order to leave 
+	//{
+	//	stMsgOrderTaxasPlayerLeave msgLeave ;
+	//	msgLeave.nRoomID = m_nCurTaxasRoomID ;
+	//	msgLeave.nSessionID = GetPlayer()->GetSessionID();
+	//	msgLeave.nUserUID = GetPlayer()->GetUserUID();
+	//	CGameServerApp::SharedGameServerApp()->sendMsg(m_nCurTaxasRoomID,(char*)&msgLeave,sizeof(msgLeave) ) ;
+	//	m_nCurTaxasRoomID = 0 ;
+	//}
 }
 
 void CPlayerTaxas::TimerSave()

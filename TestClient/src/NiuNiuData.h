@@ -21,4 +21,5 @@ public:
 	stNNRoomInfoPayerItem* getPlayerByIdx(uint8_t nIdx );
 	bool isHaveNiu(uint8_t nIdx );
 	uint8_t getRandEmptySeatIdx();
+	void resetAllStandupPlayer();
 };

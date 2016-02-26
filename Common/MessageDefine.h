@@ -555,10 +555,74 @@ struct stMsgRoomEnterNewState
 	float m_fStateDuring ; 
 };
 
+// enter and leave 
+struct stMsgPlayerEnterRoom
+	:public stMsgToRoom
+{
+	stMsgPlayerEnterRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_ENTER_ROOM ; }
+	uint8_t nRoomGameType ;
+	uint32_t nRoomID ;
+};
+
+struct stMsgPlayerEnterRoomRet 
+	:public stMsg
+{
+	stMsgPlayerEnterRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_ENTER_ROOM ; }
+	uint8_t nRet ; // 0 success , 1 already in this room , 2 not register player  can not enter ; 3 player coin is too few ; 4 ;  player coin is too many ; 5 can not find room id ,  6 room type error 
+};
+// sit down ;
+struct stMsgPlayerSitDown
+	:public stMsgToRoom
+{
+	stMsgPlayerSitDown(){ usMsgType = MSG_PLAYER_SITDOWN ;}
+	uint32_t nTakeInCoin ; // 0 ,means take in all ; 
+	uint8_t nIdx ;
+};
+
+struct stMsgPlayerSitDownRet
+	:public stMsg
+{
+	stMsgPlayerSitDownRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_SITDOWN ; }
+	uint8_t nRet ; // 0 success , 1 coin not engouht , 2 target have player , 3 other error ;
+};
+
+struct stMsgRoomSitDown
+	:public stMsg
+{
+	stMsgRoomSitDown(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_ROOM_SITDOWN ; }
+	uint8_t nSitDownPlayerUserUID ;
+	uint8_t nIdx ;
+	uint32_t nTakeInCoin ;
+};
+
+// stand up 
+struct stMsgPlayerStandUp
+	:public stMsgToRoom
+{
+	stMsgPlayerStandUp(){ usMsgType = MSG_PLAYER_STANDUP ; }
+};
+
+struct stMsgPlayerStandUpRet
+	:public stMsg
+{
+	stMsgPlayerStandUpRet() { cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_STANDUP ; }
+	uint8_t nRet ; // 0 success , 1 you are not sit down , 2 other error ; 
+};
+
+struct stMsgRoomStandUp
+	:public stMsg
+{
+	stMsgRoomStandUp(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_ROOM_STANDUP ; }
+	uint8_t nIdx ;
+};
+
+
+
 struct stRoomRankEntry
 {
 	uint32_t nUserUID ;
-	int64_t nOffset ;
+	int64_t nGameOffset ;
+	int64_t nOtherOffset ;
 };
 
 struct stMsgRequestRoomRankRet

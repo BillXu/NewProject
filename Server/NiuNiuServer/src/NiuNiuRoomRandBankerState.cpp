@@ -76,5 +76,5 @@ void CNiuNiuRoomRandBankerState::enterState(IRoom* pRoom)
 
 void CNiuNiuRoomRandBankerState::onStateDuringTimeUp()
 {
-	m_pRoom->goToState(CNiuNiuRoomBetState::eStateID);
+	m_pRoom->goToState(eRoomState_NN_StartBet);
 }

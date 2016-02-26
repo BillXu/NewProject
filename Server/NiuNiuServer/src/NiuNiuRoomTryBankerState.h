@@ -10,9 +10,9 @@ public:
 		eStateID = eRoomState_NN_TryBanker,
 	};
 public:
+	CNiuNiuRoomTryBanker(){ m_nState = eRoomState_NN_TryBanker ; }
 	void enterState(IRoom* pRoom);
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
-	uint16_t getStateID(){ return eStateID ;}
 	void onStateDuringTimeUp();
 protected:
 	CNiuNiuRoom* m_pRoom ;

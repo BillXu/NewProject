@@ -108,9 +108,6 @@
     <ClInclude Include="src\NiuNiuRoomPlayer.h">
       <Filter>src\Room</Filter>
     </ClInclude>
-    <ClInclude Include="src\NiuNiuRoomWaitJoinState.h">
-      <Filter>src\Room\state</Filter>
-    </ClInclude>
     <ClInclude Include="src\NiuNiuRoomDistribute4CardState.h">
       <Filter>src\Room\state</Filter>
     </ClInclude>
@@ -205,9 +202,6 @@
     </ClCompile>
     <ClCompile Include="src\NiuNiuRoomPlayer.cpp">
       <Filter>src\Room</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NiuNiuRoomWaitJoinState.cpp">
-      <Filter>src\Room\state</Filter>
     </ClCompile>
     <ClCompile Include="src\NiuNiuRoomDistribute4CardState.cpp">
       <Filter>src\Room\state</Filter>

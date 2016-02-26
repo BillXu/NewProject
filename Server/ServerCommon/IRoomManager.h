@@ -34,7 +34,8 @@ protected:
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
 	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 	virtual void onConnectedToSvr();
-	virtual IRoom* doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID,eRoomType cRoomType ) = 0 ;
+	virtual IRoom* doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID,eRoomType cRoomType, Json::Value& vJsValue ) = 0 ;
+	virtual IRoom* doCreateRoomObject( eRoomType cRoomType) = 0 ;
 	bool reqeustChatRoomID(IRoom* pRoom);
 	void addRoomToCreator(IRoom* pRoom);
 	void addRoomToConfigRooms(IRoom* pRoom);

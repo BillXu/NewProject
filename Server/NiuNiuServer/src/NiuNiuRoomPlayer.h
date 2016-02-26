@@ -7,7 +7,7 @@ class CNiuNiuRoomPlayer
 	:public ISitableRoomPlayer
 {
 public:
-	void init(uint32_t nSessionID , uint32_t nUserUID) override;
+	void reset(IRoom::stStandPlayer* pPlayer) override ;
 	void onGameEnd()override ;
 	void onGameBegin()override ;
 	void doSitdown(uint8_t nIdx ) override;
@@ -19,17 +19,10 @@ public:
 	void setTryBankerTimes(uint8_t nTimes );
 	uint8_t getBetTimes();
 	void setBetTimes(uint8_t nTimes);
-	void setCoinOffsetThisGame(int32_t nOffset );
-	int32_t getCoinOffsetThisGame(){ return m_nOffsetCoinThisGame ;}
-	stPlayerNiuNiuData* getData(){ return &m_tHistoryData ;}
-private:
-	void willLeave()override ;
+	void switchPeerCard(ISitableRoomPlayer* pPlayer )override;
 protected:
 	uint8_t m_nTryBankerTimes ;
 	uint8_t m_nBetTimes ;
 	uint8_t m_vCards[NIUNIU_HOLD_CARD_COUNT];
 	CNiuNiuPeerCard m_tPeerCard ;
-	int32_t m_nOffsetCoinThisGame ;
-
-	stPlayerNiuNiuData m_tHistoryData ;
 };

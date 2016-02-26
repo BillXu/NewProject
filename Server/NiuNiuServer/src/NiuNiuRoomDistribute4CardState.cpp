@@ -8,33 +8,15 @@
 void CNiuNiuRoomDistribute4CardState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (ISitableRoom*)pRoom ;
-	m_pRoom->onGameWillBegin();
 
 	// distribute card ;
-	uint8_t nPlayerCnt = 0 ;
-	uint8_t nSeatCnt = m_pRoom->getSeatCount() ;
-	for ( uint8_t nIdx = 0 ; nIdx < nSeatCnt ; ++nIdx )
-	{
-		CNiuNiuRoomPlayer* pRoomPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getPlayerByIdx(nIdx) ;
-		if ( pRoomPlayer && pRoomPlayer->isHaveState(eRoomPeer_CanAct))
-		{
-			uint8_t nCardCount = NIUNIU_HOLD_CARD_COUNT - 1 ;
-			uint8_t nCardIdx = 0 ;
-			++nPlayerCnt;
-			while ( nCardIdx < nCardCount )
-			{
-				pRoomPlayer->onGetCard(nCardIdx,m_pRoom->getPoker()->GetCardWithCompositeNum()) ;
-				++nCardIdx ;
-			}
-		}
-	}
-
+	uint8_t nPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
 	// send msg ;
 	stMsgNNDistriute4Card msgForCard ;
 	msgForCard.nPlayerCnt = nPlayerCnt;
 	CAutoBuffer buffer(sizeof(msgForCard) + msgForCard.nPlayerCnt * sizeof(stDistriuet4CardItem)) ;
 	buffer.addContent(&msgForCard,sizeof(msgForCard)) ;
-	for ( uint8_t nIdx = 0 ; nIdx < nSeatCnt ; ++nIdx )
+	for ( uint8_t nIdx = 0 ; nIdx < m_pRoom->getSeatCount() ; ++nIdx )
 	{
 		CNiuNiuRoomPlayer* pRoomPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getPlayerByIdx(nIdx) ;
 		if ( pRoomPlayer && pRoomPlayer->isHaveState(eRoomPeer_CanAct))

@@ -33,4 +33,5 @@ protected:
 	eRobotControlState m_eState ;
 
 	float m_fWaitSitDownTicket ;
+	uint8_t m_nSkipGameCnt ;
 };

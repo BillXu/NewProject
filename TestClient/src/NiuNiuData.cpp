@@ -230,6 +230,25 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 	return true ;
 }
 
+void stNiuNiuData::resetAllStandupPlayer()
+{
+	for ( stNNRoomInfoPayerItem& pPlayer : vPlayers )
+	{
+		memset(pPlayer.vHoldChard,0,sizeof(pPlayer.vHoldChard)) ;
+		if ( pPlayer.nUserUID == 0 )
+		{
+			continue;
+		}
+
+		if ( (pPlayer.nStateFlag & eRoomPeer_WillStandUp) == eRoomPeer_WillStandUp )
+		{
+			// do stand up 
+			memset(vPlayers + pPlayer.nIdx , 0 , sizeof(stNNRoomInfoPayerItem)) ;
+			printf("here do standup room id = %d\n",nRoomID);
+		}
+	}
+}
+
 uint8_t stNiuNiuData::getRandEmptySeatIdx()
 {
 	uint8_t nMaxSeatCnt = 6 ;

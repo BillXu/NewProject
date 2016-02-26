@@ -6,6 +6,7 @@
 #include "MessageDefine.h"
 #include "ServerCommon.h"
 #include "TaxasMessageDefine.h"
+#include "ServerDefine.h"
 #define DBServer_PORT 5001
 // WARNNING:变长字符串，我们不包括终结符 \0 ;
 
@@ -75,9 +76,8 @@ struct stMsgDataServerGetBaseDataRet
 struct stSaveRoomPlayerEntry
 {
 	uint32_t nUserUID ;
-	int64_t nOffset ;
-	uint32_t nPlayerTimes ;
-	int32_t nWinTimes ;
+	int64_t nGameOffset ;
+	int64_t nOtherOffset ;
 };
 
 struct stMsgSaveRoomPlayer
@@ -247,16 +247,12 @@ struct stMsgSaveUpdateRoomInfo
 	:public stMsg
 {
 	stMsgSaveUpdateRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_UPDATE_ROOM_INFO ;}
+	bool bIsNewCreate ;
 	uint8_t nRoomType ; // eRoomType ;
 	uint32_t nRoomID ;
-	uint32_t nDeadTime ;
-	uint16_t nAvataID ;
-	uint32_t nInformSerial;
-	uint64_t nRoomProfit;
-	uint64_t nTotalProfit;
-	char vRoomName[MAX_LEN_ROOM_NAME];
-	uint16_t nInformLen ;
-	PLACE_HOLDER(char* pRoomInfom);
+	uint32_t nRoomOwnerUID ;
+	uint8_t nJsonLen ;
+	PLACE_HOLDER(char* pJsonArg);
 };
 
 struct stMsgReadRoomInfo
@@ -270,20 +266,11 @@ struct stMsgReadRoomInfoRet
 	:public stMsg
 {
 	stMsgReadRoomInfoRet(){ cSysIdentifer = ID_MSG_PORT_NONE; usMsgType = MSG_READ_ROOM_INFO ; }
-	uint8_t nRoomType ;
+	uint8_t nRoomType ; // eRoomType ;
 	uint32_t nRoomID ;
-	uint16_t nConfigID ;
 	uint32_t nRoomOwnerUID ;
-	uint32_t nCreateTime ;
-	uint32_t nDeadTime ;
-	uint16_t nAvataID ;
-	uint32_t nInformSerial;
-	uint64_t nRoomProfit;
-	uint64_t nChatRoomID ;
-	uint64_t nTotalProfit;
-	char vRoomName[MAX_LEN_ROOM_NAME];
-	uint16_t nInformLen ;
-	PLACE_HOLDER(char* pRoomInfom);
+	uint8_t nJsonLen ;
+	PLACE_HOLDER(char* pJsonArg);
 };
 
 struct stMsgSaveTaxasRoomPlayer
@@ -487,6 +474,47 @@ struct stMsgOrderTaxasPlayerLeaveRet
 	stMsgOrderTaxasPlayerLeaveRet(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_ORDER_LEAVE ; }
 	uint32_t nUserUID ;
 	uint8_t nRet ; // 0 success , 1 can not find room ;
+};
+
+struct stMsgSvrEnterRoom
+	:public stMsg
+{
+	stMsgSvrEnterRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_SVR_ENTER_ROOM ; }
+	uint8_t nGameType ;
+	uint8_t nRoomID ;
+	stEnterRoomData tPlayerData ;
+};
+
+struct stMsgSvrEnterRoomRet
+	:public stMsg
+{
+	stMsgSvrEnterRoomRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_SVR_ENTER_ROOM ; }
+	uint8_t nRet ; // 0 success , 1 already in this room , 2 not register player  can not enter ; 3 player coin is too few ; 4 ;  player coin is too many ; 5 can not find room id ,  6 room type error 
+	uint8_t nGameType ;
+	uint8_t nRoomID ;
+};
+
+//struct stMsgSvrApplyLeaveRoom
+//	:public stMsg
+//{
+//	stMsgSvrApplyLeaveRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_SVR_DO_LEAVE_ROOM ; }
+//	uint32_t nUserUID ;
+//	uint32_t nSessionID ;
+//	uint32_t nRoomID ;
+//	uint32_t nRoomType ;
+//};
+
+struct stMsgSvrDoLeaveRoom
+	:public stMsg
+{
+	stMsgSvrDoLeaveRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_SVR_DO_LEAVE_ROOM ; }
+	uint8_t nGameType ;
+	uint8_t nRoomID ;
+	uint32_t nUserUID ;
+	uint64_t nCoin ;
+	uint32_t nPlayerTimes ;
+	uint32_t nWinTimes ;
+	uint8_t nNewPlayerHaloWeight ;
 };
 
 // other with Verify Server ;

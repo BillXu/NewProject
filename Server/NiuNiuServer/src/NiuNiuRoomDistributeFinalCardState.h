@@ -7,9 +7,9 @@ class CNiuNiuRoomDistributeFinalCardState
 public:
 	enum { eStateID = eRoomState_NN_FinalCard };
 public:
+	CNiuNiuRoomDistributeFinalCardState(){ m_nState = eRoomState_NN_FinalCard ;}
 	void enterState(IRoom* pRoom);
 	void onStateDuringTimeUp();
-	uint16_t getStateID(){ return eStateID ;}
 protected:
 	CNiuNiuRoom* m_pRoom ;
 };

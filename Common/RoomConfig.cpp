@@ -28,13 +28,13 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 			pRoomConfig = pConfig ;
 		}
 		break;
-	case eRoom_Gold:
-		{
-			stGoldenRoomConfig* pConfig = new stGoldenRoomConfig ;
-			pConfig->bCanDoublePK = (bool)refReaderRow["CanDoublePK"]->IntValue();
-			pConfig->nChangeCardRound = refReaderRow["ChangeCardRound"]->IntValue();
-			pConfig->nMiniBet = refReaderRow["MiniBet"]->IntValue();
-			pConfig->nTitleNeedToEnter = refReaderRow["TitleNeedToEnter"]->IntValue();
+	//case eRoom_Gold:
+	//	{
+	//		stGoldenRoomConfig* pConfig = new stGoldenRoomConfig ;
+	//		pConfig->bCanDoublePK = (bool)refReaderRow["CanDoublePK"]->IntValue();
+	//		pConfig->nChangeCardRound = refReaderRow["ChangeCardRound"]->IntValue();
+	//		pConfig->nMiniBet = refReaderRow["MiniBet"]->IntValue();
+	//		pConfig->nTitleNeedToEnter = refReaderRow["TitleNeedToEnter"]->IntValue();
 // #ifdef SERVER
 // 			char pBuffer[256] = {0};
 // 			for ( int i = 0 ; i < GOLDEN_ROOM_COIN_LEVEL_CNT ; ++i )
@@ -44,8 +44,8 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 // 				pConfig->vCoinLevels[i] = refReaderRow[pBuffer]->IntValue();
 // 			}
 // #endif
-			pRoomConfig = pConfig ;
-		}
+			//pRoomConfig = pConfig ;
+		//}
 	default:
 		CLogMgr::SharedLogMgr()->ErrorLog( "unknown room config ,room type = %d",cType ) ;
 		return false;

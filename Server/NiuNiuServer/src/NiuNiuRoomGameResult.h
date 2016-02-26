@@ -7,9 +7,9 @@ class CNiuNiuRoomGameResultState
 public:
 	enum { eStateID = eRoomState_NN_GameResult };
 public:
+	CNiuNiuRoomGameResultState(){ m_nState = eRoomState_NN_GameResult ;}
 	void enterState(IRoom* pRoom);
 	void onStateDuringTimeUp();
-	uint16_t getStateID(){ return eStateID ;}
 protected:
 	CNiuNiuRoom* m_pRoom ;
 };

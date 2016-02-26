@@ -43,6 +43,22 @@ public:
     CNiuNiuPeerCard::CardGroup getCardGroup();
 #endif
     uint8_t getAddIdx(){return m_nAddIdx;}
+	CNiuNiuPeerCard& operator = (CNiuNiuPeerCard& pRight )
+	{
+		for( uint8_t nIdx = 0 ; nIdx < NIUNIU_HOLD_CARD_COUNT; ++nIdx )
+		{
+			uint8_t nRight = pRight.m_vHoldCards[nIdx].GetCardCompositeNum() ;
+			m_vHoldCards[nIdx].RsetCardByCompositeNum(nRight);
+		}
+
+		m_nAddIdx = pRight.m_nAddIdx ;
+		m_nBiggestCardIdx = pRight.m_nBiggestCardIdx ;
+		m_eType = pRight.m_eType ;
+		m_nPoint = pRight.m_nPoint ;
+		m_nGroupIdx = pRight.m_nGroupIdx ;
+		m_nWeight = pRight.m_nWeight ;
+		return *this ;
+	}
 protected:
 	bool isCaculated();
 	void caculateCards();

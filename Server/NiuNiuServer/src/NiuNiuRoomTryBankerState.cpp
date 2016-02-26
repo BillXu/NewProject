@@ -102,7 +102,7 @@ void CNiuNiuRoomTryBanker::onStateDuringTimeUp()
 		msgBanker.nBankerIdx = m_pRoom->getBankerIdx();
 		m_pRoom->sendRoomMsg(&msgBanker,sizeof(msgBanker)) ;
 
-		m_pRoom->goToState(CNiuNiuRoomBetState::eStateID);
+		m_pRoom->goToState(eRoomState_NN_StartBet);
 	}
 	else if ( vMaybeBanker.size() > 1 )
 	{

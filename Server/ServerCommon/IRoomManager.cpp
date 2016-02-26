@@ -59,6 +59,7 @@ bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 			else
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("unprocess cross svr request type = %d",pRet->nRequestType) ;
+				return false ;
 			}
 		}
 
@@ -82,7 +83,11 @@ bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		{
 			IRoom* pRoom = GetRoomByID(pRet->nTargetID);
 			assert(pRoom&&"this request no one to process or target id error");
-			return pRoom->onCrossServerRequestRet(pRet,pJsValue);
+			if ( pRoom )
+			{
+				return pRoom->onCrossServerRequestRet(pRet,pJsValue);
+			}
+			return false ;
 		}
 		return true ;
 	}
@@ -142,23 +147,14 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		{
 			stMsgReadRoomInfoRet* pRet = (stMsgReadRoomInfoRet*)prealMsg ;
 			CLogMgr::SharedLogMgr()->PrintLog("read room info room id = %d",pRet->nRoomID);
-			IRoom* pRoom = doCreateInitedRoomObject(pRet->nRoomID,pRet->nConfigID,(eRoomType)pRet->nRoomType) ;
+			IRoom* pRoom = doCreateRoomObject((eRoomType)pRet->nRoomType) ;
+			Json::Reader jsReader ;
+			Json::Value jsRoot;
+			CAutoBuffer auBufo (pRet->nJsonLen + 1 );
+			auBufo.addContent( ((char*)pRet) + sizeof(stMsgReadRoomInfoRet),pRet->nJsonLen);
+			jsReader.parse(auBufo.getBufferPtr(),jsRoot);
 			m_vRooms[pRoom->getRoomID()] = pRoom ;
-			pRoom->setOwnerUID(pRet->nRoomOwnerUID);
-			pRoom->setRoomName(pRet->vRoomName);
-			pRoom->setDeadTime(pRet->nDeadTime);
-			pRoom->setProfit(pRet->nRoomProfit);
-			pRoom->setTotalProfit(pRet->nTotalProfit) ;
-			pRoom->setAvataID(pRet->nAvataID);
-			pRoom->setCreateTime(pRet->nCreateTime);
-			pRoom->setInformSieral(pRet->nInformSerial);
-			pRoom->setChatRoomID(pRet->nChatRoomID);
-			if ( pRet->nInformLen )
-			{
-				CAutoBuffer auBufo (pRet->nInformLen + 1 );
-				auBufo.addContent( ((char*)&pRet->nInformLen) + sizeof(pRet->nInformLen),pRet->nInformLen);
-				pRoom->setRoomInform(auBufo.getBufferPtr()) ;
-			}
+			pRoom->serializationFromDB(pRet->nRoomID,jsRoot);
 
 			if ( pRet->nRoomID > m_nMaxRoomID )
 			{
@@ -191,6 +187,39 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			msgRet.nTotalProfit = pRoom->getTotalProfit() ;
 			sprintf_s(msgRet.vRoomName,sizeof(msgRet.vRoomName),"%s",pRoom->getRoomName());
 			sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
+		}
+		break;
+	case MSG_SVR_ENTER_ROOM:
+		{
+			stMsgSvrEnterRoomRet msgBack ;
+			msgBack.nRet = 0 ;
+			stMsgSvrEnterRoom* pRet = (stMsgSvrEnterRoom*)prealMsg ;
+			msgBack.nGameType = pRet->nGameType ;
+			msgBack.nRoomID = pRet->nRoomID ;
+
+			IRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
+			if ( pRoom == nullptr )
+			{
+				msgBack.nRet = 5 ;
+				sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
+				break;
+			}
+
+			if ( pRoom->getRoomType() != pRet->nGameType )
+			{
+				msgBack.nRet = 6 ;
+				sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
+				break;
+			}
+
+			msgBack.nRet = pRoom->canPlayerEnterRoom(&pRet->tPlayerData) ;
+			msgBack.nRoomID = pRoom->getRoomID() ;
+			sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
+
+			if ( msgBack.nRet == 0 )
+			{
+				pRoom->onPlayerEnterRoom(&pRet->tPlayerData);
+			}
 		}
 		break;
 	default:
@@ -328,16 +357,7 @@ void IRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 		{
 			pRoom->setChatRoomID(nChatRoomID);
 
-			stMsgSaveCreateRoomInfo msgCreateInfo ;
-			msgCreateInfo.nRoomType = pRoom->getRoomType() ;
-			msgCreateInfo.nCreateTime = pRoom->getCreateTime();
-			msgCreateInfo.nConfigID = pRoom->getConfigID() ;
-			msgCreateInfo.nRoomID = pRoom->getRoomID();
-			msgCreateInfo.nRoomOwnerUID = pRoom->getOwnerUID() ;
-			msgCreateInfo.nChatRoomID = nChatRoomID ;
-			sendMsg(&msgCreateInfo,sizeof(msgCreateInfo),pRoom->getRoomID());
-
-			pRoom->onTimeSave(true);
+			pRoom->serializationToDB(true);
 			addRoomToCreator(pRoom);
 			addRoomToConfigRooms(pRoom);
 		}
@@ -435,7 +455,11 @@ bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		msgRet.vArg[1] = 0 ;
 		msgRet.vArg[2] = pRequest->vArg[2] ;
 		msgRet.vArg[3] = pRequest->vArg[1] ;
-		IRoom* pRoom = doCreateInitedRoomObject(++m_nMaxRoomID,nConfigID,(eRoomType)pRequest->vArg[2]);
+		Json::Value vCreateJs ;
+		vCreateJs["name"] = strName ;
+		vCreateJs["ownerUID"] = pRequest->nReqOrigID ; 
+		vCreateJs["duringTime"] = (uint32_t)pRequest->vArg[1] * 60 ;
+		IRoom* pRoom = doCreateInitedRoomObject(++m_nMaxRoomID,nConfigID,(eRoomType)pRequest->vArg[2],vCreateJs);
 		if ( pRoom == nullptr )
 		{
 			--m_nMaxRoomID;
@@ -445,7 +469,6 @@ bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		}
 
 		m_vRooms[pRoom->getRoomID()] = pRoom ;
-		pRoom->onCreateByPlayer(pRequest->nReqOrigID,pRequest->vArg[1]);
 		pRoom->setRoomName(strName.c_str());
 		if ( false == reqeustChatRoomID(pRoom) )
 		{

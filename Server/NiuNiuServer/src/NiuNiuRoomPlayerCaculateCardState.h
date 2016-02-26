@@ -7,7 +7,7 @@ class CNiuNiuRoomStatePlayerCaculateCardState
 {
 public:
 	enum  { eStateID = eRoomState_NN_CaculateCard };
-	uint16_t getStateID(){ return eStateID ;}
+	CNiuNiuRoomStatePlayerCaculateCardState(){ m_nState = eRoomState_NN_CaculateCard ; };
 	void enterState(IRoom* pRoom);
 	void onStateDuringTimeUp();
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );

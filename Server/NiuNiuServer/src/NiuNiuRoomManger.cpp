@@ -134,94 +134,6 @@ bool CNiuNiuRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest 
 
 	switch ( pRequest->nRequestType )
 	{
-	case eCrossSvrReq_ApplyLeaveRoom:
-		{
-			CNiuNiuRoom* pRoom = (CNiuNiuRoom*)GetRoomByID(pRequest->nTargetID) ;
-			if ( pRoom == nullptr )
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d ,process eCrossSvrReq_ApplyLeaveRoom",pRequest->nTargetID) ;
-				return true ;
-			}
-
-			IRoomPlayer* pp = pRoom->getPlayerByUserUID(pRequest->nReqOrigID) ;
-			if ( pp )
-			{
-				CLogMgr::SharedLogMgr()->PrintLog("ApplyLeaveRoom cur session id = %d , old sessionid = %d , uid = %d , i let you leave",(uint32_t)pRequest->vArg[1],pp->getSessionID(),pRequest->nReqOrigID);
-				ISitableRoomPlayer* pPlayer = pRoom->getSitdownPlayerBySessionID(pp->getSessionID()) ;
-				if ( pPlayer )
-				{
-					pPlayer->addState(eRoomPeer_WillLeave) ;
-				}
-
-				if ( pPlayer == nullptr || pPlayer->isHaveState(eRoomPeer_CanAct) == false )
-				{
-					CLogMgr::SharedLogMgr()->PrintLog("player uid = %d apply leave ,direct do leave ",pRequest->nReqOrigID) ;
-					pRoom->doPlayerLeave(pp->getSessionID()) ;
-				}
-				else
-				{
-					CLogMgr::SharedLogMgr()->PrintLog("player uid = %d apply leave ,but pls wait game end ",pRequest->nReqOrigID) ;
-				}
-			}
-			else
-			{
-				stMsgCrossServerRequest msgEnter ;
-				msgEnter.cSysIdentifer = ID_MSG_PORT_DATA ;
-				msgEnter.nJsonsLen = 0 ;
-				msgEnter.nReqOrigID = pRoom->getRoomID();
-				msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
-				msgEnter.nRequestType = eCrossSvrReq_LeaveRoomRet ;
-				msgEnter.nTargetID = pRequest->nReqOrigID ;
-				msgEnter.vArg[0] = eRoom_NiuNiu ;
-				msgEnter.vArg[1] = pRoom->getRoomID() ;
-				pRoom->sendMsgToPlayer(&msgEnter,sizeof(msgEnter),pRoom->getRoomID()) ;
-				CLogMgr::SharedLogMgr()->PrintLog("you are not in room but i let you go!") ;
-			}
-		}
-		break;
-	case eCrossSvrReq_EnterRoom:
-		{
-			stMsgCrossServerRequestRet resultBack ;
-			FILL_CROSSE_REQUEST_BACK(resultBack,pRequest,eSenderPort);
-			resultBack.vArg[1] = eRoom_NiuNiu ;
-			resultBack.vArg[2] = pRequest->vArg[1] ;
-			IRoom* pRoom = nullptr ;
-			if ( resultBack.vArg[3] == 0 )
-			{
-				pRoom = GetRoomByID(pRequest->vArg[1]) ;
-			}
-			else
-			{
-				pRoom = getRoomByConfigID(pRequest->vArg[1]) ;
-			}
-
-			if ( pRoom == nullptr )
-			{
-				resultBack.nRet = 1 ;
-				sendMsg(&resultBack,sizeof(resultBack),0) ;
-				CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %d , for uid = %d to enter",(uint32_t)pRequest->vArg[1],pRequest->nTargetID) ;
-				return true ;
-			}
-			resultBack.vArg[2] = pRoom->getRoomID() ;
-
-			IRoomPlayer* pPlayer = pRoom->getReusePlayerObject();
-			pPlayer->setSessionID(pRequest->vArg[0]) ;
-			pPlayer->setUserUID(pRequest->nReqOrigID);
-			pPlayer->setCoin(pRequest->vArg[2]) ;
-			if ( pRoom->addRoomPlayer(pPlayer) == false )
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("this peer already in this room uid = %d",pPlayer->getUserUID()) ;
-				delete pPlayer ;
-				pPlayer = nullptr ;
-				resultBack.nRet = 1 ;
-				sendMsg(&resultBack,sizeof(resultBack),0) ;
-				return true ;
-			}
-			pRoom->sendRoomInfoToPlayer(pPlayer->getSessionID());
-			sendMsg(&resultBack,sizeof(resultBack),0) ;
-			CLogMgr::SharedLogMgr()->PrintLog("send niuniu room info to player uid = %d",pPlayer->getUserUID()) ;
-		}
-		break;
 	default:
 		//CLogMgr::SharedLogMgr()->PrintLog("un processed request type = %d",pRequest->nRequestType) ;
 		return false;
@@ -250,7 +162,7 @@ void CNiuNiuRoomManager::onConnectedToSvr()
 	}
 }
 
-IRoom* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID ,eRoomType reqSubRoomType ) 
+IRoom* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID ,eRoomType reqSubRoomType, Json::Value& vJsValue ) 
 {
 	stSitableRoomConfig* pConfig = (stSitableRoomConfig*)CNiuNiuServerApp::getInstance()->getRoomConfigMgr()->GetConfigByConfigID(nRoomConfigID) ;
 	if ( pConfig == nullptr )
@@ -258,8 +170,14 @@ IRoom* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID , uint16_t 
 		return nullptr ;
 	}
 
+	IRoom* pRoom = doCreateRoomObject(reqSubRoomType) ;
+	pRoom->init(pConfig,nRoomID,vJsValue);
+	return pRoom ;
+}
+
+IRoom* CNiuNiuRoomManager::doCreateRoomObject(eRoomType reqSubRoomType)
+{
 	IRoom* pRoom = new CNiuNiuRoom() ;
-	pRoom->init(pConfig,nRoomID);
 	return pRoom ;
 }
 

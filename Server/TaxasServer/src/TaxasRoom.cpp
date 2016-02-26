@@ -1913,7 +1913,7 @@ void CTaxasRoom::SendRoomInfoToPlayer(uint32_t nSessionID )
 	{
 		stTaxasInRoomPeerDataExten* pData = GetInRoomPlayerDataBySessionID(nSessionID) ;
 		assert(pData&&"can not be null");
-		if ( pData->m_nReadedInformSerial < m_nInformSerial )
+		if ( pData && pData->m_nReadedInformSerial < m_nInformSerial )
 		{
 			stMsgRemindTaxasRoomNewInform msgRemind ;
 			SendMsgToPlayer(nSessionID,&msgRemind,sizeof(msgRemind)) ;

@@ -141,6 +141,17 @@ enum eMsgType
 	// msg request math list ;
 	MSG_REQUEST_MATCH_ROOM_LIST,
 	// message id for taxas poker
+
+
+	// new room msg are here ;
+	MSG_PLAYER_ENTER_ROOM,
+	MSG_PLAYER_LEAVE_ROOM,
+	MSG_PLAYER_SITDOWN,
+	MSG_PLAYER_STANDUP,
+	MSG_ROOM_SITDOWN,
+	MSG_ROOM_STANDUP,
+	MSG_SVR_ENTER_ROOM,
+	MSG_SVR_DO_LEAVE_ROOM,
 	MSG_TP_BEGIN = 450,
 	MSG_TP_CREATE_ROOM,
 

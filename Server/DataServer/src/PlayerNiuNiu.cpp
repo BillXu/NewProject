@@ -155,22 +155,6 @@ bool CPlayerNiuNiu::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMs
 			m_bDirty = true ;
 		}
 		break;
-	case eCrossSvrReq_LeaveRoomRet:
-		{
-			if ( pRequest->vArg[0] == eRoom_NiuNiu )
-			{
-				m_nCurRoomID = 0 ;
-
-				stMsgNNLeaveRoomRet msgLeave;
-				SendMsg(&msgLeave,sizeof(msgLeave));
-				return true ;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		break;
 	default:
 		return false ;
 	}
@@ -186,31 +170,6 @@ bool CPlayerNiuNiu::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,
 
 	switch ( pResult->nRequestType )
 	{
-	case eCrossSvrReq_EnterRoom:
-		{
-			if ( pResult->vArg[1] == eRoom_NiuNiu )
-			{
-				if ( pResult->nRet )
-				{
-					stMsgNNEnterRoomRet msgBack ;
-					msgBack.nRet = 1 ;
-					SendMsg(&msgBack,sizeof(msgBack)) ;
-					CLogMgr::SharedLogMgr()->PrintLog("enter niunniu room failed , cann't find room id = %d , uid = %d",m_nCurRoomID,GetPlayer()->GetUserUID()) ;
-					m_nCurRoomID = 0 ;
-					return true ;
-				}
-				else
-				{
-					m_nCurRoomID = pResult->vArg[2] ;
-					CLogMgr::SharedLogMgr()->PrintLog("enter niuniu room success uid = %d",GetPlayer()->GetUserUID()) ;
-				}
-			}
-			else
-			{
-				return false ; 
-			}
-		}
-		break;
 	default:
 		return false;
 	}
@@ -219,36 +178,12 @@ bool CPlayerNiuNiu::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,
 
 void CPlayerNiuNiu::OnPlayerDisconnect()
 {
-	if ( m_nCurRoomID )
-	{
-		stMsgCrossServerRequest msgEnter ;
-		msgEnter.cSysIdentifer = ID_MSG_PORT_NIU_NIU ;
-		msgEnter.nJsonsLen = 0 ;
-		msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
-		msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
-		msgEnter.nRequestType = eCrossSvrReq_ApplyLeaveRoom ;
-		msgEnter.nTargetID = m_nCurRoomID ;
-		msgEnter.vArg[0] = m_nCurRoomID ;
-		msgEnter.vArg[1] = GetPlayer()->GetSessionID() ;
-		SendMsg(&msgEnter,sizeof(msgEnter)) ;
-	}
+
 }
 
 void CPlayerNiuNiu::OnOtherWillLogined()
 {
-	if ( m_nCurRoomID )
-	{
-		stMsgCrossServerRequest msgEnter ;
-		msgEnter.cSysIdentifer = ID_MSG_PORT_NIU_NIU ;
-		msgEnter.nJsonsLen = 0 ;
-		msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
-		msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
-		msgEnter.nRequestType = eCrossSvrReq_ApplyLeaveRoom ;
-		msgEnter.nTargetID = m_nCurRoomID ;
-		msgEnter.vArg[0] = m_nCurRoomID ;
-		msgEnter.vArg[1] = GetPlayer()->GetSessionID() ;
-		SendMsg(&msgEnter,sizeof(msgEnter)) ;
-	}
+
 }
 
 void CPlayerNiuNiu::TimerSave()

@@ -5,7 +5,11 @@ class CNiuNiuRoom
 	:public ISitableRoom
 {
 public:
-	bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID )override;
+	CNiuNiuRoom();
+	bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID , Json::Value& vJsValue)override;
+	void serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )override;
+	void willSerializtionToDB(Json::Value& vOutJsValue)override;
+	void prepareState()override ;
 	void sendMsgToPlayer( stMsg* pmsg , uint16_t nLen , uint32_t nSessionID )override;
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID ) override;
 	void sendRoomInfoToPlayer(uint32_t nSessionID)override ;
@@ -24,22 +28,20 @@ public:
 	bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr )override ;
 	void onGameWillBegin()override ;
 	void onGameDidEnd()override ;
-	void playerStandUp( ISitableRoomPlayer* pPlayer )override ;
-	void doPlayerLeave(uint32_t nSession );
+	void onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )override ;
+	void onPlayerWillLeaveRoom( stStandPlayer* pPlayer )override ;
 	uint8_t getRoomType()override{ return eRoom_NiuNiu ;}
-
-	void onMatchFinish()override;
-	void onMatchRestart()override;
-	uint64_t getLeastCoinForPlayGame();
+	void prepareCards()override;
+	uint32_t coinNeededToSitDown()override;
+	bool canStartGame()override ;
+	void caculateGameResult();
 protected:
-	IRoomPlayer* doCreateRoomPlayerObject() override ;
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;
 protected:
 	uint8_t m_nBankerIdx ;
 	uint8_t m_nBetBottomTimes ;
 	uint64_t m_nBankerCoinLimitForBet ; // 
 	uint32_t m_nBaseBet ;
-	uint32_t m_nDeskFee ;
 
 	Json::Value m_arrPlayers ;
 };

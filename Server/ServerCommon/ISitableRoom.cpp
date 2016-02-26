@@ -5,6 +5,8 @@
 #include "MessageDefine.h"
 #include "AutoBuffer.h"
 #include "ServerMessageDefine.h"
+#include "LogManager.h"
+#include <json/json.h>
 ISitableRoom::~ISitableRoom()
 {
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
@@ -25,9 +27,9 @@ ISitableRoom::~ISitableRoom()
 	m_vReserveSitDownObject.clear() ;
 }
 
-bool ISitableRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID ) 
+bool ISitableRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue ) 
 {
-	IRoom::init(pConfig,nRoomID) ;
+	IRoom::init(pConfig,nRoomID,vJsValue) ;
 	stSitableRoomConfig* pC = (stSitableRoomConfig*)pConfig;
 	m_nSeatCnt = pC->nMaxSeat ;
 	m_vSitdownPlayers = new ISitableRoomPlayer*[m_nSeatCnt] ;
@@ -38,35 +40,72 @@ bool ISitableRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID )
 	return true ;
 }
 
-bool ISitableRoom::playerSitDown(ISitableRoomPlayer* pPlayer , uint8_t nIdx )
+void ISitableRoom::serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )
 {
-	if ( isSeatIdxEmpty(nIdx) )
-	{
-		m_vSitdownPlayers[nIdx] = pPlayer ;
-		pPlayer->doSitdown(nIdx) ;
-		pPlayer->setIdx(nIdx);
-
-		// save standup log ;
-		stMsgSaveLog msgLog ;
-		msgLog.nJsonExtnerLen = 0 ;
-		msgLog.nLogType = eLog_PlayerSitDown ;
-		msgLog.nTargetID = pPlayer->getUserUID() ;
-		memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
-		msgLog.vArg[0] = getRoomType() ;
-		msgLog.vArg[1] = getRoomID() ;
-		msgLog.vArg[2] = pPlayer->getCoin() ;
-		sendMsgToPlayer(&msgLog,sizeof(msgLog),getRoomID()) ;
-		return true ;
-	}
-	return false ;
+	IRoom::serializationFromDB(nRoomID,vJsValue);
+	m_nSeatCnt = vJsValue["seatCnt"].asUInt();
 }
 
-void ISitableRoom::playerStandUp( ISitableRoomPlayer* pPlayer )
+void ISitableRoom::willSerializtionToDB(Json::Value& vOutJsValue)
+{
+	IRoom::willSerializtionToDB(vOutJsValue);
+	vOutJsValue["seatCnt"] = m_nSeatCnt ;
+}
+
+//bool ISitableRoom::onPlayerSitDown(ISitableRoomPlayer* pPlayer , uint8_t nIdx )
+//{
+//	if ( isSeatIdxEmpty(nIdx) )
+//	{
+//		m_vSitdownPlayers[nIdx] = pPlayer ;
+//		pPlayer->doSitdown(nIdx) ;
+//		pPlayer->setIdx(nIdx);
+//
+//		// save standup log ;
+//		stMsgSaveLog msgLog ;
+//		msgLog.nJsonExtnerLen = 0 ;
+//		msgLog.nLogType = eLog_PlayerSitDown ;
+//		msgLog.nTargetID = pPlayer->getUserUID() ;
+//		memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+//		msgLog.vArg[0] = getRoomType() ;
+//		msgLog.vArg[1] = getRoomID() ;
+//		msgLog.vArg[2] = pPlayer->getCoin() ;
+//		sendMsgToPlayer(&msgLog,sizeof(msgLog),getRoomID()) ;
+//		return true ;
+//	}
+//	return false ;
+//}
+
+void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 {
 	assert(isSeatIdxEmpty(pPlayer->getIdx()) == false && "player not sit down" );
 	pPlayer->willStandUp();
 	m_vSitdownPlayers[pPlayer->getIdx()] = nullptr ;
+	auto standPlayer = getPlayerByUserUID(pPlayer->getUserUID()) ;
+	if ( standPlayer == nullptr )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("terrible error , not in player , how to sitdwon , how to standup ? uid = %d",pPlayer->getUserUID());
+	}
+	else
+	{
+		standPlayer->nCoin += pPlayer->getCoin() ;
+		standPlayer->nNewPlayerHaloWeight = pPlayer->getHaloWeight() ;
+	}
+
+	stMsgRoomStandUp msgStandUp ;
+	msgStandUp.nIdx = pPlayer->getIdx() ;
+	sendRoomMsg(&msgStandUp,sizeof(msgStandUp));
+
 	m_vReserveSitDownObject.push_back(pPlayer) ;
+}
+
+void ISitableRoom::playerDoLeaveRoom(uint32_t nPlayerUID )
+{
+	auto pPlayer = getSitdownPlayerByUID(nPlayerUID) ;
+	if ( pPlayer )
+	{
+		playerDoStandUp(pPlayer) ;
+	}
+	IRoom::playerDoLeaveRoom(nPlayerUID);
 }
 
 uint8_t ISitableRoom::getEmptySeatCount()
@@ -149,6 +188,18 @@ ISitableRoomPlayer* ISitableRoom::getSitdownPlayerBySessionID(uint32_t nSessionI
 	return nullptr ;
 }
 
+ISitableRoomPlayer* ISitableRoom::getSitdownPlayerByUID(uint32_t nUserUID )
+{
+	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+	{
+		if ( m_vSitdownPlayers[nIdx] && m_vSitdownPlayers[nIdx]->getUserUID() == nUserUID )
+		{
+			return m_vSitdownPlayers[nIdx] ;
+		}
+	}
+	return nullptr ;
+}
+
 bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
 {
 	if ( IRoom::onMessage(prealMsg,eSenderPort,nPlayerSessionID) )
@@ -158,56 +209,163 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 
 	switch ( prealMsg->usMsgType )
 	{
-	case MSG_REQUEST_ROOM_RANK:
+	case MSG_PLAYER_SITDOWN:
 		{
-			std::map<uint32_t,stRoomRankEntry> vWillSend ;
-			sortRoomRankItem();
-			// add 15 player into list ;
-			LIST_ROOM_RANK_ITEM::iterator iter = getSortRankItemListBegin();
-			for ( uint8_t nIdx = 0 ; iter != getSortRankItemListEnd() && nIdx < 15; ++iter,++nIdx )
+			stMsgPlayerSitDownRet msgBack ;
+			msgBack.nRet = 0 ;
+
+			stStandPlayer* pPlayer = getPlayerBySessionID(nPlayerSessionID) ;
+			if ( !pPlayer )
 			{
-				stRoomRankItem* pItem = (*iter) ;
-				stRoomRankEntry entry ;
-				entry.nOffset = pItem->nOffset ;
-				entry.nUserUID = pItem->nUserUID ;
-				vWillSend[pItem->nUserUID] = entry ;
+				CLogMgr::SharedLogMgr()->ErrorLog("palyer session id = %d ,not in this room so , can not sit down",nPlayerSessionID) ;
+				msgBack.nRet = 3 ;
+				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+				break; 
 			}
 
-			// keep all sit down player are in willSend
-			for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+			auto pp = getSitdownPlayerBySessionID(nPlayerSessionID);
+			if ( pp )
 			{
-				auto sitDownPlayer = m_vSitdownPlayers[nIdx] ;
-				if ( m_vSitdownPlayers[nIdx] && m_vSitdownPlayers[nIdx]->getUserUID() != 0 )
-				{
-					auto Iter = vWillSend.find(sitDownPlayer->getUserUID()) ;
-					if ( Iter == vWillSend.end() )
-					{
-						stRoomRankEntry item ;
-						item.nOffset = sitDownPlayer->getCoin() - sitDownPlayer->getInitCoin() ;
-						item.nUserUID = sitDownPlayer->getUserUID() ;
-						vWillSend[item.nUserUID] = item ;
-					}
-					else
-					{
-						vWillSend[sitDownPlayer->getUserUID()].nOffset += (sitDownPlayer->getCoin() - sitDownPlayer->getInitCoin());
-					}
-				}
+				CLogMgr::SharedLogMgr()->ErrorLog("session id = %d , already sit down , don't sit down again",nPlayerSessionID ) ;
+				break;
 			}
 
-			// send room info to player ;
-			stMsgRequestRoomRankRet msgRet ;
-			msgRet.nCnt = vWillSend.size() ;
-			CAutoBuffer msgBuffer(sizeof(msgRet) + msgRet.nCnt * sizeof(stRoomRankEntry));
-			msgBuffer.addContent(&msgRet,sizeof(msgRet));
-			for ( auto& itemSendPlayer : vWillSend )
+			stMsgPlayerSitDown* pRet = (stMsgPlayerSitDown*)prealMsg ;
+			if ( pRet->nTakeInCoin == 0 || pRet->nTakeInCoin > pPlayer->nCoin)
 			{
-				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
+				pRet->nTakeInCoin = pPlayer->nCoin ;
 			}
-			sendMsgToPlayer((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
+
+			if ( pRet->nTakeInCoin < coinNeededToSitDown() )
+			{
+				msgBack.nRet = 1 ;
+				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+				break; 
+			}
+
+			if ( isSeatIdxEmpty(pRet->nIdx) == false )
+			{
+				msgBack.nRet = 2 ;
+				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+				break; 
+			}
+
+			auto sitDownPlayer = getReuseSitableRoomPlayerObject() ;
+			sitDownPlayer->reset(pPlayer) ;
+			pPlayer->nCoin -= pRet->nTakeInCoin ;
+			sitDownPlayer->setCoin(pRet->nTakeInCoin) ;
+			sitDownPlayer->doSitdown(pRet->nIdx) ;
+			sitDownPlayer->setIdx(pRet->nIdx);
+			sitDownPlayer->setState(eRoomPeer_WaitNextGame );
+			m_vSitdownPlayers[pRet->nIdx] = sitDownPlayer ;
+
+			// tell others ;
+			stMsgRoomSitDown msgSitDown ;
+			msgSitDown.nIdx = sitDownPlayer->getIdx() ;
+			msgSitDown.nSitDownPlayerUserUID = sitDownPlayer->getUserUID() ;
+			msgSitDown.nTakeInCoin = sitDownPlayer->getCoin() ;
+			sendRoomMsg(&msgSitDown,sizeof(msgSitDown));
+
+			onPlayerSitDown(sitDownPlayer) ;
+		}
+		break;
+	case MSG_PLAYER_STANDUP:
+		{
+			stMsgPlayerStandUpRet msgBack ;
+			msgBack.nRet = 0 ;
+			auto player = getSitdownPlayerBySessionID(nPlayerSessionID) ;
+			if ( player == nullptr )
+			{
+				msgBack.nRet = 1 ;
+				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+				break; 
+			}
+			onPlayerWillStandUp(player);
 		}
 		break;
 	default:
 		return false;
 	}
 	return true ;
+}
+
+void ISitableRoom::onGameDidEnd()
+{
+	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+	{
+		auto pPlayer = m_vSitdownPlayers[nIdx] ;
+		if ( pPlayer && pPlayer->getCoin() < coinNeededToSitDown() )
+		{
+			playerDoStandUp(pPlayer);	
+			pPlayer = nullptr ;
+		}
+
+		if ( pPlayer )
+		{
+			pPlayer->onGameEnd() ;
+		}
+	}
+	m_vSortByPeerCardsAsc.clear();
+	IRoom::onGameDidEnd() ;
+}
+
+void ISitableRoom::onGameWillBegin()
+{
+	IRoom::onGameWillBegin() ;
+	uint8_t nSeatCnt = getSeatCount() ;
+	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
+	{
+		ISitableRoomPlayer* pp = getPlayerByIdx(nIdx) ;
+		if ( pp )
+		{
+			pp->setCoin(pp->getCoin() - getDeskFee() ) ;
+			setProfit(getProfit() + getDeskFee() ) ;
+			pp->onGameBegin();
+		}
+	}
+	prepareCards();
+}
+
+void ISitableRoom::doProcessNewPlayerHalo()
+{
+	if ( m_vSortByPeerCardsAsc.size() < 2 )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why this room sort cards is null ? ");
+		return ;
+	}
+
+	if ( isOmitNewPlayerHalo() )
+	{
+		return ;
+	}
+
+	uint8_t nHalfCnt = m_vSortByPeerCardsAsc.size() / 2 ;
+	uint8_t nSwitchTargetIdx = m_vSortByPeerCardsAsc.size() - 1 ;
+	for ( uint8_t nIdx = 0 ; nIdx < nHalfCnt; ++nIdx)
+	{
+		if ( m_vSortByPeerCardsAsc[nIdx]->isHaveHalo() == false )
+		{
+			continue;
+		}
+
+		for ( ; nSwitchTargetIdx > nIdx ; --nSwitchTargetIdx )
+		{
+			if ( m_vSortByPeerCardsAsc[nSwitchTargetIdx]->isHaveHalo() )
+			{
+				continue;
+			}
+
+			m_vSortByPeerCardsAsc[nIdx]->switchPeerCard(m_vSortByPeerCardsAsc[nSwitchTargetIdx]);
+			auto player = m_vSortByPeerCardsAsc[nIdx] ;
+			m_vSortByPeerCardsAsc[nIdx] = m_vSortByPeerCardsAsc[nSwitchTargetIdx] ;
+			m_vSortByPeerCardsAsc[nSwitchTargetIdx] = player ;
+
+			if ( nSwitchTargetIdx == 0 )
+			{
+				return ;
+			}
+			--nSwitchTargetIdx;
+			break;
+		}
+	}
 }
