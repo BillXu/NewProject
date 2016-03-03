@@ -166,14 +166,14 @@ struct stMsgPlayerBaseDataTaxas
 	:public stMsg
 {
 	stMsgPlayerBaseDataTaxas(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_BASE_DATA_TAXAS ; }
-	stPlayerTaxasData tTaxasData ;
+	stPlayerGameData tTaxasData ;
 };
 
 struct stMsgPlayerBaseDataNiuNiu
 	:public stMsg
 {
 	stMsgPlayerBaseDataNiuNiu(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_BASE_DATA_NIUNIU ; }
-	stPlayerNiuNiuData tNiuNiuData ;
+	stPlayerGameData tNiuNiuData ;
 };
 
 struct stMsgRequestPlayerData
@@ -570,6 +570,20 @@ struct stMsgPlayerEnterRoomRet
 	stMsgPlayerEnterRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_ENTER_ROOM ; }
 	uint8_t nRet ; // 0 success , 1 already in this room , 2 not register player  can not enter ; 3 player coin is too few ; 4 ;  player coin is too many ; 5 can not find room id ,  6 room type error 
 };
+
+struct stMsgPlayerLeaveRoom
+	:public stMsgToRoom
+{
+	stMsgPlayerLeaveRoom(){ usMsgType = MSG_PLAYER_LEAVE_ROOM ;}
+};
+
+struct stMsgPlayerLeaveRoomRet
+	:public stMsg
+{
+	stMsgPlayerLeaveRoomRet(){ usMsgType = MSG_PLAYER_LEAVE_ROOM ; cSysIdentifer = ID_MSG_PORT_CLIENT ; }
+	uint8_t nRet ; // 0 success , 1 you are not in room ;
+};
+
 // sit down ;
 struct stMsgPlayerSitDown
 	:public stMsgToRoom
@@ -590,7 +604,7 @@ struct stMsgRoomSitDown
 	:public stMsg
 {
 	stMsgRoomSitDown(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_ROOM_SITDOWN ; }
-	uint8_t nSitDownPlayerUserUID ;
+	uint32_t nSitDownPlayerUserUID ;
 	uint8_t nIdx ;
 	uint32_t nTakeInCoin ;
 };

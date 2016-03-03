@@ -176,7 +176,6 @@ void CNiuNiuPeerCard::caculateCards()
 			}
 		} 
 	}
-
 	m_nWeight = 0 ;
 	uint8_t nType = m_eType ;
 	uint8_t nBigFaceNum = m_vHoldCards[m_nBiggestCardIdx].GetCardFaceNum() ;

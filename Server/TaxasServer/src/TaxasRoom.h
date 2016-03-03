@@ -4,10 +4,10 @@
 #include "RoomConfig.h"
 #include "CommonData.h"
 #include "CardPoker.h"
-#include "Timer.h"
 #include <json/json.h>
 #include <cassert>
-class CTaxasBaseRoomState ;
+#include "ISitableRoom.h"
+class CTaxasPlayer ;
 
 typedef std::vector<uint8_t> VEC_INT8 ;
 struct stTaxasInRoomPeerDataExten
@@ -86,72 +86,57 @@ struct stVicePool
 			}
 		}
 	}
+
+	bool isPlayerInThisPool(uint8_t nIdx)
+	{
+		VEC_INT8::iterator iter = vInPoolPlayerIdx.begin();
+		for ( ; iter != vInPoolPlayerIdx.end(); ++iter )
+		{
+			if ( (*iter) == nIdx  )
+			{
+				return true;
+			}
+		}
+		return false ;
+	}
 };
 
 class CTaxasRoom
-	:public CTimerDelegate
+	:public ISitableRoom
 {
 public:
 	typedef std::vector<stTaxasInRoomPeerDataExten*> VEC_IN_ROOM_PEERS ;
 public:
 	CTaxasRoom();
 	virtual ~CTaxasRoom();
-	bool Init( uint32_t nRoomID,stTaxasRoomConfig* pRoomConfig );
-	void GoToState( eRoomState eState );
-	virtual void Update(float fTimeElpas, unsigned int nTimerID );
-	virtual CTaxasBaseRoomState* CreateRoomState( eRoomState eState );
-	void SendRoomMsg(stMsg* pMsg, uint16_t nLen );
-	void SendMsgToPlayer( uint32_t nSessionID, stMsg* pMsg, uint16_t nLen  );
-	virtual bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
-	bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
-	bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
-	void AddPlayer( stTaxasInRoomPeerDataExten& nPeerData );
-	uint32_t GetRoomID(){ return nRoomID ;}
-	bool IsPlayerInRoomWithSessionID(uint32_t nSessionID );
+	uint8_t getRoomType()override ;
+	bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )override;
+	void serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )override;
+	void willSerializtionToDB(Json::Value& vOutJsValue)override;
+	void prepareState();
 
-	void OnPlayerSitDown(uint8_t nSeatIdx , uint32_t nSessionID, uint64_t nTakeInCoin );
-	void OnPlayerStandUp(uint8_t nSeatIdx );
-	uint8_t GetSeatIdxBySessionID(uint32_t nSessionID );
-	void OnPlayerLeaveRoom(uint32_t nPlayerSession );
-	uint8_t GetCurWaitActPlayerIdx(){ return m_nCurWaitPlayerActionIdx ; }
+	void sendMsgToPlayer( stMsg* pmsg , uint16_t nLen , uint32_t nSessionID )override ;
+
+	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
+	
+	bool canStartGame()override ;
+	ISitableRoomPlayer* doCreateSitableRoomPlayer()override ;
+	uint32_t coinNeededToSitDown()override ;
+	void prepareCards()override ;
+
+	void onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )override ;
+	uint32_t getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp)override ;
+	void sendRoomInfoToPlayer(uint32_t nSessionID)override ;
+
+	// taxas define 
 	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t& nValue );  // return error code , 0 success ;
-	stTaxasPeerData* GetSitDownPlayerData(uint8_t nSeatIdx);
-	stTaxasPeerData* GetSitDownPlayerDataByUID(uint32_t nUserUID);
-	uint32_t getChampionUID();
-
-	// room life and attribute
-	void onCreateByPlayer(uint32_t nUserUID, uint16_t nRentDays );
-	void setOwnerUID(uint32_t nCreatorUID );
-	uint32_t getOwnerUID(){return m_nRoomOwnerUID ;}
-	void addLiftTime(uint32_t nDays );
-	void setDeadTime(uint32_t nDeadTime);
-	void setAvataID(uint32_t nAvaID );
-	void setRoomName(const char* pRoomName);
-	const char* getRoomName(){ return m_vRoomName ;}
-	void setRoomDesc(const char* pRoomDesc );
-	const char* getRoomDesc(){ return m_strRoomDesc.c_str() ; }
-	void setRoomInform(const char* pRoomInform );
-	bool isRoomAlive();
-	void setProfit(uint64_t nProfit );
-	uint64_t getProfit(){return m_nRoomProfit ;}
-	void addTotoalProfit(uint64_t nAdd ){ m_nTotalProfit += nAdd ;}
-	void setTotalProfit( uint64_t nProfit ){ m_nTotalProfit = nProfit ;}
-	void setCreateTime(uint32_t nTime);
-	uint32_t getCreateTime(){ return m_nCreateTime;}
-	void setInformSieral(uint32_t nSieaial);
-	void setChatRoomID(uint32_t nChatRoomID ){ m_nChatRoomID = nChatRoomID ;}
-	uint32_t getChatRoomID(){ return m_nChatRoomID ;}
-	uint32_t getConfigID(){ return m_stRoomConfig.nConfigID ; }
-	uint32_t getDeadTime(){ return m_nDeadTime ;}
-	void sendExpireInform();
-	void onMatchFinish();
-	void onMatchRestart();
+	uint8_t GetCurWaitActPlayerIdx(){ return m_nCurWaitPlayerActionIdx ; }
 
 	// logic function 
-	uint8_t GetPlayerCntWithState(eRoomPeerState eState );
-	void StartGame();
-	void ResetRoomData();
-	void DistributePrivateCard();
+	void onGameDidEnd()override ;
+	void onGameWillBegin()override ;
+
+	void startGame();
 	void PreparePlayersForThisRoundBet();
 	uint8_t InformPlayerAct();
 	void OnPlayerActTimeOut();
@@ -159,64 +144,30 @@ public:
 	uint8_t CaculateOneRoundPool();  // return produced vice pool cunt this round ;
 	uint8_t DistributePublicCard(); // return dis card cnt ;
 	uint8_t CaculateGameResult(); //return pool cnt ;
-	uint64_t GetAllBetCoinThisRound();
+	//uint64_t GetAllBetCoinThisRound();
 	bool IsPublicDistributeFinish();
-	bool isPlayerAlreadySitDown(uint32_t nSessionID );
-	stTaxasInRoomPeerDataExten* GetInRoomPlayerDataByUID( uint32_t nUID );
-	void SendRoomInfoToPlayer(uint32_t nSessionID );
 
 	// debug info ;
-	void debugPlayerHistory();
 
-	void saveUpdateRoomInfo();
-	void forceDirytInfo(){ m_bRoomInfoDirty = true ;}
-	void removeTaxasPlayersHistory();
-	
 	uint32_t getLittleBlind(){ return m_nLittleBlind ;}
-	uint8_t getSeatCnt(){ return m_stRoomConfig.nMaxSeat ;}
-	uint32_t getMaxTakeIn(){ return m_stRoomConfig.nMaxTakeInCoin ; }
-
+	uint32_t getMaxTakeIn(){ return m_nMaxTakeIn ; }
+	uint32_t getMinTakeIn(){ return m_nMinTakeIn ; }
+	uint64_t getMostBetCoinThisRound(){ return m_nMostBetCoinThisRound ;}
 	void didCaculateGameResult();
-	void deleteRoom();
-	bool isDeleteRoom();
-	eRoomState getCurRoomState();
-private:
-	bool addInroomPlayerInternal(stTaxasInRoomPeerDataExten* pAdd );
+	uint8_t getDistributedPublicCardRound(){ return m_nPublicCardRound ;}
 protected:
 	void writeGameResultLog();
-	void writePlayerResultLogToJson(stTaxasPeerData& pWritePlayer);
+	void writePlayerResultLogToJson(CTaxasPlayer* pWritePlayer);
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 	stVicePool& GetFirstCanUseVicePool();
 	void CaculateVicePool(stVicePool& pPool );
-	stTaxasInRoomPeerDataExten* GetInRoomPlayerDataBySessionID( uint32_t nSessionID );
-	void syncPlayerDataToDataSvr( stTaxasPeerData& pPlayerData );
-	friend class CTaxasBaseRoomState ;
-	friend class CTaxasStatePlayerBet ;
+	//void syncPlayerDataToDataSvr( stTaxasPeerData& pPlayerData );
 protected:
-	bool m_bRoomInfoDirty ;
-	float m_TimeSaveTicket ;
 	// static data 
-	uint32_t nRoomID ;
-	stTaxasRoomConfig m_stRoomConfig ;
 	uint32_t m_nLittleBlind;
-	CTaxasBaseRoomState* m_vAllState[eRoomState_TP_MAX];
-
-	// creator info 
-	uint32_t m_nRoomOwnerUID ;
-	uint32_t m_nCreateTime ;
-	uint32_t m_nDeadTime ;
-	uint16_t m_nAvataID ;
-	char m_vRoomName[MAX_LEN_ROOM_NAME] ;
-	std::string m_strRoomDesc;
-	std::string m_strRoomInForm ;
-	uint32_t m_nInformSerial;
-	uint64_t m_nRoomProfit;
-	uint64_t m_nTotalProfit ;
-	uint32_t m_nChatRoomID ;
-
+	uint32_t m_nMinTakeIn;
+	int32_t m_nMaxTakeIn ;
 	// running members ;
-	bool m_bIsDelte ;
-	eRoomState m_eCurRoomState ; // eRoomState ;
 	uint8_t m_nBankerIdx ;
 	uint8_t m_nLittleBlindIdx ;
 	uint8_t m_nBigBlindIdx ;
@@ -224,11 +175,8 @@ protected:
 	uint64_t  m_nCurMainBetPool ;
 	uint64_t  m_nMostBetCoinThisRound;
 	uint8_t m_vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
-	uint8_t m_nBetRound ; //valid value , 0,1 , 2 , 3 ,4 
-	stTaxasPeerData m_vSitDownPlayers[MAX_PEERS_IN_TAXAS_ROOM] ;
+	uint8_t m_nPublicCardRound ; //valid value , 0,1 , 2 , 3 ,4 
 	stVicePool m_vAllVicePools[MAX_PEERS_IN_TAXAS_ROOM] ;
-	VEC_IN_ROOM_PEERS m_vAllPeers ;
-	CPoker m_tPoker ;
 
 	Json::Value m_arrPlayers ;
 };

@@ -25,8 +25,8 @@ CPlayerBaseData::CPlayerBaseData(CPlayer* player )
 	memset(&m_stBaseData,0,sizeof(m_stBaseData)) ;
 	m_bGivedLoginReward = false ;
 	m_strCurIP = "" ;
-	m_nStateInRoomID = 0;
-	m_nStateInRoomType = eRoom_Max;
+	m_nTempCoin = 0 ;
+	setTempCoin(0);
 }
 
 CPlayerBaseData::~CPlayerBaseData()
@@ -38,6 +38,7 @@ void CPlayerBaseData::Init()
 {
 	memset(&m_stBaseData,0,sizeof(m_stBaseData)) ;
 	m_stBaseData.nUserUID = GetPlayer()->GetUserUID() ;
+	m_nTempCoin = 0 ;
 	m_bGivedLoginReward = false ;
 
 	m_bMoneyDataDirty = false;
@@ -50,11 +51,10 @@ void CPlayerBaseData::Init()
 
 void CPlayerBaseData::Reset()
 {
+	m_nTempCoin = 0 ;
+	setTempCoin(0);
 	m_strCurIP = "" ;
 	m_bGivedLoginReward = false ;
-
-	m_nStateInRoomID = 0;
-	m_nStateInRoomType = eRoom_Max;
 
 	m_bMoneyDataDirty = false;
 	m_bCommonLogicDataDirty = false;
@@ -473,71 +473,6 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
  			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
 		break;
-	case MSG_PLAYER_ENTER_ROOM:
-		{
-			stMsgPlayerEnterRoom* pRet = (stMsgPlayerEnterRoom*)pMsg ;
-			if ( isNotInAnyRoom() )
-			{
-				stMsgSvrEnterRoom msgEnter ;
-				msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(pRet->nRoomGameType) ;
-				if ( msgEnter.cSysIdentifer == ID_MSG_PORT_NONE )
-				{
-					stMsgPlayerEnterRoomRet msgRet ;
-					msgRet.nRet = 6;
-					SendMsg(&msgRet,sizeof(msgRet)) ;
-					break;
-				}
-
-				msgEnter.nGameType = pRet->nRoomGameType ;
-				msgEnter.nRoomID = pRet->nRoomID ;
-				msgEnter.tPlayerData.isRegisted = m_stBaseData.isRegister ;
-				msgEnter.tPlayerData.nCoin = m_stBaseData.nCoin ;
-				msgEnter.tPlayerData.nUserSessionID = GetPlayer()->GetSessionID() ;
-				msgEnter.tPlayerData.nUserUID = GetPlayer()->GetUserUID() ;
-				msgEnter.tPlayerData.nNewPlayerHaloWeight = 100 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(msgEnter.tPlayerData.nUserSessionID,(char*)&msgEnter,sizeof(msgEnter)) ;
-
-				m_nStateInRoomID = pRet->nRoomID;
-				m_nStateInRoomType = pRet->nRoomGameType;
-			}
-			else
-			{
-				stMsgPlayerEnterRoomRet msgRet ;
-				msgRet.nRet = 1;
-				SendMsg(&msgRet,sizeof(msgRet)) ;
-			}
-		}
-		break;
-	case MSG_SVR_ENTER_ROOM:
-		{
-			stMsgSvrEnterRoomRet* pRet = (stMsgSvrEnterRoomRet*)pMsg ;
-			stMsgPlayerEnterRoomRet msgRet ;
-			msgRet.nRet = pRet->nRet;
-			SendMsg(&msgRet,sizeof(msgRet)) ;
-
-			if ( msgRet.nRet )  // enter room failed ;
-			{
-				m_nStateInRoomID = 0;
-				m_nStateInRoomType = eRoom_Max;
-			}
-			else
-			{
-				m_nStateInRoomID = pRet->nRoomID;
-				m_nStateInRoomType = pRet->nGameType;
-			}
-		}
-		break;
-	case MSG_SVR_DO_LEAVE_ROOM:
-		{
-			m_nStateInRoomID = 0;
-			m_nStateInRoomType = eRoom_Max;
-
-			stMsgSvrDoLeaveRoom* pRet = (stMsgSvrDoLeaveRoom*)pMsg ;
-			setCoin(pRet->nCoin) ;
-			//m_stBaseData. = pRet->nNewPlayerHaloWeight ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room coin = %lld",GetPlayer()->GetUserUID(), GetAllCoin()) ;
-		}
-		break;
 	default:
 		{
 			return false ;
@@ -659,13 +594,6 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 			}
 		}
 		break;
-	case eCrossSvrReq_LeaveRoomRet:
-		{
-			m_nStateInRoomType = eRoom_Max ;
-			m_nStateInRoomID = 0 ;
-			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d leave room state error ",GetPlayer()->GetUserUID() ) ;
-		}
-		break;
 	default:
 		return false;
 	}
@@ -755,19 +683,17 @@ void CPlayerBaseData::OnProcessContinueLogin()
 // 	GetPlayer()->PostPlayerEvent(&evet);
 }
 
-
-
 void CPlayerBaseData::TimerSave()
 {
 	if ( m_bMoneyDataDirty )
 	{
 		m_bMoneyDataDirty = false ;
 		stMsgSavePlayerMoney msgSaveMoney ;
-		msgSaveMoney.nCoin = m_stBaseData.nCoin;
+		msgSaveMoney.nCoin = m_stBaseData.nCoin + m_nTempCoin;
 		msgSaveMoney.nDiamoned = m_stBaseData.nDiamoned;
 		msgSaveMoney.nUserUID = GetPlayer()->GetUserUID() ;
 		SendMsg((stMsgSavePlayerMoney*)&msgSaveMoney,sizeof(msgSaveMoney)) ;
-		CLogMgr::SharedLogMgr()->SystemLog("player do time save coin uid = %d coin = %I64d",msgSaveMoney.nUserUID,msgSaveMoney.nCoin );
+		CLogMgr::SharedLogMgr()->SystemLog("player do time save coin uid = %d coin = %I64d",msgSaveMoney.nUserUID,msgSaveMoney.nCoin + m_nTempCoin );
 	}
 
 	if ( m_bCommonLogicDataDirty )
@@ -777,6 +703,7 @@ void CPlayerBaseData::TimerSave()
 		msgLogicData.dfLatidue = m_stBaseData.dfLatidue ;
 		msgLogicData.dfLongitude = m_stBaseData.dfLongitude ;
 		msgLogicData.nContinueDays = m_stBaseData.nContinueDays ;
+		msgLogicData.nNewPlayerHaloWeight = m_stBaseData.nNewPlayerHaloWeight ;
 		//msgLogicData.nExp = m_stBaseData.nExp ;
 		msgLogicData.nMostCoinEver = m_stBaseData.nMostCoinEver;
 		msgLogicData.nTodayCoinOffset = m_stBaseData.nTodayCoinOffset ;
@@ -942,19 +869,6 @@ void CPlayerBaseData::OnOtherDoLogined()
 void CPlayerBaseData::OnPlayerDisconnect()
 {
 	IPlayerComponent::OnPlayerDisconnect();
-	if ( isNotInAnyRoom() == false )
-	{
-		stMsgCrossServerRequest msgEnter ;
-		msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(m_nStateInRoomType) ;
-		msgEnter.nJsonsLen = 0 ;
-		msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
-		msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
-		msgEnter.nRequestType = eCrossSvrReq_ApplyLeaveRoom ;
-		msgEnter.nTargetID = m_nStateInRoomID ;
-		msgEnter.vArg[0] = m_nStateInRoomID ;
-		msgEnter.vArg[1] = GetPlayer()->GetSessionID() ;
-		SendMsg(&msgEnter,sizeof(msgEnter)) ;
-	}
 
 	TimerSave();
 	CEventCenter::SharedEventCenter()->RemoveEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
@@ -963,18 +877,15 @@ void CPlayerBaseData::OnPlayerDisconnect()
 void CPlayerBaseData::OnOtherWillLogined()
 {
 	IPlayerComponent::OnOtherWillLogined();
-	if ( isNotInAnyRoom() == false )
-	{
-		stMsgCrossServerRequest msgEnter ;
-		msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(m_nStateInRoomType) ;
-		msgEnter.nJsonsLen = 0 ;
-		msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
-		msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
-		msgEnter.nRequestType = eCrossSvrReq_ApplyLeaveRoom ;
-		msgEnter.nTargetID = m_nStateInRoomID ;
-		msgEnter.vArg[0] = m_nStateInRoomID ;
-		msgEnter.vArg[1] = GetPlayer()->GetSessionID() ;
-		SendMsg(&msgEnter,sizeof(msgEnter)) ;
-	}
+}
+
+bool CPlayerBaseData::isPlayerRegistered()
+{
+	return m_stBaseData.isRegister ;
+}
+
+uint8_t CPlayerBaseData::getNewPlayerHaloWeight()
+{
+	return m_stBaseData.nNewPlayerHaloWeight ;
 }
 

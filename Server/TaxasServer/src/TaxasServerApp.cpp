@@ -53,7 +53,7 @@ bool CTaxasServerApp::init()
 	m_pRoomConfig->LoadFile("../configFile/RoomConfig.txt") ;
 	
 	m_pRoomMgr = new CRoomManager ;
-	m_pRoomMgr->Init();
+	m_pRoomMgr->init();
 	return true ;
 }
 
@@ -64,7 +64,7 @@ bool CTaxasServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint3
 		return true ;
 	}
 
-	if ( m_pRoomMgr && m_pRoomMgr->OnMsg(prealMsg,eSenderPort,nSessionID) )
+	if ( m_pRoomMgr && m_pRoomMgr->onMsg(prealMsg,eSenderPort,nSessionID) )
 	{
 		return true ;
 	}
@@ -89,5 +89,5 @@ void CTaxasServerApp::onConnectedToSvr()
 void CTaxasServerApp::update(float fDeta )
 {
 	IServerApp::update(fDeta) ;
-	m_pRoomMgr->onUpdate(fDeta);
+	m_pRoomMgr->update(fDeta);
 }

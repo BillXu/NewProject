@@ -6,8 +6,8 @@
       <ObjectData Name="Layer" Tag="3" ctype="GameLayerObjectData">
         <Size X="640.0000" Y="1136.0000" />
         <Children>
-          <AbstractNodeData Name="Panel_1" ActionTag="1940358325" Tag="3373" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" BottomMargin="-230.0000" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="128" RightEage="96" TopEage="260" BottomEage="287" Scale9OriginX="128" Scale9OriginY="260" Scale9Width="416" Scale9Height="819" ctype="PanelObjectData">
-            <Size X="640.0000" Y="1366.0000" />
+          <AbstractNodeData Name="Panel_1" ActionTag="1940358325" Tag="3373" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" BottomMargin="-230.0400" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="128" RightEage="96" TopEage="260" BottomEage="287" Scale9OriginX="128" Scale9OriginY="260" Scale9Width="416" Scale9Height="819" ctype="PanelObjectData">
+            <Size X="640.0000" Y="1366.0400" />
             <AnchorPoint ScaleY="1.0000" />
             <Position Y="1136.0000" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
@@ -22,11 +22,11 @@
           </AbstractNodeData>
           <AbstractNodeData Name="Box_6" ActionTag="-213938811" VisibleForFrame="False" Tag="498" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="403.2000" RightMargin="140.8000" TopMargin="613.4400" BottomMargin="477.1200" ClipAble="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="11" RightEage="11" TopEage="11" BottomEage="11" Scale9OriginX="11" Scale9OriginY="11" Scale9Width="14" Scale9Height="14" ctype="PanelObjectData">
             <Size X="96.0000" Y="45.4400" />
-            <AnchorPoint ScaleX="1.0000" ScaleY="0.5000" />
-            <Position X="499.2000" Y="499.8400" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="451.2000" Y="499.8400" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
-            <PrePosition X="0.7800" Y="0.4400" />
+            <PrePosition X="0.7050" Y="0.4400" />
             <PreSize X="0.1500" Y="0.0400" />
             <FileData Type="Normal" Path="niuniu_messageBg.png" Plist="" />
             <SingleColor A="255" R="150" G="200" B="255" />
@@ -36,11 +36,11 @@
           </AbstractNodeData>
           <AbstractNodeData Name="Box_5" ActionTag="1436813114" VisibleForFrame="False" Tag="499" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="403.2000" RightMargin="140.8000" TopMargin="272.6400" BottomMargin="817.9200" ClipAble="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="11" RightEage="11" TopEage="11" BottomEage="11" Scale9OriginX="11" Scale9OriginY="11" Scale9Width="14" Scale9Height="14" ctype="PanelObjectData">
             <Size X="96.0000" Y="45.4400" />
-            <AnchorPoint ScaleX="1.0000" ScaleY="0.5000" />
-            <Position X="499.2000" Y="840.6400" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="451.2000" Y="840.6400" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
-            <PrePosition X="0.7800" Y="0.7400" />
+            <PrePosition X="0.7050" Y="0.7400" />
             <PreSize X="0.1500" Y="0.0400" />
             <FileData Type="Normal" Path="niuniu_messageBg.png" Plist="" />
             <SingleColor A="255" R="150" G="200" B="255" />
@@ -50,11 +50,11 @@
           </AbstractNodeData>
           <AbstractNodeData Name="Box_4" ActionTag="2137092582" VisibleForFrame="False" Tag="500" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="384.0000" RightMargin="160.0000" TopMargin="79.5200" BottomMargin="1011.0400" ClipAble="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="11" RightEage="11" TopEage="11" BottomEage="11" Scale9OriginX="11" Scale9OriginY="11" Scale9Width="14" Scale9Height="14" ctype="PanelObjectData">
             <Size X="96.0000" Y="45.4400" />
-            <AnchorPoint ScaleY="0.5000" />
-            <Position X="384.0000" Y="1033.7600" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="432.0000" Y="1033.7600" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
-            <PrePosition X="0.6000" Y="0.9100" />
+            <PrePosition X="0.6750" Y="0.9100" />
             <PreSize X="0.1500" Y="0.0400" />
             <FileData Type="Normal" Path="niuniu_messageBg.png" Plist="" />
             <SingleColor A="255" R="150" G="200" B="255" />
@@ -64,11 +64,11 @@
           </AbstractNodeData>
           <AbstractNodeData Name="Box_3" ActionTag="376746557" VisibleForFrame="False" Tag="501" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="140.8000" RightMargin="403.2000" TopMargin="272.6400" BottomMargin="817.9200" ClipAble="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="11" RightEage="11" TopEage="11" BottomEage="11" Scale9OriginX="11" Scale9OriginY="11" Scale9Width="14" Scale9Height="14" ctype="PanelObjectData">
             <Size X="96.0000" Y="45.4400" />
-            <AnchorPoint ScaleY="0.5000" />
-            <Position X="140.8000" Y="840.6400" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="188.8000" Y="840.6400" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
-            <PrePosition X="0.2200" Y="0.7400" />
+            <PrePosition X="0.2950" Y="0.7400" />
             <PreSize X="0.1500" Y="0.0400" />
             <FileData Type="Normal" Path="niuniu_messageBg.png" Plist="" />
             <SingleColor A="255" R="150" G="200" B="255" />
@@ -78,11 +78,11 @@
           </AbstractNodeData>
           <AbstractNodeData Name="Box_2" ActionTag="985100555" VisibleForFrame="False" Tag="502" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="140.8000" RightMargin="403.2000" TopMargin="613.4400" BottomMargin="477.1200" ClipAble="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="11" RightEage="11" TopEage="11" BottomEage="11" Scale9OriginX="11" Scale9OriginY="11" Scale9Width="14" Scale9Height="14" ctype="PanelObjectData">
             <Size X="96.0000" Y="45.4400" />
-            <AnchorPoint ScaleY="0.5000" />
-            <Position X="140.8000" Y="499.8400" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="188.8000" Y="499.8400" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
-            <PrePosition X="0.2200" Y="0.4400" />
+            <PrePosition X="0.2950" Y="0.4400" />
             <PreSize X="0.1500" Y="0.0400" />
             <FileData Type="Normal" Path="niuniu_messageBg.png" Plist="" />
             <SingleColor A="255" R="150" G="200" B="255" />
@@ -892,7 +892,7 @@
                     <EndColor A="255" R="255" G="255" B="255" />
                     <ColorVector ScaleY="1.0000" />
                   </AbstractNodeData>
-                  <AbstractNodeData Name="RightPanel" ActionTag="1565977046" Tag="561" RotationSkewX="4.0000" RotationSkewY="4.0000" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentWidthEnabled="True" LeftMargin="93.0620" RightMargin="6.1380" TopMargin="15.2668" BottomMargin="18.7297" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" Scale9Width="118" Scale9Height="2" ctype="PanelObjectData">
+                  <AbstractNodeData Name="RightPanel" ActionTag="1565977046" Tag="561" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentWidthEnabled="True" LeftMargin="93.0620" RightMargin="6.1380" TopMargin="15.2668" BottomMargin="18.7297" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" Scale9Width="118" Scale9Height="2" ctype="PanelObjectData">
                     <Size X="24.8000" Y="2.0000" />
                     <AnchorPoint ScaleY="0.5000" />
                     <Position X="93.0620" Y="19.7297" />

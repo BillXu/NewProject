@@ -30,7 +30,6 @@ public:
 	CPlayerBaseData* GetBaseData(){ return (CPlayerBaseData*)GetComponent(ePlayerComponent_BaseData);}
 	bool IsState( ePlayerState eState ); 
 	void SetState(ePlayerState eSate ){ m_eSate = eSate ; }
-	bool isNotInAnyRoom();
 	void OnAnotherClientLoginThisPeer(unsigned int nSessionID );
 	void PostPlayerEvent(stPlayerEvetArg* pEventArg );
 	void OnTimerSave(float fTimeElaps,unsigned int nTimerID );
@@ -39,6 +38,8 @@ public:
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest, eMsgPort eSenderPort,Json::Value* vJsValue = nullptr );
 	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 	static uint8_t getMsgPortByRoomType(uint8_t nType );
+	void delayDelete();
+	time_t getCanDelayTime(){ return m_nDisconnectTime ;}
 protected:
 	bool ProcessPublicPlayerMsg( stMsg* pMessage , eMsgPort eSenderPort );
 	void PushTestAPNs();

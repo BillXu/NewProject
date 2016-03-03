@@ -20,7 +20,14 @@ namespace Json
 class IRoom
 {
 public:
-	typedef	stEnterRoomData stStandPlayer;
+	struct stStandPlayer
+		:public stEnterRoomData
+	{
+		uint32_t nWinTimes ;
+		uint32_t nPlayerTimes ;
+		uint64_t nSingleWinMost ;
+	};
+
 	struct stRoomRankItem
 	{
 		uint32_t nUserUID ;
@@ -50,8 +57,8 @@ public:
 	virtual uint8_t canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer );  // return 0 means ok ;
 	virtual void onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer );
 	virtual void onPlayerWillLeaveRoom(stStandPlayer* pPlayer );
-	virtual void playerDoLeaveRoom(uint32_t nPlayerUID );
 	virtual bool canStartGame() = 0 ;
+	void playerDoLeaveRoom(stStandPlayer* pp );
 	uint32_t getOpenTime(){ return m_nOpenTime ; }
 	uint32_t getDeadTime(){ return m_nDeadTime ;}
 	uint32_t getCloseTime(){ return m_nOpenTime + m_nDuringTime  ;}
@@ -117,9 +124,11 @@ public:
 	void removeAllRankItemPlayer();
 	virtual void onRoomClosed();
 	virtual void onRoomOpened();
+	virtual void onRoomWillDoDelete();
 protected:
 	bool addRoomState(IRoomState* pRoomState );
 	bool isOmitNewPlayerHalo(){ return m_isOmitNewPlayerHalo ; }
+	void debugRank();
 private:
 	bool m_bRoomInfoDiry ;
 	uint32_t m_nRoomID ;

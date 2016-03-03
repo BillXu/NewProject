@@ -361,9 +361,9 @@ void CRobotControlTaxas::findSeatIdxSitDown()
 
 		if ( nIdx != -1 )
 		{
-			sitDown.nSeatIdx = nIdx ;
-			sitDown.nTakeInMoney = m_pScene->getPokerData()->nMaxTakeIn * 0.8 ;
-			sitDown.nTakeInMoney = sitDown.nTakeInMoney <= m_pScene->getClientApp()->GetPlayerData()->GetCoin(false) ? sitDown.nTakeInMoney : m_pScene->getClientApp()->GetPlayerData()->GetCoin(false) ;
+			sitDown.nIdx = nIdx ;
+			sitDown.nTakeInCoin = m_pScene->getPokerData()->nMaxTakeIn * 0.8 ;
+			sitDown.nTakeInCoin = sitDown.nTakeInCoin <= m_pScene->getClientApp()->GetPlayerData()->GetCoin(false) ? sitDown.nTakeInCoin : m_pScene->getClientApp()->GetPlayerData()->GetCoin(false) ;
 			m_pScene->SendMsg(&sitDown,sizeof(sitDown));
 			m_eState = eRobot_SitingDown;
 			printf("find a seat , sit down \n");

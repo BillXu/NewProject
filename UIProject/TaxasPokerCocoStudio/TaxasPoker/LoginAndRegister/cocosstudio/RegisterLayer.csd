@@ -44,14 +44,14 @@
             <EndColor A="255" R="255" G="255" B="255" />
             <ColorVector ScaleY="1.0000" />
           </AbstractNodeData>
-          <AbstractNodeData Name="TitleText" ActionTag="557528962" Tag="811" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="290.0000" RightMargin="290.0000" TopMargin="75.8800" BottomMargin="1030.1200" FontSize="30" LabelText="注册" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
-            <Size X="60.0000" Y="30.0000" />
-            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-            <Position X="320.0000" Y="1045.1200" />
+          <AbstractNodeData Name="TitleText" ActionTag="557528962" Tag="811" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="253.3331" RightMargin="266.6669" TopMargin="75.8801" BottomMargin="1030.1199" FontSize="30" LabelText="注册账号" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+            <Size X="120.0000" Y="30.0000" />
+            <AnchorPoint ScaleX="0.6111" ScaleY="0.2678" />
+            <Position X="326.6671" Y="1038.1552" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
-            <PrePosition X="0.5000" Y="0.9200" />
-            <PreSize X="0.0938" Y="0.0264" />
+            <PrePosition X="0.5104" Y="0.9139" />
+            <PreSize X="0.1875" Y="0.0264" />
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
@@ -178,6 +178,28 @@
                 <EndColor A="255" R="255" G="255" B="255" />
                 <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
+              <AbstractNodeData Name="Text_1" ActionTag="1445086333" Tag="76" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="92.5000" RightMargin="92.5000" TopMargin="658.9667" BottomMargin="154.9917" FontSize="26" LabelText="注册以后可以在其它IOS设备上直接登录" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+                <Size X="455.0000" Y="26.0000" />
+                <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+                <Position X="320.0000" Y="167.9917" />
+                <Scale ScaleX="1.0000" ScaleY="1.0000" />
+                <CColor A="255" R="160" G="160" B="160" />
+                <PrePosition X="0.5000" Y="0.2000" />
+                <PreSize X="0.7109" Y="0.0310" />
+                <OutlineColor A="255" R="255" G="0" B="0" />
+                <ShadowColor A="255" R="110" G="110" B="110" />
+              </AbstractNodeData>
+              <AbstractNodeData Name="Text_2" ActionTag="-1820131627" Tag="77" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="190.0000" RightMargin="190.0000" TopMargin="700.9647" BottomMargin="112.9938" FontSize="26" LabelText="并且您的信息将会保留" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+                <Size X="260.0000" Y="26.0000" />
+                <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+                <Position X="320.0000" Y="125.9938" />
+                <Scale ScaleX="1.0000" ScaleY="1.0000" />
+                <CColor A="255" R="160" G="160" B="160" />
+                <PrePosition X="0.5000" Y="0.1500" />
+                <PreSize X="0.4063" Y="0.0310" />
+                <OutlineColor A="255" R="255" G="0" B="0" />
+                <ShadowColor A="255" R="110" G="110" B="110" />
+              </AbstractNodeData>
               <AbstractNodeData Name="Panel_0" ActionTag="-1303401251" Tag="483" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentWidthEnabled="True" LeftMargin="30.0160" RightMargin="29.9520" TopMargin="117.9461" BottomMargin="720.0123" ClipAble="True" ColorAngle="90.0000" Scale9Enable="True" LeftEage="211" RightEage="211" Scale9OriginX="211" Scale9Width="178" Scale9Height="2" ctype="PanelObjectData">
                 <Size X="580.0320" Y="2.0000" />
                 <AnchorPoint />
@@ -206,10 +228,10 @@
                 <EndColor A="255" R="255" G="255" B="255" />
                 <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
-              <AbstractNodeData Name="Panel_0_0" ActionTag="-1903427661" Tag="487" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentWidthEnabled="True" LeftMargin="30.0160" RightMargin="29.9520" TopMargin="237.9584" BottomMargin="600.0000" ClipAble="True" ColorAngle="90.0000" Scale9Enable="True" LeftEage="198" RightEage="198" Scale9OriginX="198" Scale9Width="204" Scale9Height="2" ctype="PanelObjectData">
+              <AbstractNodeData Name="Panel_0_0" ActionTag="-1903427661" Tag="487" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentWidthEnabled="True" LeftMargin="30.0160" RightMargin="29.9520" TopMargin="237.9762" BottomMargin="599.9822" ClipAble="True" ColorAngle="90.0000" Scale9Enable="True" LeftEage="198" RightEage="198" Scale9OriginX="198" Scale9Width="204" Scale9Height="2" ctype="PanelObjectData">
                 <Size X="580.0320" Y="2.0000" />
                 <AnchorPoint />
-                <Position X="30.0160" Y="600.0000" />
+                <Position X="30.0160" Y="599.9822" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.0469" Y="0.7143" />

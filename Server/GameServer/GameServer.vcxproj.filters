@@ -133,20 +133,17 @@
     <ClInclude Include="..\ServerCommon\ServerCommon.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\DataServer\src\PlayerTaxas.h">
-      <Filter>src\Player</Filter>
-    </ClInclude>
     <ClInclude Include="..\DataServer\src\PlayerFriend.h">
       <Filter>src\Player</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCommon\AutoBuffer.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\DataServer\src\PlayerNiuNiu.h">
-      <Filter>src\Player</Filter>
-    </ClInclude>
     <ClInclude Include="..\DataServer\src\PokerCircle.h">
       <Filter>src\App</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DataServer\src\PlayerGameData.h">
+      <Filter>src\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -231,17 +228,14 @@
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\DataServer\src\PlayerTaxas.cpp">
-      <Filter>src\Player</Filter>
-    </ClCompile>
     <ClCompile Include="..\DataServer\src\PlayerFriend.cpp">
-      <Filter>src\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="..\DataServer\src\PlayerNiuNiu.cpp">
       <Filter>src\Player</Filter>
     </ClCompile>
     <ClCompile Include="..\DataServer\src\PokerCircle.cpp">
       <Filter>src\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\PlayerGameData.cpp">
+      <Filter>src\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

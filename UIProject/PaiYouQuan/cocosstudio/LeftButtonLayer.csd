@@ -210,14 +210,14 @@
               <AbstractNodeData Name="6" ActionTag="1132180049" Tag="475" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" RightMargin="8.2000" TopMargin="399.8720" BottomMargin="636.1600" TouchEnable="True" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
                 <Size X="401.8000" Y="99.9680" />
                 <Children>
-                  <AbstractNodeData Name="log" ActionTag="1372074182" Tag="476" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="36.7700" RightMargin="318.0300" TopMargin="26.4840" BottomMargin="26.4840" ctype="SpriteObjectData">
+                  <AbstractNodeData Name="log" ActionTag="1372074182" Tag="476" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="41.7700" RightMargin="323.0300" TopMargin="31.4840" BottomMargin="31.4840" ctype="SpriteObjectData">
                     <Size X="37.0000" Y="37.0000" />
                     <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                     <Position X="60.2700" Y="49.9840" />
                     <Scale ScaleX="1.0000" ScaleY="1.0000" />
                     <CColor A="255" R="255" G="255" B="255" />
                     <PrePosition X="0.1500" Y="0.5000" />
-                    <PreSize X="0.1170" Y="0.4702" />
+                    <PreSize X="0.0921" Y="0.3701" />
                     <FileData Type="Normal" Path="IconShare.png" Plist="" />
                     <BlendFunc Src="1" Dst="771" />
                   </AbstractNodeData>
@@ -399,6 +399,17 @@
                 <FirstColor A="255" R="150" G="200" B="255" />
                 <EndColor A="255" R="255" G="255" B="255" />
                 <ColorVector ScaleY="1.0000" />
+              </AbstractNodeData>
+              <AbstractNodeData Name="TopWintext" ActionTag="-1362200405" Tag="552" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="41.0000" RightMargin="369.0000" TopMargin="545.2800" BottomMargin="590.7200" FontSize="30" LabelText="" HorizontalAlignmentType="HT_Center" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+                <Size X="0.0000" Y="0.0000" />
+                <AnchorPoint ScaleY="0.5000" />
+                <Position X="41.0000" Y="590.7200" />
+                <Scale ScaleX="1.0000" ScaleY="1.0000" />
+                <CColor A="255" R="0" G="0" B="0" />
+                <PrePosition X="0.1000" Y="0.5200" />
+                <PreSize X="0.0000" Y="0.0000" />
+                <OutlineColor A="255" R="255" G="0" B="0" />
+                <ShadowColor A="255" R="110" G="110" B="110" />
               </AbstractNodeData>
             </Children>
             <AnchorPoint />

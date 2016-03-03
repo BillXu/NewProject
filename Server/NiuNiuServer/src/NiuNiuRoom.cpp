@@ -126,7 +126,7 @@ void CNiuNiuRoom::onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )
 {
 	if ( pPlayer->isHaveState(eRoomPeer_CanAct) )
 	{
-		pPlayer->addState(eRoomPeer_StandUp) ;
+		 ISitableRoom::onPlayerWillStandUp(pPlayer) ;
 	}
 	else
 	{
@@ -134,16 +134,34 @@ void CNiuNiuRoom::onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )
 	}
 }
 
-void CNiuNiuRoom::onPlayerWillLeaveRoom( stStandPlayer* pPlayer )
+uint32_t CNiuNiuRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp)
 {
-	ISitableRoomPlayer* pSitdownPlayer = getSitdownPlayerBySessionID(pPlayer->nUserSessionID) ;
-	if ( pSitdownPlayer && pSitdownPlayer->isHaveState(eRoomPeer_CanAct) )
+	CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)pp ;
+	if ( getBankerIdx() == pPlayer->getIdx() )
 	{
-		pSitdownPlayer->addState(eRoomPeer_WillLeave) ;
+		uint8_t nCnt = getPlayerCntWithState(eRoomPeer_CanAct) - 1 ;
+		uint32_t nNeedCoin = ( getBaseBet() * m_nBetBottomTimes * getMaxRate() * 25 ) * nCnt ;
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup but is banker BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+		return nNeedCoin ;
 	}
 	else
 	{
-		playerDoLeaveRoom(pPlayer->nUserUID);
+		if ( m_nBetBottomTimes != 0 )
+		{
+			uint32_t nNeedCoin = getBaseBet() * m_nBetBottomTimes * getMaxRate() *( pPlayer->getBetTimes() > 5 ? pPlayer->getBetTimes() : 5 )  ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+			return nNeedCoin ;
+		}
+		else
+		{
+			uint8_t nCnt = getPlayerCntWithState(eRoomPeer_CanAct) - 1 ;
+			uint32_t nWhenBankNeed = ( getBaseBet() * 1 * getMaxRate() * 25 ) * nCnt ;
+			uint32_t nWhenNotBanker = getBaseBet() * 4 * getMaxRate() * 5 ;
+			uint32_t nNeedCoin = nWhenNotBanker > nWhenBankNeed ? nWhenNotBanker : nWhenBankNeed ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup BankeTimes not decide , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+			return nNeedCoin ;
+		}
+ 
 	}
 }
 
@@ -294,21 +312,6 @@ void CNiuNiuRoom::onGameDidEnd()
 		}
 
 		pSitDown->removeState(eRoomPeer_CanAct);
-
-		if ( pSitDown->isHaveState(eRoomPeer_WillLeave) )
-		{
-			CLogMgr::SharedLogMgr()->PrintLog("game end ,player uid = %d should leave ",pSitDown->getUserUID()) ;
-			playerDoLeaveRoom(pSitDown->getUserUID());
-		}
-		else if ( pSitDown->isHaveState(eRoomPeer_StandUp) )
-		{
-			CLogMgr::SharedLogMgr()->PrintLog(" game end player uid = %d should stand up  ",pSitDown->getUserUID()) ;
-			playerDoStandUp(pSitDown);
-		}
-		else
-		{
-			pSitDown->onGameEnd();
-		}
 	}
 
 	Json::StyledWriter write ;
@@ -432,6 +435,7 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
 		updatePlayerOffset(pNNP->getUserUID(),item.nOffsetCoin) ;
+		pNNP->increaseWinTimes();
 	}
 
 	stNNGameResultItem item ;
@@ -440,6 +444,11 @@ void CNiuNiuRoom::caculateGameResult()
 	item.nPlayerIdx = pBanker->getIdx() ;
 	auBuffer.addContent(&item,sizeof(item)) ;
 	updatePlayerOffset(pBanker->getUserUID(),item.nOffsetCoin) ;
+	if ( item.nOffsetCoin > 0 )
+	{
+		pBanker->increaseWinTimes();
+	}
+
 	CLogMgr::SharedLogMgr()->PrintLog("result player idx = %d , finalCoin = %llu, offset coin = %I64d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
 
 	sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
@@ -447,5 +456,5 @@ void CNiuNiuRoom::caculateGameResult()
 
 bool CNiuNiuRoom::canStartGame()
 {
-	return getPlayerCntWithState(eRoomPeer_CanAct) >= 2 ;
+	return getPlayerCntWithState(eRoomPeer_WaitNextGame) >= 2 ;
 }

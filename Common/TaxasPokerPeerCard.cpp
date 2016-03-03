@@ -801,3 +801,20 @@ bool CTaxasPokerPeerCard::checkIsSelected(unsigned char nCardNum){
     }
     return false;
 }
+
+CTaxasPokerPeerCard& CTaxasPokerPeerCard::operator = (CTaxasPokerPeerCard& peerCard )
+{
+	m_vDefaul.clear() ;
+	m_vAllCard.clear();
+	m_vPairs[0].clear() ;
+	m_vPairs[1].clear() ;
+	m_vDefaul.assign(peerCard.m_vDefaul.begin(),peerCard.m_vDefaul.end()) ;
+	m_vAllCard.assign(peerCard.m_vAllCard.begin(),peerCard.m_vAllCard.end()) ;
+	m_vFinalCard.assign(peerCard.m_vFinalCard.begin(),peerCard.m_vFinalCard.end()) ;
+	m_vPairs[0].assign(peerCard.m_vPairs[0].begin(),peerCard.m_vPairs[0].end()) ;
+	m_vPairs[1].assign(peerCard.m_vPairs[1].begin(),peerCard.m_vPairs[1].end()) ;
+	m_strCardName = peerCard.m_strCardName; 
+	m_eType = peerCard.m_eType;
+	nCardCountWhenCaculate = peerCard.nCardCountWhenCaculate;
+	return *this ;
+}

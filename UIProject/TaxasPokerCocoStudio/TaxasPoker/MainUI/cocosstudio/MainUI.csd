@@ -174,15 +174,15 @@
                 <EndColor A="255" R="255" G="255" B="255" />
                 <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
-              <AbstractNodeData Name="chip_icon_9" ActionTag="1613311135" Tag="124" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="403.6400" RightMargin="210.3600" TopMargin="193.5248" BottomMargin="916.4752" ctype="SpriteObjectData">
-                <Size X="26.0000" Y="26.0000" />
+              <AbstractNodeData Name="chip_icon_9" ActionTag="1613311135" Tag="124" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="401.6400" RightMargin="208.3600" TopMargin="191.5248" BottomMargin="914.4752" ctype="SpriteObjectData">
+                <Size X="30.0000" Y="30.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="416.6400" Y="929.4752" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.6510" Y="0.8182" />
-                <PreSize X="0.0406" Y="0.0229" />
-                <FileData Type="Normal" Path="chip_icon.png" Plist="" />
+                <PreSize X="0.0469" Y="0.0264" />
+                <FileData Type="Normal" Path="gold.png" Plist="" />
                 <BlendFunc Src="770" Dst="771" />
               </AbstractNodeData>
               <AbstractNodeData Name="level_icon_8" ActionTag="-1799529473" Tag="123" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="78.5200" RightMargin="535.4800" TopMargin="193.5248" BottomMargin="916.4752" ctype="SpriteObjectData">
@@ -255,7 +255,7 @@
                 <OutlineColor A="255" R="255" G="0" B="0" />
                 <ShadowColor A="255" R="110" G="110" B="110" />
               </AbstractNodeData>
-              <AbstractNodeData Name="AddButton" ActionTag="1938932791" Tag="1373" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="561.0000" RightMargin="49.0000" TopMargin="75.8800" BottomMargin="1030.1200" TouchEnable="True" FontSize="14" Scale9Enable="True" LeftEage="9" RightEage="9" TopEage="9" BottomEage="9" Scale9OriginX="9" Scale9OriginY="9" Scale9Width="12" Scale9Height="12" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
+              <AbstractNodeData Name="AddButton" ActionTag="1938932791" Tag="1373" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="561.0000" RightMargin="49.0000" TopMargin="75.8800" BottomMargin="1030.1200" FontSize="14" Scale9Enable="True" LeftEage="9" RightEage="9" TopEage="9" BottomEage="9" Scale9OriginX="9" Scale9OriginY="9" Scale9Width="12" Scale9Height="12" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
                 <Size X="30.0000" Y="30.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="576.0000" Y="1045.1200" />
@@ -270,7 +270,20 @@
                 <OutlineColor A="255" R="255" G="0" B="0" />
                 <ShadowColor A="255" R="110" G="110" B="110" />
               </AbstractNodeData>
-              <AbstractNodeData Name="TableViewPanel" ActionTag="-1398716115" Alpha="102" Tag="440" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="20.0320" RightMargin="19.9680" TopMargin="151.3152" BottomMargin="114.7360" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="33" RightEage="27" TopEage="32" BottomEage="31" Scale9OriginX="33" Scale9OriginY="32" Scale9Width="40" Scale9Height="37" ctype="PanelObjectData">
+              <AbstractNodeData Name="AddLayoutPanel" ActionTag="-1506285910" Tag="448" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="526.0000" RightMargin="14.0000" TopMargin="50.8800" BottomMargin="1005.1200" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" ctype="PanelObjectData">
+                <Size X="100.0000" Y="80.0000" />
+                <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+                <Position X="576.0000" Y="1045.1200" />
+                <Scale ScaleX="1.0000" ScaleY="1.0000" />
+                <CColor A="255" R="255" G="255" B="255" />
+                <PrePosition X="0.9000" Y="0.9200" />
+                <PreSize X="0.1563" Y="0.0704" />
+                <SingleColor A="255" R="150" G="200" B="255" />
+                <FirstColor A="255" R="150" G="200" B="255" />
+                <EndColor A="255" R="255" G="255" B="255" />
+                <ColorVector ScaleY="1.0000" />
+              </AbstractNodeData>
+              <AbstractNodeData Name="TableViewPanel" ActionTag="-1398716115" Alpha="76" Tag="440" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="20.0320" RightMargin="19.9680" TopMargin="151.3152" BottomMargin="114.7360" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="33" RightEage="27" TopEage="32" BottomEage="31" Scale9OriginX="33" Scale9OriginY="32" Scale9Width="40" Scale9Height="37" ctype="PanelObjectData">
                 <Size X="600.0000" Y="869.9488" />
                 <AnchorPoint ScaleY="1.0000" />
                 <Position X="20.0320" Y="984.6848" />

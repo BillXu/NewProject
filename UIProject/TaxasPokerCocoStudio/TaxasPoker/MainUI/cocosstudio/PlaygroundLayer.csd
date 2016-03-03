@@ -73,7 +73,20 @@
             <OutlineColor A="255" R="255" G="0" B="0" />
             <ShadowColor A="255" R="110" G="110" B="110" />
           </AbstractNodeData>
-          <AbstractNodeData Name="RuleButton" ActionTag="1946886741" Tag="1418" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="557.5000" RightMargin="45.5000" TopMargin="72.3800" BottomMargin="1026.6200" TouchEnable="True" FontSize="14" Scale9Enable="True" LeftEage="12" RightEage="12" TopEage="11" BottomEage="11" Scale9OriginX="12" Scale9OriginY="11" Scale9Width="13" Scale9Height="15" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
+          <AbstractNodeData Name="RuleLayoutPanel" ActionTag="-858342150" Tag="474" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="526.0000" RightMargin="14.0000" TopMargin="50.8800" BottomMargin="1005.1200" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" ctype="PanelObjectData">
+            <Size X="100.0000" Y="80.0000" />
+            <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+            <Position X="576.0000" Y="1045.1200" />
+            <Scale ScaleX="1.0000" ScaleY="1.0000" />
+            <CColor A="255" R="255" G="255" B="255" />
+            <PrePosition X="0.9000" Y="0.9200" />
+            <PreSize X="0.1563" Y="0.0704" />
+            <SingleColor A="255" R="150" G="200" B="255" />
+            <FirstColor A="255" R="150" G="200" B="255" />
+            <EndColor A="255" R="255" G="255" B="255" />
+            <ColorVector ScaleY="1.0000" />
+          </AbstractNodeData>
+          <AbstractNodeData Name="RuleButton" ActionTag="1946886741" Tag="1418" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="557.5000" RightMargin="45.5000" TopMargin="72.3800" BottomMargin="1026.6200" FontSize="14" Scale9Enable="True" LeftEage="12" RightEage="12" TopEage="11" BottomEage="11" Scale9OriginX="12" Scale9OriginY="11" Scale9Width="13" Scale9Height="15" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
             <Size X="37.0000" Y="37.0000" />
             <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
             <Position X="576.0000" Y="1045.1200" />
@@ -105,10 +118,10 @@
               <AbstractNodeData Name="Taxas_Button" ActionTag="684749468" Tag="656" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" RightMargin="320.0000" TopMargin="-0.0350" BottomMargin="0.0050" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
                 <Size X="320.0000" Y="99.9980" />
                 <Children>
-                  <AbstractNodeData Name="Text_2" ActionTag="2079798551" Tag="658" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="100.0000" RightMargin="100.0000" TopMargin="34.9980" BottomMargin="35.0000" FontSize="30" LabelText="德州扑克" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+                  <AbstractNodeData Name="Text_2" ActionTag="2079798551" Tag="658" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="100.0000" RightMargin="100.0000" TopMargin="34.9990" BottomMargin="34.9990" FontSize="30" LabelText="德州扑克" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
                     <Size X="120.0000" Y="30.0000" />
                     <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-                    <Position X="160.0000" Y="50.0000" />
+                    <Position X="160.0000" Y="49.9990" />
                     <Scale ScaleX="1.0000" ScaleY="1.0000" />
                     <CColor A="255" R="255" G="255" B="255" />
                     <PrePosition X="0.5000" Y="0.5000" />
@@ -131,10 +144,10 @@
               <AbstractNodeData Name="NiuNiu_Button" ActionTag="-487936558" Tag="654" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="320.0000" TopMargin="-0.0350" BottomMargin="0.0050" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
                 <Size X="320.0000" Y="99.9980" />
                 <Children>
-                  <AbstractNodeData Name="Text_3" ActionTag="-816047263" Tag="659" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="100.0000" RightMargin="100.0000" TopMargin="34.9980" BottomMargin="35.0000" FontSize="30" LabelText="欢乐斗牛" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+                  <AbstractNodeData Name="Text_3" ActionTag="-816047263" Tag="659" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="100.0000" RightMargin="100.0000" TopMargin="34.9990" BottomMargin="34.9990" FontSize="30" LabelText="欢乐斗牛" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
                     <Size X="120.0000" Y="30.0000" />
                     <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-                    <Position X="160.0000" Y="50.0000" />
+                    <Position X="160.0000" Y="49.9990" />
                     <Scale ScaleX="1.0000" ScaleY="1.0000" />
                     <CColor A="255" R="255" G="255" B="255" />
                     <PrePosition X="0.5000" Y="0.5000" />

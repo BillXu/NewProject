@@ -30,10 +30,10 @@ public:
 	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg);
 	virtual void update(float fDelta );
 	virtual void onTimeSave();
+	virtual void onConnectedToSvr();
 protected:
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
 	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
-	virtual void onConnectedToSvr();
 	virtual IRoom* doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID,eRoomType cRoomType, Json::Value& vJsValue ) = 0 ;
 	virtual IRoom* doCreateRoomObject( eRoomType cRoomType) = 0 ;
 	bool reqeustChatRoomID(IRoom* pRoom);
@@ -42,6 +42,7 @@ protected:
 	bool getRoomCreatorRooms(uint32_t nCreatorUID,LIST_ROOM& vInfo );
 	void removeRoom(IRoom* pRoom );
 	void doDeleteRoom(IRoom* pRoom );
+	virtual eRoomType getMgrRoomType() = 0 ;
 protected:
 	MAP_ID_ROOM m_vRooms ;
 	MAP_CONFIG_ROOMS m_vCongfigIDRooms ;

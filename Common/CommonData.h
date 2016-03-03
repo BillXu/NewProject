@@ -16,19 +16,15 @@ struct stPlayerBrifData
 	uint32_t nCurrentRoomID ;
 };
 
-struct stPlayerTaxasData
+struct stPlayerGameData
 {
 	uint32_t nWinTimes ;
 	uint32_t nPlayTimes ;
 	uint64_t nSingleWinMost ;
 	uint8_t vMaxCards[MAX_TAXAS_HOLD_CARD] ;
-};
-
-struct stPlayerNiuNiuData
-{
-	uint32_t nWinTimes ;
-	uint32_t nPlayTimes ;
-	uint64_t nSingleWinMost ;
+	uint32_t nChampionTimes ;
+	uint32_t nRun_upTimes ;
+	uint32_t nThird_placeTimes ;
 };
 
 struct stPlayerDetailData
@@ -47,7 +43,7 @@ struct stPlayerDetailData
 struct stPlayerDetailDataClient
 	:public stPlayerDetailData
 {
-	stPlayerTaxasData tTaxasData ;
+	
 };
 
 struct stCommonBaseData
@@ -64,6 +60,7 @@ struct stServerBaseData
 	uint32_t tLastLoginTime;
 	uint32_t tLastTakeCharityCoinTime ;
 	bool isRegister ;
+	uint8_t nNewPlayerHaloWeight ;
 };
 
 struct stTaxasInRoomPeerData

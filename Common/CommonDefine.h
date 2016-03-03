@@ -52,13 +52,8 @@ enum ePayChannel
 enum eRoomType
 {
 	eRoom_None,
-	eRoom_PaiJiu,
-	eRoom_TexasPoker,
+	eRoom_TexasPoker = eRoom_None,
 	eRoom_NiuNiu,
-	eRoom_TexasPoker_Diamoned,
-	eRoom_TexasPoker_Private,
-	eRoom_Gold,
-	eRoom_Baccarat,
 	eRoom_Max ,
 };
 
@@ -75,8 +70,8 @@ enum eRoomState
 	eRoomState_StartGame,
 	eRoomState_NN_Disribute4Card = eRoomState_StartGame,
 	// state for texas poker
-	eRoomState_TP_BetBlind,
-	eRoomState_TP_PrivateCard,
+	eRoomState_TP_BetBlind = eRoomState_StartGame,
+	eRoomState_TP_PrivateCard = eRoomState_StartGame,
 	eRoomState_TP_Beting,
 	eRoomState_TP_OneRoundBetEndResult,
 	eRoomState_TP_PublicCard,

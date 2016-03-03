@@ -29,7 +29,7 @@ public:
 	void onGameWillBegin()override ;
 	void onGameDidEnd()override ;
 	void onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )override ;
-	void onPlayerWillLeaveRoom( stStandPlayer* pPlayer )override ;
+	uint32_t getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp)override ;
 	uint8_t getRoomType()override{ return eRoom_NiuNiu ;}
 	void prepareCards()override;
 	uint32_t coinNeededToSitDown()override;

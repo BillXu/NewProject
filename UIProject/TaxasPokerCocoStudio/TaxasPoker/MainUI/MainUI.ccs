@@ -248,6 +248,9 @@
         <Image Name="IconMatch1.png" />
         <Image Name="IconMatch2.png" />
         <Project Name="MatchRuleLayer.csd" Type="Layer" />
+        <Project Name="RequestNewListItem.csd" Type="Layer" />
+        <Image Name="gold.png" />
+        <Image Name="Icon-80.png" />
       </RootFolder>
     </Group>
   </SolutionFolder>

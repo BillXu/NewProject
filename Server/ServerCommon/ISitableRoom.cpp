@@ -77,18 +77,55 @@ void ISitableRoom::willSerializtionToDB(Json::Value& vOutJsValue)
 
 void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 {
+	// remove from m_vSortByPeerCardsAsc ;
+	auto iterSort = m_vSortByPeerCardsAsc.begin() ;
+	for ( ; iterSort != m_vSortByPeerCardsAsc.end(); ++iterSort )
+	{
+		if ( *iterSort == pPlayer )
+		{
+			m_vSortByPeerCardsAsc.erase(iterSort) ;
+			break;
+		}
+	}
+
+	// remove other player data ;
 	assert(isSeatIdxEmpty(pPlayer->getIdx()) == false && "player not sit down" );
 	pPlayer->willStandUp();
 	m_vSitdownPlayers[pPlayer->getIdx()] = nullptr ;
 	auto standPlayer = getPlayerByUserUID(pPlayer->getUserUID()) ;
 	if ( standPlayer == nullptr )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("terrible error , not in player , how to sitdwon , how to standup ? uid = %d",pPlayer->getUserUID());
+		if ( pPlayer->getCoin() > 0 )
+		{
+			stMsgSvrDelayedLeaveRoom msgdoLeave ;
+			msgdoLeave.nCoin = pPlayer->getCoin() ;
+			msgdoLeave.nGameType = getRoomType() ;
+			msgdoLeave.nRoomID = getRoomID() ;
+			msgdoLeave.nNewPlayerHaloWeight = pPlayer->getHaloWeight() ;
+			msgdoLeave.nUserUID = pPlayer->getUserUID() ;
+			msgdoLeave.nWinTimes = pPlayer->getWinTimes()  ;
+			msgdoLeave.nPlayerTimes = pPlayer->getPlayTimes() ;
+			msgdoLeave.nSingleWinMost = pPlayer->getSingleWinMost() ;
+			msgdoLeave.nUserUID = pPlayer->getUserUID() ;
+			sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pPlayer->getSessionID()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d game end stand up sys coin = %d to data svr ",pPlayer->getUserUID(),pPlayer->getCoin()) ;
+		}
+		else
+		{
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d just stand up dely leave , but no coin",pPlayer->getUserUID() ) ;
+		}
 	}
 	else
 	{
 		standPlayer->nCoin += pPlayer->getCoin() ;
 		standPlayer->nNewPlayerHaloWeight = pPlayer->getHaloWeight() ;
+		standPlayer->nPlayerTimes += pPlayer->getPlayTimes();
+		standPlayer->nWinTimes += pPlayer->getWinTimes();
+		if ( pPlayer->getSingleWinMost() > standPlayer->nSingleWinMost )
+		{
+			standPlayer->nSingleWinMost = pPlayer->getSingleWinMost() ;
+		}
+		CLogMgr::SharedLogMgr()->PrintLog("player uid = %d just normal stand up ",pPlayer->getUserUID() ) ;
 	}
 
 	stMsgRoomStandUp msgStandUp ;
@@ -98,14 +135,42 @@ void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 	m_vReserveSitDownObject.push_back(pPlayer) ;
 }
 
-void ISitableRoom::playerDoLeaveRoom(uint32_t nPlayerUID )
+void ISitableRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 {
-	auto pPlayer = getSitdownPlayerByUID(nPlayerUID) ;
+	ISitableRoomPlayer* pSitPlayer = getSitdownPlayerByUID(pPlayer->nUserUID) ;
+	if ( pSitPlayer == nullptr )
+	{
+		return ;
+	}
+
+	onPlayerWillStandUp(pSitPlayer);
+	pSitPlayer = getSitdownPlayerByUID(pPlayer->nUserUID) ;
+	if ( pSitPlayer == nullptr )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("player direct standup and can leave uid = %d",pPlayer->nUserUID) ;
+		return ;
+	}
+
+	uint32_t nLeastLeftCoin = getLeastCoinNeedForCurrentGameRound(pSitPlayer) ;
+	uint32_t nCoin = pSitPlayer->getCoin() ;
+	if ( nCoin > nLeastLeftCoin )
+	{
+		pSitPlayer->setCoin(nLeastLeftCoin) ;
+		pPlayer->nCoin += ( nCoin - nLeastLeftCoin );
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d will leave take away coin = %lld, left coin = %d",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("need coin too many ,uid = %d will leave take away coin = %lld, left coin = %d",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
+	}
+}
+
+void ISitableRoom::onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )
+{
 	if ( pPlayer )
 	{
-		playerDoStandUp(pPlayer) ;
+		pPlayer->delayStandUp();
 	}
-	IRoom::playerDoLeaveRoom(nPlayerUID);
 }
 
 uint8_t ISitableRoom::getEmptySeatCount()
@@ -294,10 +359,18 @@ void ISitableRoom::onGameDidEnd()
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
 	{
 		auto pPlayer = m_vSitdownPlayers[nIdx] ;
+		if ( pPlayer && pPlayer->isDelayStandUp() )
+		{
+			playerDoStandUp(pPlayer);	
+			pPlayer = nullptr ;
+			m_vSitdownPlayers[nIdx] = nullptr ;
+		}
+
 		if ( pPlayer && pPlayer->getCoin() < coinNeededToSitDown() )
 		{
 			playerDoStandUp(pPlayer);	
 			pPlayer = nullptr ;
+			m_vSitdownPlayers[nIdx] = nullptr ;
 		}
 
 		if ( pPlayer )

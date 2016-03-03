@@ -121,14 +121,14 @@
                 <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
               <AbstractNodeData Name="chip_icon" ActionTag="-356011581" Tag="617" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="179.0000" RightMargin="395.0000" TopMargin="59.7767" BottomMargin="54.1785" ctype="SpriteObjectData">
-                <Size X="26.0000" Y="26.0000" />
+                <Size X="25.0000" Y="25.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="192.0000" Y="67.1785" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.3200" Y="0.4800" />
                 <PreSize X="0.0433" Y="0.1858" />
-                <FileData Type="Normal" Path="chip_icon.png" Plist="" />
+                <FileData Type="Normal" Path="gold.png" Plist="" />
                 <BlendFunc Src="770" Dst="771" />
               </AbstractNodeData>
             </Children>
@@ -147,14 +147,14 @@
             <Size X="600.0000" Y="139.9552" />
             <Children>
               <AbstractNodeData Name="chip_icon" ActionTag="-444495999" Tag="621" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="179.0000" RightMargin="395.0000" TopMargin="59.7767" BottomMargin="54.1785" ctype="SpriteObjectData">
-                <Size X="26.0000" Y="26.0000" />
+                <Size X="25.0000" Y="25.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="192.0000" Y="67.1785" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.3200" Y="0.4800" />
                 <PreSize X="0.0433" Y="0.1858" />
-                <FileData Type="Normal" Path="chip_icon.png" Plist="" />
+                <FileData Type="Normal" Path="gold.png" Plist="" />
                 <BlendFunc Src="770" Dst="771" />
               </AbstractNodeData>
               <AbstractNodeData Name="price_bg_1" ActionTag="-932499138" Tag="342" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="433.9800" RightMargin="4.0200" TopMargin="42.3009" BottomMargin="37.6543" ctype="SpriteObjectData">
@@ -289,14 +289,14 @@
                 <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
               <AbstractNodeData Name="chip_icon" ActionTag="881558852" Tag="620" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="179.0000" RightMargin="395.0000" TopMargin="59.7767" BottomMargin="54.1785" ctype="SpriteObjectData">
-                <Size X="26.0000" Y="26.0000" />
+                <Size X="25.0000" Y="25.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="192.0000" Y="67.1785" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.3200" Y="0.4800" />
                 <PreSize X="0.0433" Y="0.1858" />
-                <FileData Type="Normal" Path="chip_icon.png" Plist="" />
+                <FileData Type="Normal" Path="gold.png" Plist="" />
                 <BlendFunc Src="770" Dst="771" />
               </AbstractNodeData>
             </Children>
@@ -373,14 +373,14 @@
                 <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
               <AbstractNodeData Name="chip_icon" ActionTag="-1249497688" Tag="619" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="179.0000" RightMargin="395.0000" TopMargin="59.7767" BottomMargin="54.1785" ctype="SpriteObjectData">
-                <Size X="26.0000" Y="26.0000" />
+                <Size X="25.0000" Y="25.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="192.0000" Y="67.1785" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.3200" Y="0.4800" />
                 <PreSize X="0.0433" Y="0.1858" />
-                <FileData Type="Normal" Path="chip_icon.png" Plist="" />
+                <FileData Type="Normal" Path="gold.png" Plist="" />
                 <BlendFunc Src="770" Dst="771" />
               </AbstractNodeData>
             </Children>
@@ -399,14 +399,14 @@
             <Size X="600.0000" Y="139.9552" />
             <Children>
               <AbstractNodeData Name="chip_icon" ActionTag="-131497972" Tag="618" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="179.0000" RightMargin="395.0000" TopMargin="59.7767" BottomMargin="54.1785" ctype="SpriteObjectData">
-                <Size X="26.0000" Y="26.0000" />
+                <Size X="25.0000" Y="25.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="192.0000" Y="67.1785" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.3200" Y="0.4800" />
                 <PreSize X="0.0433" Y="0.1858" />
-                <FileData Type="Normal" Path="chip_icon.png" Plist="" />
+                <FileData Type="Normal" Path="gold.png" Plist="" />
                 <BlendFunc Src="770" Dst="771" />
               </AbstractNodeData>
               <AbstractNodeData Name="price_bg_1" ActionTag="-1277225889" Tag="360" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="433.9800" RightMargin="4.0200" TopMargin="42.3009" BottomMargin="37.6543" ctype="SpriteObjectData">

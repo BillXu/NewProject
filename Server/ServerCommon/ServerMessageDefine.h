@@ -138,18 +138,6 @@ struct stMsgSavePlayerMoney
 	uint32_t nDiamoned ;
 };
 
-struct stMsgSavePlayerTaxaPokerData
-	:public stMsg
-{
-	stMsgSavePlayerTaxaPokerData(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_TAXAS_DATA ; }
-	uint32_t nUserUID ;
-	stPlayerTaxasData tData ;
-	uint32_t nFollowedRoomsStrLen ;
-	PLACE_HOLDER(char* pFollowedRoomsJsonStr);
-	uint32_t nMyOwnRoomsStrLen ;
-	PLACE_HOLDER(char* pMyOwnRooms);
-};
-
 struct stMsgReadPlayerTaxasData
 	:public stMsg
 {
@@ -163,20 +151,17 @@ struct stMsgReadPlayerTaxasDataRet
 	stMsgReadPlayerTaxasDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_PLAYER_TAXAS_DATA ; }
 	uint8_t nRet ;
 	uint32_t nUserUID ;
-	stPlayerTaxasData tData ;
-	uint32_t nFollowedRoomsStrLen ;
-	PLACE_HOLDER(char* pFollowedRoomsJsonStr);
-	uint32_t nMyOwnRoomsStrLen ;
-	PLACE_HOLDER(char* pMyOwnRooms);
+	stPlayerGameData tData ;
 };
 
 
-struct stMsgSavePlayerNiuNiuData
+struct stMsgSavePlayerGameData
 	:public stMsg
 {
-	stMsgSavePlayerNiuNiuData(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_NIUNIU_DATA ; }
+	stMsgSavePlayerGameData(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_GAME_DATA ; }
 	uint32_t nUserUID ;
-	stPlayerNiuNiuData tData ;
+	uint8_t nGameType ;
+	stPlayerGameData tData ;
 };
 
 struct stMsgReadPlayerNiuNiuData
@@ -192,7 +177,7 @@ struct stMsgReadPlayerNiuNiuDataRet
 	stMsgReadPlayerNiuNiuDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_PLAYER_NIUNIU_DATA ; }
 	uint8_t nRet ;
 	uint32_t nUserUID ;
-	stPlayerNiuNiuData tData ;
+	stPlayerGameData tData ;
 };
 
 //struct stMsgSaveCreateTaxasRoomInfo
@@ -327,6 +312,7 @@ struct stMsgSavePlayerCommonLoginData
 	uint32_t nContinueDays ;
 	uint32_t tLastLoginTime;
 	uint32_t tLastTakeCharityCoinTime ;
+	uint8_t nNewPlayerHaloWeight ;
 	double dfLongitude;
 	double dfLatidue;
 	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
@@ -454,7 +440,7 @@ struct  stMsgSyncTaxasPlayerData
 struct stMsgInformTaxasPlayerLeave
 	:public stMsg
 {
-	stMsgInformTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_INFORM_LEAVE; }
+	//stMsgInformTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_INFORM_LEAVE; }
 	uint32_t nUserUID ;
 	//uint64_t nTakeInMoney ;
 	//bool bIsDiamond ;
@@ -463,7 +449,7 @@ struct stMsgInformTaxasPlayerLeave
 struct stMsgOrderTaxasPlayerLeave
 	:public stMsgToRoom
 {
-	stMsgOrderTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_ORDER_LEAVE ; }
+	//stMsgOrderTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_ORDER_LEAVE ; }
 	uint32_t nSessionID ;
 	uint32_t nUserUID ;
 };
@@ -471,7 +457,7 @@ struct stMsgOrderTaxasPlayerLeave
 struct stMsgOrderTaxasPlayerLeaveRet
 	:public stMsg
 {
-	stMsgOrderTaxasPlayerLeaveRet(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_ORDER_LEAVE ; }
+	//stMsgOrderTaxasPlayerLeaveRet(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_TP_ORDER_LEAVE ; }
 	uint32_t nUserUID ;
 	uint8_t nRet ; // 0 success , 1 can not find room ;
 };
@@ -515,6 +501,14 @@ struct stMsgSvrDoLeaveRoom
 	uint32_t nPlayerTimes ;
 	uint32_t nWinTimes ;
 	uint8_t nNewPlayerHaloWeight ;
+	uint32_t nSingleWinMost ;
+};
+
+struct stMsgSvrDelayedLeaveRoom
+	:public stMsgSvrDoLeaveRoom
+{
+	stMsgSvrDelayedLeaveRoom(){ usMsgType = MSG_SVR_DELAYED_LEAVE_ROOM ;}
+	uint32_t nUserUID ;
 };
 
 // other with Verify Server ;

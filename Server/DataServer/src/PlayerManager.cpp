@@ -8,9 +8,8 @@
 #include "EventCenter.h"
 #include "PlayerBaseData.h"
 #include "AutoBuffer.h"
-#include "PlayerTaxas.h"
 #include "PlayerMail.h"
-
+#include "PlayerGameData.h"
 CSelectPlayerDataCacher::CSelectPlayerDataCacher()
 {
 	m_vBrifData.clear();
@@ -220,6 +219,21 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			return true ;
 		}
 		break;
+	case MSG_SVR_DO_LEAVE_ROOM:
+		{
+			stMsgSvrDoLeaveRoom* pRet = (stMsgSvrDoLeaveRoom*)prealMsg ;
+			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
+			if (!pp)
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not process do leave room",pRet->nUserUID);
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room ",pRet->nUserUID) ;
+				pp->OnMessage(prealMsg,eSenderPort);
+			}
+		}
+		break;
 	case MSG_REQUEST_PLAYER_DATA:
 		{
 			stMsgRequestPlayerData* pRet = (stMsgRequestPlayerData*)prealMsg ;
@@ -233,29 +247,29 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailData));
 			if ( pPlayer )
 			{
-				CPlayerTaxas* pTaxasData = (CPlayerTaxas*)pPlayer->GetComponent(ePlayerComponent_PlayerTaxas);
-				stData.nCurrentRoomID = pTaxasData->getCurRoomID() ;
+				//CPlayerTaxas* pTaxasData = (CPlayerTaxas*)pPlayer->GetComponent(ePlayerComponent_PlayerTaxas);
+				//stData.nCurrentRoomID = pTaxasData->getCurRoomID() ;
 
-				if ( stData.nCurrentRoomID )  // select take in
-				{
-					stMsgCrossServerRequest msgReq ;
-					msgReq.nJsonsLen = 0 ;
-					msgReq.nReqOrigID = nSessionID ;
-					msgReq.nRequestSubType = eCrossSvrReqSub_SelectPlayerData ;
-					msgReq.nRequestType = eCrossSvrReq_SelectTakeIn ;
-					msgReq.nTargetID = stData.nCurrentRoomID ;
-					msgReq.cSysIdentifer = ID_MSG_PORT_TAXAS ;
-					msgReq.vArg[0] = pRet->nPlayerUID;
-					msgReq.vArg[1] = pRet->isDetail ;
-					CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgReq,sizeof(msgReq)) ;
-					CLogMgr::SharedLogMgr()->PrintLog("select take in for player detail") ;
-					return true ;
-				}
+				//if ( stData.nCurrentRoomID )  // select take in
+				//{
+				//	stMsgCrossServerRequest msgReq ;
+				//	msgReq.nJsonsLen = 0 ;
+				//	msgReq.nReqOrigID = nSessionID ;
+				//	msgReq.nRequestSubType = eCrossSvrReqSub_SelectPlayerData ;
+				//	msgReq.nRequestType = eCrossSvrReq_SelectTakeIn ;
+				//	msgReq.nTargetID = stData.nCurrentRoomID ;
+				//	msgReq.cSysIdentifer = ID_MSG_PORT_TAXAS ;
+				//	msgReq.vArg[0] = pRet->nPlayerUID;
+				//	msgReq.vArg[1] = pRet->isDetail ;
+				//	CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgReq,sizeof(msgReq)) ;
+				//	CLogMgr::SharedLogMgr()->PrintLog("select take in for player detail") ;
+				//	return true ;
+				//}
 
 				if ( pRet->isDetail )
 				{
 					pPlayer->GetBaseData()->GetPlayerDetailData(&stData);
-					pTaxasData->getTaxasData(&stData.tTaxasData);
+					//pTaxasData->getTaxasData(&stData.tTaxasData);
 				}
 				else
 				{
@@ -365,34 +379,34 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			//#endif
 		}
 		break;
-	case MSG_TP_ORDER_LEAVE:
-		{
-			stMsgOrderTaxasPlayerLeaveRet* pRet = (stMsgOrderTaxasPlayerLeaveRet*)prealMsg ;
-			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
-			if (!pp)
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not inform leave",pRet->nUserUID);
-			}
-			else
-			{
-				pp->OnMessage(prealMsg,eSenderPort);
-			}
-		}
-		break;
-	case MSG_TP_INFORM_LEAVE:
-		{
-			stMsgInformTaxasPlayerLeave* pRet = (stMsgInformTaxasPlayerLeave*)prealMsg ;
-			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
-			if (!pp)
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not inform leave",pRet->nUserUID);
-			}
-			else
-			{
-				pp->OnMessage(prealMsg,eSenderPort);
-			}
-		}
-		break;
+	//case MSG_TP_ORDER_LEAVE:
+	//	{
+	//		stMsgOrderTaxasPlayerLeaveRet* pRet = (stMsgOrderTaxasPlayerLeaveRet*)prealMsg ;
+	//		CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
+	//		if (!pp)
+	//		{
+	//			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not inform leave",pRet->nUserUID);
+	//		}
+	//		else
+	//		{
+	//			pp->OnMessage(prealMsg,eSenderPort);
+	//		}
+	//	}
+	//	break;
+	//case MSG_TP_INFORM_LEAVE:
+	//	{
+	//		stMsgInformTaxasPlayerLeave* pRet = (stMsgInformTaxasPlayerLeave*)prealMsg ;
+	//		CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
+	//		if (!pp)
+	//		{
+	//			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not inform leave",pRet->nUserUID);
+	//		}
+	//		else
+	//		{
+	//			pp->OnMessage(prealMsg,eSenderPort);
+	//		}
+	//	}
+	//	break;
 	case MSG_TP_SYNC_PLAYER_DATA:
 		{
 			stMsgSyncTaxasPlayerData* pRet = (stMsgSyncTaxasPlayerData*)prealMsg ;
@@ -400,6 +414,20 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			if (!pp)
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not sys data",pRet->nUserUID);
+			}
+			else
+			{
+				pp->OnMessage(prealMsg,eSenderPort);
+			}
+		}
+		break;
+	case MSG_SVR_DELAYED_LEAVE_ROOM:
+		{
+			stMsgSvrDelayedLeaveRoom* pRet = (stMsgSvrDelayedLeaveRoom*)prealMsg ;
+			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
+			if (!pp)
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not delay leave room",pRet->nUserUID);
 			}
 			else
 			{
@@ -438,7 +466,33 @@ CPlayer* CPlayerManager::GetPlayerBySessionID( unsigned int nSessionID , bool bI
 
 void CPlayerManager::Update(float fDeta )
 {
-	 
+	// process player delay delete
+	 LIST_PLAYERS vListWillDelete ;
+	 time_t tNow = time(nullptr);
+	 for ( auto& pair : m_vOfflinePlayers )
+	 {
+		 if ( pair.second->getCanDelayTime() <= tNow )
+		 {
+			 vListWillDelete.push_back(pair.second) ;
+		 }
+	 }
+
+	 for ( auto& pp : vListWillDelete )
+	 {
+		 for ( auto& pair : m_vOfflinePlayers )
+		 {
+			 if ( pair.second->GetUserUID() == pp->GetUserUID() )
+			 {
+				 pp->OnTimerSave(0,0) ;
+				 m_vOfflinePlayers.erase(m_vOfflinePlayers.find(pair.first)) ;
+				 CLogMgr::SharedLogMgr()->PrintLog("player uid = %d do delete player object",pp->GetUserUID() ) ;
+				 delete pp ;
+				 pp = nullptr ;
+
+				 break;
+			 }
+		 }
+	 }
 }
 
 CPlayer* CPlayerManager::GetFirstActivePlayer()
@@ -497,14 +551,8 @@ void CPlayerManager::OnPlayerOffline( CPlayer*pPlayer )
 		return ;
 	}
 	m_vAllActivePlayers.erase(iter) ;
-
-	// do not cacher player 
-	delete pPlayer ;
-	pPlayer = nullptr ;
-	return  ;
-
-	// do not cacher player 
 	 
+	// cache to offine line 
 	MAP_UID_PLAYERS::iterator iterOffline = m_vOfflinePlayers.find(pPlayer->GetUserUID()) ;
 	if ( iterOffline != m_vOfflinePlayers.end() )
 	{
@@ -590,59 +638,59 @@ bool CPlayerManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult
 {
 	if ( eCrossSvrReq_SelectTakeIn == pResult->nRequestType && eCrossSvrReqSub_SelectPlayerData == pResult->nRequestSubType )
 	{
-		stMsgRequestPlayerDataRet msgBack ;
-		msgBack.nRet = 0 ;
-		msgBack.isDetail = pResult->vArg[3] ;
-		CPlayer* pPlayer = GetPlayerByUserUID(pResult->vArg[0]);
-		if ( pPlayer == nullptr )
-		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why this player is null , can not , funck!") ;
-			return true ;
-		}
+		//stMsgRequestPlayerDataRet msgBack ;
+		//msgBack.nRet = 0 ;
+		//msgBack.isDetail = pResult->vArg[3] ;
+		//CPlayer* pPlayer = GetPlayerByUserUID(pResult->vArg[0]);
+		//if ( pPlayer == nullptr )
+		//{
+		//	CLogMgr::SharedLogMgr()->ErrorLog("why this player is null , can not , funck!") ;
+		//	return true ;
+		//}
 
-		stPlayerDetailDataClient stData ;
-		stData.nCurrentRoomID = 0 ;
-		CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailDataClient));
-		if ( pPlayer )
-		{
-			CPlayerTaxas* pTaxasData = (CPlayerTaxas*)pPlayer->GetComponent(ePlayerComponent_PlayerTaxas);
-			stData.nCurrentRoomID = pResult->nReqOrigID;
-			if ( msgBack.isDetail )
-			{
-				pPlayer->GetBaseData()->GetPlayerDetailData(&stData);
-				pTaxasData->getTaxasData(&stData.tTaxasData);
-				if ( vJsValue )
-				{
-					stData.tTaxasData.nPlayTimes += (*vJsValue)["playTimes"].asUInt();
-					stData.tTaxasData.nWinTimes += (*vJsValue)["winTimes"].asUInt();
-					stData.tTaxasData.nSingleWinMost = (*vJsValue)["singleMost"].asUInt() < stData.tTaxasData.nSingleWinMost ? stData.tTaxasData.nSingleWinMost : (*vJsValue)["singleMost"].asUInt();
-				}
-				else
-				{
-					CLogMgr::SharedLogMgr()->PrintLog("targe player not sit down uid = %llu",pResult->vArg[0]);
-				}
-			}
-			else
-			{
-				pPlayer->GetBaseData()->GetPlayerBrifData(&stData) ;
-			}
+		//stPlayerDetailDataClient stData ;
+		//stData.nCurrentRoomID = 0 ;
+		//CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailDataClient));
+		//if ( pPlayer )
+		//{
+		//	CPlayerTaxas* pTaxasData = (CPlayerTaxas*)pPlayer->GetComponent(ePlayerComponent_PlayerTaxas);
+		//	stData.nCurrentRoomID = pResult->nReqOrigID;
+		//	if ( msgBack.isDetail )
+		//	{
+		//		pPlayer->GetBaseData()->GetPlayerDetailData(&stData);
+		//		pTaxasData->getTaxasData(&stData.tTaxasData);
+		//		if ( vJsValue )
+		//		{
+		//			stData.tTaxasData.nPlayTimes += (*vJsValue)["playTimes"].asUInt();
+		//			stData.tTaxasData.nWinTimes += (*vJsValue)["winTimes"].asUInt();
+		//			stData.tTaxasData.nSingleWinMost = (*vJsValue)["singleMost"].asUInt() < stData.tTaxasData.nSingleWinMost ? stData.tTaxasData.nSingleWinMost : (*vJsValue)["singleMost"].asUInt();
+		//		}
+		//		else
+		//		{
+		//			CLogMgr::SharedLogMgr()->PrintLog("targe player not sit down uid = %llu",pResult->vArg[0]);
+		//		}
+		//	}
+		//	else
+		//	{
+		//		pPlayer->GetBaseData()->GetPlayerBrifData(&stData) ;
+		//	}
 
-			if ( pResult->vArg[1] )
-			{
-				stData.nCoin += pResult->vArg[2] ;
-			}
-			else
-			{
-				stData.nDiamoned += pResult->vArg[2] ;
-			}
-			stData.nCurrentRoomID = pResult->nReqOrigID;
-			auB.addContent(&msgBack,sizeof(msgBack));
-			auB.addContent(&stData,msgBack.isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
-			CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nTargetID,auB.getBufferPtr(),auB.getContentSize()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("select take in ret , send player data");
-			return true ;
-		}
-		return true ;
+		//	if ( pResult->vArg[1] )
+		//	{
+		//		stData.nCoin += pResult->vArg[2] ;
+		//	}
+		//	else
+		//	{
+		//		stData.nDiamoned += pResult->vArg[2] ;
+		//	}
+		//	stData.nCurrentRoomID = pResult->nReqOrigID;
+		//	auB.addContent(&msgBack,sizeof(msgBack));
+		//	auB.addContent(&stData,msgBack.isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
+		//	CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nTargetID,auB.getBufferPtr(),auB.getContentSize()) ;
+		//	CLogMgr::SharedLogMgr()->PrintLog("select take in ret , send player data");
+		//	return true ;
+		//}
+		//return true ;
 	}
 	return false ;
 }

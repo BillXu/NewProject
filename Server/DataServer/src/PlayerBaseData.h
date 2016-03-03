@@ -26,8 +26,9 @@ public:
 	void OnProcessContinueLogin();
 	void TimerSave()override;
 	uint64_t GetAllCoin(){ return m_stBaseData.nCoin;}
+	uint64_t getCoin(){ return m_stBaseData.nCoin ; }
 	uint64_t GetAllDiamoned(){ return m_stBaseData.nDiamoned;}
-	void setCoin(int64_t nCoin ){ m_stBaseData.nCoin = nCoin ; m_bMoneyDataDirty = true ; }
+	void setCoin(int64_t nCoin ){ m_bMoneyDataDirty = m_stBaseData.nCoin != nCoin ; m_stBaseData.nCoin = nCoin ; }
 	bool AddMoney(int64_t nOffset,bool bDiamond = false );
 	bool decressMoney(int64_t nOffset,bool bDiamond = false );
 	bool OnPlayerEvent(stPlayerEvetArg* pArg);
@@ -41,7 +42,10 @@ public:
 	stServerBaseData* GetData(){ return &m_stBaseData ;}
 	virtual void OnReactive(uint32_t nSessionID );
 	uint16_t GetPhotoID(){ return m_stBaseData.nPhotoID ;}
-	bool isNotInAnyRoom(){ return m_nStateInRoomID == 0 && m_nStateInRoomType == eRoom_Max ; }
+	bool isPlayerRegistered();
+	uint8_t getNewPlayerHaloWeight();
+	uint32_t getTempCoin(){ return m_nTempCoin ; }
+	void setTempCoin( uint32_t nTempCoin ){ m_bMoneyDataDirty = m_nTempCoin != nTempCoin ; m_nTempCoin = nTempCoin ; }
 protected:
 	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
 public:
@@ -51,9 +55,8 @@ protected:
 	void OnNewDay(stEventArg* pArg);
 private:
 	stServerBaseData m_stBaseData ;
+	uint32_t m_nTempCoin ;
 
-	uint32_t m_nStateInRoomID ;
-	uint8_t m_nStateInRoomType ;
 	std::string m_strCurIP ; // ip address ; used by wechat pay ;
 	// not store in db 
 	bool m_bGivedLoginReward ;

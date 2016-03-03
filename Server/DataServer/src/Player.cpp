@@ -10,13 +10,13 @@
 #include "PlayerShop.h"
 #include "ServerMessageDefine.h"
 #include "RobotManager.h"
-#include "PlayerTaxas.h"
 #include "PlayerFriend.h"
-#include "PlayerNiuNiu.h"
 #include "ServerCommon.h"
 #include "AutoBuffer.h"
 #include "RoomConfig.h"
+#include "PlayerGameData.h"
 #define TIME_SAVE 60*10
+#define TIME_DELAY_DELETE 2*60
 CPlayer::CPlayer( )
 {
 	m_nUserUID = 0 ;
@@ -57,12 +57,11 @@ void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
 	/// new components ;here ;
 	m_vAllComponents[ePlayerComponent_BaseData] = new CPlayerBaseData(this) ;
 	m_vAllComponents[ePlayerComponent_Mail] = new CPlayerMailComponent(this);
-	m_vAllComponents[ePlayerComponent_PlayerTaxas] = new CPlayerTaxas(this);
+	m_vAllComponents[ePlayerComponent_PlayerGameData] = new CPlayerGameData(this);
 	//m_vAllComponents[ePlayerComponent_PlayerItemMgr] = new CPlayerItemComponent(this);
 	//m_vAllComponents[ePlayerComponent_PlayerMission] = new CPlayerMission(this);
 	//m_vAllComponents[ePlayerComponent_PlayerShop] = new CPlayerShop(this);
 	m_vAllComponents[ePlayerComponent_Friend] = new CPlayerFriend(this);
-	m_vAllComponents[ePlayerComponent_PlayerNiuNiu] = new CPlayerNiuNiu(this) ;
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
 		IPlayerComponent* p = m_vAllComponents[i] ;
@@ -239,6 +238,7 @@ bool CPlayer::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 void CPlayer::OnPlayerDisconnect()
 {
+	m_nDisconnectTime = time(NULL) ;
 	// inform components;
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
@@ -256,7 +256,6 @@ void CPlayer::OnPlayerDisconnect()
 		m_pTimerSave->Stop();
 	}
 	
-	m_nDisconnectTime = time(NULL) ;
 	SetState(ePlayerState_Offline) ;
 	CLogMgr::SharedLogMgr()->ErrorLog("player disconnect should inform other sever");
 
@@ -267,7 +266,7 @@ void CPlayer::OnPlayerDisconnect()
 	msgLog.nLogType = eLog_PlayerLogOut ;
 	msgLog.nTargetID = GetUserUID() ;
 	memset(msgLog.vArg,0,sizeof(msgLog.vArg));
-	msgLog.vArg[0] = GetBaseData()->GetAllCoin() ;
+	msgLog.vArg[0] = GetBaseData()->getCoin() ;
 	SendMsgToClient((char*)&msgLog,sizeof(msgLog));
 }
 
@@ -335,236 +334,6 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 {
 	switch ( pMsg->usMsgType )
 	{
-	case MSG_ADD_RENT_TIME:
-		{
-			stMsgAddRoomRentTime* pRet = (stMsgAddRoomRentTime*)pMsg ;
-			CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_ADD_RENT_TIME check room id , and kou qian  do not forget ");
-
-			stMsgAddRoomRentTimeRet msgBack ;
-			msgBack.nAddDays = pRet->nAddDays ;
-			msgBack.nRet = 0 ;
-			msgBack.nRoomID = pRet->nRoomID ;
-			msgBack.nRoomType = pRet->nRoomType ;
-
-			uint16_t nRoomConfigID = 0 ;
-			if ( eRoom_NiuNiu == pRet->nRoomType )
-			{
-				nRoomConfigID = ((CPlayerNiuNiu*)GetComponent(ePlayerComponent_PlayerNiuNiu))->getMyOwnRoomConfig(pRet->nRoomID) ;
-			}
-			else if ( eRoom_TexasPoker == pRet->nRoomType )
-			{
-				nRoomConfigID = ((CPlayerTaxas*)GetComponent(ePlayerComponent_PlayerTaxas))->getMyOwnRoomConfig(pRet->nRoomID) ;
-			}
-			else
-			{
-				msgBack.nRet = 3 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			CRoomConfigMgr* pConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room);
-			stBaseRoomConfig* pRoomConfig = pConfigMgr->GetConfigByConfigID(nRoomConfigID) ;
-			if ( pRoomConfig == nullptr )
-			{
-				msgBack.nRet = 1 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			if ( GetBaseData()->GetAllCoin() < pRet->nAddDays * pRoomConfig->nRentFeePerDay )
-			{
-				msgBack.nRet = 2 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			GetBaseData()->decressMoney(pRet->nAddDays * pRoomConfig->nRentFeePerDay);
-
-			stMsgCrossServerRequest msgRoomProfitReq ;
-			msgRoomProfitReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
-			msgRoomProfitReq.nReqOrigID = GetUserUID() ;
-			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
-			msgRoomProfitReq.nRequestType = eCrossSvrReq_AddRentTime ;
-			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
-			msgRoomProfitReq.vArg[0] = pRet->nAddDays ;
-			msgRoomProfitReq.vArg[1] = pRet->nRoomType ;
-			msgRoomProfitReq.vArg[2] = pRet->nAddDays * pRoomConfig->nRentFeePerDay ;
-			SendMsgToClient((char*)&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
-		}
-		break;
-	case MSG_CACULATE_ROOM_PROFILE:
-		{
-			stMsgCaculateTaxasRoomProfit* pRet = (stMsgCaculateTaxasRoomProfit*)pMsg ;
-
-			stMsgCaculateTaxasRoomProfitRet msgBack ;
-			msgBack.nRoomType = pRet->nRoomType ;
-			msgBack.bDiamond = false ;
-			msgBack.nProfitMoney = 0 ;
-			msgBack.nRet = 0 ;
-
-			msgBack.nRoomID = pRet->nRoomID ;
-			bool bIsOwnRoom = false ;
-			if ( eRoom_NiuNiu == pRet->nRoomType )
-			{
-				bIsOwnRoom = ((CPlayerNiuNiu*)GetComponent(ePlayerComponent_PlayerNiuNiu))->isRoomIDMyOwn(pRet->nRoomID) ;
-			}
-			else if ( eRoom_TexasPoker == pRet->nRoomType )
-			{
-				bIsOwnRoom = ((CPlayerTaxas*)GetComponent(ePlayerComponent_PlayerTaxas))->isRoomIDMyOwn(pRet->nRoomID) ;
-			}
-			else
-			{
-				msgBack.nRet = 2 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			if ( !bIsOwnRoom )
-			{
-				msgBack.nRet = 1 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			stMsgCrossServerRequest msgRoomProfitReq ;
-			msgRoomProfitReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
-			msgRoomProfitReq.nReqOrigID = GetUserUID() ;
-			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
-			msgRoomProfitReq.nRequestType = eCrossSvrReq_RoomProfit ;
-			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
-			SendMsgToClient((char*)&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
-			return true;
-		}
-		break;
-	case MSG_DELETE_ROOM:
-		{
-			stMsgDeleteRoomRet msgBack ;
-			stMsgDeleteRoom* pRet = (stMsgDeleteRoom*)pMsg ;
-			msgBack.nRoomID = pRet->nRoomID ;
-			msgBack.nRoomType = pRet->nRoomType ;
-			bool bDeleted = false ;
-			if ( eRoom_NiuNiu == pRet->nRoomType )
-			{
-				bDeleted = ((CPlayerNiuNiu*)GetComponent(ePlayerComponent_PlayerNiuNiu))->deleteOwnRoom(pRet->nRoomID) ;
-			}
-			else if ( eRoom_TexasPoker == pRet->nRoomType )
-			{
-				bDeleted = ((CPlayerTaxas*)GetComponent(ePlayerComponent_PlayerTaxas))->deleteOwnRoom(pRet->nRoomID) ;
-			}
-			else
-			{
-				msgBack.nRet = 2 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			if ( !bDeleted )
-			{
-				msgBack.nRet = 1 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			// do delete room ;
-			stMsgCrossServerRequest msgReq ;
-			msgReq.nJsonsLen = 0 ;
-			msgReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
-			msgReq.nReqOrigID = GetUserUID() ;
-			msgReq.nRequestSubType = eCrossSvrReqSub_Default;
-			msgReq.nRequestType = eCrossSvrReq_DeleteRoom ;
-			msgReq.nTargetID = 0 ;
-			memset(msgReq.vArg,0,sizeof(msgReq.vArg)) ;
-			msgReq.vArg[0] = pRet->nRoomType ;
-			msgReq.vArg[1] = pRet->nRoomID ;
-			CGameServerApp::SharedGameServerApp()->sendMsg(msgReq.nReqOrigID, (char*)&msgReq,sizeof(msgReq)) ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d , delete room = %d , type = %d",GetUserUID(),pRet->nRoomID,pRet->nRoomType) ;
-
-			msgBack.nRet = 0 ;
-			SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-		}
-		break;
-	case MSG_CREATE_ROOM:
-		{
-			stMsgCreateRoom* pRet = (stMsgCreateRoom*)pMsg ;
-
-			stMsgCreateRoomRet msgBack ;
-			msgBack.nRoomID = 0 ;
-			msgBack.nRoomType = pRet->nRoomType ;
-			msgBack.nFinalCoin = GetBaseData()->GetAllCoin() ;
-
-			CRoomConfigMgr* pConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room);
-			stTaxasRoomConfig* pRoomConfig = (stTaxasRoomConfig*)pConfigMgr->GetConfigByConfigID(pRet->nConfigID) ;
-			if ( pRoomConfig == nullptr )
-			{
-				msgBack.nRet = 1 ;
-				msgBack.nRoomID = 0 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			// check if create room count reach limit ;
-			bool bReachLimit = false ;
-			if ( eRoom_NiuNiu == pRet->nRoomType )
-			{
-				bReachLimit = ((CPlayerNiuNiu*)GetComponent(ePlayerComponent_PlayerNiuNiu))->isCreateRoomCntReachLimit() ;
-			}
-			else if ( eRoom_TexasPoker == pRet->nRoomType )
-			{
-				bReachLimit = ((CPlayerTaxas*)GetComponent(ePlayerComponent_PlayerTaxas))->isCreateRoomCntReachLimit() ;
-			}
-			else
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("add my own room , unknown room type = %d , uid = %d",msgBack.nRoomType,GetUserUID()) ;
-				msgBack.nRet = 1 ;
-				msgBack.nRoomID = 0 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			if ( bReachLimit && GetUserUID() != MATCH_MGR_UID )
-			{
-				msgBack.nRet = 5 ;
-				msgBack.nRoomID = 0 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-			
-			// check coin weather engough 
-			if ( GetBaseData()->GetAllCoin() < pRoomConfig->nRentFeePerDay * pRet->nDays )
-			{
-				msgBack.nRet = 4 ;
-				msgBack.nRoomID = 0 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
-
-			stMsgCrossServerRequest msgReq ;
-			msgReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
-			if ( msgReq.cSysIdentifer == ID_MSG_PORT_NONE )
-			{
-				msgBack.nRet = 6 ;
-				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-				CLogMgr::SharedLogMgr()->ErrorLog("crate room but , unknown room type = %d , uid = %d",pRet->nRoomType, GetUserUID() ) ;
-				return true ;
-			}
-
-			GetBaseData()->decressMoney(pRoomConfig->nRentFeePerDay * pRet->nDays );
-
-			msgReq.nReqOrigID = GetUserUID() ;
-			msgReq.nRequestSubType = eCrossSvrReqSub_Default;
-			msgReq.nRequestType = eCrossSvrReq_CreateRoom ;
-			msgReq.nTargetID = 0 ;
-			msgReq.vArg[0] = pRet->nConfigID ;
-			msgReq.vArg[1] = pRet->nDays ;
-			msgReq.vArg[2] = pRet->nRoomType ;
-			pRet->vRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
-
-			Json::Value vArg ;
-			vArg["roonName"] = pRet->vRoomName;
-			CON_REQ_MSG_JSON(msgReq,vArg,autoBuf) ;
-			CGameServerApp::SharedGameServerApp()->sendMsg(msgReq.nReqOrigID,autoBuf.getBufferPtr(),autoBuf.getContentSize()) ;
-		}
-		break;
 // 	case MSG_ROBOT_INFORM_IDLE:
 // 		{
 // 			CRobotManager::SharedRobotMgr()->AddIdleRobotPlayer(this) ;
@@ -806,6 +575,7 @@ void CPlayer::PushTestAPNs()
 
 void CPlayer::OnReactive(uint32_t nSessionID )
 {
+	CLogMgr::SharedLogMgr()->PrintLog("uid = %d reactive with session id = %d", GetUserUID(), nSessionID) ;
 	m_nSessionID = nSessionID ;
 	SetState(ePlayerState_Online) ;
 	m_nDisconnectTime = 0 ;
@@ -842,97 +612,6 @@ bool CPlayer::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort 
 
 bool CPlayer::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue)
 {
-	if ( eCrossSvrReq_CreateRoom == pResult->nRequestType  )
-	{
-		stMsgCreateRoomRet msgBack ;
-		msgBack.nRet = pResult->nRet ;
-		msgBack.nRoomID = pResult->vArg[1];
-		msgBack.nRoomType = pResult->vArg[2] ;
-		msgBack.nFinalCoin = GetBaseData()->GetAllCoin() ;
-		if ( pResult->nRet == 0 )
-		{
-			if ( eRoom_NiuNiu == msgBack.nRoomType )
-			{
-				((CPlayerNiuNiu*)GetComponent(ePlayerComponent_PlayerNiuNiu))->addOwnRoom(msgBack.nRoomID,pResult->vArg[0]) ;
-			}
-			else if ( eRoom_TexasPoker == msgBack.nRoomType )
-			{
-				((CPlayerTaxas*)GetComponent(ePlayerComponent_PlayerTaxas))->addOwnRoom(msgBack.nRoomID,pResult->vArg[0]) ;
-			}
-			else
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("add my own room , unknown room type = %d , uid = %d",msgBack.nRoomType,GetUserUID()) ;
-			}
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d , create room id = %d , config id = %d", GetUserUID(),msgBack.nRoomID,pResult->vArg[0] ) ;
-		}
-		else
-		{
-			CLogMgr::SharedLogMgr()->PrintLog("result create failed give back coin uid = %d",GetUserUID());
-
-			CRoomConfigMgr* pConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room);
-
-			stTaxasRoomConfig* pRoomConfig = (stTaxasRoomConfig*)pConfigMgr->GetConfigByConfigID(pResult->vArg[0]) ;
-			if ( pRoomConfig == nullptr )
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("fuck arument error must fix now , room config id , can not find") ;
-				return true ;
-			}
-
-			GetBaseData()->AddMoney( pRoomConfig->nRentFeePerDay *  pResult->vArg[3]);
-			msgBack.nFinalCoin = GetBaseData()->GetAllCoin() ;
-		}
-		SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-		return true ;
-	}
-
-	if ( eCrossSvrReq_RoomProfit == pResult->nRequestType )
-	{
-		stMsgCaculateRoomProfitRet msgBack ;
-		msgBack.nRoomID = pResult->nReqOrigID ;
-		msgBack.bDiamond = !pResult->vArg[0] ;
-		msgBack.nProfitMoney = pResult->vArg[1] ;
-		msgBack.nRoomType = pResult->vArg[2] ;
-		msgBack.nRet = pResult->nRet ? 3 : 0 ;
-		SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
-		if ( msgBack.nRet )
-		{
-			return true ;
-		}
-		GetBaseData()->AddMoney(msgBack.nProfitMoney,msgBack.bDiamond);
-		// save log 
-		stMsgSaveLog msgLog ;
-		memset(msgLog.vArg,0,sizeof(msgLog.vArg));
-		msgLog.nJsonExtnerLen = 0 ;
-		msgLog.nLogType = eLog_AddMoney ;
-		msgLog.nTargetID = GetUserUID() ;
-		msgLog.vArg[0] = !msgBack.bDiamond ;
-		msgLog.vArg[1] = msgBack.nProfitMoney;
-		msgLog.vArg[2] = GetBaseData()->GetData()->nCoin;
-		msgLog.vArg[3] = GetBaseData()->GetData()->nDiamoned ;
-		msgLog.vArg[4] = eCrossSvrReq_RoomProfit ;
-		msgLog.vArg[5] = pResult->nReqOrigID ;
-		CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nReqOrigID,(char*)&msgLog,sizeof(msgLog));
-
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d get profit = %llu",GetUserUID(),msgBack.nProfitMoney) ;
-		return true ;
-	}
-
-	if ( eCrossSvrReq_AddRentTime == pResult->nRequestType )
-	{
-		stMsgAddRoomRentTimeRet msgRet ;
-		msgRet.nRet = pResult->nRet ? 4 : 0  ;
-		msgRet.nAddDays = pResult->vArg[0] ;
-		msgRet.nRoomID = pResult->nReqOrigID ;
-		msgRet.nRoomType = pResult->vArg[1] ;
-		SendMsgToClient((char*)&msgRet,sizeof(msgRet)) ;
-		if ( msgRet.nRet )
-		{
-			GetBaseData()->AddMoney(pResult->vArg[2]) ;
-		}
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d add rent time = %d",GetUserUID(),msgRet.nAddDays) ;
-		return true ;
-	}
-
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
 		IPlayerComponent* p = m_vAllComponents[i] ;
@@ -944,21 +623,6 @@ bool CPlayer::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::
 	return false ;
 }
 
-bool CPlayer::isNotInAnyRoom()
-{
-	IPlayerComponent* pCom = GetComponent(ePlayerComponent_PlayerTaxas) ;
-	if ( ((CPlayerTaxas*)pCom)->getCurRoomID() )
-	{
-		return false ;
-	}
-
-	pCom = GetComponent(ePlayerComponent_PlayerNiuNiu) ;
-	if ( ((CPlayerNiuNiu*)pCom)->getCurRoomID() )
-	{
-		return false ;
-	}
-	return true ;
-}
 
 uint8_t CPlayer::getMsgPortByRoomType(uint8_t nType )
 {
@@ -973,6 +637,12 @@ uint8_t CPlayer::getMsgPortByRoomType(uint8_t nType )
 	}
 
 	return ID_MSG_PORT_NONE ;
+}
+
+void CPlayer::delayDelete()
+{ 
+	m_nDisconnectTime = time(nullptr) + TIME_DELAY_DELETE ;
+	CLogMgr::SharedLogMgr()->PrintLog("uid = %d delay delete player object" , GetUserUID() ) ;
 }
 
 

@@ -2,32 +2,16 @@
 #pragma pack(push)
 #pragma pack(1)
 #include "MessageDefine.h"
-
-struct stMsgNNEnterRoom
-	:public stMsg
-{
-	stMsgNNEnterRoom(){ cSysIdentifer = ID_MSG_PORT_DATA;usMsgType = MSG_NN_ENTER_ROOM ; }
-	uint8_t nIDType ; // 0 roomID , 1 configID ;
-	uint16_t nTargetID ;
-};
-
-struct stMsgNNEnterRoomRet
-	:public stMsgToNNRoom
-{
-	stMsgNNEnterRoomRet(){ usMsgType = MSG_NN_ENTER_ROOM ; cSysIdentifer = ID_MSG_PORT_CLIENT;}
-	uint8_t nRet ; // 0 success , 1 can not find room ; 2, already in room ;
-};
-
 struct stMsgNNLeaveRoom
-	:public stMsgToNNRoom
+	:public stMsgPlayerLeaveRoom
 {
-	stMsgNNLeaveRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_NN_LEAVE_ROOM ; }
+	stMsgNNLeaveRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ;  }
 };
 
 struct stMsgNNLeaveRoomRet
 	:public stMsg
 {
-	stMsgNNLeaveRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_NN_LEAVE_ROOM ; }
+	stMsgNNLeaveRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_LEAVE_ROOM ; }
 };
 
 struct stMsgNNRequestRoomInfo
@@ -63,37 +47,28 @@ struct stMsgNNRoomInfo
 };
 
 struct stMsgNNPlayerSitDown
-	:public stMsgToNNRoom
+	:public stMsgPlayerSitDown
 {
-	stMsgNNPlayerSitDown(){ usMsgType = MSG_NN_PLAYER_SITDOWN ; }
-	uint8_t nSeatIdx ;
+	stMsgNNPlayerSitDown(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; }
 };
 
 struct stMsgNNPlayerSitDownRet
-	:public stMsg
+	:public stMsgPlayerSitDownRet
 {
-	stMsgNNPlayerSitDownRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_NN_PLAYER_SITDOWN ; }
-	uint8_t nRet ; // 0 success , 1 pos already have player , 2 coin not enough , 3 you are not enter room 
+
 };
 
-struct stMsgNNSitDown 
-	:public stMsg
-{
-	stMsgNNSitDown(){ cSysIdentifer = ID_MSG_PORT_CLIENT ;  usMsgType = MSG_NN_SITDOWN ; }
-	stNNRoomInfoPayerItem tSitDownPlayer ;
-};
 
 struct stMsgNNPlayerStandUp
-	:public stMsgToNNRoom
+	:public stMsgPlayerStandUp
 {
-	stMsgNNPlayerStandUp(){ usMsgType = MSG_NN_PLAYER_STANDUP ; }
+	stMsgNNPlayerStandUp(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ;  }
 };
 
 struct stMsgNNStandUp
-	:public stMsg
+	:public stMsgRoomStandUp
 {
-	stMsgNNStandUp(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_NN_STANDUP ; }
-	uint8_t nPlayerIdx ;
+
 };
 
 struct stDistriuet4CardItem

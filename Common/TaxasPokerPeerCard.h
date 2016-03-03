@@ -40,6 +40,7 @@ public:
 	void adjustPosForSpecailShunZi();
 	unsigned char getAllCardCnt(){ return m_vAllCard.size() ;}
     bool checkIsSelected(unsigned char nCardNum);
+	CTaxasPokerPeerCard& operator = (CTaxasPokerPeerCard& peerCard );
 protected:
 	void CaculateFinalCard();
 	void ClearVecCard(VEC_CARD& vCards );

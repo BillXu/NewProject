@@ -6,16 +6,16 @@
       <ObjectData Name="Layer" Tag="68" ctype="GameLayerObjectData">
         <Size X="640.0000" Y="1136.0000" />
         <Children>
-          <AbstractNodeData Name="Panel_1" ActionTag="-578084072" Alpha="76" Tag="117" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="20.0320" RightMargin="19.9680" TopMargin="151.3152" BottomMargin="364.6561" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="33" RightEage="33" TopEage="33" BottomEage="33" Scale9OriginX="33" Scale9OriginY="33" Scale9Width="34" Scale9Height="34" ctype="PanelObjectData">
-            <Size X="600.0000" Y="620.0287" />
+          <AbstractNodeData Name="Panel_1" ActionTag="-578084072" Alpha="76" Tag="117" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="20.0320" RightMargin="19.9680" TopMargin="151.3152" BottomMargin="244.6848" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Enable="True" LeftEage="20" RightEage="18" TopEage="18" BottomEage="18" Scale9OriginX="20" Scale9OriginY="18" Scale9Width="62" Scale9Height="64" ctype="PanelObjectData">
+            <Size X="600.0000" Y="740.0000" />
             <AnchorPoint ScaleY="1.0000" />
             <Position X="20.0320" Y="984.6848" />
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition X="0.0313" Y="0.8668" />
-            <PreSize X="0.9375" Y="0.5458" />
+            <PreSize X="0.9375" Y="0.6514" />
             <FileData Type="Normal" Path="BlackBg.png" Plist="" />
-            <SingleColor A="255" R="150" G="200" B="255" />
+            <SingleColor A="255" R="255" G="255" B="255" />
             <FirstColor A="255" R="150" G="200" B="255" />
             <EndColor A="255" R="255" G="255" B="255" />
             <ColorVector ScaleY="1.0000" />
@@ -108,7 +108,7 @@
           <AbstractNodeData Name="NamePanel" ActionTag="2121224557" Tag="82" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="20.0320" RightMargin="19.9680" TopMargin="411.2320" BottomMargin="604.8064" TouchEnable="True" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
             <Size X="600.0000" Y="119.9616" />
             <Children>
-              <AbstractNodeData Name="Name" ActionTag="-1747868986" Tag="83" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="40.0200" RightMargin="503.9800" TopMargin="45.9568" BottomMargin="46.0048" FontSize="28" LabelText="名称" HorizontalAlignmentType="HT_Center" VerticalAlignmentType="VT_Center" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+              <AbstractNodeData Name="Name" ActionTag="-1747868986" Tag="83" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="40.0200" RightMargin="503.9800" TopMargin="45.9568" BottomMargin="46.0048" FontSize="28" LabelText="昵称" HorizontalAlignmentType="HT_Center" VerticalAlignmentType="VT_Center" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
                 <Size X="56.0000" Y="28.0000" />
                 <AnchorPoint ScaleY="0.5000" />
                 <Position X="40.0200" Y="60.0048" />
@@ -209,28 +209,28 @@
             <EndColor A="255" R="255" G="255" B="255" />
             <ColorVector ScaleY="1.0000" />
           </AbstractNodeData>
-          <AbstractNodeData Name="SignaturePanel" ActionTag="-422934808" Tag="72" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="20.0320" RightMargin="19.9680" TopMargin="651.1552" BottomMargin="364.8832" TouchEnable="True" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
-            <Size X="600.0000" Y="119.9616" />
+          <AbstractNodeData Name="SignaturePanel" ActionTag="-422934808" Tag="72" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="20.0320" RightMargin="19.9680" TopMargin="651.1552" BottomMargin="244.8448" TouchEnable="True" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
+            <Size X="600.0000" Y="240.0000" />
             <Children>
-              <AbstractNodeData Name="Signature" ActionTag="-1841390609" Tag="73" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="40.0200" RightMargin="447.9800" TopMargin="45.9568" BottomMargin="46.0048" FontSize="28" LabelText="个性签名" HorizontalAlignmentType="HT_Center" VerticalAlignmentType="VT_Center" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+              <AbstractNodeData Name="Signature" ActionTag="-1841390609" Tag="73" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="40.0200" RightMargin="447.9800" TopMargin="46.0000" BottomMargin="166.0000" FontSize="28" LabelText="个性签名" HorizontalAlignmentType="HT_Center" VerticalAlignmentType="VT_Center" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
                 <Size X="112.0000" Y="28.0000" />
                 <AnchorPoint ScaleY="0.5000" />
-                <Position X="40.0200" Y="60.0048" />
+                <Position X="40.0200" Y="180.0000" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
-                <PrePosition X="0.0667" Y="0.5002" />
-                <PreSize X="0.1867" Y="0.2334" />
+                <PrePosition X="0.0667" Y="0.7500" />
+                <PreSize X="0.1867" Y="0.1167" />
                 <OutlineColor A="255" R="255" G="0" B="0" />
                 <ShadowColor A="255" R="110" G="110" B="110" />
               </AbstractNodeData>
-              <AbstractNodeData Name="EditSigButton" ActionTag="534384274" Tag="234" RotationSkewX="180.0000" RotationSkewY="180.0000" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="543.7200" RightMargin="32.2800" TopMargin="37.9559" BottomMargin="38.0038" FontSize="14" Scale9Enable="True" LeftEage="6" RightEage="6" TopEage="9" BottomEage="9" Scale9OriginX="6" Scale9OriginY="9" Scale9Width="12" Scale9Height="26" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
+              <AbstractNodeData Name="EditSigButton" ActionTag="534384274" Tag="234" RotationSkewX="180.0000" RotationSkewY="180.0000" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="543.7200" RightMargin="32.2800" TopMargin="37.9991" BottomMargin="157.9991" FontSize="14" Scale9Enable="True" LeftEage="6" RightEage="6" TopEage="9" BottomEage="9" Scale9OriginX="6" Scale9OriginY="9" Scale9Width="12" Scale9Height="26" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
                 <Size X="24.0000" Y="44.0019" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
-                <Position X="555.7200" Y="60.0048" />
+                <Position X="555.7200" Y="180.0000" />
                 <Scale ScaleX="0.8000" ScaleY="0.8000" />
                 <CColor A="255" R="255" G="255" B="255" />
-                <PrePosition X="0.9262" Y="0.5002" />
-                <PreSize X="0.0400" Y="0.3668" />
+                <PrePosition X="0.9262" Y="0.7500" />
+                <PreSize X="0.0400" Y="0.1833" />
                 <TextColor A="255" R="65" G="65" B="70" />
                 <DisabledFileData Type="Normal" Path="arrow.png" Plist="" />
                 <PressedFileData Type="Normal" Path="arrow.png" Plist="" />
@@ -238,13 +238,13 @@
                 <OutlineColor A="255" R="255" G="0" B="0" />
                 <ShadowColor A="255" R="110" G="110" B="110" />
               </AbstractNodeData>
-              <AbstractNodeData Name="Signature_Text" ActionTag="-196466447" Tag="671" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="531.3000" RightMargin="68.7000" TopMargin="59.9568" BottomMargin="60.0048" FontSize="28" LabelText="" HorizontalAlignmentType="HT_Center" VerticalAlignmentType="VT_Center" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
+              <AbstractNodeData Name="Signature_Text" ActionTag="-196466447" Tag="671" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="80.0000" RightMargin="520.0000" TopMargin="119.9520" BottomMargin="120.0480" FontSize="26" LabelText="" HorizontalAlignmentType="HT_Center" VerticalAlignmentType="VT_Center" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
                 <Size X="0.0000" Y="0.0000" />
-                <AnchorPoint ScaleX="1.0000" ScaleY="0.5000" />
-                <Position X="531.3000" Y="60.0048" />
+                <AnchorPoint ScaleY="1.0000" />
+                <Position X="80.0000" Y="120.0480" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
-                <PrePosition X="0.8855" Y="0.5002" />
+                <PrePosition X="0.1333" Y="0.5002" />
                 <PreSize X="0.0000" Y="0.0000" />
                 <OutlineColor A="255" R="255" G="0" B="0" />
                 <ShadowColor A="255" R="110" G="110" B="110" />
@@ -255,7 +255,7 @@
             <Scale ScaleX="1.0000" ScaleY="1.0000" />
             <CColor A="255" R="255" G="255" B="255" />
             <PrePosition X="0.0313" Y="0.4268" />
-            <PreSize X="0.9375" Y="0.1056" />
+            <PreSize X="0.9375" Y="0.2113" />
             <SingleColor A="255" R="255" G="255" B="255" />
             <FirstColor A="255" R="150" G="200" B="255" />
             <EndColor A="255" R="255" G="255" B="255" />

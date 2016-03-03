@@ -222,28 +222,37 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			CLogMgr::SharedLogMgr()->PrintLog("save player coin = %I64d uid = %d",pRet->nCoin,pRet->nUserUID);
 		}
 		break;
-	case MSG_SAVE_PLAYER_TAXAS_DATA:
+	case MSG_SAVE_PLAYER_GAME_DATA:
 		{
-			stMsgSavePlayerTaxaPokerData* pRet = (stMsgSavePlayerTaxaPokerData*)pmsg ;
+			stMsgSavePlayerGameData* pRet = (stMsgSavePlayerGameData*)pmsg ;
 			pRequest->eType = eRequestType_Update ;
-
-			CAutoBuffer FollowedRooms(pRet->nFollowedRoomsStrLen + 1 );
-			FollowedRooms.addContent(((char*)pRet)+ sizeof(stMsgSavePlayerTaxaPokerData),pRet->nFollowedRoomsStrLen );
-
-			CAutoBuffer myOwnRooms(pRet->nMyOwnRoomsStrLen + 1 );
-			myOwnRooms.addContent(((char*)pRet)+ sizeof(stMsgSavePlayerTaxaPokerData) + pRet->nFollowedRoomsStrLen,pRet->nMyOwnRoomsStrLen );
-
 			std::string strMaxcard = stMysqlField::UnIntArraryToString(pRet->tData.vMaxCards,MAX_TAXAS_HOLD_CARD) ;
+			const char* pTableName = nullptr ;
+			switch ( pRet->nGameType )
+			{
+			case eRoom_NiuNiu:
+				{
+					pTableName = "playerniuniudata";
+				}
+				break;
+			case eRoom_TexasPoker:
+				{
+					pTableName = "playertaxasdata";
+				}
+				break;
+			default:
+				{
+					pRequest->nSqlBufferLen = 0 ;
+				}
+				break;
+			}
+
+			if ( pTableName == nullptr )
+			{
+				break; 
+			}
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE playertaxasdata SET winTimes = '%d', playTimes = '%d', singleWinMost = '%I64d', maxCard = '%s',myOwnRooms = '%s',followedRooms = '%s' WHERE userUID = '%d'",pRet->tData.nWinTimes,pRet->tData.nPlayTimes,pRet->tData.nSingleWinMost,strMaxcard.c_str(),myOwnRooms.getBufferPtr(),FollowedRooms.getBufferPtr(),pRet->nUserUID) ;
-		}
-		break;
-	case MSG_SAVE_PLAYER_NIUNIU_DATA:
-		{
-			stMsgSavePlayerNiuNiuData* pRet = (stMsgSavePlayerNiuNiuData*)pmsg ;
-			pRequest->eType = eRequestType_Update ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE playerniuniudata SET winTimes = '%d', playTimes = '%d', singleWinMost = '%I64d' WHERE userUID = '%d'",pRet->tData.nWinTimes,pRet->tData.nPlayTimes,pRet->tData.nSingleWinMost,pRet->nUserUID) ;
+				"UPDATE %s SET winTimes = '%d', playTimes = '%d', singleWinMost = '%I64d', maxCard = '%s',championTimes = '%u',run_upTimes = '%u',third_placeTimes = '%u' WHERE userUID = '%d'",pTableName,pRet->tData.nWinTimes,pRet->tData.nPlayTimes,pRet->tData.nSingleWinMost,strMaxcard.c_str(),pRet->tData.nChampionTimes,pRet->tData.nRun_upTimes,pRet->tData.nThird_placeTimes,pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_COMMON_LOGIC_DATA:
@@ -254,9 +263,9 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"UPDATE playerbasedata SET mostCoinEver = '%I64d', vipLevel = '%d', nYesterdayCoinOffset = '%I64d', \
 				nTodayCoinOffset = '%I64d',offlineTime = '%d',continueLoginDays = '%d',lastLoginTime = '%d',lastTakeCharityCoinTime = '%d', \
-				longitude = '%f',latitude = '%f',vJoinedClubID = '%s' WHERE userUID = '%d' ",
+				longitude = '%f',latitude = '%f',vJoinedClubID = '%s',newPlayerHaloWeight = '%d' WHERE userUID = '%d' ",
 				pRet->nMostCoinEver,pRet->nVipLevel,pRet->nYesterdayCoinOffset,pRet->nTodayCoinOffset,pRet->tOfflineTime,pRet->nContinueDays,pRet->tLastLoginTime,pRet->tLastTakeCharityCoinTime,pRet->dfLongitude,pRet->dfLatidue,
-				strJoinedClub.c_str(),pRet->nUserUID) ;
+				strJoinedClub.c_str(),pRet->nNewPlayerHaloWeight,pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_CREATE_ROOM_INFO:
@@ -921,13 +930,13 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				}
 
 				// read taxas data 
-				tData.tTaxasData.nPlayTimes = pRow["nPlayTimes"]->IntValue();
-				tData.tTaxasData.nWinTimes = pRow["nWinTimes"]->IntValue();
-				tData.tTaxasData.nSingleWinMost = pRow["nSingleWinMost"]->IntValue64();
+				//tData.tTaxasData.nPlayTimes = pRow["nPlayTimes"]->IntValue();
+				//tData.tTaxasData.nWinTimes = pRow["nWinTimes"]->IntValue();
+				//tData.tTaxasData.nSingleWinMost = pRow["nSingleWinMost"]->IntValue64();
 
 				vInt.clear();
 				// read max card ;
-				pRow["vMaxCards"]->VecInt(vInt);
+				/*pRow["vMaxCards"]->VecInt(vInt);
 				memset(tData.tTaxasData.vMaxCards,0,sizeof(tData.tTaxasData.vMaxCards)) ;
 				if ( vInt.size() == MAX_TAXAS_HOLD_CARD )
 				{
@@ -935,7 +944,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					{
 						tData.tTaxasData.vMaxCards[nIdx] = vInt[nIdx] ;
 					}
-				}
+				}*/
 				CLogMgr::SharedLogMgr()->PrintLog("read select player detail uid = %d",tData.nUserUID) ;
 			}
 			else
@@ -1049,6 +1058,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msg.stBaseData.tLastTakeCharityCoinTime = pRow["lastTakeCharityCoinTime"]->IntValue() ;
 				msg.stBaseData.nContinueDays = pRow["continueLoginDays"]->IntValue() ;
 				msg.stBaseData.isRegister = pRow["isRegister"]->IntValue() ;
+				msg.stBaseData.nNewPlayerHaloWeight = pRow["newPlayerHaloWeight"]->IntValue() ;
 				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 			}
 		}
@@ -1059,6 +1069,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			stMsgReadPlayerTaxasDataRet msg ;
 			msg.nRet = 0 ;
 			msg.nUserUID = pdata->nExtenArg1 ;
+			memset(&msg.tData,0,sizeof(msg.tData)) ;
 			if ( pResult->nAffectRow <= 0 )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("can not find TAXAS_DATA with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
@@ -1071,6 +1082,9 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msg.tData.nPlayTimes = pRow["playTimes"]->IntValue();
 				msg.tData.nWinTimes = pRow["winTimes"]->IntValue();
 				msg.tData.nSingleWinMost = pRow["singleWinMost"]->IntValue64();
+				msg.tData.nRun_upTimes = pRow["run_upTimes"]->IntValue() ;
+				msg.tData.nChampionTimes = pRow["championTimes"]->IntValue() ;
+				msg.tData.nThird_placeTimes = pRow["third_placeTimes"]->IntValue();
 				msg.nUserUID = pdata->nExtenArg1 ;
 
 				std::vector<int> vInt ;
@@ -1085,30 +1099,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 						msg.tData.vMaxCards[nIdx] = vInt[nIdx] ;
 					}
 				}
-
-				msg.nFollowedRoomsStrLen = pRow["followedRooms"]->nBufferLen ;
-				msg.nMyOwnRoomsStrLen = pRow["myOwnRooms"]->nBufferLen;
-				if ( msg.nFollowedRoomsStrLen <= 0 && msg.nMyOwnRoomsStrLen <= 0 )
-				{
-					m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
-				}
-				else
-				{
-					CAutoBuffer sendBuffer(sizeof(msg) + msg.nFollowedRoomsStrLen + msg.nMyOwnRoomsStrLen );
-					sendBuffer.addContent((char*)&msg,sizeof(msg)) ;
-					if ( msg.nFollowedRoomsStrLen > 0 )
-					{
-						sendBuffer.addContent(pRow["followedRooms"]->BufferData(),msg.nFollowedRoomsStrLen);
-					}
-
-					if ( msg.nMyOwnRoomsStrLen > 0 )
-					{
-						sendBuffer.addContent(pRow["myOwnRooms"]->BufferData(),msg.nMyOwnRoomsStrLen);
-					}
-
-					m_pTheApp->sendMsg(pdata->nSessionID,sendBuffer.getBufferPtr(),sendBuffer.getContentSize()) ;
-				}
-				
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 			}
 		}
 		break;
@@ -1118,11 +1109,11 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			stMsgReadPlayerNiuNiuDataRet msg ;
 			msg.nRet = 0 ;
 			msg.nUserUID = pdata->nExtenArg1 ;
+			memset(&msg.tData,0,sizeof(msg.tData)) ;
 			if ( pResult->nAffectRow <= 0 )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("can not find NIU NIU data with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
 				msg.nRet = 1 ;
-				memset(&msg.tData,0,sizeof(msg.tData)) ;
 			}
 			else
 			{
@@ -1130,6 +1121,9 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msg.tData.nPlayTimes = pRow["playTimes"]->IntValue();
 				msg.tData.nWinTimes = pRow["winTimes"]->IntValue();
 				msg.tData.nSingleWinMost = pRow["singleWinMost"]->IntValue64();
+				msg.tData.nRun_upTimes = pRow["run_upTimes"]->IntValue() ;
+				msg.tData.nChampionTimes = pRow["championTimes"]->IntValue() ;
+				msg.tData.nThird_placeTimes = pRow["third_placeTimes"]->IntValue();
 			}
 			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 		}
@@ -1244,7 +1238,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_SAVE_UPDATE_ROOM_INFO:
 	case MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS:
 	case MSG_SAVE_TAXAS_ROOM_PLAYER:
-	case MSG_SAVE_PLAYER_TAXAS_DATA:
+	case MSG_SAVE_PLAYER_GAME_DATA:
 	case MSG_SAVE_FRIEND_LIST:
 	case MSG_PLAYER_SAVE_MAIL:
 	case MSG_PLAYER_SET_MAIL_STATE:
@@ -1252,7 +1246,6 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_REMOVE_ROOM_PLAYER:
 	case MSG_DELETE_ROOM:
 	case MSG_SAVE_PLAYER_MONEY:
-	case MSG_SAVE_PLAYER_NIUNIU_DATA:
 	case MSG_CIRCLE_SAVE_DELETE_TOPIC:
 	case MSG_CIRCLE_SAVE_ADD_TOPIC:
 		{

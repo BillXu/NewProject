@@ -128,8 +128,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 
 			stMsgReadMyOwnRoomsRet msgRead ;
 			msgRead.nCnt = vRL.size() ;
-			auto ite_b = m_vRooms.begin();
-			msgRead.nRoomType = ite_b->second->getRoomType();
+			msgRead.nRoomType = getMgrRoomType();
 			CAutoBuffer auBuffer(msgRead.nCnt * sizeof(stMyOwnRoom) + sizeof(msgRead));
 			auBuffer.addContent(&msgRead,sizeof(msgRead)) ;
 			stMyOwnRoom info ;
@@ -317,6 +316,7 @@ void IRoomManager::update(float fDelta )
 
 	for ( IRoom* pRoom : vDoDelteRoom )
 	{
+		pRoom->onRoomWillDoDelete();
 		doDeleteRoom(pRoom) ;
 	}
 }
@@ -493,6 +493,48 @@ bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		removeRoom(pRoom) ;
 		return true ;
 	}
+	else if ( eCrossSvrReq_ApplyLeaveRoom == pRequest->nRequestType )
+	{
+		IRoom* pRoom = GetRoomByID(pRequest->nTargetID );
+		if ( pRoom )
+		{
+			IRoom::stStandPlayer* pp = pRoom->getPlayerByUserUID(pRequest->nReqOrigID) ;
+			if ( pp )
+			{
+				pRoom->onPlayerWillLeaveRoom(pp) ;
+				pRoom->playerDoLeaveRoom(pp);
+			}
+			else
+			{
+				stMsgCrossServerRequest msgEnter ;
+				msgEnter.cSysIdentifer = ID_MSG_PORT_DATA ;
+				msgEnter.nJsonsLen = 0 ;
+				msgEnter.nReqOrigID = pRoom->getRoomID();
+				msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
+				msgEnter.nRequestType = eCrossSvrReq_LeaveRoomRet ;
+				msgEnter.nTargetID = pRequest->nReqOrigID ;
+				msgEnter.vArg[0] = pRoom->getRoomType() ;
+				msgEnter.vArg[1] = pRoom->getRoomID() ;
+				pRoom->sendMsgToPlayer(&msgEnter,sizeof(msgEnter),pRoom->getRoomID()) ;
+				CLogMgr::SharedLogMgr()->PrintLog("you are not in room but i let you go!") ;
+			}
+		}
+		else
+		{
+			stMsgCrossServerRequest msgEnter ;
+			msgEnter.cSysIdentifer = ID_MSG_PORT_DATA ;
+			msgEnter.nJsonsLen = 0 ;
+			msgEnter.nReqOrigID = pRequest->nTargetID;
+			msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
+			msgEnter.nRequestType = eCrossSvrReq_LeaveRoomRet ;
+			msgEnter.nTargetID = pRequest->nReqOrigID ;
+			msgEnter.vArg[0] = pRequest->vArg[2] ;
+			msgEnter.vArg[1] = pRequest->nTargetID ;
+			sendMsg(&msgEnter,sizeof(msgEnter),pRequest->nTargetID);
+			CLogMgr::SharedLogMgr()->PrintLog("can not find room ,  but i let you go!") ;
+		}
+		return true ;
+	}
 	return false ;
 }
 
@@ -517,7 +559,14 @@ bool IRoomManager::reqeustChatRoomID(IRoom* pRoom)
 
 void IRoomManager::onConnectedToSvr()
 {
-
+	if ( m_vRooms.empty() )
+	{
+		stMsgReadRoomInfo msgRead ;
+		msgRead.nRoomType = getMgrRoomType() ;
+		//sendMsg(&msgRead,sizeof(msgRead),0) ;
+		CLogMgr::SharedLogMgr()->ErrorLog("test stage do not read room info");
+		CLogMgr::SharedLogMgr()->PrintLog("read room info ") ;
+	}
 }
 
 void IRoomManager::addRoomToCreator(IRoom* pRoom)
@@ -647,3 +696,4 @@ void IRoomManager::doDeleteRoom(IRoom* pRoom )
 	pRoom = nullptr ;
 	return ;
 }
+

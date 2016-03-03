@@ -18,7 +18,6 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 		}
 		break;
 	case eRoom_TexasPoker:
-	case eRoom_TexasPoker_Diamoned:
 		{
 			stTaxasRoomConfig* pConfig = new stTaxasRoomConfig ;
 			pConfig->nBigBlind = refReaderRow["BigBlind"]->IntValue();
@@ -46,6 +45,7 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 // #endif
 			//pRoomConfig = pConfig ;
 		//}
+		break;
 	default:
 		CLogMgr::SharedLogMgr()->ErrorLog( "unknown room config ,room type = %d",cType ) ;
 		return false;

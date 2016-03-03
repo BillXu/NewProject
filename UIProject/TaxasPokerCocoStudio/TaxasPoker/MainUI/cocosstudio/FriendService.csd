@@ -23,14 +23,14 @@
                 <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
               <AbstractNodeData Name="HeadPortrait" ActionTag="-296341888" Tag="366" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="-111.2800" RightMargin="361.2800" TopMargin="-115.0000" BottomMargin="-115.0000" ctype="SpriteObjectData">
-                <Size X="350.0000" Y="350.0000" />
+                <Size X="78.0000" Y="78.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="63.7200" Y="60.0000" />
-                <Scale ScaleX="0.2300" ScaleY="0.2300" />
+                <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.1062" Y="0.5000" />
                 <PreSize X="0.5833" Y="2.9167" />
-                <FileData Type="Normal" Path="avatar-7.png" Plist="" />
+                <FileData Type="Normal" Path="head_mask.png" Plist="" />
                 <BlendFunc Src="1" Dst="771" />
               </AbstractNodeData>
               <AbstractNodeData Name="Sprite_1" ActionTag="-855604349" Tag="367" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="1.7200" RightMargin="474.2800" TopMargin="-2.0000" BottomMargin="-2.0000" ctype="SpriteObjectData">

@@ -69,7 +69,7 @@ bool CPlayerMailComponent::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				GetPlayer()->PostPlayerEvent(&arg);
 				InformRecievedUnreadMails();
 				CLogMgr::SharedLogMgr()->PrintLog("read mail finish uid = %d",GetPlayer()->GetUserUID());
-				if ( m_vAllMail.empty() == false )
+				if ( m_vAllMail.size() >= 2 )
 				{
 					m_vAllMail.sort(arrageMailByTime);
 				}

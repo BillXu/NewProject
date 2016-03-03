@@ -7,23 +7,23 @@
 
 
 
-struct stMsgCreateTaxasRoom
-	:public stMsg
-{
-	stMsgCreateTaxasRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_CREATE_ROOM ; }
-	uint16_t nConfigID ;
-	uint16_t nDays ;
-	char vRoomName[MAX_LEN_ROOM_NAME] ;
-};
-
-struct stMsgCreateTaxasRoomRet
-	:public stMsg
-{
-	stMsgCreateTaxasRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CREATE_ROOM ; }
-	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough , 5 reach your own room cnt up limit
-	uint32_t nRoomID ; 
-	uint64_t nFinalCoin ;
-};
+//struct stMsgCreateTaxasRoom
+//	:public stMsg
+//{
+//	stMsgCreateTaxasRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TP_CREATE_ROOM ; }
+//	uint16_t nConfigID ;
+//	uint16_t nDays ;
+//	char vRoomName[MAX_LEN_ROOM_NAME] ;
+//};
+//
+//struct stMsgCreateTaxasRoomRet
+//	:public stMsg
+//{
+//	stMsgCreateTaxasRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_CREATE_ROOM ; }
+//	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough , 5 reach your own room cnt up limit
+//	uint32_t nRoomID ; 
+//	uint64_t nFinalCoin ;
+//};
 
 struct stMsgRequestMyOwnRooms
 	:public stMsg
@@ -138,18 +138,15 @@ struct  stMsgRequestTaxasRoomInformRet
 };
 
 struct stMsgTaxasEnterRoom
-	:public stMsg
+	:public stMsgPlayerEnterRoom
 {
-	stMsgTaxasEnterRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_ENTER_ROOM ; }
-	uint8_t nIDType ; // 0 roomID , 1 RoomConfigID ;
-	uint32_t nTargetID ;
+	stMsgTaxasEnterRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; }
 };
 
 struct stMsgTaxasEnterRoomRet 
-	:public stMsg
+	:public stMsgPlayerEnterRoomRet
 {
-	stMsgTaxasEnterRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ENTER_ROOM ; }
-	uint8_t nRet ; // 0 success , 1 invalid session id ;2 already in room ; 3 room id error ;
+
 };
 
 struct  stMsgTaxasQuickEnterRoom
@@ -168,21 +165,20 @@ struct stMsgTaxasRoomInfoBase
 	stMsgTaxasRoomInfoBase(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_ROOM_BASE_INFO; }
 	uint32_t nRoomID ;
 	uint32_t nOwnerUID ;
-	uint16_t nAvataID ;
 	uint8_t vRoomName[MAX_LEN_ROOM_NAME];
 	uint8_t nMaxSeat;
 	uint32_t nLittleBlind;
 	uint32_t nMiniTakeIn ;
-	uint64_t nMaxTakeIn ;
-	uint64_t nChatRoomID;
+	uint32_t nMaxTakeIn ;
+	uint32_t nChatRoomID;
 	// running members ;
 	uint32_t eCurRoomState ; // eeRoomState ;
 	uint8_t nBankerIdx ;
 	uint8_t nLittleBlindIdx ;
 	uint8_t nBigBlindIdx ;
 	int8_t nCurWaitPlayerActionIdx ;
-	uint64_t  nCurMainBetPool ;
-	uint64_t  nMostBetCoinThisRound;
+	uint32_t  nCurMainBetPool ;
+	uint32_t  nMostBetCoinThisRound;
 	uint32_t nDeskFee;
 	uint8_t vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
 };
@@ -191,7 +187,7 @@ struct stMsgTaxasRoomInfoVicePool
 	:public stMsg
 {
 	stMsgTaxasRoomInfoVicePool(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ROOM_VICE_POOL ; }
-	uint64_t vVicePool[MAX_PEERS_IN_TAXAS_ROOM] ;
+	uint32_t vVicePool[MAX_PEERS_IN_TAXAS_ROOM] ;
 };
 
 struct stMsgTaxasRoomInfoPlayerData
@@ -199,24 +195,33 @@ struct stMsgTaxasRoomInfoPlayerData
 {
 	stMsgTaxasRoomInfoPlayerData(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ROOM_PLAYER_DATA ; }
 	bool bIsLast ;
-	stTaxasPeerBaseData tPlayerData ;
+	
+	uint32_t nUserUID ;
+	uint32_t nTakeInMoney ; // maybe coin or diamond
+	uint8_t eCurAct ;  // eRoomPeerAction
+	uint32_t nBetCoinThisRound ;
+	uint8_t vHoldCard[TAXAS_PEER_CARD];
+	uint32_t nStateFlag ;
+	uint8_t nSeatIdx ;
 };
 
 // player stand up 
 struct stMsgTaxasPlayerSitDown
-	:public stMsgToRoom
+	:public stMsgPlayerSitDown
 {
-	stMsgTaxasPlayerSitDown(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_PLAYER_SIT_DOWN ; }
-	uint8_t nSeatIdx ;
-	uint64_t nTakeInMoney ;
+	stMsgTaxasPlayerSitDown(){ cSysIdentifer = ID_MSG_PORT_TAXAS;  }
 };
 
 struct stMsgTaxasPlayerSitDownRet
-	:public stMsg
+	:public stMsgPlayerSitDownRet
 {
-	stMsgTaxasPlayerSitDownRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_PLAYER_SIT_DOWN ; }
-	uint8_t nRet ; // 0 succsss , 1 pos have peer , 2 invalid session id, not in room   ; 3 invalid take in coin , 4 ,withrawing error, money not engouth  , 6. withdrawing momey please wait 
-	uint8_t nSeatIdx ;
+
+};
+
+struct stMsgTaxasRoomRequestRank
+	:stMsgToRoom
+{
+	stMsgTaxasRoomRequestRank(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_ROOM_RANK ; }
 };
 
 struct stMsgWithdrawingMoneyRet
@@ -235,38 +240,20 @@ struct stMsgTaxasRoomUpdatePlayerState
 	uint64_t nTakeInCoin ;   // if nTakeInCoin is 0 , means withdrawing coin is error , not enough coin ;stand up 
 };
 
-struct stMsgTaxasRoomSitDown
-	:public stMsg
-{
-	stMsgTaxasRoomSitDown(){cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ROOM_SIT_DOWN ; }
-	stTaxasPeerBaseData tPlayerData ;
-};
 
 struct stMsgTaxasPlayerStandUp
-	:stMsgToRoom
+	:stMsgPlayerStandUp
 {
-	stMsgTaxasPlayerStandUp(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_PLAYER_STAND_UP ; }
+	stMsgTaxasPlayerStandUp(){ cSysIdentifer = ID_MSG_PORT_TAXAS ;  }
 };
 
-struct stMsgTaxasRoomStandUp
-	:public stMsg
-{
-	stMsgTaxasRoomStandUp(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_ROOM_STAND_UP ; }
-	uint32_t nSeatIdx ;
-};
 
 struct stMsgTaxasPlayerLeave
-	:public stMsgToRoom
+	:public stMsgPlayerLeaveRoom
 {
-	stMsgTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_PLAYER_LEAVE; }
+	stMsgTaxasPlayerLeave(){ cSysIdentifer = ID_MSG_PORT_TAXAS; }
 };
 
-struct stMsgTaxasRoomLeave
-	:public stMsg
-{
-	stMsgTaxasRoomLeave(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_PLAYER_LEAVE ; }
-	uint32_t nUserUID ;
-};
 
 struct stMsgTaxasRoomEnterState
 	:public stMsg
@@ -414,27 +401,27 @@ struct stMsgRequestRoomDetailRet
 	stRoomListItem detailInfo;
 };
 
-struct stMsgRequestTaxasRoomRank
-	:public stMsgToRoom
-{
-	stMsgRequestTaxasRoomRank(){ usMsgType = MSG_TP_REQUEST_ROOM_RANK ;}
-};
-
-struct stTaxasRoomRankItem
-{
-	uint32_t nUID ;
-	int64_t nCoinOffset ;
-	uint64_t nTotoalBuyIn;
-};
-
-struct stMsgRequestTaxasRoomRankRet
-	:public stMsg
-{
-	stMsgRequestTaxasRoomRankRet(){ usMsgType = MSG_TP_REQUEST_ROOM_RANK ; cSysIdentifer = ID_MSG_PORT_CLIENT ; }
-	bool bLast;
-	uint8_t nCnt ;
-	PLACE_HOLDER(stTaxasRoomRankItem*);
-};
+//struct stMsgRequestTaxasRoomRank
+//	:public stMsgToRoom
+//{
+//	stMsgRequestTaxasRoomRank(){ usMsgType = MSG_TP_REQUEST_ROOM_RANK ;}
+//};
+//
+//struct stTaxasRoomRankItem
+//{
+//	uint32_t nUID ;
+//	int64_t nCoinOffset ;
+//	uint64_t nTotoalBuyIn;
+//};
+//
+//struct stMsgRequestTaxasRoomRankRet
+//	:public stMsg
+//{
+//	stMsgRequestTaxasRoomRankRet(){ usMsgType = MSG_TP_REQUEST_ROOM_RANK ; cSysIdentifer = ID_MSG_PORT_CLIENT ; }
+//	bool bLast;
+//	uint8_t nCnt ;
+//	PLACE_HOLDER(stTaxasRoomRankItem*);
+//};
 
 
 //------------------------------------------------------beforear e new --

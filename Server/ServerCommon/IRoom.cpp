@@ -34,6 +34,8 @@ IRoom::IRoom()
 	m_bIsDelte = false ;
 
 	m_bRoomInfoDiry = false ;
+
+	memset(&m_stLimitConition,0,sizeof(m_stLimitConition)) ;
 }
 
 IRoom::~IRoom()
@@ -161,6 +163,23 @@ void IRoom::onRoomOpened()
 	removeAllRankItemPlayer();
 }
 
+void IRoom::onRoomWillDoDelete()
+{
+	LIST_STAND_PLAYER vAllInRoomPlayers ;
+	auto bGin = m_vInRoomPlayers.begin() ;
+	while (bGin != m_vInRoomPlayers.end())
+	{
+		vAllInRoomPlayers.push_back(bGin->second) ;
+		++bGin ;
+	}
+
+	for ( auto& p : vAllInRoomPlayers )
+	{
+		onPlayerWillLeaveRoom(p) ;
+		playerDoLeaveRoom(p);
+	}
+}
+
 bool IRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )
 {
 	m_nRoomID = nRoomID ;
@@ -174,29 +193,31 @@ bool IRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsVa
 	m_nOpenTime = m_nCreateTime ;
 	m_isOmitNewPlayerHalo = false ;
 	m_nRoomOwnerUID = 0 ;
+
+	memset(&m_stLimitConition,0,sizeof(m_stLimitConition)) ;
 	
-	if ( !vJsValue["ownerUID"] )
+	if ( !vJsValue["ownerUID"].isNull() )
 	{
 		m_nRoomOwnerUID = vJsValue["ownerUID"].asUInt();
 	}
 	
-	if ( ! vJsValue["openTime"] )
+	if (  !vJsValue["openTime"].isNull()  )
 	{
 		m_nOpenTime = vJsValue["openTime"].asUInt() ;
 	}
 	
 	m_nDuringTime = 30*60 ;
-	if ( !vJsValue["duringTime"] )
+	if ( !vJsValue["duringTime"].isNull() )
 	{
 		m_nDuringTime = vJsValue["duringTime"].asUInt() ;
 	}
 	
-	if ( !vJsValue["isOmitHalo"] )
+	if ( !vJsValue["isOmitHalo"].isNull() )
 	{
 		m_isOmitNewPlayerHalo = vJsValue["isOmitHalo"].asBool() ;
 	}
 
-	if ( !vJsValue["deadTime"] )
+	if ( !vJsValue["deadTime"].isNull() )
 	{
 		m_nDeadTime = vJsValue["deadTime"].asUInt() ;
 		if ( m_nDeadTime < ( m_nOpenTime + m_nDuringTime ) )
@@ -206,7 +227,7 @@ bool IRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsVa
 	}
 
 	memset(m_vRoomName,0,sizeof(m_vRoomName));
-	if ( !vJsValue["name"] )
+	if ( !vJsValue["name"].isNull() )
 	{
 		sprintf_s(m_vRoomName,sizeof(m_vRoomName),"%s",vJsValue["name"].asCString()) ;
 	}
@@ -258,6 +279,8 @@ void IRoom::serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )
 
 void IRoom::serializationToDB( bool bIsNewCreate )
 {
+	CLogMgr::SharedLogMgr()->ErrorLog("test stage do not store room info");
+	return ;
 	Json::StyledWriter jsWrite ;
 	Json::Value vValue ;
 	willSerializtionToDB(vValue) ;
@@ -331,27 +354,32 @@ uint8_t IRoom::canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer )  // retur
 void IRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer )
 {
 	stStandPlayer* pp = getPlayerByUserUID(pEnterRoomPlayer->nUserUID);
+	stStandPlayer * pStandPlayer = nullptr ;
 	if ( pp )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("player uid = %d , already in this room, can not enter twice",pEnterRoomPlayer->nUserUID) ;
-		return ;
+		CLogMgr::SharedLogMgr()->ErrorLog("player uid = %d , already in this room, can not enter twice, data svr crashed ?",pEnterRoomPlayer->nUserUID) ;
+		pStandPlayer = pp ;
 	}
-	stEnterRoomData * pDataPlayer = new stEnterRoomData ;
-	memcpy(pDataPlayer,pEnterRoomPlayer,sizeof(stEnterRoomData));
-	addRoomPlayer(pEnterRoomPlayer) ;
+	else
+	{
+		pStandPlayer = new stStandPlayer ;
+		memset(pStandPlayer,0,sizeof(stStandPlayer));
+	}
+
+	memcpy(pStandPlayer,pEnterRoomPlayer,sizeof(stEnterRoomData));
+	addRoomPlayer(pStandPlayer) ;
 
 	sendRoomInfoToPlayer(pEnterRoomPlayer->nUserSessionID) ;
 }
 
 void IRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 {
-	CLogMgr::SharedLogMgr()->PrintLog("player uid = %d , will leave room",pPlayer->nUserUID);
+	CLogMgr::SharedLogMgr()->PrintLog("player uid = %d , will leave room process this function",pPlayer->nUserUID);
 }
 
-void IRoom::playerDoLeaveRoom(uint32_t nPlayerUID )
+void IRoom::playerDoLeaveRoom( stStandPlayer* pp )
 {
 	// send msg to data svr tell player leave room ;
-	stStandPlayer* pp = getPlayerByUserUID(nPlayerUID);
 	if ( pp )
 	{
 		stMsgSvrDoLeaveRoom msgdoLeave ;
@@ -360,15 +388,17 @@ void IRoom::playerDoLeaveRoom(uint32_t nPlayerUID )
 		msgdoLeave.nRoomID = getRoomID() ;
 		msgdoLeave.nNewPlayerHaloWeight = pp->nNewPlayerHaloWeight ;
 		msgdoLeave.nUserUID = pp->nUserUID ;
-		msgdoLeave.nWinTimes = 0 ;
-		msgdoLeave.nPlayerTimes = 0 ;
+		msgdoLeave.nWinTimes = pp->nWinTimes ;
+		msgdoLeave.nPlayerTimes = pp->nPlayerTimes ;
+		msgdoLeave.nSingleWinMost = pp->nSingleWinMost ;
 		sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pp->nUserSessionID) ;
 
 		removePlayer(pp);
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d , do leave this room ",msgdoLeave.nUserUID ) ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("player uid = %d , not in this room can not do leave room",nPlayerUID ) ;
+		CLogMgr::SharedLogMgr()->ErrorLog("player , not in this room can not do leave room" ) ;
 	}
 	
 }
@@ -472,6 +502,7 @@ void IRoom::updatePlayerOffset(uint32_t nUserUID , int64_t nOffsetGame, int64_t 
 		targ->second->nGameOffset += nOffsetGame ;
 		targ->second->nOtherOffset += nOtherOffset ;
 		targ->second->bIsDiryt = true ;
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d update offset = %lld , final = %lld",nUserUID,nOffsetGame,targ->second->nGameOffset) ;
 		return ;
 	}
 	stRoomRankItem* p = new stRoomRankItem ;
@@ -482,6 +513,7 @@ void IRoom::updatePlayerOffset(uint32_t nUserUID , int64_t nOffsetGame, int64_t 
 	m_vRoomRankHistroy[p->nUserUID] = p ;
 	m_vSortedRankItems.push_back(p) ;
 
+	CLogMgr::SharedLogMgr()->PrintLog("uid = %d update offset = %lld , final = %lld",nUserUID,nOffsetGame,nOffsetGame) ;
 	// send msg to db  add this peer ;
 	stMsgSaveRoomPlayer msgSave ;
 	msgSave.isUpdate = false ;
@@ -501,7 +533,7 @@ bool sortFuncRankItem(IRoom::stRoomRankItem* pLeft , IRoom::stRoomRankItem* pRig
 
 void IRoom::sortRoomRankItem()
 {
-	if ( m_bDirySorted )
+	if ( m_bDirySorted && m_vSortedRankItems.size() >= 2 )
 	{
 		m_vSortedRankItems.sort(sortFuncRankItem);
 	}
@@ -538,29 +570,6 @@ bool IRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eS
 			sendMsgToPlayer(&msgRet,sizeof(msgRet),msgRet.nTargetID ) ;
 		}
 		break;
-	case eCrossSvrReq_ApplyLeaveRoom:
-		{
-			stStandPlayer* pp = getPlayerByUserUID(pRequest->nReqOrigID) ;
-			if ( pp )
-			{
-				onPlayerWillLeaveRoom(pp) ;
-			}
-			else
-			{
-				stMsgCrossServerRequest msgEnter ;
-				msgEnter.cSysIdentifer = ID_MSG_PORT_DATA ;
-				msgEnter.nJsonsLen = 0 ;
-				msgEnter.nReqOrigID = getRoomID();
-				msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
-				msgEnter.nRequestType = eCrossSvrReq_LeaveRoomRet ;
-				msgEnter.nTargetID = pRequest->nReqOrigID ;
-				msgEnter.vArg[0] = getRoomType() ;
-				msgEnter.vArg[1] = getRoomID() ;
-				sendMsgToPlayer(&msgEnter,sizeof(msgEnter),getRoomID()) ;
-				CLogMgr::SharedLogMgr()->PrintLog("you are not in room but i let you go!") ;
-			}
-		}
-		break;
 	default:
 		return false;
 	}
@@ -569,6 +578,11 @@ bool IRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eS
 
 bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
 {
+	if ( m_pCurRoomState && m_pCurRoomState->onMessage(prealMsg,eSenderPort,nPlayerSessionID) )
+	{
+		return true ;
+	}
+
 	switch ( prealMsg->usMsgType )
 	{
 	case MSG_READ_ROOM_PLAYER:
@@ -592,15 +606,20 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 		break;
 	case MSG_PLAYER_LEAVE_ROOM:
 		{
+			stMsgPlayerLeaveRoomRet msg ;
 			stStandPlayer* pp = getPlayerBySessionID(nPlayerSessionID) ;
 			if ( pp )
 			{
 				onPlayerWillLeaveRoom(pp) ;
+				playerDoLeaveRoom(pp);
+				msg.nRet = 0 ;
 			}
 			else
 			{
+				msg.nRet = 1 ;
 				CLogMgr::SharedLogMgr()->ErrorLog("session id not in this room how to leave session id = %d",nPlayerSessionID) ;
 			}
+			sendMsgToPlayer(&msg,sizeof(msg),nPlayerSessionID) ;
 		}
 		break;
 	case MSG_REQUEST_ROOM_RANK:
@@ -632,10 +651,6 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 		}
 		break;
 	default:
-		if ( m_pCurRoomState->onMessage(prealMsg,eSenderPort,nPlayerSessionID) )
-		{
-			return true ;
-		}
 		return false ;
 	}
 
@@ -673,7 +688,12 @@ void IRoom::onTimeSave( bool bRightNow )
 
 void IRoom::goToState(IRoomState* pTargetState )
 {
-	assert(pTargetState != m_pCurRoomState && "go to the same state ? " );
+	//assert(pTargetState != m_pCurRoomState && "go to the same state ? " );
+	if ( pTargetState == m_pCurRoomState)
+	{
+		CLogMgr::SharedLogMgr()->SystemLog("go to the same state %d , room id = %d ? ",pTargetState->getStateID(), getRoomID() );
+	}
+	
 	m_pCurRoomState->leaveState() ;
 	m_pCurRoomState = pTargetState ;
 	m_pCurRoomState->enterState(this) ;
@@ -838,9 +858,28 @@ void IRoom::sendExpireInform()
 void IRoom::deleteRoom()
 {
 	m_bIsDelte = true ;
+	m_nDuringTime = 0 ;
+	m_nDeadTime = 1 ; // right now 
 }
 
 bool IRoom::isDeleteRoom()
 {
 	return m_bIsDelte ;
+}
+
+void IRoom::debugRank()
+{
+	int64_t nFinal = 0 ;
+	CLogMgr::SharedLogMgr()->SystemLog("debug rank room id = %d ",getRoomID());
+	m_vSortedRankItems;
+	for ( auto& rank : m_vSortedRankItems )
+	{
+		CLogMgr::SharedLogMgr()->SystemLog("uid = %d, offset = %lld , room id = %d",rank->nUserUID,rank->nGameOffset,getRoomID() ) ;
+		nFinal += rank->nGameOffset ;
+	}
+
+	if ( nFinal != 0  )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("rank error not equal room id = %d",getRoomID()) ;
+	}
 }

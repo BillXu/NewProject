@@ -57,9 +57,9 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 	case MSG_TP_ROOM_PLAYER_DATA:
 		{
 			stMsgTaxasRoomInfoPlayerData* pRet = (stMsgTaxasRoomInfoPlayerData*)pmsg;
-			if ( pRet->tPlayerData.nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
+			if ( pRet->nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
 			{
-				memcpy_s(&vAllTaxasPlayerData[pRet->tPlayerData.nSeatIdx],sizeof(vAllTaxasPlayerData[pRet->tPlayerData.nSeatIdx]),&pRet->tPlayerData,sizeof(pRet->tPlayerData));
+				memcpy_s(&vAllTaxasPlayerData[pRet->nSeatIdx],sizeof(vAllTaxasPlayerData[pRet->nSeatIdx]),&pRet->tPlayerData,sizeof(pRet->tPlayerData));
 			}
 		}
 		break;

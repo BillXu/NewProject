@@ -96,6 +96,27 @@
     <ClInclude Include="..\ServerCommon\ServerStringTable.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\IRoom.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\IRoomManager.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\IRoomState.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISitableRoom.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISitableRoomPlayer.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TaxasPlayer.h">
+      <Filter>src\Room</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISitableRoomManager.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -147,6 +168,27 @@
       <Filter>SvrCommon</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ServerStringTable.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\IRoom.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\IRoomManager.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\IRoomState.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ISitableRoom.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ISitableRoomPlayer.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TaxasPlayer.cpp">
+      <Filter>src\Room</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ISitableRoomManager.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>

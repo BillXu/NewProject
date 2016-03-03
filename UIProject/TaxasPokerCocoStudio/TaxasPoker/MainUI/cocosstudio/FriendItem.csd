@@ -9,8 +9,8 @@
           <AbstractNodeData Name="BGPanel" ActionTag="988746858" Tag="371" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
             <Size X="600.0000" Y="120.0000" />
             <Children>
-              <AbstractNodeData Name="CheckHeadPanel" ActionTag="-1950446322" Tag="36" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="23.7300" RightMargin="496.2900" TopMargin="20.0024" BottomMargin="20.0024" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
-                <Size X="79.9800" Y="79.9952" />
+              <AbstractNodeData Name="CheckHeadPanel" ActionTag="-1950446322" Tag="36" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="23.7300" RightMargin="496.2900" TopMargin="20.0040" BottomMargin="20.0040" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
+                <Size X="79.9800" Y="79.9920" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="63.7200" Y="60.0000" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
@@ -22,8 +22,8 @@
                 <EndColor A="255" R="255" G="255" B="255" />
                 <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
-              <AbstractNodeData Name="Head_Panel" ActionTag="1128361015" Tag="13" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="23.6100" RightMargin="496.4100" TopMargin="20.0024" BottomMargin="20.0024" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
-                <Size X="79.9800" Y="79.9952" />
+              <AbstractNodeData Name="Head_Panel" ActionTag="1128361015" Tag="13" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="23.6100" RightMargin="496.4100" TopMargin="20.0040" BottomMargin="20.0040" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" Scale9Width="1" Scale9Height="1" ctype="PanelObjectData">
+                <Size X="79.9800" Y="79.9920" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="63.6000" Y="60.0000" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
@@ -57,7 +57,7 @@
                 <FileData Type="Normal" Path="avatar_cover.png" Plist="" />
                 <BlendFunc Src="1" Dst="771" />
               </AbstractNodeData>
-              <AbstractNodeData Name="divider" ActionTag="-1594755985" VisibleForFrame="False" Tag="381" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="478.4200" RightMargin="117.5800" TopMargin="33.0000" BottomMargin="33.0000" ctype="SpriteObjectData">
+              <AbstractNodeData Name="divider" ActionTag="-1594755985" VisibleForFrame="False" Alpha="127" Tag="381" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="478.4200" RightMargin="117.5800" TopMargin="33.0000" BottomMargin="33.0000" ctype="SpriteObjectData">
                 <Size X="4.0000" Y="54.0000" />
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="480.4200" Y="60.0000" />
@@ -68,20 +68,35 @@
                 <FileData Type="Normal" Path="divider1.png" Plist="" />
                 <BlendFunc Src="1" Dst="771" />
               </AbstractNodeData>
-              <AbstractNodeData Name="FollowButton" ActionTag="-619304881" VisibleForFrame="False" Tag="382" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="403.8300" RightMargin="163.8300" TopMargin="44.1180" BottomMargin="44.1180" TouchEnable="True" FontSize="14" Scale9Enable="True" LeftEage="10" RightEage="10" TopEage="11" BottomEage="11" Scale9OriginX="10" Scale9OriginY="11" Scale9Width="13" Scale9Height="14" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
-                <Size X="32.3400" Y="31.7640" />
+              <AbstractNodeData Name="FollowButton" ActionTag="-646587756" VisibleForFrame="False" Tag="336" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="390.0000" RightMargin="150.0000" TopMargin="30.0000" BottomMargin="30.0000" TouchEnable="True" BackColorAlpha="102" ColorAngle="90.0000" ctype="PanelObjectData">
+                <Size X="60.0000" Y="60.0000" />
+                <Children>
+                  <AbstractNodeData Name="FollowButton" ActionTag="-619304881" Tag="382" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" PercentWidthEnable="True" PercentHeightEnable="True" PercentWidthEnabled="True" PercentHeightEnabled="True" LeftMargin="13.5000" RightMargin="13.5000" TopMargin="12.0000" BottomMargin="12.0000" FontSize="14" Scale9Enable="True" LeftEage="10" RightEage="10" TopEage="11" BottomEage="11" Scale9OriginX="10" Scale9OriginY="11" Scale9Width="13" Scale9Height="14" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="ButtonObjectData">
+                    <Size X="33.0000" Y="36.0000" />
+                    <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
+                    <Position X="30.0000" Y="30.0000" />
+                    <Scale ScaleX="1.0000" ScaleY="1.0000" />
+                    <CColor A="255" R="255" G="255" B="255" />
+                    <PrePosition X="0.5000" Y="0.5000" />
+                    <PreSize X="0.5500" Y="0.6000" />
+                    <TextColor A="255" R="65" G="65" B="70" />
+                    <DisabledFileData Type="Normal" Path="icon_follow.png" Plist="" />
+                    <PressedFileData Type="Normal" Path="icon_follow.png" Plist="" />
+                    <NormalFileData Type="Normal" Path="icon_follow.png" Plist="" />
+                    <OutlineColor A="255" R="255" G="0" B="0" />
+                    <ShadowColor A="255" R="110" G="110" B="110" />
+                  </AbstractNodeData>
+                </Children>
                 <AnchorPoint ScaleX="0.5000" ScaleY="0.5000" />
                 <Position X="420.0000" Y="60.0000" />
                 <Scale ScaleX="1.0000" ScaleY="1.0000" />
                 <CColor A="255" R="255" G="255" B="255" />
                 <PrePosition X="0.7000" Y="0.5000" />
-                <PreSize X="0.0539" Y="0.2647" />
-                <TextColor A="255" R="65" G="65" B="70" />
-                <DisabledFileData Type="Normal" Path="icon_follow.png" Plist="" />
-                <PressedFileData Type="Normal" Path="icon_follow.png" Plist="" />
-                <NormalFileData Type="Normal" Path="icon_follow.png" Plist="" />
-                <OutlineColor A="255" R="255" G="0" B="0" />
-                <ShadowColor A="255" R="110" G="110" B="110" />
+                <PreSize X="0.1000" Y="0.5000" />
+                <SingleColor A="255" R="150" G="200" B="255" />
+                <FirstColor A="255" R="150" G="200" B="255" />
+                <EndColor A="255" R="255" G="255" B="255" />
+                <ColorVector ScaleY="1.0000" />
               </AbstractNodeData>
               <AbstractNodeData Name="UserNameText" ActionTag="-1766636551" Tag="383" IconVisible="False" PositionPercentXEnabled="True" PositionPercentYEnabled="True" LeftMargin="120.0000" RightMargin="480.0000" TopMargin="41.1600" BottomMargin="78.8400" FontSize="25" LabelText="" ShadowOffsetX="2.0000" ShadowOffsetY="-2.0000" ctype="TextObjectData">
                 <Size X="0.0000" Y="0.0000" />

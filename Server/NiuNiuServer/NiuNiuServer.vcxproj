@@ -109,6 +109,7 @@
     <ClInclude Include="..\ServerCommon\IRoomPlayer.h" />
     <ClInclude Include="..\ServerCommon\IRoomState.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
+    <ClInclude Include="..\ServerCommon\ISitableRoomManager.h" />
     <ClInclude Include="..\ServerCommon\ISitableRoomPlayer.h" />
     <ClInclude Include="..\ServerCommon\ServerCommon.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
@@ -144,6 +145,7 @@
     <ClCompile Include="..\ServerCommon\IRoomPlayer.cpp" />
     <ClCompile Include="..\ServerCommon\IRoomState.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
+    <ClCompile Include="..\ServerCommon\ISitableRoomManager.cpp" />
     <ClCompile Include="..\ServerCommon\ISitableRoomPlayer.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\ISitableRoom.cpp" />

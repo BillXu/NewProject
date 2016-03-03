@@ -117,11 +117,10 @@
     <ClInclude Include="..\DataServer\src\Player.h" />
     <ClInclude Include="..\DataServer\src\PlayerBaseData.h" />
     <ClInclude Include="..\DataServer\src\PlayerFriend.h" />
+    <ClInclude Include="..\DataServer\src\PlayerGameData.h" />
     <ClInclude Include="..\DataServer\src\PlayerMail.h" />
     <ClInclude Include="..\DataServer\src\PlayerManager.h" />
     <ClInclude Include="..\DataServer\src\PlayerMission.h" />
-    <ClInclude Include="..\DataServer\src\PlayerNiuNiu.h" />
-    <ClInclude Include="..\DataServer\src\PlayerTaxas.h" />
     <ClInclude Include="..\DataServer\src\PokerCircle.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
@@ -153,11 +152,10 @@
     <ClCompile Include="..\DataServer\src\Player.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerBaseData.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerFriend.cpp" />
+    <ClCompile Include="..\DataServer\src\PlayerGameData.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerMail.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerManager.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerMission.cpp" />
-    <ClCompile Include="..\DataServer\src\PlayerNiuNiu.cpp" />
-    <ClCompile Include="..\DataServer\src\PlayerTaxas.cpp" />
     <ClCompile Include="..\DataServer\src\PokerCircle.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />

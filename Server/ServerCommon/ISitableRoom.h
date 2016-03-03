@@ -16,10 +16,11 @@ public:
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
 	// event function 
 	virtual void onPlayerSitDown( ISitableRoomPlayer* pPlayer ){}
-	virtual void onPlayerWillStandUp(ISitableRoomPlayer* pPlayer ){}
+	virtual void onPlayerWillStandUp(ISitableRoomPlayer* pPlayer );
 	void playerDoStandUp( ISitableRoomPlayer* pPlayer );
 
-	void playerDoLeaveRoom(uint32_t nPlayerUID )override;
+	void onPlayerWillLeaveRoom(stStandPlayer* pPlayer )final;
+	virtual uint32_t getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp) = 0 ;
 	uint8_t getEmptySeatCount();
 	ISitableRoomPlayer* getPlayerByIdx(uint8_t nIdx );
 	bool isSeatIdxEmpty( uint8_t nIdx );

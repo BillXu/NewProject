@@ -8,6 +8,10 @@ void ISitableRoomPlayer::reset(IRoom::stStandPlayer* pPlayer)
 	nPlayTimes = nWinTimes = 0 ;
 	nSingleWinMost = 0 ;
 	m_nHaloState = 0 ;
+	nCoin = 0 ;
+	m_nIdx = 0 ;
+	m_nState = 0 ;
+	m_isDelayStandUp = false ;
 }
 
 void ISitableRoomPlayer::onGameEnd()

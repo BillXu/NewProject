@@ -1,17 +1,13 @@
 #pragma once
-#include "IRoomManager.h"
+#include "ISitableRoomManager.h"
 class CNiuNiuRoomManager
-	:public IRoomManager
+	:public ISitableRoomManager
 {
 public:
-	bool init()override;
 	bool onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)override;
 	void sendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID )override;
-	void onConnectedToSvr()override;
-	IRoom* getRoomByConfigID(uint32_t nRoomID )override ;
+	eRoomType getMgrRoomType()override{ return eRoom_NiuNiu ;}
 protected:
-	bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr)override;
-	bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr )override;
 	IRoom* doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID ,eRoomType reqSubRoomType, Json::Value& vJsValue)override ;
 	IRoom* doCreateRoomObject(eRoomType reqSubRoomType)override ;
 };

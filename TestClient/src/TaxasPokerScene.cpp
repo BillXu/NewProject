@@ -22,7 +22,7 @@ bool CTaxasPokerScene::init(const char* cRobotAiFile)
 bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 {
 	stMsg* pmsg = (stMsg*)pPacket->_orgdata ;
-	if ( MSG_TP_ROOM_STAND_UP != pmsg->usMsgType )
+	if ( MSG_ROOM_STANDUP != pmsg->usMsgType )
 	{
 		m_tData.onMsg(pmsg);
 	}
@@ -47,7 +47,7 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 			}
 		}
 		break;
-	case MSG_TP_PLAYER_SIT_DOWN:
+	case MSG_PLAYER_SITDOWN:
 		{
 			stMsgTaxasPlayerSitDownRet* pRet = (stMsgTaxasPlayerSitDownRet*)pmsg ;
 			if ( pRet->nRet )
@@ -65,24 +65,24 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 			}
 		}
 		break;
-	case MSG_TP_ROOM_SIT_DOWN:
+	case MSG_ROOM_SITDOWN:
 		{
-			stMsgTaxasRoomSitDown* pRet = (stMsgTaxasRoomSitDown*)pmsg ;
-			if ( pRet->tPlayerData.nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
+			stMsgRoomSitDown* pRet = (stMsgRoomSitDown*)pmsg ;
+			if ( pRet->nIdx < MAX_PEERS_IN_TAXAS_ROOM )
 			{
-				if ( pRet->tPlayerData.nUserUID == getClientApp()->GetPlayerData()->getUserUID())
+				if ( pRet->nSitDownPlayerUserUID == getClientApp()->GetPlayerData()->getUserUID())
 				{
-					m_tRobotControler.onSelfSitDown(pRet->tPlayerData.nSeatIdx);
+					m_tRobotControler.onSelfSitDown(pRet->nIdx);
 				}
 			}
 		}
 		break;
-	case MSG_TP_ROOM_STAND_UP:
+	case MSG_ROOM_STANDUP:
 		{
-			stMsgTaxasRoomStandUp* pRet = (stMsgTaxasRoomStandUp*)pmsg ;
-			if ( pRet->nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
+			stMsgRoomStandUp* pRet = (stMsgRoomStandUp*)pmsg ;
+			if ( pRet->nIdx < MAX_PEERS_IN_TAXAS_ROOM )
 			{
-				if ( pRet->nSeatIdx == m_tRobotControler.getMySeatIdx() )
+				if ( pRet->nIdx == m_tRobotControler.getMySeatIdx() )
 				{
 					m_tRobotControler.onSelfStandUp() ;
 				}
@@ -133,17 +133,17 @@ bool CTaxasPokerScene::OnMessage( Packet* pPacket )
 			stMsgRobotCheckBiggestRet* pRet = (stMsgRobotCheckBiggestRet*)pmsg ;
 		}
 		break;
-	case MSG_TP_PLAYER_LEAVE:
-		{
-			stMsgTaxasRoomLeave* pLeveRet = (stMsgTaxasRoomLeave*)pmsg ;
-			if ( pLeveRet->nUserUID == getClientApp()->GetPlayerData()->getUserUID() )
-			{
-				getClientApp()->GetPlayerData()->setIsLackOfCoin(true);
-				CLoginScene* CurentScene = new CLoginScene(m_pClient);
-				m_pClient->ChangeScene(CurentScene) ;
-			}
-		}
-		break;
+	//case MSG_PLAYER_LEAVE:
+	//	{
+	//		stMsgTaxasRoomLeave* pLeveRet = (stMsgTaxasRoomLeave*)pmsg ;
+	//		if ( pLeveRet->nUserUID == getClientApp()->GetPlayerData()->getUserUID() )
+	//		{
+	//			getClientApp()->GetPlayerData()->setIsLackOfCoin(true);
+	//			CLoginScene* CurentScene = new CLoginScene(m_pClient);
+	//			m_pClient->ChangeScene(CurentScene) ;
+	//		}
+	//	}
+	//	break;
 	case MSG_PLAYER_BE_ADDED_FRIEND:
 		{
 			stMsgPlayerBeAddedFriend* pret = (stMsgPlayerBeAddedFriend*)pmsg ;

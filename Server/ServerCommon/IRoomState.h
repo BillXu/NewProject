@@ -76,8 +76,7 @@ public:
 		}
 
 		if ( nNow > m_pRoom->getOpenTime() )  // reopen game ;
-		{
-			m_pRoom->onRoomOpened();
+		{			m_pRoom->onRoomOpened();
 			m_pRoom->goToState(eRoomState_WaitJoin) ;
 			return ;
 		}

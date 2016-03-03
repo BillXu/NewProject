@@ -147,6 +147,9 @@
     <ClInclude Include="..\ServerCommon\ServerStringTable.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\ISitableRoomManager.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
@@ -237,6 +240,9 @@
       <Filter>src\Room\state</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ServerStringTable.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ISitableRoomManager.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>

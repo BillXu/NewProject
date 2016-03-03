@@ -1,105 +1,117 @@
 #pragma once
 #include "TaxasMessageDefine.h"
+#include "IRoomState.h"
+////class CTaxasRoom ;
+////class CTaxasBaseRoomState
+////{
+////public:
+////	CTaxasBaseRoomState();
+////	virtual ~CTaxasBaseRoomState();
+////	virtual bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
+////	virtual void EnterState(CTaxasRoom* pRoom );
+////	virtual void LeaveState();
+////	virtual void Update(float fDelte );
+////	virtual void OnStateTimeOut(){}
+////	float GetDuringTime(){ return m_fDuringTime ;}
+////	void SetState(eRoomState eState ){ m_eState = eRoomState_TP_MAX ; }
+////protected:
+////	float m_fDuringTime ;
+////	CTaxasRoom* m_pRoom ;
+////	eRoomState m_eState ;
+////};
+////
+////// dead state 
+////class CTaxasStateDead
+////	:public CTaxasBaseRoomState
+////{
+////public:
+////	CTaxasStateDead(){ m_fMatchRestarTime = 0 ; m_MatchRoomDuringTime = 0 ;}
+////	virtual void EnterState(CTaxasRoom* pRoom );
+////	void Update(float fDelte );
+////protected:
+////	float m_fMatchRestarTime ;
+////	uint32_t m_MatchRoomDuringTime ;
+////};
+////
+////// wait join state 
+////class CTaxasStateWaitJoin
+////	:public CTaxasBaseRoomState
+////{
+////public:
+////	virtual void EnterState(CTaxasRoom* pRoom );
+////	void Update(float fDelte );
+////};
+////
+////// start blind bet state 
+////class CTaxasStateBlindBet
+////	:public CTaxasBaseRoomState
+////{
+////public:
+////	void EnterState(CTaxasRoom* pRoom );
+////	void OnStateTimeOut();
+////};
 class CTaxasRoom ;
-class CTaxasBaseRoomState
+// start game private card
+class CTaxasStateStartGame
+	:public IRoomState
 {
 public:
-	CTaxasBaseRoomState();
-	virtual ~CTaxasBaseRoomState();
-	virtual bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
-	virtual void EnterState(CTaxasRoom* pRoom );
-	virtual void LeaveState();
-	virtual void Update(float fDelte );
-	virtual void OnStateTimeOut(){}
-	float GetDuringTime(){ return m_fDuringTime ;}
-	void SetState(eRoomState eState ){ m_eState = eRoomState_TP_MAX ; }
+	CTaxasStateStartGame(){ m_nState = eRoomState_StartGame ; }
+	void enterState(IRoom* pRoom)override;
+	void onStateDuringTimeUp()override;
 protected:
-	float m_fDuringTime ;
 	CTaxasRoom* m_pRoom ;
-	eRoomState m_eState ;
-};
-
-// dead state 
-class CTaxasStateDead
-	:public CTaxasBaseRoomState
-{
-public:
-	CTaxasStateDead(){ m_fMatchRestarTime = 0 ; m_MatchRoomDuringTime = 0 ;}
-	virtual void EnterState(CTaxasRoom* pRoom );
-	void Update(float fDelte );
-protected:
-	float m_fMatchRestarTime ;
-	uint32_t m_MatchRoomDuringTime ;
-};
-
-// wait join state 
-class CTaxasStateWaitJoin
-	:public CTaxasBaseRoomState
-{
-public:
-	virtual void EnterState(CTaxasRoom* pRoom );
-	void Update(float fDelte );
-};
-
-// start blind bet state 
-class CTaxasStateBlindBet
-	:public CTaxasBaseRoomState
-{
-public:
-	void EnterState(CTaxasRoom* pRoom );
-	void OnStateTimeOut();
-};
-
-// private card
-class CTaxasStatePrivateCard
-	:public CTaxasBaseRoomState
-{
-public:
-	void EnterState(CTaxasRoom* pRoom );
-	void OnStateTimeOut();
 };
 
 // player bet state 
 class CTaxasStatePlayerBet
-	:public CTaxasBaseRoomState
+	:public IRoomState
 {
 public:
-	void EnterState(CTaxasRoom* pRoom );
-	void OnStateTimeOut();
-	void Update(float fDelte );
-	bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
-	void ResetStateTime();
-	void PlayerDoActOver();
+	CTaxasStatePlayerBet(){ m_nState = eRoomState_TP_Beting ; }
+	void enterState(IRoom* pRoom)override;
+	void onStateDuringTimeUp()override;
+	void update(float fDeta)override;
+	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
+	void resetStateTime();
+	void playerDoActOver();
 protected:
-	uint32_t m_nCurActPlayerIdx ;
-	bool m_bHavePlayerActing ;
-	float m_fLeftActingTime ;
-	bool m_bIsCurActPlayerActing ;
+	CTaxasRoom* m_pRoom ;
+	bool m_bIsDoFinished ;
 };
 
 // caculate vice pool
 class CTaxasStateOneRoundBetEndResult
-	:public CTaxasBaseRoomState
+	:public IRoomState
 {
 public:
-	void EnterState(CTaxasRoom* pRoom );
-	void OnStateTimeOut();
+	CTaxasStateOneRoundBetEndResult(){ m_nState = eRoomState_TP_OneRoundBetEndResult ; }
+	void enterState(IRoom* pRoom)override;
+	void onStateDuringTimeUp()override;
+protected:
+	CTaxasRoom* m_pRoom ;
 };
 
 // public card
 class CTaxasStatePublicCard
-	:public CTaxasBaseRoomState
+	:public IRoomState
 {
 public:
-	void EnterState(CTaxasRoom* pRoom );
-	void OnStateTimeOut();
+	CTaxasStatePublicCard(){ m_nState = eRoomState_TP_PublicCard ; }
+	void enterState(IRoom* pRoom)override;
+	void onStateDuringTimeUp()override;
+protected:
+	CTaxasRoom* m_pRoom ;
 };
 
 // game result 
 class CTaxasStateGameResult
-	:public CTaxasBaseRoomState
+	:public IRoomState
 {
 public:
-	void EnterState(CTaxasRoom* pRoom );
-	void OnStateTimeOut();
+	CTaxasStateGameResult(){ m_nState = eRoomState_TP_GameResult ; }
+	void enterState(IRoom* pRoom)override;
+	void onStateDuringTimeUp()override;
+protected:
+	CTaxasRoom* m_pRoom ;
 };

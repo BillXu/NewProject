@@ -6,15 +6,10 @@
 #include "LogManager.h"
 #define ROOM_LIST_ITEM_CNT_PER_PAGE 5 
 #include "AutoBuffer.h"
-bool CNiuNiuRoomManager::init()
-{
-	IRoomManager::init();
-	return true ;
-}
 
 bool CNiuNiuRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
 {
-	if ( IRoomManager::onPublicMsg(prealMsg,eSenderPort,nSessionID) )
+	if ( ISitableRoomManager::onPublicMsg(prealMsg,eSenderPort,nSessionID) )
 	{
 		return true ;
 	}
@@ -24,6 +19,10 @@ bool CNiuNiuRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , ui
 	case MSG_REQUEST_MATCH_ROOM_LIST:
 		{
 			auto iter = m_vCreatorAndRooms.find(MATCH_MGR_UID);
+			if ( iter == m_vCreatorAndRooms.end() )
+			{
+				return true ;
+			}
 			stRoomCreatorInfo& pC = iter->second ;
 			LIST_ROOM& vMatchRooms = pC.vRooms ;
 			stMsgRequestMatchRoomListRet msgRet ;
@@ -125,43 +124,6 @@ void CNiuNiuRoomManager::sendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionI
 	CNiuNiuServerApp::getInstance()->sendMsg(nSessionID,(char*)pmsg,nLen) ;
 }
 
-bool CNiuNiuRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue )
-{
-	if ( IRoomManager::onCrossServerRequest(pRequest,eSenderPort,vJsValue) )
-	{
-		return true ;
-	}
-
-	switch ( pRequest->nRequestType )
-	{
-	default:
-		//CLogMgr::SharedLogMgr()->PrintLog("un processed request type = %d",pRequest->nRequestType) ;
-		return false;
-	}
-	return true ;
-}
-
-bool CNiuNiuRoomManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue )
-{
-	if ( IRoomManager::onCrossServerRequestRet(pResult,vJsValue) )
-	{
-		return true ;
-	}
-	CLogMgr::SharedLogMgr()->PrintLog("un processed requestRet type = %d",pResult->nRequestType) ;
-	return false ;
-}
-
-void CNiuNiuRoomManager::onConnectedToSvr()
-{
-	if ( m_vRooms.empty() )
-	{
-		stMsgReadRoomInfo msgRead ;
-		msgRead.nRoomType = eRoom_NiuNiu ;
-		sendMsg(&msgRead,sizeof(msgRead),0) ;
-		CLogMgr::SharedLogMgr()->PrintLog("read niu niu room info ") ;
-	}
-}
-
 IRoom* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID , uint16_t nRoomConfigID ,eRoomType reqSubRoomType, Json::Value& vJsValue ) 
 {
 	stSitableRoomConfig* pConfig = (stSitableRoomConfig*)CNiuNiuServerApp::getInstance()->getRoomConfigMgr()->GetConfigByConfigID(nRoomConfigID) ;
@@ -179,85 +141,4 @@ IRoom* CNiuNiuRoomManager::doCreateRoomObject(eRoomType reqSubRoomType)
 {
 	IRoom* pRoom = new CNiuNiuRoom() ;
 	return pRoom ;
-}
-
-IRoom* CNiuNiuRoomManager::getRoomByConfigID(uint32_t nRoomConfigID )
-{
-	MAP_CONFIG_ROOMS::iterator iter = m_vCongfigIDRooms.find(nRoomConfigID) ;
-	if ( iter == m_vCongfigIDRooms.end() )
-	{
-		return nullptr ;
-	}
-
-	LIST_ROOM& vRooms = iter->second ;
-	if ( vRooms.empty() )
-	{
-		return nullptr ;
-	}
-
-	LIST_ROOM vAcitveRooms ;
-	LIST_ROOM vEmptyRooms ;
-	for ( IRoom* pRoom : vRooms )
-	{
-		if ( pRoom == nullptr || pRoom->isRoomAlive() == false )
-		{
-			continue; 
-		}
-
-		if ( ((ISitableRoom*)pRoom)->getPlayerCntWithState(eRoomPeer_SitDown) )
-		{
-			vAcitveRooms.push_back(pRoom) ;
-		}
-		else
-		{
-			vEmptyRooms.push_back(pRoom) ;
-		}
-	}
-
-	if ( vAcitveRooms.empty() && vEmptyRooms.empty() )
-	{
-		return nullptr ;
-	}
-
-	if ( vAcitveRooms.empty() )  // if all room is empty , then just rand a room to enter ;
-	{
-		vAcitveRooms.insert(vAcitveRooms.begin(),vEmptyRooms.begin(),vEmptyRooms.end()) ;
-	}
-	else if ( vAcitveRooms.size() <= 10 )  // put some empty rooms in 
-	{
-		uint8_t naddEmtpy = 0 ;
-		for ( IRoom* pRoom : vEmptyRooms )
-		{
-			if ( naddEmtpy > 8 )
-			{
-				break; ;
-			}
-
-			if ( naddEmtpy % 2 == 0 )
-			{
-				vAcitveRooms.push_back(pRoom) ;
-			}
-			else
-			{
-				vAcitveRooms.insert(vAcitveRooms.begin(),pRoom) ;
-			}
-
-			++naddEmtpy ;
-		}
-	}
-
-	uint16_t nStartIdx = rand() % vAcitveRooms.size() ;
-	uint16_t iter_idx = 0 ;
-	for( IRoom* pRoom : vAcitveRooms )
-	{
-		if ( iter_idx != nStartIdx )
-		{
-			++iter_idx ;
-			continue;
-		}
-
-		return pRoom ;
-
-	}
-	return nullptr ;
 }
