@@ -26,6 +26,7 @@ public:
 	unsigned int getDstGameType(){ return pRobotItem->nDstGameType ;}
 	bool isLackOfCoin(){ return m_bIsLackOfCoin ; }
 	void setIsLackOfCoin( bool isLack ){ m_bIsLackOfCoin = isLack ;}
+	CRobotConfigFile::stRobotItem* getConfigItem(){ return pRobotItem ;}
 public:
 	unsigned int nSessionID ;
 	stCommonBaseData stBaseData ;

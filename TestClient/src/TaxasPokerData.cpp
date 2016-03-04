@@ -3,37 +3,38 @@
 #include "assert.h"
 #include <string>
 //#include "cocos2d.h"
-stTaxasPeerBaseData* stTaxasPokerData::getTaxasPlayerData( uint8_t nSvrIdx)
-{
-	if ( nSvrIdx >= MAX_PEERS_IN_TAXAS_ROOM )
-		return nullptr ;
-	return &vAllTaxasPlayerData[nSvrIdx] ;
-}
-
-void stTaxasPokerData::setTaxasPlayerData(stTaxasPeerBaseData* pdata )
+void CTaxasPokerData::setTaxasPlayerData(stTaxasPeerBaseData* pdata )
 {
 	if ( pdata == nullptr || pdata->nSeatIdx >= MAX_PEERS_IN_TAXAS_ROOM )
 		return ;
-	memcpy_s(&vAllTaxasPlayerData[pdata->nSeatIdx],sizeof(vAllTaxasPlayerData[pdata->nSeatIdx]),pdata,sizeof(stTaxasPeerBaseData));
+	stTaxasPlayer* pPlayer = (stTaxasPlayer*)getPlayerByIdx(pdata->nSeatIdx) ;
+	if ( pPlayer == nullptr )
+	{
+		pPlayer = new stTaxasPlayer ;
+	}
+	pPlayer->reset() ;
+	pPlayer->nBetCoinThisRound = pdata->nBetCoinThisRound ;
+	pPlayer->nCoin = pdata->nTakeInMoney ;
+	pPlayer->nIdx = pdata->nSeatIdx ;
+	pPlayer->nCurAct = pdata->eCurAct ;
+	pPlayer->nStateFlag = pdata->nStateFlag ;
+	pPlayer->nUserUID = pdata->nUserUID ;
+	pPlayer->vHoldCard;
+	memcpy(pPlayer->vHoldCard,pdata->vHoldCard,sizeof(pPlayer->vHoldCard));
 }
 
-bool stTaxasPokerData::onMsg(stMsg* pmsg )
+bool CTaxasPokerData::onMsg(stMsg* pmsg )
 {
 	switch (pmsg->usMsgType)
 	{
 	case MSG_TP_ROOM_BASE_INFO:
 		{
 			stMsgTaxasRoomInfoBase* pRet = (stMsgTaxasRoomInfoBase*)pmsg ;
-			nRoomID = pRet->nRoomID;
-			nMaxSeat = pRet->nMaxSeat;
+			setBaseInfo(pRet->nRoomID,pRet->nMaxSeat,pRet->nDeskFee,pRet->eCurRoomState);
 			nLittleBlind = pRet->nLittleBlind;
 			nMiniTakeIn = pRet->nMiniTakeIn;
 			nMaxTakeIn = pRet->nMaxTakeIn;
 			// running members ;
-			eCurRoomState = pRet->eCurRoomState; // eeRoomState ;
-			nBankerIdx = pRet->nBankerIdx;
-			nLittleBlindIdx = pRet->nLittleBlindIdx;
-			nBigBlindIdx = pRet->nBigBlindIdx;
 			nCurWaitPlayerActionIdx = pRet->nCurWaitPlayerActionIdx;
 			nCurMainBetPool = pRet->nCurMainBetPool;
 			nMostBetCoinThisRound = pRet->nMostBetCoinThisRound;
@@ -44,37 +45,24 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			}
 		}
 		break;
-	case MSG_TP_ROOM_VICE_POOL:
-		{
-			stMsgTaxasRoomInfoVicePool* pRet = (stMsgTaxasRoomInfoVicePool*)pmsg ;
-			uint8_t nCnt = MAX_PEERS_IN_TAXAS_ROOM ;
-			while(nCnt--)
-			{
-				vVicePool[nCnt] = pRet->vVicePool[nCnt];
-			}
-		}
-		break;
 	case MSG_TP_ROOM_PLAYER_DATA:
 		{
 			stMsgTaxasRoomInfoPlayerData* pRet = (stMsgTaxasRoomInfoPlayerData*)pmsg;
 			if ( pRet->nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
 			{
-				memcpy_s(&vAllTaxasPlayerData[pRet->nSeatIdx],sizeof(vAllTaxasPlayerData[pRet->nSeatIdx]),&pRet->tPlayerData,sizeof(pRet->tPlayerData));
-			}
-		}
-		break;
-	case MSG_TP_ENTER_STATE:
-		{
-			stMsgTaxasRoomEnterState* pRet = (stMsgTaxasRoomEnterState*)pmsg ;
-			eCurRoomState = pRet->nNewState ;
-		}
-		break;
-	case MSG_TP_ROOM_SIT_DOWN:
-		{
-			stMsgTaxasRoomSitDown* pRet = (stMsgTaxasRoomSitDown*)pmsg ;
-			if ( pRet->tPlayerData.nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
-			{
-				memcpy_s(&vAllTaxasPlayerData[pRet->tPlayerData.nSeatIdx],sizeof(vAllTaxasPlayerData[pRet->tPlayerData.nSeatIdx]),&pRet->tPlayerData,sizeof(pRet->tPlayerData));
+				stTaxasPlayer* pPlayer = (stTaxasPlayer*)getPlayerByIdx(pRet->nSeatIdx) ;
+				if ( pPlayer == nullptr )
+				{
+					pPlayer = new stTaxasPlayer ;
+				}
+				pPlayer->reset() ;
+				pPlayer->nBetCoinThisRound = pRet->nBetCoinThisRound ;
+				pPlayer->nCoin = pRet->nTakeInMoney ;
+				pPlayer->nIdx = pRet->nSeatIdx ;
+				pPlayer->nCurAct = pRet->eCurAct ;
+				pPlayer->nStateFlag = pRet->nStateFlag ;
+				pPlayer->nUserUID = pRet->nUserUID ;
+				memcpy(pPlayer->vHoldCard,pRet->vHoldCard,sizeof(pPlayer->vHoldCard));
 			}
 		}
 		break;
@@ -83,38 +71,30 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			stMsgTaxasRoomUpdatePlayerState* pRet = (stMsgTaxasRoomUpdatePlayerState*)pmsg ;
 			if ( pRet->nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
 			{
-				vAllTaxasPlayerData[pRet->nSeatIdx].nStateFlag = pRet->nStateFlag ;
-				vAllTaxasPlayerData[pRet->nSeatIdx].nTakeInMoney = pRet->nTakeInCoin ;
-				if (vAllTaxasPlayerData[pRet->nSeatIdx].nTakeInMoney <= nLittleBlind * 2 )
+				stTaxasPlayer* pPlayer = (stTaxasPlayer*)getPlayerByIdx(pRet->nSeatIdx) ;
+				if ( pPlayer )
 				{
-					{
-						vAllTaxasPlayerData[pRet->nSeatIdx].nStateFlag = eRoomPeer_LackOfCoin ;
-						printf("update player state player lack of coin idx = %d, name = %s\n",vAllTaxasPlayerData[pRet->nSeatIdx].nSeatIdx,vAllTaxasPlayerData[pRet->nSeatIdx].cName);
-					}
+					pPlayer->nStateFlag = pRet->nStateFlag ;
+					pPlayer->nCoin = pRet->nTakeInCoin ;
 				}
-			}
-		}
-		break;
-	case MSG_TP_ROOM_STAND_UP:
-		{
-			stMsgTaxasRoomStandUp* pRet = (stMsgTaxasRoomStandUp*)pmsg ;
-			if ( pRet->nSeatIdx < MAX_PEERS_IN_TAXAS_ROOM )
-			{
-				memset(&vAllTaxasPlayerData[pRet->nSeatIdx],0,sizeof(vAllTaxasPlayerData[pRet->nSeatIdx]));
 			}
 		}
 		break;
 	case MSG_TP_START_ROUND:
 		{
+			onGameBegin() ;
 			stMsgTaxasRoomStartRound* pRet = (stMsgTaxasRoomStartRound*)pmsg ;
-			nLittleBlindIdx = pRet->nLittleBlindIdx ;
-			nBigBlindIdx = pRet->nBigBlindIdx ;
-			nBankerIdx = pRet->nBankerIdx ;
+			auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(pRet->nLittleBlindIdx) ;
+			if ( pPlayer )
+			{
+				pPlayer->betCoin(nLittleBlind);
+			}
 
-			vAllTaxasPlayerData[nLittleBlindIdx].nBetCoinThisRound = nLittleBlind ;
-			vAllTaxasPlayerData[nLittleBlindIdx].nTakeInMoney -= nLittleBlind ;
-			vAllTaxasPlayerData[nBigBlindIdx].nBetCoinThisRound = nLittleBlind *2;
-			vAllTaxasPlayerData[nBigBlindIdx].nTakeInMoney -= nLittleBlind *2;
+			pPlayer = (stTaxasPlayer*)getPlayerByIdx(pRet->nBankerIdx) ;
+			if ( pPlayer )
+			{
+				pPlayer->betCoin(nLittleBlind*2);
+			}
 			nMostBetCoinThisRound = nLittleBlind * 2 ;
 		}
 		break;
@@ -127,9 +107,12 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			{
 				if ( pHolder->cPlayerIdx < MAX_PEERS_IN_TAXAS_ROOM )
 				{
-					vAllTaxasPlayerData[pHolder->cPlayerIdx].vHoldCard[0] = pHolder->vCards[0];
-					vAllTaxasPlayerData[pHolder->cPlayerIdx].vHoldCard[1] = pHolder->vCards[1];
-					vAllTaxasPlayerData[pHolder->cPlayerIdx].nStateFlag = eRoomPeer_CanAct ;
+					auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(pHolder->cPlayerIdx) ;
+					if ( pPlayer )
+					{
+						pPlayer->vHoldCard[0] = pHolder->vCards[0];
+						pPlayer->vHoldCard[1] = pHolder->vCards[1];
+					}
 				}
 				++pHolder ;
 			}
@@ -145,8 +128,8 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 	case MSG_TP_ROOM_ACT:
 		{
 			stMsgTaxasRoomAct* pret = (stMsgTaxasRoomAct*)pmsg;
-			stTaxasPeerBaseData& pPlayerData = vAllTaxasPlayerData[pret->nPlayerIdx];
-			if ( pPlayerData.nUserUID == 0 )
+			auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(pret->nPlayerIdx) ;
+			if ( pPlayer == nullptr || pPlayer->isValid() == false )
 			{
 				assert(0&& "act player do not sit down");
 				return true ;
@@ -162,86 +145,59 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			{
 			case eRoomPeerAction_Follow:
 				{
-					uint8_t nBetCoin = nMostBetCoinThisRound - pPlayerData.nBetCoinThisRound ;
-					pPlayerData.nBetCoinThisRound = nMostBetCoinThisRound ;
-					assert(nBetCoin<=pPlayerData.nTakeInMoney && "can not follow" );
-					printf("data here follow bet coin this round = %I64d\n",pPlayerData.nBetCoinThisRound);
-					pPlayerData.nTakeInMoney -= nBetCoin ;
+					uint8_t nBetCoin = nMostBetCoinThisRound - pPlayer->nBetCoinThisRound ;
+					if ( nBetCoin > pPlayer->nCoin )
+					{
+						nBetCoin = pPlayer->nCoin ;
+						printf("follow , but you don't have coin uid = %d\n",pPlayer->nUserUID ) ;
+					}
+					pPlayer->betCoin(nBetCoin);
+					
+					printf("data here follow bet coin this round = %I64d\n",pPlayer->nBetCoinThisRound);
 				}
 				break;
 			case eRoomPeerAction_GiveUp:
 				{
-					pPlayerData.nStateFlag = eRoomPeer_GiveUp ;
-					nCurMainBetPool += pPlayerData.nBetCoinThisRound ;
-
-					if (pPlayerData.nTakeInMoney <= nLittleBlind * 2 )
-					{
-						if ((pPlayerData.nStateFlag & eRoomPeer_WithdrawingCoin) != eRoomPeer_WithdrawingCoin )
-						{
-							pPlayerData.nStateFlag |= eRoomPeer_LackOfCoin ;
-						}
-					}
+					pPlayer->nStateFlag = eRoomPeer_GiveUp ;
+					nCurMainBetPool += pPlayer->nBetCoinThisRound ;
 				}
 				break;
 			case eRoomPeerAction_Add:
 				{
-					if ( pPlayerData.nTakeInMoney <= pret->nValue )
+					if ( pPlayer->nCoin <= pret->nValue )
 					{
 						printf("you should all in not add\n");
-						pret->nValue = pPlayerData.nTakeInMoney ;
+						pret->nValue = pPlayer->nCoin;
 					}
-					pPlayerData.nBetCoinThisRound += pret->nValue ;
-					pPlayerData.nTakeInMoney -= pret->nValue ;
+					pPlayer->betCoin(pret->nValue);
 
-					if ( nMostBetCoinThisRound < pPlayerData.nBetCoinThisRound )
+					if ( nMostBetCoinThisRound < pPlayer->nBetCoinThisRound )
 					{
-						nMostBetCoinThisRound = pPlayerData.nBetCoinThisRound ;
+						nMostBetCoinThisRound = pPlayer->nBetCoinThisRound;
 						printf("monstbet coin update by add = %I64d\n",nMostBetCoinThisRound);
 					}
 				}
 				break;
 			case eRoomPeerAction_AllIn:
 				{
-					pPlayerData.nBetCoinThisRound += pret->nValue;
-					if ( pPlayerData.nTakeInMoney <= pret->nValue )
+					if ( pPlayer->nCoin <= pret->nValue )
 					{
-						pPlayerData.nTakeInMoney = 0;
+						pret->nValue = pPlayer->nCoin;
 					}
-					else
-					{
-						pPlayerData.nTakeInMoney -= pret->nValue;
-					}
+					pPlayer->betCoin(pret->nValue) ;
 
-					if ( nMostBetCoinThisRound < pPlayerData.nBetCoinThisRound )
+					if ( nMostBetCoinThisRound < pPlayer->nBetCoinThisRound )
 					{
-						nMostBetCoinThisRound = pPlayerData.nBetCoinThisRound ;
+						nMostBetCoinThisRound = pPlayer->nBetCoinThisRound;
 					}
-					pPlayerData.nStateFlag = eRoomPeer_AllIn ;
+					pPlayer->nStateFlag = eRoomPeer_AllIn ;
 				}
 				break;
 			default:
 				break;
 			}
-			pPlayerData.eCurAct = pret->nPlayerAct ;
-			printf("recieved player do act = %d , value = %I64d, final coin = %I64d\n",pret->nPlayerAct,pret->nValue,pPlayerData.nTakeInMoney);
-		}
-		break;
-	case MSG_TP_ONE_BET_ROUND_RESULT:
-		{
-			nMostBetCoinThisRound = 0 ;
-			printf( "one round end result:\n" );
-			stMsgTaxasRoomOneBetRoundResult* pRet = (stMsgTaxasRoomOneBetRoundResult*)pmsg;
-			nCurMainBetPool = pRet->nCurMainPool;
-			printf("nmain pool = %I64d newViceCnt = %d\n",pRet->nCurMainPool,pRet->nNewVicePoolCnt);
-			for ( uint8_t nIdx = getVicePoolCnt() , nNewIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM && nNewIdx < pRet->nNewVicePoolCnt;++nNewIdx, ++nIdx )
-			{
-				if ( pRet->vNewVicePool[nNewIdx] == 0 )
-				{
-					break;
-				}
-				vVicePool[nIdx] = pRet->vNewVicePool[nNewIdx];
-				printf("new vice pool idx = %d, pool coin = %I64d\n",nIdx,pRet->vNewVicePool[nNewIdx] );
-			}
+			pPlayer->nCurAct = pret->nPlayerAct ;
+			printf("recieved player do act = %d , value = %I64d, final coin = %I64d\n",pret->nPlayerAct,pret->nValue,pPlayer->nCoin);
 		}
 		break;
 	case MSG_TP_PUBLIC_CARD:
@@ -265,6 +221,7 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			{
 				vPublicCardNums[4] = pRet->vCard[0]; 
 			}
+			resetBetRoundState() ;
 		}
 		break;
 	case MSG_TP_GAME_RESULT:
@@ -274,12 +231,13 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 			for ( uint8_t nIdx = 0 ; nIdx < pRet->nWinnerCnt ; ++nIdx )
 			{
 				uint8_t nWinIdx = pRet->vWinnerIdx[nIdx] ;
-				if ( nWinIdx >= MAX_PEERS_IN_TAXAS_ROOM || vAllTaxasPlayerData[nWinIdx].nUserUID == 0 )
+				auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(nWinIdx) ;
+				if ( pPlayer == nullptr || pPlayer->isValid() == false )
 				{
 					continue;
 				}
-				vAllTaxasPlayerData[nWinIdx].nTakeInMoney += pRet->nCoinPerWinner ;
-				printf("winer idx = %d , winCoin = %I64d, final Coin = %d\n",nWinIdx,pRet->nCoinPerWinner,vAllTaxasPlayerData[nWinIdx].nTakeInMoney);
+				pPlayer->nCoin += pRet->nCoinPerWinner ;
+				printf("winer idx = %d , winCoin = %d, final Coin = %d\n",nWinIdx,pRet->nCoinPerWinner,pPlayer->nCoin);
 			}
 		}
 		break;
@@ -289,116 +247,73 @@ bool stTaxasPokerData::onMsg(stMsg* pmsg )
 	return true ;
 }
 
-uint8_t stTaxasPokerData::getVicePoolCnt()
+void CTaxasPokerData::onGameBegin()
 {
-	uint8_t nFristEmptyIdx = 0 ;
-	uint8_t nCnt = 0 ;
-	for (  ; nFristEmptyIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nFristEmptyIdx)
-	{
-		if ( vVicePool[nFristEmptyIdx] == 0 )
-		{
-			break;;
-		}
-		++nCnt ;
-	}
-	return nCnt ;
-}
-
-void stTaxasPokerData::resetRuntimeData()
-{
+	CSitableRoomData::onGameBegin() ;
 	nCurWaitPlayerActionIdx = 0 ;
 	nCurMainBetPool = 0 ;
 	nMostBetCoinThisRound = 0 ;
 	memset(vPublicCardNums,0,sizeof(vPublicCardNums));
-	memset(vVicePool,0,sizeof(vVicePool));
-
-	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
-	{
-		stTaxasPeerBaseData& data = vAllTaxasPlayerData[nIdx] ;
-		if ( data.nUserUID == 0 )
-		{
-			continue;
-		}
-		data.eCurAct = eRoomPeerAction_None ;
-		data.nBetCoinThisRound = 0 ;
-		memset(data.vHoldCard,0,sizeof(data.vHoldCard));
-		if (data.nTakeInMoney <= nLittleBlind * 2 )
-		{
-			//if ((data.nStateFlag & eRoomPeer_WithdrawingCoin) != eRoomPeer_WithdrawingCoin )
-			{
-				data.nStateFlag = eRoomPeer_LackOfCoin ;
-				printf("player lack of coin idx = %d, name = %s\n",data.nSeatIdx,data.cName);
-			}
-		}
-		else
-		{
-			data.nStateFlag = eRoomPeer_WaitNextGame ;
-		}
-	}
 }
 
-uint32_t stTaxasPokerData::getPlayerAddCoinLowLimit( uint8_t nPlayerSvrIdx )
+uint32_t CTaxasPokerData::getPlayerAddCoinLowLimit( uint8_t nPlayerSvrIdx )
 {
 	if ( nMostBetCoinThisRound == 0 )
 	{
 		return nLittleBlind*2 ;
 	}
 
-	uint32_t nbet = nMostBetCoinThisRound - vAllTaxasPlayerData[nPlayerSvrIdx].nBetCoinThisRound ;
+	auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(nPlayerSvrIdx) ;
+	if ( pPlayer == nullptr || pPlayer->isValid() == false )
+	{
+		return nLittleBlind*2 ;;
+	}
+
+	uint32_t nbet = nMostBetCoinThisRound - pPlayer->nBetCoinThisRound ;
 	return ( nbet + nLittleBlind*2 );
 }
 
-uint64_t stTaxasPokerData::getPlayerAddCoinUpLimit( uint8_t nPlayerSvrIdx)
+uint64_t CTaxasPokerData::getPlayerAddCoinUpLimit( uint8_t nPlayerSvrIdx)
 {
 	uint64_t nFirstBig = 0, nSecondBig = 0  ;
 	for ( uint32_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
 	{
-		stTaxasPeerBaseData& pdata = vAllTaxasPlayerData[nIdx] ;
-		if (pdata.nUserUID == 0 || ((pdata.nStateFlag & eRoomPeer_CanAct) != eRoomPeer_CanAct ) )
+		auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(nPlayerSvrIdx) ;
+		if ( pPlayer == nullptr || pPlayer->isValid() == false || pPlayer->isHaveState(eRoomPeer_CanAct) == false )
 		{
 			continue;
 		}
 
-		if (pdata.nTakeInMoney >= nFirstBig )
+		if ( pPlayer->nCoin >= nFirstBig )
 		{
 			nSecondBig = nFirstBig ;
-			nFirstBig = pdata.nTakeInMoney ;
+			nFirstBig = pPlayer->nCoin ;
 		}
 		else
 		{
-			if ( pdata.nTakeInMoney > nSecondBig )
+			if ( pPlayer->nCoin > nSecondBig )
 			{
-				nSecondBig = pdata.nTakeInMoney; 
+				nSecondBig = pPlayer->nCoin; 
 			}
 		}
 	}
 	return nSecondBig ;
 }
 
-void stTaxasPokerData::resetBetRoundState()
+void CTaxasPokerData::resetBetRoundState()
 {
 	nMostBetCoinThisRound = 0 ;
 	// refresh player data ;
 	printf("resetBetRoundState\n");
 	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
 	{
-		if ( vAllTaxasPlayerData[nIdx].nUserUID )
+		auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(nIdx) ;
+		if ( pPlayer == nullptr || pPlayer->isValid() == false || pPlayer->isHaveState(eRoomPeer_StayThisRound) == false )
 		{
-			vAllTaxasPlayerData[nIdx].nBetCoinThisRound = 0 ;
-			vAllTaxasPlayerData[nIdx].eCurAct = eRoomPeerAction_None ;
+			continue;
 		}
-	}
-}
 
-uint8_t stTaxasPokerData::getPlayerCnt()
-{
-	uint8_t nCnt = 0 ;
-	for ( uint8_t nIdx = 0 ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
-	{
-		if ( vAllTaxasPlayerData[nIdx].nUserUID )
-		{
-			++nCnt;
-		}
+		pPlayer->nBetCoinThisRound = 0 ;
+		pPlayer->nCurAct = eRoomPeerAction_None ;
 	}
-	return nCnt ;
 }

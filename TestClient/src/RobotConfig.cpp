@@ -1,4 +1,5 @@
 #include "RobotConfig.h"
+#include "Utility.h"
 CRobotConfigFile::~CRobotConfigFile()
 {
 	LIST_ROBOT_ITEM::iterator iter = m_vListRobot.begin();
@@ -7,6 +8,16 @@ CRobotConfigFile::~CRobotConfigFile()
 		delete *iter ;
 	}
 	m_vListRobot.clear();
+}
+
+bool vSortWorkTime( CRobotConfigFile::stRobotItem::stWorkPoint& left ,CRobotConfigFile::stRobotItem::stWorkPoint& right )
+{
+	if ( left.nHour == right.nHour )
+	{
+		return left.nMini <= right.nMini ;
+	}
+
+	return left.nHour <= right.nHour ;
 }
 
 bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
@@ -19,7 +30,6 @@ bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
 	pItem->nRobotID = refReaderRow["RobotID"]->IntValue();
 	pItem->fMustWinRate = refReaderRow["MustWinRate"]->FloatValue();
 	pItem->nApplyLeaveWhenPeerCount = refReaderRow["LeaveWhenPlayerCount"]->IntValue();
-	pItem->nMinLeftDiamond = refReaderRow["MinLeftDiamoned"]->IntValue();
 	pItem->nMinLeftCoin = refReaderRow["MinLeftCoin"]->IntValue();
 	pItem->strAccount = refReaderRow["RobotAccount"]->StringValue();
 	pItem->strPassword = refReaderRow["RobotPassword"]->StringValue();
@@ -30,6 +40,56 @@ bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
 	pItem->nDstGameType = refReaderRow["nDstGameType"]->IntValue() ;
 	pItem->fActDelayBegin = pItem->fActDelayBegin < pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
 	pItem->fActDelayEnd = pItem->fActDelayBegin > pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
+
+	// parse work point ;
+	VEC_STRING vOutS ;
+	refReaderRow["workPoint"]->VecString(vOutS);
+	if ( vOutS.empty() )
+	{
+		printf("work point is empty  robot id = %d \n",pItem->nRobotID) ;
+		return true ;
+	}
+
+	for(auto str : vOutS )
+	{
+		CReaderCell t (str.c_str());
+		std::vector<int> vTime ;
+		t.VecInt(vTime,':');
+		if (vTime.size() != 2 )
+		{
+			printf("work point format error , robot id = %d\n",pItem->nRobotID) ;
+			continue;
+		}
+
+		stRobotItem::stWorkPoint pt ;
+		pt.nHour = vTime[0];
+		pt.nMini = vTime[1] ;
+
+		if ( pt.nHour > 24 )
+		{
+			pt.nHour = 24 ;
+			printf("work point hour big than 24 , robot id = %d\n",pItem->nRobotID) ;
+		}
+
+		if ( pt.nMini >= 60 )
+		{
+			pt.nMini = 59 ;
+			printf("work point minite big than 60 , robot id = %d\n",pItem->nRobotID) ;
+		}
+		pItem->vWorkPoints.push_back(pt) ;
+	}
+
+	if ( pItem->vWorkPoints.empty() )
+	{
+		printf("work point parse error , robot id = %d\n",pItem->nRobotID) ;
+		return true ;
+	}
+
+	if ( pItem->vWorkPoints.size() >= 2 )
+	{
+		pItem->vWorkPoints.sort(vSortWorkTime);
+	}
+	printf("robot id = %d , work point = %d\n",pItem->nRobotID,pItem->vWorkPoints.size()) ;
 	m_vListRobot.push_back(pItem) ;
 	return true ;
 }

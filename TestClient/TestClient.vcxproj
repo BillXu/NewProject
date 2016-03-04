@@ -113,6 +113,7 @@
     <ClCompile Include="src\RobotControlNiuNiu.cpp" />
     <ClCompile Include="src\RobotControlTaxas.cpp" />
     <ClCompile Include="src\robotControl.cpp" />
+    <ClCompile Include="src\SitableRoomData.cpp" />
     <ClCompile Include="src\TaxasPokerData.cpp" />
     <ClCompile Include="src\TaxasPokerScene.cpp" />
     <ClCompile Include="src\TaxasRobotAIConfig.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="src\RobotControlNiuNiu.h" />
     <ClInclude Include="src\RobotControlTaxas.h" />
     <ClInclude Include="src\robotControl.h" />
+    <ClInclude Include="src\SitableRoomData.h" />
     <ClInclude Include="src\TaxasPokerData.h" />
     <ClInclude Include="src\TaxasPokerScene.h" />
     <ClInclude Include="src\TaxasRobotAIConfig.h" />

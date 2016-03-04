@@ -30,6 +30,7 @@ public:
 	void SendMsg(char* pBuffer , unsigned short nLen ) ;
 	void SendMsg(stMsg* pmsg , unsigned short nLen ){ SendMsg((char*)pmsg,nLen) ;}
 	virtual void Verifyed(){};
+	CClientRobot* getClient(){ return m_pClient ;}
 protected:
 	eSceneType m_eSceneType ;
 	CClientRobot* m_pClient ;

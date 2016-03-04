@@ -1,80 +1,53 @@
 #include "NiuNiuData.h"
 #include <string>
 #include "CardPoker.h"
+#include "RobotControlNiuNiu.h"
 stNiuNiuData::stNiuNiuData()
 {
-	nRoomID = 0;
-	nBankerIdx = 0;
-	nBottomBet = 0  ;
-	nBankerBetTimes = 0;
-	nRoomState = 0;
-	nDeskFee = 0;
-	memset(vPlayers,0,sizeof(vPlayers));
-}
-
-void stNiuNiuData::onStartNewGame()
-{
-	for ( stNNRoomInfoPayerItem& refPlayer : vPlayers )
-	{
-		if ( refPlayer.nUserUID == 0 )
-		{
-			continue; 
-		}
-
-		refPlayer.nBetTimes = 0 ;
-		refPlayer.nCoin -= nDeskFee ;
-		memset(refPlayer.vHoldChard,0,sizeof(refPlayer.vHoldChard)) ;
-	}
-
 	nBankerBetTimes = 0 ;
 	nBankerIdx = 0 ;
 }
 
-uint8_t stNiuNiuData::getSitDownPlayerCnt()
+void stNiuNiuData::onGameBegin()
 {
-	uint8_t nCnt = 0 ;
-	for ( stNNRoomInfoPayerItem& refPlayer : vPlayers )
-	{
-		if ( refPlayer.nUserUID == 0 )
-		{
-			continue; 
-		}
-		++nCnt ;
-	}
-	return nCnt ;
+	CSitableRoomData::onGameBegin() ;
+	nBankerBetTimes = 0 ;
+	nBankerIdx = 0 ;
 }
 
 uint32_t stNiuNiuData::getLeftCanBetCoin()
 {
 	uint16_t nPlayerTimes = 0  ;
-	for ( stNNRoomInfoPayerItem& refPlayer : vPlayers )
+	for ( uint8_t nIdx = 0 ; nIdx < getSeatCount(); ++nIdx )
 	{
-		if ( refPlayer.nUserUID == 0 )
+		stNiuNiuPlayer* pPlayer = (stNiuNiuPlayer*)getPlayerByIdx(nIdx);
+		if ( pPlayer == nullptr )
 		{
-			continue; 
+			continue;
 		}
-		
-		if ( refPlayer.nIdx == nBankerIdx )
+
+		if ( pPlayer->isHaveState(eRoomPeer_CanAct) == false )
 		{
 			continue; 
 		}
 
-		if ( refPlayer.nBetTimes == 0 )
+		if ( pPlayer->nBetTimes == 0 )
 		{
 			nPlayerTimes += 5 ;
 		}
 		else 
 		{
-			nPlayerTimes += refPlayer.nBetTimes ;
+			nPlayerTimes += pPlayer->nBetTimes ;
 		}
 	}
 
-	if ( getFinalBaseBet() * nPlayerTimes > vPlayers[nBankerIdx].nCoin )
+	auto pBanker = (stNiuNiuPlayer*)getPlayerByIdx(nBankerIdx);
+	if ( getFinalBaseBet() * nPlayerTimes > pBanker->nCoin )
 	{
 		return 0 ;
 	}
 
-	return vPlayers[nBankerIdx].nCoin - getFinalBaseBet() * nPlayerTimes ;
+	return pBanker->nCoin - getFinalBaseBet() * nPlayerTimes ;
 }
 
 uint32_t stNiuNiuData::getFinalBaseBet()
@@ -82,23 +55,9 @@ uint32_t stNiuNiuData::getFinalBaseBet()
 	return nBankerBetTimes * nBottomBet ;
 }
 
-stNNRoomInfoPayerItem* stNiuNiuData::getPlayerByIdx(uint8_t nIdx )
-{
-	if ( MAX_PEERS_IN_TAXAS_ROOM <= nIdx )
-	{
-		return nullptr ;
-	}
-
-	if ( vPlayers[nIdx].nUserUID == 0 )
-	{
-		return nullptr ;
-	}
-	return &vPlayers[nIdx];
-}
-
 bool stNiuNiuData::isHaveNiu(uint8_t nIdx )
 {
-	stNNRoomInfoPayerItem* pPlayerItem = getPlayerByIdx(nIdx) ;
+	stNiuNiuPlayer* pPlayerItem = (stNiuNiuPlayer*)getPlayerByIdx(nIdx) ;
 	if ( nullptr == pPlayerItem )
 	{
 		return false ;
@@ -127,16 +86,29 @@ bool stNiuNiuData::isHaveNiu(uint8_t nIdx )
 
 bool stNiuNiuData::onMsg(stMsg* pmsg)
 {
+	if ( CSitableRoomData::onMsg(pmsg) )
+	{
+		return true ;
+	}
+
 	switch ( pmsg->usMsgType )
 	{
 	case MSG_ROOM_ENTER_NEW_STATE:
 		{
 			stMsgRoomEnterNewState* pRet = (stMsgRoomEnterNewState*)pmsg ;
-			nRoomState = pRet->nNewState ;
+			if ( pRet->nNewState == eRoomState_NN_TryBanker )
+			{
+				getRobotControl()->informRobotAction(CRobotControlNiuNiu::eAct_TryBanker) ;
+			}
+			else if ( eRoomState_NN_StartBet == pRet->nNewState )
+			{
+				getRobotControl()->informRobotAction(CRobotControlNiuNiu::eAct_Bet) ;
+			}
 		}
 		break;
 	case MSG_NN_DISTRIBUTE_4_CARD:
 		{
+			onGameBegin();
 			stMsgNNDistriute4Card* pRet = (stMsgNNDistriute4Card*)pmsg ;
 			stDistriuet4CardItem* pItem = (stDistriuet4CardItem*)(((char*)pmsg) + sizeof(stMsgNNDistriute4Card));
 			while ( pRet->nPlayerCnt-- )
@@ -146,41 +118,41 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 					continue; ;
 				}
 
-				memcpy(vPlayers[pItem->nSeatIdx].vHoldChard,pItem->vCardCompsitNum,sizeof(pItem->vCardCompsitNum));
+				stNiuNiuPlayer* pPlayerItem = (stNiuNiuPlayer*)getPlayerByIdx(pItem->nSeatIdx) ;
+				if ( pPlayerItem )
+				{
+					memcpy(pPlayerItem->vHoldChard,pItem->vCardCompsitNum,sizeof(pItem->vCardCompsitNum));
+				}
 			}
 		}
 		break;
 	case MSG_NN_ROOM_INFO:
 		{
 			stMsgNNRoomInfo* pInfo = (stMsgNNRoomInfo*)pmsg ;
-			nRoomID = pInfo->nRoomID ;
 			nBankerIdx = pInfo->nBankerIdx;
 			nBottomBet = pInfo->nBottomBet ;
 			nBankerBetTimes = pInfo->nBankerBetTimes;
-			nRoomState = pInfo->nRoomState;
-			nDeskFee = pInfo->nDeskFee;
+			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->nRoomState);
 
 			char* pBuffer = (char*)pmsg ;
 			pBuffer = pBuffer + sizeof(stMsgNNRoomInfo);
 			stNNRoomInfoPayerItem* pPlayerItem = (stNNRoomInfoPayerItem*)pBuffer ;
 			while ( pInfo->nPlayerCnt-- )
 			{
-				vPlayers[pPlayerItem->nIdx] ;
-				memcpy(vPlayers + pPlayerItem->nIdx,pPlayerItem,sizeof(stNNRoomInfoPayerItem));
+				stNiuNiuPlayer* pPlayer = (stNiuNiuPlayer*)getPlayerByIdx(pPlayerItem->nIdx) ;
+				if ( pPlayer == nullptr )
+				{
+					pPlayer = new stNiuNiuPlayer ;
+				}
+				pPlayer->reset();
+				pPlayer->nBetTimes = pPlayerItem->nBetTimes ;
+				pPlayer->nCoin = pPlayerItem->nCoin ;
+				pPlayer->nIdx = pPlayerItem->nIdx ;
+				pPlayer->nUserUID = pPlayerItem->nUserUID ;
+				pPlayer->nStateFlag = pPlayerItem->nStateFlag ;
+				memcpy(pPlayer->vHoldChard,pPlayerItem->vHoldChard,sizeof(pPlayer->vHoldChard));
 				++pPlayerItem ;
 			}
-		}
-		break;
-	case MSG_NN_SITDOWN:
-		{
-			stMsgNNSitDown* pSitDown = (stMsgNNSitDown*)pmsg ;
-			memcpy(vPlayers + pSitDown->tSitDownPlayer.nIdx,&pSitDown->tSitDownPlayer,sizeof(stNNRoomInfoPayerItem));
-		}
-		break;
-	case MSG_NN_STANDUP:
-		{
-			stMsgNNStandUp* pStandUp = (stMsgNNStandUp*)pmsg ;
-			vPlayers[pStandUp->nPlayerIdx].nStateFlag |= eRoomPeer_WillStandUp ;
 		}
 		break;
 	case MSG_NN_GAME_RESULT:
@@ -191,23 +163,13 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 			stNNGameResultItem* pItem = (stNNGameResultItem*)pBuffer ;
 			while ( pRet->nPlayerCnt-- )
 			{
-				vPlayers[pItem->nPlayerIdx].nCoin = pItem->nFinalCoin ;
-			}
-
-			for ( stNNRoomInfoPayerItem& pPlayer : vPlayers )
-			{
-				memset(pPlayer.vHoldChard,0,sizeof(pPlayer.vHoldChard)) ;
-				if ( pPlayer.nUserUID == 0 )
+				stNiuNiuPlayer* pPlayer = (stNiuNiuPlayer*)getPlayerByIdx(pItem->nPlayerIdx) ;
+				if ( pPlayer )
 				{
-					continue;
-				}
-
-				if ( (pPlayer.nStateFlag & eRoomPeer_WillStandUp) == eRoomPeer_WillStandUp )
-				{
-					// do stand up 
-					memset(vPlayers + pPlayer.nIdx , 0 , sizeof(stNNRoomInfoPayerItem)) ;
+					pPlayer->nCoin = pItem->nFinalCoin ;
 				}
 			}
+			onGameEnd();
 		}
 		break;
 	case MSG_NN_PRODUCED_BANKER:
@@ -221,7 +183,11 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 	case MSG_NN_BET:
 		{
 			stMsgNNBet* pRet = (stMsgNNBet*)pmsg ;
-			vPlayers[pRet->nPlayerIdx].nBetTimes = pRet->nBetTimes ;
+			stNiuNiuPlayer* pPlayer = (stNiuNiuPlayer*)getPlayerByIdx(pRet->nPlayerIdx) ;
+			if ( pPlayer )
+			{
+				pPlayer->nBetTimes = pRet->nBetTimes ;
+			}
 		}
 		break;
 	default:
@@ -230,36 +196,3 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 	return true ;
 }
 
-void stNiuNiuData::resetAllStandupPlayer()
-{
-	for ( stNNRoomInfoPayerItem& pPlayer : vPlayers )
-	{
-		memset(pPlayer.vHoldChard,0,sizeof(pPlayer.vHoldChard)) ;
-		if ( pPlayer.nUserUID == 0 )
-		{
-			continue;
-		}
-
-		if ( (pPlayer.nStateFlag & eRoomPeer_WillStandUp) == eRoomPeer_WillStandUp )
-		{
-			// do stand up 
-			memset(vPlayers + pPlayer.nIdx , 0 , sizeof(stNNRoomInfoPayerItem)) ;
-			printf("here do standup room id = %d\n",nRoomID);
-		}
-	}
-}
-
-uint8_t stNiuNiuData::getRandEmptySeatIdx()
-{
-	uint8_t nMaxSeatCnt = 6 ;
-	uint8_t nStartIdx = rand() % nMaxSeatCnt ;
-	for ( uint8_t nIdx = nStartIdx ; nIdx < nMaxSeatCnt * 2 ; ++nIdx )
-	{
-		uint8_t nRealIdx = nIdx % nMaxSeatCnt ;
-		if ( vPlayers[nRealIdx].nUserUID == 0 )
-		{
-			return nRealIdx ;
-		}
-	}
-	return 0 ;
-}

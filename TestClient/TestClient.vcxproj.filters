@@ -119,6 +119,9 @@
     <ClCompile Include="src\RobotControlNiuNiu.cpp">
       <Filter>robot</Filter>
     </ClCompile>
+    <ClCompile Include="src\SitableRoomData.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\CommonDefine.h">
@@ -222,6 +225,9 @@
     </ClInclude>
     <ClInclude Include="src\RobotControlNiuNiu.h">
       <Filter>robot</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SitableRoomData.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

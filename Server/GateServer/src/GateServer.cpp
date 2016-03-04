@@ -190,7 +190,7 @@ void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort , ui
 		memset(msgRet.vIP,0,sizeof(msgRet.vIP)) ;
 		if ( pClient == nullptr || pClient->tTimeForRemove  )
 		{
-			msgRet.nRet = 1 ;
+			msgRet.nRet = 1 ;	
 		}
 		else
 		{
@@ -200,7 +200,14 @@ void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort , ui
 		// transer dat to center svr  ;
 		Packet tPacket ;
 		tPacket._brocast = false ;
-		tPacket._connectID = pClient->nNetWorkID ;
+		if ( pClient )
+		{
+			tPacket._connectID = pClient->nNetWorkID ;
+		}
+		else
+		{
+			return ;
+		}
 		tPacket._len = sizeof(msgRet);
 		memcpy(tPacket._orgdata,(char*)&msgRet,sizeof(msgRet)) ;
 		m_pGateManager->OnMessage(&tPacket) ;
