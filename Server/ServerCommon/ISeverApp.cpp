@@ -330,5 +330,5 @@ IGlobalModule* IServerApp::getModuleByType(uint16_t nType )
 	{
 		return pp->second ;
 	}
-	return pp->second ;
+	return nullptr;
 }
