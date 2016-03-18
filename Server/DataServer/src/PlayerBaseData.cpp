@@ -15,9 +15,17 @@
 #include "AutoBuffer.h"
 #include "PlayerManager.h"
 #include "ShopConfg.h"
+#include "RewardConfig.h"
+#include "PlayerGameData.h"
+#include "PlayerMail.h"
 #include <assert.h>
+#include "SeverUtility.h"
+#include "ServerStringTable.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
+#define COIN_BE_INVITED 2000
+#define COIN_INVITE_PRIZE 3000
+#define  COIN_FOR_VIP_CARD 2000
 CPlayerBaseData::CPlayerBaseData(CPlayer* player )
 	:IPlayerComponent(player)
 {
@@ -44,6 +52,7 @@ void CPlayerBaseData::Init()
 	m_bMoneyDataDirty = false;
 	m_bCommonLogicDataDirty = false;
 	m_bPlayerInfoDataDirty = false;
+	m_ePlayerType = ePlayer_Normal ;
 
 	m_strCurIP = "" ;
 	Reset();
@@ -51,6 +60,7 @@ void CPlayerBaseData::Init()
 
 void CPlayerBaseData::Reset()
 {
+	m_ePlayerType = ePlayer_Normal ;
 	m_nTempCoin = 0 ;
 	setTempCoin(0);
 	m_strCurIP = "" ;
@@ -75,6 +85,75 @@ void CPlayerBaseData::Reset()
 	CLogMgr::SharedLogMgr()->PrintLog("send request ip , sessioni id = %d",GetPlayer()->GetSessionID()) ;
 }
 
+void CPlayerBaseData::onBeInviteBy(uint32_t nInviteUID )
+{
+	if ( m_stBaseData.nInviteUID )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("can not do twice be invited ") ;
+		return ;
+	}
+	m_stBaseData.nInviteUID = nInviteUID ;
+	m_bPlayerInfoDataDirty = true ;
+
+	// give self prize ;
+	AddMoney(COIN_BE_INVITED) ;
+
+	// show dlg ;
+	stMsgDlgNotice msg;
+	msg.nNoticeType = eNotice_BeInvite ;
+	Json::Value jNotice ;
+	jNotice["targetUID"] = nInviteUID ;
+	jNotice["addCoin"] = COIN_BE_INVITED ;
+	Json::StyledWriter writer ;
+	std::string strNotice = writer.write(jNotice) ;
+	msg.nJsonLen = strNotice.size();
+	CAutoBuffer msgBuffer(sizeof(msg) + msg.nJsonLen );
+	msgBuffer.addContent(&msg,sizeof(msg)) ;
+	msgBuffer.addContent(strNotice.c_str(),msg.nJsonLen) ;
+	SendMsg((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize()) ;
+	CLogMgr::SharedLogMgr()->PrintLog("uid = %d be invite give prize coin = %d",GetPlayer()->GetUserUID(),COIN_BE_INVITED) ;
+
+	// give prize to inviter ;
+	auto player = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(nInviteUID) ;
+	if ( player )
+	{
+		player->GetBaseData()->AddMoney(COIN_INVITE_PRIZE) ;
+
+		//stMsgDlgNotice msg;
+		//msg.nNoticeType = eNotice_InvitePrize ;
+		//Json::StyledWriter writer ;
+		//std::string strNotice = writer.write(jNotice) ;
+		//msg.nJsonLen = strNotice.size();
+		//CAutoBuffer msgBuffer(sizeof(msg) + msg.nJsonLen );
+		//msgBuffer.addContent(&msg,sizeof(msg)) ;
+		//msgBuffer.addContent(strNotice.c_str(),msg.nJsonLen) ;
+		//player->GetBaseData()->SendMsg((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize()) ;
+		CLogMgr::SharedLogMgr()->PrintLog("invite id = %d online just give prize ",nInviteUID) ;
+	}
+	else
+	{
+		Json::Value jconArg;
+		jconArg["comment"] = "invite player to game" ;
+		jconArg["addCoin"] = COIN_INVITE_PRIZE ;
+		CPlayerMailComponent::PostOfflineEvent(CPlayerMailComponent::Event_AddCoin,jNotice,nInviteUID) ;
+		CLogMgr::SharedLogMgr()->PrintLog("invite id = %d not online just post a mail",nInviteUID) ;
+	}
+
+	// send a mail to inviter 
+	jNotice["targetUID"] = GetPlayer()->GetUserUID() ;
+	jNotice["addCoin"] = COIN_INVITE_PRIZE ;
+	Json::StyledWriter writerInfo ;
+	strNotice = writerInfo.write(jNotice) ;
+	CPlayerMailComponent::PostMailToPlayer(eMail_InvitePrize,strNotice.c_str(),strNotice.size(),nInviteUID);
+
+	// send push notification ;
+	CSendPushNotification::getInstance()->reset();
+	CSendPushNotification::getInstance()->addTarget(nInviteUID) ;
+	CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(5),1) ;
+	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer();
+	SendMsg((stMsg*)abf->getBufferPtr(),abf->getContentSize()) ;
+}
+
 bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 {
 	if ( IPlayerComponent::OnMessage(pMsg,eSenderPort) )
@@ -84,6 +163,105 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 	switch( pMsg->usMsgType )
 	{
+	case MSG_TELL_PLAYER_TYPE:
+		{
+			stMsgTellPlayerType* pRet = (stMsgTellPlayerType*)pMsg ;
+			m_ePlayerType = (ePlayerType)pRet->nPlayerType ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %u , tell player type = %u",m_ePlayerType);
+		}
+		break;
+	case MSG_GET_VIP_CARD_GIFT:
+		{
+			stMsgGetVipcardGift* pRet = (stMsgGetVipcardGift*)pMsg ;
+			stMsgGetVipcardGiftRet msgBack ;
+			msgBack.nVipCardType = pRet->nVipCardType ;
+			msgBack.nAddCoin = 0 ;
+
+			if ( m_stBaseData.nCardType != pRet->nVipCardType )
+			{
+				msgBack.nRet = 1 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get vip card coin ret = %d",GetPlayer()->GetUserUID(),msgBack.nRet) ;
+				break; 
+			}
+
+			time_t tNow = time(nullptr) ;
+			if ( m_stBaseData.nCardEndTime < tNow )
+			{
+				msgBack.nRet = 2 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get vip card coin ret = %d",GetPlayer()->GetUserUID(),msgBack.nRet) ;
+				break; 
+			}
+
+			struct tm pTempNow,pLastTake ;
+			pTempNow = *localtime(&tNow) ;
+			pLastTake = *localtime((time_t*)&m_stBaseData.tLastTakeCardGiftTime) ;
+			if ( pTempNow.tm_year == pLastTake.tm_year && pTempNow.tm_mon == pLastTake.tm_mon && pTempNow.tm_yday == pLastTake.tm_yday )
+			{
+				msgBack.nRet = 3 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get vip card coin ret = %d",GetPlayer()->GetUserUID(),msgBack.nRet) ;
+				break; 
+			}
+
+			msgBack.nRet = 0 ;
+			msgBack.nAddCoin = COIN_FOR_VIP_CARD ;
+			AddMoney(COIN_FOR_VIP_CARD);
+			m_stBaseData.tLastTakeCardGiftTime = tNow ;
+			SendMsg(&msgBack,sizeof(msgBack)) ;
+			m_bCommonLogicDataDirty = true ;
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get vip card coin ret = %d",GetPlayer()->GetUserUID(),msgBack.nRet) ;
+		}
+		break;
+	case MSG_PLAYER_CHECK_INVITER:
+		{
+			stMsgCheckInviterRet msgBack ;
+			stMsgCheckInviter* pRet = (stMsgCheckInviter*)pMsg ;
+			msgBack.nInviterUID = pRet->nInviterUID ;
+			if ( m_stBaseData.nInviteUID )
+			{
+				msgBack.nRet = 2 ;
+				CLogMgr::SharedLogMgr()->PrintLog("you already have invite = %d , uid = %d",m_stBaseData.nInviteUID,GetPlayer()->GetUserUID()) ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				break; 
+			}
+
+			auto tPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(pRet->nInviterUID);
+			if ( tPlayer )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("do invite = %d ,player = %d",pRet->nInviterUID,GetPlayer()->GetUserUID()) ;
+				onBeInviteBy(pRet->nInviterUID) ;
+				msgBack.nRet = 0 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+			}
+			else
+			{
+				stMsgDBCheckInvite msgCheck ;
+				msgCheck.nInviteUserUID = pRet->nInviterUID ;
+				SendMsg(&msgCheck,sizeof(msgCheck)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("invite = %d not online, so ask db i am uid = %d",pRet->nInviterUID,GetPlayer()->GetUserUID()) ;
+			}
+		}
+		break;
+	case MSG_DB_CHECK_INVITER:
+		{
+			stMsgCheckInviterRet msgBack ;
+			stMsgDBCheckInviteRet* pRet = (stMsgDBCheckInviteRet*)pMsg ;
+			msgBack.nInviterUID = pRet->nInviteUseUID ;
+			if ( pRet->nRet )
+			{
+				msgBack.nRet = 1 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+			}
+			else
+			{
+				onBeInviteBy(pRet->nInviteUseUID) ;
+				msgBack.nRet = 0 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+			}
+		}
+		break;
 	case MSG_REQUEST_CLIENT_IP:
 		{
 			stMsgRequestClientIpRet* pRet = (stMsgRequestClientIpRet*)pMsg ;
@@ -211,17 +389,27 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			msgBack.nRet = 0 ;
 			if ( pRet->nRet == 4 ) // success 
 			{
-				CShopConfigMgr* pMgr = (CShopConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Shop);
-				stShopItem* pItem = pMgr->GetShopItem(pRet->nShopItemID);
-				if ( pItem == nullptr )
+				if ( pRet->nShopItemID == 6 )
 				{
-					msgBack.nRet = 5 ;
-					CLogMgr::SharedLogMgr()->ErrorLog("can not find shop id = %d , buyer uid = %d",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
+					CLogMgr::SharedLogMgr()->SystemLog("uid = %d buy a vip card week card ",GetPlayer()->GetUserUID()) ;
+					m_stBaseData.nCardEndTime = time(nullptr) + 60 * 60 * 24 * 8;
+					m_stBaseData.nCardType = eCard_Week ;
+					m_bCommonLogicDataDirty = true ;
 				}
 				else
 				{
-					AddMoney(pItem->nCount) ;
-					CLogMgr::SharedLogMgr()->SystemLog("add coin with shop id = %d for buyer uid = %d ",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
+					CShopConfigMgr* pMgr = (CShopConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Shop);
+					stShopItem* pItem = pMgr->GetShopItem(pRet->nShopItemID);
+					if ( pItem == nullptr )
+					{
+						msgBack.nRet = 5 ;
+						CLogMgr::SharedLogMgr()->ErrorLog("can not find shop id = %d , buyer uid = %d",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
+					}
+					else
+					{
+						AddMoney(pItem->nCount) ;
+						CLogMgr::SharedLogMgr()->SystemLog("add coin with shop id = %d for buyer uid = %d ",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
+					}
 				}
 
 				// save log 
@@ -323,24 +511,6 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			CLogMgr::SharedLogMgr()->SystemLog("change sex uid = %d , new sex = %d",GetPlayer()->GetUserUID(),pRet->nNewSex) ;
 		}
 		break;
-	case MSG_PUSH_APNS_TOKEN:
-		{
-			//stMsgPushAPNSToken* pMsgRet = (stMsgPushAPNSToken*)pMsg ;
-			//if ( 0 == pMsgRet->nGetTokenRet )
-			//{
-			//	bPlayerEnableAPNs = true ;
-			//	memcpy(vAPNSToken,pMsgRet->vAPNsToken,32);
-			//}
-			//else
-			//{
-			//	bPlayerEnableAPNs = false ;
-			//	memset(vAPNSToken,0,32 ) ;
-			//}
-			//stMsgPushAPNSTokenRet msg ;
-			//msg.nGetTokenRet = pMsgRet->nGetTokenRet ;
-			//SendMsgToClient((char*)&msg,sizeof(msg)) ;
-		}
-		break;
 	case MSG_PLAYER_UPDATE_MONEY:
 		{
  			stMsgPlayerUpdateMoney msgUpdate ;
@@ -418,16 +588,35 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
  			stMsgPlayerRequestCharityStateRet msgBack ;
  			 // 0 can get charity , 1 you coin is enough , do not need charity, 2 time not reached ;
  			msgBack.nState = 0 ;
- 			msgBack.nLeftSecond = 0 ;
- 			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )
- 			{
- 				msgBack.nState = 1 ;
- 			}
- 			else if ( time(NULL) - m_stBaseData.tLastTakeCharityCoinTime < TIME_GET_CHARITY_ELAPS )
- 			{
- 				msgBack.nState = 2 ;
- 				msgBack.nLeftSecond = m_stBaseData.tLastTakeCharityCoinTime + TIME_GET_CHARITY_ELAPS - time(NULL) ;
- 			}
+
+			// check times limit state ;
+			time_t tNow = time(nullptr) ;
+			struct tm pTimeCur, pTimeLast ;
+			pTimeCur = *localtime(&tNow);
+			pTimeLast = *localtime((time_t*)&m_stBaseData.tLastTakeCharityCoinTime);
+			if ( pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_mon == pTimeLast.tm_mon && pTimeCur.tm_yday == pTimeLast.tm_yday ) // the same day ; do nothing
+			{
+
+			}
+			else
+			{
+				m_stBaseData.nTakeCharityTimes = 0 ; // new day reset times ;
+			}
+
+			msgBack.nLeftTimes = TIMES_GET_CHARITY_PER_DAY - m_stBaseData.nTakeCharityTimes ;
+			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )
+			{
+				msgBack.nState = 1 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				break;
+			}
+
+			if ( m_stBaseData.nTakeCharityTimes >= TIMES_GET_CHARITY_PER_DAY  )
+			{
+				msgBack.nState = 2 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				break;
+			}
  			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
 		break;
@@ -438,37 +627,55 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
  			msgBack.nRet = 0 ;
  			msgBack.nFinalCoin = GetAllCoin();
  			msgBack.nGetCoin = 0;
- 			msgBack.nLeftSecond = 0 ;
+ 			msgBack.nLeftTimes = 0 ;
  			if ( GetAllCoin() > COIN_CONDITION_TO_GET_CHARITY )  
  			{
- 				msgBack.nRet = 1 ;
+				msgBack.nRet = 1 ;
+ 				SendMsg(&msgBack,sizeof(msgBack)) ;
+				break;
  			}
- 			else if ( time(NULL) - m_stBaseData.tLastTakeCharityCoinTime < TIME_GET_CHARITY_ELAPS )
- 			{
- 				msgBack.nRet = 2 ;
- 				msgBack.nLeftSecond = m_stBaseData.tLastTakeCharityCoinTime + TIME_GET_CHARITY_ELAPS - time(NULL) ;
- 			}
- 			else
- 			{
- 				msgBack.nGetCoin = COIN_FOR_CHARITY;
- 				msgBack.nLeftSecond = TIME_GET_CHARITY_ELAPS ;
- 				m_stBaseData.tLastTakeCharityCoinTime = time(NULL) ;
-				AddMoney(msgBack.nGetCoin);
-				msgBack.nFinalCoin = GetAllCoin();
-				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get charity",GetPlayer()->GetUserUID());
-				m_bCommonLogicDataDirty = true ;
-				m_bMoneyDataDirty = true ;
+			
+			// check times limit state ;
+			time_t tNow = time(nullptr) ;
+			struct tm pTimeCur, pTimeLast ;
+			pTimeCur = *localtime(&tNow);
+			pTimeLast = *localtime((time_t*)&m_stBaseData.tLastTakeCharityCoinTime);
+			if ( pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_mon == pTimeLast.tm_mon && pTimeCur.tm_yday == pTimeLast.tm_yday ) // the same day ; do nothing
+			{
 
-				// save log 
-				stMsgSaveLog msgLog ;
-				memset(msgLog.vArg,0,sizeof(msgLog.vArg));
-				msgLog.nJsonExtnerLen = 0 ;
-				msgLog.nLogType = eLog_GetCharity ;
-				msgLog.nTargetID = GetPlayer()->GetUserUID() ;
-				memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
-				msgLog.vArg[0] = GetAllCoin() ;
-				SendMsg(&msgLog,sizeof(msgLog)) ;
+			}
+			else
+			{
+				m_stBaseData.nTakeCharityTimes = 0 ; // new day reset times ;
+			}
+
+ 			if ( m_stBaseData.nTakeCharityTimes >= TIMES_GET_CHARITY_PER_DAY  )
+ 			{
+				msgBack.nRet = 2 ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				break;
  			}
+ 
+			++m_stBaseData.nTakeCharityTimes;
+			msgBack.nGetCoin = COIN_FOR_CHARITY;
+			msgBack.nLeftTimes = TIMES_GET_CHARITY_PER_DAY - m_stBaseData.nTakeCharityTimes ;
+			m_stBaseData.tLastTakeCharityCoinTime = time(NULL) ;
+			AddMoney(msgBack.nGetCoin);
+			msgBack.nFinalCoin = GetAllCoin();
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d get charity",GetPlayer()->GetUserUID());
+			m_bCommonLogicDataDirty = true ;
+			m_bMoneyDataDirty = true ;
+
+			// save log 
+			stMsgSaveLog msgLog ;
+			memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+			msgLog.nJsonExtnerLen = 0 ;
+			msgLog.nLogType = eLog_GetCharity ;
+			msgLog.nTargetID = GetPlayer()->GetUserUID() ;
+			memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+			msgLog.vArg[0] = GetAllCoin() ;
+			SendMsg(&msgLog,sizeof(msgLog)) ;
+
 			CLogMgr::SharedLogMgr()->SystemLog("uid = %d , final coin = %I64d",GetPlayer()->GetUserUID(),GetAllCoin());
  			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
@@ -556,7 +763,7 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 				return true ;
 			}
 
-			uint64_t& nAddTarget = bDiamoned ? m_stBaseData.nDiamoned : m_stBaseData.nCoin ; 
+			uint32_t& nAddTarget = bDiamoned ? m_stBaseData.nDiamoned : m_stBaseData.nCoin ; 
 			nAddTarget += nAddCoin ;
 			m_bMoneyDataDirty = true ;
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do add coin cross rquest , final diamond = %I64d, coin = %I64d",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin );
@@ -621,58 +828,58 @@ void CPlayerBaseData::SendBaseDatToClient()
 
 void CPlayerBaseData::OnProcessContinueLogin()
 {
-// 	if ( m_stBaseData.tLastLoginTime == 0 )
-// 	{
-// 		m_stBaseData.nContinueDays = 1 ;
-// 		m_stBaseData.tLastLoginTime = (unsigned int)time(NULL) ; 
-// 	}
-// 	else
-// 	{
-// 		time_t nCur = time(NULL) ;
-// 		struct tm* pTempTimer = NULL;
-// 		pTempTimer = localtime(&nCur) ;
-// 		struct tm pTimeCur ;
-// 		if ( pTempTimer )
-// 		{
-// 			pTimeCur = *pTempTimer ;
-// 		}
-// 		else
-// 		{
-// 			CLogMgr::SharedLogMgr()->ErrorLog("local time return null ?") ;
-// 		}
-//  
-// 		pTempTimer = localtime((time_t*)&m_stBaseData.tLastLoginTime) ;
-// 		struct tm pTimeLastLogin  ;
-// 		if ( pTempTimer )
-// 		{
-// 			pTimeLastLogin = *pTempTimer ;
-// 		}
-// 		else
-// 		{
-// 			CLogMgr::SharedLogMgr()->ErrorLog("local time return null ?") ;
-// 		}
-// 		
-// 		if ( pTimeCur.tm_year == pTimeLastLogin.tm_year && pTimeCur.tm_mon == pTimeLastLogin.tm_mon && pTimeCur.tm_yday == pTimeLastLogin.tm_yday )
-// 		{
-// 			m_stBaseData.tLastLoginTime = (unsigned int)nCur ;
-// 			m_bGivedLoginReward = true ;
-// 			return ; // do nothing ; same day ;
-// 		}
-// 
-// 		double nDiffe = difftime(nCur,m_stBaseData.tLastLoginTime) ;
-// 		bool bContine = abs(nDiffe) - 60 * 60 * 24 <= 0 ;
-// 		
-// 		if ( bContine )
-// 		{
-// 			++m_stBaseData.nContinueDays ;   // real contiune ;
-// 		}
-// 		else
-// 		{
-// 			m_stBaseData.nContinueDays = 1 ;    // disturbed ;
-// 		}
-// 
-// 		m_stBaseData.tLastLoginTime = (unsigned int)nCur ;
-// 	}
+ 	if ( m_stBaseData.tLastLoginTime == 0 )
+ 	{
+ 		m_stBaseData.nContinueDays = 1 ;
+ 		m_stBaseData.tLastLoginTime = (unsigned int)time(NULL) ; 
+ 	}
+ 	else
+ 	{
+ 		time_t nCur = time(NULL) ;
+ 		struct tm* pTempTimer = NULL;
+ 		pTempTimer = localtime(&nCur) ;
+ 		struct tm pTimeCur ;
+ 		if ( pTempTimer )
+ 		{
+ 			pTimeCur = *pTempTimer ;
+ 		}
+ 		else
+ 		{
+ 			CLogMgr::SharedLogMgr()->ErrorLog("local time return null ?") ;
+ 		}
+  
+ 		pTempTimer = localtime((time_t*)&m_stBaseData.tLastLoginTime) ;
+ 		struct tm pTimeLastLogin  ;
+ 		if ( pTempTimer )
+ 		{
+ 			pTimeLastLogin = *pTempTimer ;
+ 		}
+ 		else
+ 		{
+ 			CLogMgr::SharedLogMgr()->ErrorLog("local time return null ?") ;
+ 		}
+ 		
+ 		if ( pTimeCur.tm_year == pTimeLastLogin.tm_year && pTimeCur.tm_mon == pTimeLastLogin.tm_mon && pTimeCur.tm_yday == pTimeLastLogin.tm_yday )
+ 		{
+ 			m_stBaseData.tLastLoginTime = (unsigned int)nCur ;
+ 			m_bGivedLoginReward = true ;
+ 			return ; // do nothing ; same day ;
+ 		}
+ 
+ 		double nDiffe = difftime(nCur,m_stBaseData.tLastLoginTime) ;
+ 		bool bContine = abs(nDiffe) - 60 * 60 * 24 <= 0 ;
+ 		
+ 		if ( bContine )
+ 		{
+ 			++m_stBaseData.nContinueDays ;   // real contiune ;
+ 		}
+ 		else
+ 		{
+ 			m_stBaseData.nContinueDays = 1 ;    // disturbed ;
+ 		}
+ 
+ 		m_stBaseData.tLastLoginTime = (unsigned int)nCur ;
+ 	}
 // 
 // 	stMsgShowContinueLoginDlg msg ;
 // 	msg.nContinueIdx = m_stBaseData.nContinueDays ;
@@ -692,6 +899,7 @@ void CPlayerBaseData::TimerSave()
 		msgSaveMoney.nCoin = m_stBaseData.nCoin + m_nTempCoin;
 		msgSaveMoney.nDiamoned = m_stBaseData.nDiamoned;
 		msgSaveMoney.nUserUID = GetPlayer()->GetUserUID() ;
+		msgSaveMoney.nCupCnt = m_stBaseData.nCupCnt ;
 		SendMsg((stMsgSavePlayerMoney*)&msgSaveMoney,sizeof(msgSaveMoney)) ;
 		CLogMgr::SharedLogMgr()->SystemLog("player do time save coin uid = %d coin = %I64d",msgSaveMoney.nUserUID,msgSaveMoney.nCoin + m_nTempCoin );
 	}
@@ -709,6 +917,13 @@ void CPlayerBaseData::TimerSave()
 		msgLogicData.nTodayCoinOffset = m_stBaseData.nTodayCoinOffset ;
 		msgLogicData.nYesterdayCoinOffset = m_stBaseData.nYesterdayCoinOffset ;
 		msgLogicData.nUserUID = GetPlayer()->GetUserUID() ;
+		msgLogicData.nCardType = m_stBaseData.nCardType ;
+		msgLogicData.nCardEndTime = m_stBaseData.nCardEndTime ;
+		msgLogicData.nLastTakeCardGiftTime = m_stBaseData.tLastTakeCardGiftTime ;
+		msgLogicData.nTakeCharityTimes = m_stBaseData.nTakeCharityTimes ;
+		msgLogicData.nTotalInvitePrizeCoin = m_stBaseData.nTotalInvitePrizeCoin ;
+
+
 		msgLogicData.nVipLevel = m_stBaseData.nVipLevel ;
 		msgLogicData.tLastLoginTime = m_stBaseData.tLastLoginTime ;
 		msgLogicData.tLastTakeCharityCoinTime = m_stBaseData.tLastTakeCharityCoinTime ;
@@ -725,6 +940,7 @@ void CPlayerBaseData::TimerSave()
 		msgSaveInfo.nIsRegister = m_stBaseData.isRegister ;
 		msgSaveInfo.nSex = m_stBaseData.nSex ;
 		msgSaveInfo.nUserUID = GetPlayer()->GetUserUID() ;
+		msgSaveInfo.nInviterUID = m_stBaseData.nUserUID ;
 		memcpy(msgSaveInfo.vName,m_stBaseData.cName,sizeof(msgSaveInfo.vName));
 		memcpy(msgSaveInfo.vSigure,m_stBaseData.cSignature,sizeof(msgSaveInfo.vSigure));
 		memcpy(msgSaveInfo.vUploadedPic,m_stBaseData.vUploadedPic,sizeof(msgSaveInfo.vUploadedPic));
@@ -781,7 +997,15 @@ bool CPlayerBaseData::AddMoney(int64_t nOffset,bool bDiamond  )
 	}
 	else
 	{
-		m_stBaseData.nCoin += nOffset ;
+		auto pcom = (CPlayerGameData*)GetPlayer()->GetComponent(ePlayerComponent_PlayerGameData) ;
+		if ( pcom->isNotInAnyRoom() )
+		{
+			m_stBaseData.nCoin += nOffset ;
+		}
+		else
+		{
+			m_nTempCoin += nOffset ;
+		}
 	}
 	m_bMoneyDataDirty = true ;
 	return true ;
@@ -821,6 +1045,8 @@ void CPlayerBaseData::GetPlayerBrifData(stPlayerBrifData* pData )
 		return ;
 	}
 	memcpy(pData,&m_stBaseData,sizeof(stPlayerBrifData));
+	auto pGameData = (CPlayerGameData*)GetPlayer()->GetComponent(ePlayerComponent_PlayerGameData);
+	pData->nCurrentRoomID = pGameData->getCurRoomID() * 10 + pGameData->getCurRoomType();
 }
 
 void CPlayerBaseData::GetPlayerDetailData(stPlayerDetailData* pData )
@@ -887,5 +1113,64 @@ bool CPlayerBaseData::isPlayerRegistered()
 uint8_t CPlayerBaseData::getNewPlayerHaloWeight()
 {
 	return m_stBaseData.nNewPlayerHaloWeight ;
+}
+
+void CPlayerBaseData::setNewPlayerHalo(uint8_t nPlayHalo )
+{
+	if ( nPlayHalo == m_stBaseData.nNewPlayerHaloWeight )
+	{
+		return ;
+	}
+
+	if ( nPlayHalo > MAX_NEW_PLAYER_HALO )
+	{
+		m_stBaseData.nNewPlayerHaloWeight = 0;
+		CLogMgr::SharedLogMgr()->ErrorLog("uid = %u, set halo big than 100  = %u",GetPlayer()->GetUserUID(),nPlayHalo);
+	}
+	else
+	{
+		m_stBaseData.nNewPlayerHaloWeight = nPlayHalo;
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %u, set halo  = %u",GetPlayer()->GetUserUID(),nPlayHalo);
+	}
+
+	m_bCommonLogicDataDirty = true ;
+}
+
+void CPlayerBaseData::onGetReward( uint8_t nIdx ,uint16_t nRewardID, uint16_t nGameType , uint32_t nRoomID  )
+{
+	auto Reward = CRewardConfig::getInstance()->getRewardByID(nRewardID) ;
+	if ( Reward == nullptr )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("uid = %d get reward is null reward id = %d",GetPlayer()->GetUserUID(),nRewardID) ;
+		return  ;
+	}
+	CLogMgr::SharedLogMgr()->PrintLog("uid = %d get reward id = %d",GetPlayer()->GetUserUID(),nRewardID) ;
+
+	if ( Reward->nCupCnt )
+	{
+		m_stBaseData.nCupCnt += Reward->nCupCnt ;
+		m_bMoneyDataDirty = true ;
+	}
+
+	if ( Reward->nCoin )
+	{
+		 AddMoney(Reward->nCoin) ;
+	}
+
+	if ( Reward->nDiamond )
+	{
+		AddMoney(Reward->nDiamond,true) ;
+	}
+
+	Json::Value jValue ;
+	jValue["gameType"] = nGameType ;
+	jValue["roomID"] = nRoomID ;
+	jValue["rankIdx"] = nIdx ;
+	jValue["addCoin"] = Reward->nCoin ;
+	jValue["cup"] = Reward->nCupCnt ;
+	jValue["diamomd"] = Reward->nDiamond ;
+	Json::StyledWriter writers ;
+	std::string strContent = writers.write(jValue);
+	CPlayerMailComponent::PostMailToPlayer(eMail_WinMatch,strContent.c_str(),strContent.size(),GetPlayer()->GetUserUID()) ;
 }
 

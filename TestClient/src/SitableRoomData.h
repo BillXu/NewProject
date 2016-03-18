@@ -22,13 +22,13 @@ public:
 	virtual ~CSitableRoomData();
 	void init(IScene* pScene );
 	void setBaseInfo(uint32_t nRoomID, uint8_t nSeatCnt, uint32_t nDeskFee, uint8_t nRoomState );
-	bool onMsg(stMsg* pmsg );
+	virtual bool onMsg(stMsg* pmsg );
 	virtual void onGameBegin();
 	virtual void onGameEnd();
 	uint8_t getPlayerCntWithState( uint32_t nState );
 	bool isRoomActive(){ return m_isActive ;}
 	virtual stSitableRoomPlayer* doCreateSitDownPlayer() = 0 ;
-	stSitableRoomPlayer* getPlayerByIdx( uint8_t nIdx ){ return m_vSitDownPlayer[nIdx];}
+	stSitableRoomPlayer* getPlayerByIdx( uint8_t nIdx );
 	uint8_t getRoomState(){ return m_nRoomState ;}
 	uint8_t getPlayerCnt(){ return getPlayerCntWithState(eRoomPeer_SitDown) ;}
 	int8_t getRandEmptySeatIdx();

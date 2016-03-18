@@ -117,6 +117,12 @@
     <ClInclude Include="..\ServerCommon\ISitableRoomManager.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\RewardConfig.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\SeverUtility.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -189,6 +195,12 @@
       <Filter>src\Room</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ISitableRoomManager.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\RewardConfig.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\SeverUtility.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>

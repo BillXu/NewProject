@@ -123,19 +123,19 @@ struct stMsgRemindTaxasRoomNewInform
 	stMsgRemindTaxasRoomNewInform(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_REMIND_NEW_ROOM_INFORM ; }
 };
 
-struct stMsgRequestTaxasRoomInform
-	:public stMsgToRoom
-{
-	stMsgRequestTaxasRoomInform(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_REQUEST_ROOM_INFORM ; }
-};
-
-struct  stMsgRequestTaxasRoomInformRet
-	:public stMsg
-{
-	stMsgRequestTaxasRoomInformRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_REQUEST_ROOM_INFORM ; }
-	uint16_t nLen ;
-	PLACE_HOLDER(char* pInform);
-};
+//struct stMsgRequestTaxasRoomInform
+//	:public stMsgToRoom
+//{
+//	stMsgRequestTaxasRoomInform(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_REQUEST_ROOM_INFORM ; }
+//};
+//
+//struct  stMsgRequestTaxasRoomInformRet
+//	:public stMsg
+//{
+//	stMsgRequestTaxasRoomInformRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TP_REQUEST_ROOM_INFORM ; }
+//	uint16_t nLen ;
+//	PLACE_HOLDER(char* pInform);
+//};
 
 struct stMsgTaxasEnterRoom
 	:public stMsgPlayerEnterRoom
@@ -219,9 +219,15 @@ struct stMsgTaxasPlayerSitDownRet
 };
 
 struct stMsgTaxasRoomRequestRank
-	:stMsgToRoom
+	:public stMsgToRoom
 {
 	stMsgTaxasRoomRequestRank(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_ROOM_RANK ; }
+};
+
+struct stMsgTaxasRequestLastTermRoomRank
+	:public stMsgToRoom
+{
+	stMsgTaxasRequestLastTermRoomRank(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_LAST_TERM_ROOM_RANK ;}
 };
 
 struct stMsgWithdrawingMoneyRet
@@ -345,34 +351,6 @@ struct stMsgTaxasRoomGameResult
 	uint8_t vWinnerIdx[MAX_PEERS_IN_TAXAS_ROOM] ; 
 };
 
-struct stMsgRequestRoomList
-	:public stMsg
-{
-	stMsgRequestRoomList(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_TP_REQUEST_ROOM_LIST; }
-};
-
-struct stRoomListItem
-{
-	uint32_t nCreatOwnerUID;
-	uint16_t nRoomID ;
-	char vRoomName[MAX_LEN_ROOM_NAME];
-	uint8_t nCurrentCount ;
-	uint32_t nSmiallBlind ;
-	uint8_t nSeatCnt;
-	uint32_t nDeadTime ;
-	//char vDesc[MAX_LEN_ROOM_DESC];
-};
-
-struct stMsgRequestRoomListRet
-	:public stMsg
-{
-	stMsgRequestRoomListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_LIST ; }
-	uint8_t nRoomType ;
-	bool bFinal;
-	uint8_t nListCnt ;
-	PLACE_HOLDER(stRoomListItem* pRoomItem );
-};
-
 
 struct stMsgRequestMyFollowRooms 
 	:public stMsg
@@ -386,19 +364,6 @@ struct stMsgRequestMyFollowRoomsRet
 	stMsgRequestMyFollowRoomsRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MY_FOLLOW_ROOMS ; }
 	uint16_t nCnt ;
 	PLACE_HOLDER(uint32_t* vRoomIDs);
-};
-
-struct stMsgRequestRoomDetail
-	:public stMsgToRoom
-{
-	stMsgRequestRoomDetail(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_ROOM_DETAIL ;}
-};
-
-struct stMsgRequestRoomDetailRet
-	:public stMsg
-{
-	stMsgRequestRoomDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_DETAIL ; }
-	stRoomListItem detailInfo;
 };
 
 //struct stMsgRequestTaxasRoomRank

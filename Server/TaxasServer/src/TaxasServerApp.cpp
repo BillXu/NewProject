@@ -4,6 +4,7 @@
 #include "ServerMessageDefine.h"
 #include "RoomManager.h"
 #include "ServerStringTable.h"
+#include "RewardConfig.h"
 CTaxasServerApp* CTaxasServerApp::s_TaxasServerApp = NULL ;
 CTaxasServerApp* CTaxasServerApp::SharedGameServerApp()
 {
@@ -48,12 +49,13 @@ bool CTaxasServerApp::init()
 	setConnectServerConfig(pConfig);
 
 	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
+	CRewardConfig::getInstance()->LoadFile("../configFile/rewardConfig.txt");
 
 	m_pRoomConfig = new CRoomConfigMgr ;
 	m_pRoomConfig->LoadFile("../configFile/RoomConfig.txt") ;
 	
 	m_pRoomMgr = new CRoomManager ;
-	m_pRoomMgr->init();
+	m_pRoomMgr->init(m_pRoomConfig);
 	return true ;
 }
 
@@ -80,6 +82,7 @@ bool CTaxasServerApp::ProcessPublicMsg( stMsg* prealMsg , eMsgPort eSenderPort ,
 
 void CTaxasServerApp::onConnectedToSvr()
 {
+	IServerApp::onConnectedToSvr();
 	if ( m_pRoomMgr )
 	{
 		m_pRoomMgr->onConnectedToSvr() ;
@@ -90,4 +93,10 @@ void CTaxasServerApp::update(float fDeta )
 {
 	IServerApp::update(fDeta) ;
 	m_pRoomMgr->update(fDeta);
+}
+
+void CTaxasServerApp::onExit()
+{
+	IServerApp::onExit();
+	m_pRoomMgr->onTimeSave();
 }

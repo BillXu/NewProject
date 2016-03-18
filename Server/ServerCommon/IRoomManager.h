@@ -4,6 +4,7 @@
 #include <json/json.h>
 #include "httpRequest.h"
 #include <list>
+class CRoomConfigMgr ;
 class IRoom ;
 class IRoomManager
 	:public CHttpRequestDelegate
@@ -21,7 +22,7 @@ public:
 public:
 	IRoomManager();
 	~IRoomManager();
-	virtual bool init();
+	virtual bool init(CRoomConfigMgr* pConfigMgr);
 	bool onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
 	virtual bool onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID);
 	IRoom* GetRoomByID(uint32_t nRoomID );
@@ -44,9 +45,11 @@ protected:
 	void doDeleteRoom(IRoom* pRoom );
 	virtual eRoomType getMgrRoomType() = 0 ;
 protected:
+	float m_fTimeSaveTicket ;
 	MAP_ID_ROOM m_vRooms ;
 	MAP_CONFIG_ROOMS m_vCongfigIDRooms ;
 	CHttpRequest m_pGoTyeAPI;
 	uint32_t m_nMaxRoomID ;
 	MAP_UID_CR m_vCreatorAndRooms ;
+	CRoomConfigMgr* m_pConfigMgr ;
 };

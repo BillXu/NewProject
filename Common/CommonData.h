@@ -10,8 +10,8 @@ struct stPlayerBrifData
 	uint8_t nSex ; // eSex ;
 	uint8_t nVipLevel ;
 	uint16_t nPhotoID ;
-	uint64_t nCoin ;
-	uint64_t nDiamoned ;
+	uint32_t nCoin ;
+	uint32_t nDiamoned ;
 	bool bIsOnLine ;
 	uint32_t nCurrentRoomID ;
 };
@@ -35,6 +35,7 @@ struct stPlayerDetailData
 	double dfLongitude;
 	double dfLatidue;
 	uint32_t tOfflineTime ;  // last offline time ;
+	uint32_t nCupCnt ;  // jiang bei ge shu ;
 	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
 	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
 };
@@ -51,6 +52,10 @@ struct stCommonBaseData
 {
 	int64_t nYesterdayCoinOffset ;
 	int64_t nTodayCoinOffset ;
+	uint32_t nInviteUID ;
+	uint8_t nCardType ;  // eVipCardType 
+	uint32_t nCardEndTime ;
+	uint32_t nTotalInvitePrizeCoin ; 
 };
 
 struct stServerBaseData
@@ -59,8 +64,10 @@ struct stServerBaseData
 	uint32_t nContinueDays ;
 	uint32_t tLastLoginTime;
 	uint32_t tLastTakeCharityCoinTime ;
+	uint8_t nTakeCharityTimes ;
 	bool isRegister ;
 	uint8_t nNewPlayerHaloWeight ;
+	uint32_t tLastTakeCardGiftTime ;
 };
 
 struct stTaxasInRoomPeerData

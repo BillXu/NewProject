@@ -7,6 +7,9 @@
 #include "ServerMessageDefine.h"
 #include "LogManager.h"
 #include <json/json.h>
+#include "ServerStringTable.h"
+#include "SeverUtility.h"
+#include <time.h>
 ISitableRoom::~ISitableRoom()
 {
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
@@ -30,6 +33,7 @@ ISitableRoom::~ISitableRoom()
 bool ISitableRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue ) 
 {
 	IRoom::init(pConfig,nRoomID,vJsValue) ;
+	m_tTimeCheckRank = time(nullptr) ;
 	stSitableRoomConfig* pC = (stSitableRoomConfig*)pConfig;
 	m_nSeatCnt = pC->nMaxSeat ;
 	m_vSitdownPlayers = new ISitableRoomPlayer*[m_nSeatCnt] ;
@@ -40,16 +44,148 @@ bool ISitableRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value
 	return true ;
 }
 
-void ISitableRoom::serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )
+void ISitableRoom::serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )
 {
-	IRoom::serializationFromDB(nRoomID,vJsValue);
-	m_nSeatCnt = vJsValue["seatCnt"].asUInt();
+	IRoom::serializationFromDB(pConfig,nRoomID,vJsValue);
+	stSitableRoomConfig* pC = (stSitableRoomConfig*)pConfig;
+	m_nSeatCnt = pC->nMaxSeat ;
+	m_vSitdownPlayers = new ISitableRoomPlayer*[m_nSeatCnt] ;
+	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+	{
+		m_vSitdownPlayers[nIdx] = nullptr ;
+	}
 }
 
 void ISitableRoom::willSerializtionToDB(Json::Value& vOutJsValue)
 {
 	IRoom::willSerializtionToDB(vOutJsValue);
-	vOutJsValue["seatCnt"] = m_nSeatCnt ;
+}
+
+void ISitableRoom::roomItemDetailVisitor(Json::Value& vOutJsValue)
+{
+	IRoom::roomItemDetailVisitor(vOutJsValue);
+	vOutJsValue["playerCnt"] = getSitDownPlayerCount();
+}
+
+void ISitableRoom::onRankChanged()
+{
+	time_t tNow = time(nullptr) ;
+	if ( tNow - m_tTimeCheckRank < 60*15 )  // 15 minite check once 
+	{
+		//IRoom::onRankChanged() ;  // 15 minite update once 
+		return ;
+	}
+	m_tTimeCheckRank = tNow ;
+	// check qian san ming shi fou bian hua ;
+	CSendPushNotification::getInstance()->reset() ;
+	auto checkter = getSortRankItemListBegin();
+	auto endIter = getSortRankItemListEnd() ;
+	uint16_t nCheckIdx = 0 ;
+	uint8_t nChangeCnt = 0 ;
+	for ( ; checkter != endIter; ++checkter ,++nCheckIdx )
+	{
+		if ( nCheckIdx >= 3 )
+		{
+			break;
+		}
+ 
+		if ( (*checkter)->nRankIdx >= 3 ) // first enter qian san 
+		{
+			auto pPlayer = getPlayerByUserUID((*checkter)->nUserUID);
+			if ( !pPlayer )  // not in this room send push notification ;
+			{
+				// send push notification ;
+				CSendPushNotification::getInstance()->addTarget((*checkter)->nUserUID);
+				++nChangeCnt;
+				CLogMgr::SharedLogMgr()->PrintLog("room id = %d , uid = %d enter qian san ", getRoomID(),(*checkter)->nUserUID) ;
+			}
+		}
+	}
+
+	if ( nChangeCnt <= 0 )
+	{
+		IRoom::onRankChanged() ;
+		return ;
+	}
+
+	// send push notification ;
+	if (eRoom_NiuNiu == getRoomType() )
+	{
+		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(7),1);
+	}
+	else if ( eRoom_TexasPoker == getRoomType() )
+	{
+		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(6),1);
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("unknown room type = %d can not send rank change apns",getRoomType()) ;
+	}
+	
+	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
+	if ( abf )
+	{
+		sendMsgToPlayer((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID()) ;
+	}
+
+	CSendPushNotification::getInstance()->reset() ;
+	
+	// check leave qian san player 
+	checkter = getSortRankItemListBegin();
+	bool isNeedInform = false ;
+	for ( ; checkter != endIter && nChangeCnt > 0; ++checkter )
+	{
+		if ( (*checkter)->nRankIdx < 3 ) // leave qian san 
+		{
+			auto pPlayer = getPlayerByUserUID((*checkter)->nUserUID);
+			if ( !pPlayer )  // not in this room send push notification ;
+			{
+				// send push notification ;
+				CSendPushNotification::getInstance()->addTarget((*checkter)->nUserUID);
+				isNeedInform = true ;
+				--nChangeCnt ;
+				CLogMgr::SharedLogMgr()->PrintLog("room id = %d , uid = %d leave qian san ", getRoomID(),(*checkter)->nUserUID) ;
+			}
+		}
+	}
+
+	if ( isNeedInform == false )
+	{
+		IRoom::onRankChanged() ;
+		return ;
+	}
+
+	// send push notification ;
+	if (eRoom_NiuNiu == getRoomType() )
+	{
+		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(9),1);
+	}
+	else if ( eRoom_TexasPoker == getRoomType() )
+	{
+		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(8),1);
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("unknown room type = %d can not send rank change apns",getRoomType()) ;
+	}
+
+	abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
+	if ( abf )
+	{
+		sendMsgToPlayer((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID()) ;
+	}
+
+	IRoom::onRankChanged() ;
+}
+
+bool ISitableRoom::canStartGame()
+{
+	if ( IRoom::canStartGame() == false )
+	{
+		return false ;
+	}
+
+	return getPlayerCntWithState(eRoomPeer_WaitNextGame) >= 2 ;
 }
 
 //bool ISitableRoom::onPlayerSitDown(ISitableRoomPlayer* pPlayer , uint8_t nIdx )
@@ -101,7 +237,6 @@ void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 			msgdoLeave.nCoin = pPlayer->getCoin() ;
 			msgdoLeave.nGameType = getRoomType() ;
 			msgdoLeave.nRoomID = getRoomID() ;
-			msgdoLeave.nNewPlayerHaloWeight = pPlayer->getHaloWeight() ;
 			msgdoLeave.nUserUID = pPlayer->getUserUID() ;
 			msgdoLeave.nWinTimes = pPlayer->getWinTimes()  ;
 			msgdoLeave.nPlayerTimes = pPlayer->getPlayTimes() ;
@@ -274,6 +409,39 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 
 	switch ( prealMsg->usMsgType )
 	{
+	case MSG_ADD_TEMP_HALO:
+		{
+			auto pPlayer = getPlayerBySessionID(nPlayerSessionID) ;
+			if ( pPlayer == nullptr )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("not in room player add temp halo session id = %u",nPlayerSessionID);
+				break;
+			}
+
+			if ( pPlayer->nPlayerType == ePlayer_Normal )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("normal can not add temp halo");
+				break;
+			}
+
+			stMsgAddTempHalo* pRet = (stMsgAddTempHalo*)prealMsg ;
+			if ( 0 == pRet->nTargetUID )
+			{
+				pRet->nTargetUID = pPlayer->nUserUID ;
+			}
+
+			auto psitpp = getSitdownPlayerByUID(pRet->nTargetUID) ;
+			if ( psitpp )
+			{
+				psitpp->setTempHaloWeight(pRet->nTempHalo);
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %u add temp halo = %u",pRet->nTargetUID,pRet->nTempHalo) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %u not sit down why add temp halo",pPlayer->nUserUID);
+			}
+		}
+		break;
 	case MSG_PLAYER_SITDOWN:
 		{
 			stMsgPlayerSitDownRet msgBack ;
@@ -288,10 +456,12 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 				break; 
 			}
 
-			auto pp = getSitdownPlayerBySessionID(nPlayerSessionID);
+			auto pp = getSitdownPlayerByUID(pPlayer->nUserUID);
 			if ( pp )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("session id = %d , already sit down , don't sit down again",nPlayerSessionID ) ;
+				msgBack.nRet = 4 ;
+				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 				break;
 			}
 
@@ -359,7 +529,7 @@ void ISitableRoom::onGameDidEnd()
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
 	{
 		auto pPlayer = m_vSitdownPlayers[nIdx] ;
-		if ( pPlayer && pPlayer->isDelayStandUp() )
+		if ( pPlayer && (pPlayer->isDelayStandUp() || isPlayerLoseReachMax(pPlayer->getUserUID() ) ) )
 		{
 			playerDoStandUp(pPlayer);	
 			pPlayer = nullptr ;
@@ -407,10 +577,10 @@ void ISitableRoom::doProcessNewPlayerHalo()
 		return ;
 	}
 
-	if ( isOmitNewPlayerHalo() )
-	{
-		return ;
-	}
+	//if ( isOmitNewPlayerHalo() )
+	//{
+	//	return ;
+	//}
 
 	uint8_t nHalfCnt = m_vSortByPeerCardsAsc.size() / 2 ;
 	uint8_t nSwitchTargetIdx = m_vSortByPeerCardsAsc.size() - 1 ;
@@ -441,4 +611,13 @@ void ISitableRoom::doProcessNewPlayerHalo()
 			break;
 		}
 	}
+#ifndef NDEBUG
+	CLogMgr::SharedLogMgr()->PrintLog("room id = %u do halo result:",getRoomID());
+	for ( uint8_t nIdx = 0 ; nIdx < m_vSortByPeerCardsAsc.size() ; ++nIdx )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("idx = %u uid = %u",nIdx,m_vSortByPeerCardsAsc[nIdx]->getUserUID());
+	}
+	CLogMgr::SharedLogMgr()->PrintLog("room id = %u halo end",getRoomID());
+#endif // !NDEBUG
+
 }

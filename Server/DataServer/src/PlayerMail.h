@@ -10,6 +10,12 @@ class CPlayerMailComponent
 	:public IPlayerComponent
 {
 public:
+	enum eOfflineEvent 
+	{
+		Event_Reward, // {rankIdx : 2 rewardID: 23,gameType: 2 , roomID : 234 }
+		Event_AddCoin, // { comment: "why add coin" addCoin : 34556 }
+		Event_Max,
+	};
 	struct stRecievedMail
 	{
 		uint32_t nRecvTime ;
@@ -25,19 +31,24 @@ public:
 	virtual void Init();
 	virtual void OnOtherDoLogined();
 	void OnReactive(uint32_t nSessionID ) override ;
-	static void PostMailToDB(stMail* pMail  ,uint32_t nTargetUID );
-	static void PostMailToDB(const char* pContent, uint16_t nContentLen ,uint32_t nTargetUID );
+
+	static void PostOfflineEvent( eOfflineEvent eEvntType ,Json::Value& pEventArg ,uint32_t nTargetUID );
+	static void PostDlgNotice( eNoticeType eNotice ,Json::Value& pEventArg ,uint32_t nTargetUID );
+
+	static void PostMailToPlayer( eMailType eType ,const char* pContent, uint16_t nContentLen ,uint32_t nTargetUID );
 	static void PostPublicMail(stRecievedMail& pMail);
-	static uint16_t getNewerMailListByTime( uint32_t nTimeTag, LIST_MAIL* vOutMail = nullptr,uint16_t nMaxOutCnt = 20);
-	void ReciveMail(stMail* pMail);
-	void ReciveMail(const char* pContent, uint16_t nContentLen );
-	void ReciveMail(stRecievedMail& pMail);
+
+	static uint16_t getPublicMailsByTime( uint32_t nTimeTag, LIST_MAIL* vOutMail = nullptr,uint16_t nMaxOutCnt = 20);
+
+	void ReciveMail(eMailType eType ,const char* pContent, uint16_t nContentLen );
 protected:
+	void saveReadTimeTag();
 	void ClearMails();
 	void SendMailListToClient();
 	void InformRecievedUnreadMails();
-	void ProcessOfflineEvent();
+	void ProcessSpecailMail();
 	bool ProcessMail(stRecievedMail& pMail);
+	void processSysOfflineEvent(stRecievedMail& pMail);
 protected:
 	LIST_MAIL m_vAllMail ;
 	static LIST_MAIL s_vPublicMails ;

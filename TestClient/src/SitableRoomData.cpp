@@ -9,7 +9,6 @@ CSitableRoomData::CSitableRoomData()
 	memset(m_vSitDownPlayer,0,sizeof(m_vSitDownPlayer));
 	m_isActive = true ;
 	m_pScene = nullptr ;
-	setControlRobot(nullptr) ;
 }
 
 CSitableRoomData::~CSitableRoomData()
@@ -46,12 +45,30 @@ void CSitableRoomData::setBaseInfo(uint32_t nRoomID, uint8_t nSeatCnt, uint32_t 
 	m_nSeatCount = nSeatCnt ;
 	m_nRoomState = nRoomState ;
 	memset(m_vSitDownPlayer,0,sizeof(m_vSitDownPlayer)) ;
+	getRobotControl()->onReicvedRoomData();
 }
 
 bool CSitableRoomData::onMsg(stMsg* pmsg )
 {
 	switch (pmsg->usMsgType)
 	{
+	case MSG_PLAYER_BE_ADDED_FRIEND:
+		{
+			stMsgPlayerBeAddedFriend* pret = (stMsgPlayerBeAddedFriend*)pmsg ;
+			printf("uid = %d want add me friend \n",pret->nPlayerUserUID);
+
+			stMsgPlayerBeAddedFriendReply msgReply ;
+			msgReply.bAgree = true ;
+			msgReply.nReplayToPlayerUserUID = pret->nPlayerUserUID ;
+			sendMsg(&msgReply,sizeof(msgReply));
+		}
+		break;
+	case MSG_PLAYER_BE_ADDED_FRIEND_REPLY:
+		{
+			stMsgPlayerBeAddedFriendReplyRet* pret = (stMsgPlayerBeAddedFriendReplyRet*)pmsg ;
+			printf("recive replay ret = %d , new friend uid = %d\n",pret->nRet,pret->nNewFriendUserUID) ;
+		}
+		break;
 	case MSG_ROOM_SITDOWN:
 		{
 			stMsgRoomSitDown* p = (stMsgRoomSitDown*)pmsg ;
@@ -59,11 +76,14 @@ bool CSitableRoomData::onMsg(stMsg* pmsg )
 			if ( !pPlayer )
 			{
 				pPlayer = doCreateSitDownPlayer();
+				m_vSitDownPlayer[p->nIdx] = pPlayer ;
 			}
 			pPlayer->reset() ;
+			pPlayer->nIdx = p->nIdx ;
 			pPlayer->nCoin = p->nTakeInCoin ;
 			pPlayer->nUserUID = p->nSitDownPlayerUserUID ;
 			pPlayer->nStateFlag = eRoomPeer_WaitNextGame ;
+			printf("player idx = %d uid = %d sit down \n",pPlayer->nIdx,pPlayer->nUserUID);
 		}
 		break;
 	case MSG_ROOM_STANDUP:
@@ -150,6 +170,15 @@ uint8_t CSitableRoomData::getPlayerCntWithState(  uint32_t nState  )
 		}
 	}
 	return nCnt ;
+}
+
+stSitableRoomPlayer* CSitableRoomData::getPlayerByIdx( uint8_t nIdx )
+{ 
+	if ( nIdx >= m_nSeatCount )
+	{
+		return nullptr ;
+	}
+	return m_vSitDownPlayer[nIdx];
 }
 
 int8_t CSitableRoomData::getRandEmptySeatIdx()

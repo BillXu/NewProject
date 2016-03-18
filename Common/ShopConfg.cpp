@@ -124,7 +124,7 @@ unsigned int CShopConfigMgr::GetPropsSize()
 {
     int count = 0;
 #ifndef SERVER
-    MAP_SHOP_ITEMS::iterator iter = m_vAllShopItems.begin();
+    //MAP_SHOP_ITEMS::iterator iter = m_vAllShopItems.begin();
    /* for(iter=m_vAllShopItems.begin();iter!=m_vAllShopItems.end();++iter)
     {
         if (eShopItem_UseItem == iter->second->eType) {

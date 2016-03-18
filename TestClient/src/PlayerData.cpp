@@ -8,6 +8,7 @@ bool CPlayerData::OnMessage( Packet* pMsg )
 	{
 		stMsgPlayerBaseData* pRet = (stMsgPlayerBaseData*)pmsg ;
 		memcpy(&stBaseData,&pRet->stBaseData,sizeof(stBaseData));
+
 	}
 	return false ;
 }

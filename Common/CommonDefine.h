@@ -26,7 +26,7 @@
 
 
 #define COIN_CONDITION_TO_GET_CHARITY 1000
-#define TIME_GET_CHARITY_ELAPS 60*60*2   // 2 HOURE
+#define TIMES_GET_CHARITY_PER_DAY 3   // 2 HOURE
 #define COIN_FOR_CHARITY 30000
 #define GOLDEN_ROOM_COIN_LEVEL_CNT 4
 #define GOLDEN_PK_ROUND 2
@@ -55,6 +55,22 @@ enum eRoomType
 	eRoom_TexasPoker = eRoom_None,
 	eRoom_NiuNiu,
 	eRoom_Max ,
+};
+
+enum  eVipCardType
+{
+	eCard_None,
+	eCard_Week,
+	eCard_Month,
+	eCard_Max,
+};
+
+enum ePlayerType
+{
+	ePlayer_Normal,
+	ePlayer_Robot,
+	ePlayer_Mgr,
+	ePlayer_Max,
 };
 
 enum eRoomState
@@ -120,6 +136,13 @@ enum eSpeed
 	eSpeed_Normal,
 	eSpeed_Quick,
 	eSpeed_Max,
+};
+
+enum eNoticeType
+{
+	eNotice_Text,
+	eNotice_BeInvite, // { targetUID : 2345 , addCoin : 34556 }
+	eNotice_InvitePrize, // { targetUID : 2345 addCoin : 3555 }
 };
 
 enum eRoomSeat
@@ -207,10 +230,15 @@ enum eRoomFlag
 #define MAX_KEEP_MAIL_COUNT 50
 enum eMailType
 {
-	eMail_PlainText,
-	eMail_SysOfflineEvent,
-	eMail_Public,
-	eMail_ReadTimeTag,
+	eMail_SysOfflineEvent,// { event: concret type , arg:{ arg0: 0 , arg 1 = 3 } }  // processed in svr , will not send to client ;
+	eMail_DlgNotice, // content will be send by , stMsgDlgNotice 
+	eMail_ReadTimeTag,  // use tell time for public mail ;
+	eMail_Sys_End,
+
+	eMail_RealMail_Begin, // will mail will show in golden server windown ;
+	eMail_PlainText,  // need not parse , just display the content ;
+	eMail_InvitePrize, // { targetUID : 2345 , addCoin : 300 } // you invite player to join game ,and give prize to you 
+	eMail_WinMatch, // { gameType:234,roomID:234,rankIdx:2,addCoin:345,cup : 2 , diamomd : 34 }
 	eMail_Max,
 };
 

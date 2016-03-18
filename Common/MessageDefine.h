@@ -202,6 +202,15 @@ struct stMsgPlayerUpdateMoney
 	unsigned int nFinalDiamoned ;
 };
 
+struct stMsgDlgNotice
+	:public stMsg
+{
+	stMsgDlgNotice(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_DLG_NOTICE ; }
+	uint8_t nNoticeType ;   // eNoticeType ;
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* pJson);
+};
+
 // modify name and sigure
 struct stMsgPLayerModifyName
 	:public stMsg
@@ -338,7 +347,6 @@ struct stMsgInformNewMail
 {
 	stMsgInformNewMail(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_INFORM_NEW_MAIL ; }
 	uint8_t nUnreadMailCount ;
-	uint8_t eNewMailType;
 };
 
 struct stMsgRequestMailList
@@ -379,6 +387,78 @@ struct stMsgPlayerAdviceRet
 	uint8_t nRet ;
 };
 
+// exchange module 
+struct stMsgPlayerExchange
+	:public stMsg
+{
+	stMsgPlayerExchange(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_EXCHANGE ; }
+	uint16_t nExchangeID ;
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* json); // {remark : "my phone name is xxxx" }
+};
+
+struct stMsgPlayerExchangeRet
+	:public stMsg
+{
+	stMsgPlayerExchangeRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_EXCHANGE ;}
+	uint8_t nRet ; // 0 success , 1 can not find target exchange id , 2 diamond is not engough ; 3 you are not log in ;
+	uint16_t nExchageID ;
+};
+
+struct stMsgRequestExchangeList
+	:public stMsg
+{
+	stMsgRequestExchangeList(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_REQUEST_EXCHANGE_LIST ; }
+};
+
+struct stExchangeItem
+{
+	uint16_t nExchangeID ;
+	uint32_t nExchangedCnt ;
+};
+
+struct stMsgRequestExchangeListRet 
+	:public stMsg
+{
+	stMsgRequestExchangeListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_EXCHANGE_LIST ; }
+	uint8_t nCnt ;
+	PLACE_HOLDER(stExchangeItem* allExchangeIDs);
+};
+
+struct stMsgRequestExchangeDetail
+	:public stMsg
+{
+	stMsgRequestExchangeDetail(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_REQUEST_EXCHANGE_DETAIL ; }
+	uint16_t nExchangeID ;
+};
+
+struct stMsgRequestExchangeDetailRet 
+	:public stMsg
+{
+	stMsgRequestExchangeDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_EXCHANGE_DETAIL ;  }
+	uint8_t nRet ; // 0 success , 1 can not find target exchange id ;
+	uint16_t nExchangeID ;
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* pJsonDetail); // {desc: "this is describle" , diamond : 25, icon : "fee.jpg" }
+};
+
+// vip card 
+struct stMsgGetVipcardGift
+	:public stMsg
+{
+	stMsgGetVipcardGift(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_GET_VIP_CARD_GIFT ; }
+	uint8_t nVipCardType ; // eCardType 
+};
+
+struct stMsgGetVipcardGiftRet
+	:public stMsg
+{
+	stMsgGetVipcardGiftRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_GET_VIP_CARD_GIFT ; }
+	uint8_t nRet ; // 0 success , 1 you do not have card , 2 card expire , 3 already got today ;
+	uint8_t nVipCardType ;
+	uint32_t nAddCoin ;
+};
+
 // Charity module ;
 struct stMsgPlayerRequestCharityState
 	:public stMsg
@@ -390,8 +470,8 @@ struct stMsgPlayerRequestCharityStateRet
 	:public stMsg
 {
 	stMsgPlayerRequestCharityStateRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_REQUEST_CHARITY_STATE ; }
-	unsigned char nState ; // 0 can get charity , 1 you coin is enough , do not need charity, 2 time not reached ;
-	unsigned int nLeftSecond ;
+	uint8_t nState ; // 0 can get charity , 1 you coin is enough , do not need charity, 2 times reached ;
+	uint8_t nLeftTimes ;
 };
 
 struct stMsgPlayerGetCharity
@@ -404,10 +484,10 @@ struct stMsgPlayerGetCharityRet
 	:public stMsg
 {
 	stMsgPlayerGetCharityRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_GET_CHARITY; }
-	unsigned char nRet ; // 0 success ,  1 you coin is enough , do not need charity, 2 time not reached ;
-	uint64_t nGetCoin ;
-	uint64_t nFinalCoin ;
-	unsigned int nLeftSecond ;
+	uint8_t nRet ; // 0 success ,  1 you coin is enough , do not need charity, 2 times limit ;
+	uint32_t nGetCoin ;
+	uint32_t nFinalCoin ;
+	uint8_t nLeftTimes ;
 };
 
 // shop
@@ -457,15 +537,77 @@ struct stMsgPlayerShopBuyItemOrderRet
 	char cOutTradeNo[32];
 };
 
+// invite 
+struct stMsgCheckInviter
+	:public stMsg
+{
+	stMsgCheckInviter(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_CHECK_INVITER ; }
+	uint32_t nInviterUID ;
+};
+
+struct stMsgCheckInviterRet
+	:public stMsg
+{
+	stMsgCheckInviterRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_CHECK_INVITER ; }
+	uint8_t nRet ; // 0 , success , 1 inviter not exsit , 2 you already have inviter ;
+	uint32_t nInviterUID ;
+};
+
 // room msg 
 
+struct stMsgToRoom
+	:public stMsg
+{
+	stMsgToRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; }
+	uint32_t nRoomID ;
+};
+
+struct stMsgToNNRoom
+	:public stMsgToRoom
+{
+	stMsgToNNRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ;}
+};
+
+struct stMsgRequestRoomList
+	:public stMsg
+{
+	stMsgRequestRoomList(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_TP_REQUEST_ROOM_LIST; }
+};
+
+struct stMsgRequestRoomListRet
+	:public stMsg
+{
+	stMsgRequestRoomListRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_LIST ; }
+	uint8_t nRoomType ;
+	uint8_t nRoomCnt ;
+	PLACE_HOLDER(uint32_t* vRoomIDs);
+};
+
+struct stMsgRequestRoomItemDetail
+	:public stMsgToRoom
+{
+	stMsgRequestRoomItemDetail(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_REQUEST_ROOM_ITEM_DETAIL ;}
+};
+
+struct stMsgRequestRoomItemDetailRet
+	:public stMsg
+{
+	stMsgRequestRoomItemDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_ITEM_DETAIL ; }
+	uint8_t nRet ; // 0 success , 1 not find room ;
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* pLen ); // { configID : 23 , playerCnt : 0 , reward0 : "23 cup" , reward1 : "12 cup" , reward2 : "3 cup" , coinLimit : "233", openTime : 23345 , closeTime: 2345, state : 23  }
+};
+
+// create room
 struct stMsgCreateRoom
 	:public stMsg
 {
 	stMsgCreateRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CREATE_ROOM ; }
 	uint8_t nRoomType ; // eRoomType ;
 	uint16_t nConfigID ;
-	uint16_t nDays ;
+	uint16_t nMinites ;
 	char vRoomName[MAX_LEN_ROOM_NAME] ;
 };
 
@@ -534,19 +676,6 @@ struct  stMsgAddRoomRentTimeRet
 	uint16_t nAddDays ;
 };
 
-struct stMsgToRoom
-	:public stMsg
-{
-	stMsgToRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; }
-	uint32_t nRoomID ;
-};
-
-struct stMsgToNNRoom
-	:public stMsgToRoom
-{
-	stMsgToNNRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ;}
-};
-
 struct stMsgRoomEnterNewState
 	:public stMsg
 {
@@ -597,7 +726,7 @@ struct stMsgPlayerSitDownRet
 	:public stMsg
 {
 	stMsgPlayerSitDownRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_SITDOWN ; }
-	uint8_t nRet ; // 0 success , 1 coin not engouht , 2 target have player , 3 other error ;
+	uint8_t nRet ; // 0 success , 1 coin not engouht , 2 target have player , 3 not in room , 4 you already sit down ;
 };
 
 struct stMsgRoomSitDown
@@ -643,6 +772,21 @@ struct stMsgRequestRoomRankRet
 	:public stMsg
 {
 	stMsgRequestRoomRankRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_RANK ; }
+	uint8_t nCnt ;
+	int16_t nSelfRankIdx ;  // -1 means , you are not in rank , other means you rank idx ;
+	PLACE_HOLDER(stRoomRankEntry*);
+};
+
+struct stMsgRequestLastTermRoomRank
+	:public stMsgToRoom
+{
+	stMsgRequestLastTermRoomRank(){ usMsgType = MSG_REQUEST_LAST_TERM_ROOM_RANK ;}
+};
+
+struct stMsgRequestLastTermRoomRankRet
+	:public stMsg
+{
+	stMsgRequestLastTermRoomRankRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_LAST_TERM_ROOM_RANK ; }
 	uint8_t nCnt ;
 	PLACE_HOLDER(stRoomRankEntry*);
 };
@@ -742,12 +886,28 @@ struct stMsgRequestTopicDetailRet
 	PLACE_HOLDER(char* pContent);
 };
 
+// robot specail
+struct stMsgTellPlayerType
+	:public stMsg
+{
+	stMsgTellPlayerType(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TELL_PLAYER_TYPE ; }
+	uint8_t nPlayerType ; // ePlayerType ;
+};
+
+struct stMsgAddTempHalo
+	:public stMsgToRoom
+{
+	stMsgAddTempHalo(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_ADD_TEMP_HALO ; }
+	uint8_t nTempHalo ; // ePlayerType ;
+	uint32_t nTargetUID ;
+};
+
 struct stMsgRobotAddMoney
 	:public stMsg
 {
 	stMsgRobotAddMoney()
 	{
-		cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_ROBOT_ADD_MONEY ;
+		cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_ADD_MONEY ;
 	}
 	int32_t nWantCoin ;
 };
@@ -755,20 +915,32 @@ struct stMsgRobotAddMoney
 struct stMsgRobotAddMoneyRet
 	:public stMsg
 {
-	stMsgRobotAddMoneyRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_ROBOT_ADD_MONEY ; }
+	stMsgRobotAddMoneyRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_ADD_MONEY ; }
 	uint8_t cRet ; // 0 success ;
 	uint64_t nFinalCoin ;
 };
 
+// apns 
+struct stMsgPushAPNSToken
+	:public stMsg
+{
+	stMsgPushAPNSToken(){ cSysIdentifer = ID_MSG_PORT_APNS ; usMsgType = MSG_PUSH_APNS_TOKEN ; }
+	uint8_t nReqTokenRet ; // 0 success ; 1 use disabled notification ;
+	uint32_t nUserUID ;
+	uint32_t nFlag ; 
+	char vAPNsToken[32] ;  // must proccesed in client ; change to htonl();  // change to network big endain ;
+};
+
+struct stMsgPushAPNSTokenRet
+	:public stMsg
+{
+	stMsgPushAPNSTokenRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PUSH_APNS_TOKEN ; }
+	unsigned char nReqTokenRet ; // 0 success ; 1 use disabled notification ;
+};
+
+
 
 ///--------------------ablove is new , below is old------
-
-
-
-
-
-
-
 
 struct stMsgCreateRole
 	:public stMsg
@@ -788,20 +960,7 @@ struct stMsgCreateRoleRet
 	unsigned int nUserUID ;
 };
 
-struct stMsgPushAPNSToken
-	:public stMsg
-{
-	stMsgPushAPNSToken(){ cSysIdentifer = ID_MSG_C2GAME ; usMsgType = MSG_PUSH_APNS_TOKEN ; }
-	unsigned char nGetTokenRet ; // 0 success ; 1 use disabled notification ;
-	char vAPNsToken[32] ;  // must proccesed in client ; change to htonl();  // change to network big endain ;
-};
 
-struct stMsgPushAPNSTokenRet
-	:public stMsg
-{
-	stMsgPushAPNSTokenRet(){ cSysIdentifer = ID_MSG_GAME2C ; usMsgType = MSG_PUSH_APNS_TOKEN ; }
-	unsigned char nGetTokenRet ; // 0 success ; 1 use disabled notification ;
-};
 
 
 

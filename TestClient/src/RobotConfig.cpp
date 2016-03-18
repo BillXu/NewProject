@@ -14,10 +14,9 @@ bool vSortWorkTime( CRobotConfigFile::stRobotItem::stWorkPoint& left ,CRobotConf
 {
 	if ( left.nHour == right.nHour )
 	{
-		return left.nMini <= right.nMini ;
+		return left.nMini < right.nMini ;
 	}
-
-	return left.nHour <= right.nHour ;
+	return left.nHour < right.nHour ;
 }
 
 bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )

@@ -84,9 +84,9 @@ struct stMsgSaveRoomPlayer
 	:public stMsg
 {
 	stMsgSaveRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_ROOM_PLAYER ; }
-	bool isUpdate ; // is update or add recorder 
 	uint8_t nRoomType ;
 	uint32_t nRoomID ;
+	uint32_t nTermNumber ;
 	stSaveRoomPlayerEntry savePlayer ;
 };
 
@@ -96,6 +96,7 @@ struct  stMsgReadRoomPlayer
 	stMsgReadRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_ROOM_PLAYER ;}
 	uint8_t nRoomType ;
 	uint32_t nRoomID ;
+	uint32_t nTermNumber ;
 };
 
 struct stMsgReadRoomPlayerRet 
@@ -103,6 +104,7 @@ struct stMsgReadRoomPlayerRet
 {
 	stMsgReadRoomPlayerRet(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_READ_ROOM_PLAYER ; }
 	uint8_t nCnt ;
+	uint32_t nTermNumber ;
 	bool bIsLast ;
 	PLACE_HOLDER(stSaveRoomPlayerEntry*);
 };
@@ -115,6 +117,28 @@ struct stMsgRemoveRoomPlayer
 	uint32_t nRoomID ;
 };
 
+// save exchanges 
+struct stMsgSaveExchanges
+	:public stMsg
+{
+	 stMsgSaveExchanges(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_EXCHANGE ; }
+	 uint16_t nExchangeID ;
+	 uint32_t nCount ;
+};
+
+struct stMsgReadExchanges
+	:public stMsg
+{
+	stMsgReadExchanges(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_EXCHANGE ;}
+};
+
+struct stMsgReadExchangesRet 
+	:public stMsg
+{
+	stMsgReadExchangesRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_EXCHANGE ; }
+	uint16_t nCnt ;
+	PLACE_HOLDER(stExchangeItem* pItems);
+};
 // save player data ;
 struct stMsgSavePlayerInfo   
 	:public stMsg
@@ -126,6 +150,7 @@ struct stMsgSavePlayerInfo
 	uint8_t vUploadedPic[MAX_UPLOAD_PIC] ;
 	uint16_t nPhotoID ;
 	uint8_t nIsRegister ;
+	uint32_t nInviterUID ; 
 	uint8_t nSex ;
 };
 
@@ -136,6 +161,7 @@ struct stMsgSavePlayerMoney
 	uint32_t nUserUID ;
 	uint64_t nCoin ;
 	uint32_t nDiamoned ;
+	uint32_t nCupCnt ;
 };
 
 struct stMsgReadPlayerTaxasData
@@ -216,17 +242,17 @@ public:
 	uint32_t nRoomID ;
 };
 
-struct stMsgSaveCreateRoomInfo
-	:public stMsg
-{
-	stMsgSaveCreateRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_CREATE_ROOM_INFO; }
-	uint8_t nRoomType ; // eRoomType ;
-	uint32_t nRoomID ;
-	uint16_t nConfigID ;
-	uint32_t nRoomOwnerUID ;
-	uint32_t nCreateTime ;
-	uint64_t nChatRoomID ;
-};
+//struct stMsgSaveCreateRoomInfo
+//	:public stMsg
+//{
+//	stMsgSaveCreateRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_CREATE_ROOM_INFO; }
+//	uint8_t nRoomType ; // eRoomType ;
+//	uint32_t nRoomID ;
+//	uint16_t nConfigID ;
+//	uint32_t nRoomOwnerUID ;
+//	uint32_t nCreateTime ;
+//	uint64_t nChatRoomID ;
+//};
 
 struct stMsgSaveUpdateRoomInfo
 	:public stMsg
@@ -236,7 +262,8 @@ struct stMsgSaveUpdateRoomInfo
 	uint8_t nRoomType ; // eRoomType ;
 	uint32_t nRoomID ;
 	uint32_t nRoomOwnerUID ;
-	uint8_t nJsonLen ;
+	uint32_t nConfigID ;
+	uint16_t nJsonLen ;
 	PLACE_HOLDER(char* pJsonArg);
 };
 
@@ -254,7 +281,8 @@ struct stMsgReadRoomInfoRet
 	uint8_t nRoomType ; // eRoomType ;
 	uint32_t nRoomID ;
 	uint32_t nRoomOwnerUID ;
-	uint8_t nJsonLen ;
+	uint32_t nConfigID ;
+	uint16_t nJsonLen ;
 	PLACE_HOLDER(char* pJsonArg);
 };
 
@@ -312,9 +340,14 @@ struct stMsgSavePlayerCommonLoginData
 	uint32_t nContinueDays ;
 	uint32_t tLastLoginTime;
 	uint32_t tLastTakeCharityCoinTime ;
+	uint8_t nTakeCharityTimes ;
+	uint32_t nTotalInvitePrizeCoin ;
 	uint8_t nNewPlayerHaloWeight ;
 	double dfLongitude;
 	double dfLatidue;
+	uint8_t nCardType ;
+	uint32_t nCardEndTime ;
+	uint32_t nLastTakeCardGiftTime ;
 	uint32_t vJoinedClubID[MAX_JOINED_CLUB_CNT] ;
 };
 
@@ -324,7 +357,6 @@ struct stMsgSelectPlayerData
 	stMsgSelectPlayerData(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SELECT_DB_PLAYER_DATA ;}
 	bool isDetail ;
 	uint32_t nTargetPlayerUID ;
-	uint32_t nReqPlayerSessionID ;
 };
 
 struct stMsgSelectPlayerDataRet
@@ -333,7 +365,7 @@ struct stMsgSelectPlayerDataRet
 	stMsgSelectPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_SELECT_DB_PLAYER_DATA ;}
 	uint8_t nRet ; // 0 success , 1 can not find player ;
 	bool isDetail ;
-	uint32_t nReqPlayerSessionID ;
+	uint32_t nDataPlayerUID ;
 	PLACE_HOLDER(stPlayerBrifData* tData ) ;
 };
 
@@ -500,7 +532,6 @@ struct stMsgSvrDoLeaveRoom
 	uint64_t nCoin ;
 	uint32_t nPlayerTimes ;
 	uint32_t nWinTimes ;
-	uint8_t nNewPlayerHaloWeight ;
 	uint32_t nSingleWinMost ;
 };
 
@@ -651,6 +682,7 @@ struct stMsgReadMailListRet
 {
 	stMsgReadMailListRet(){ usMsgType = MSG_PLAYER_READ_MAIL_LIST ; cSysIdentifer = ID_MSG_PORT_DATA ; }
 	bool bFinal ;
+	uint32_t nUserUID ;
 	stMail pMails ;
 };
 
@@ -659,7 +691,7 @@ struct stMsgResetMailsState
 {
 	stMsgResetMailsState(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_PLAYER_SET_MAIL_STATE ; }
 	uint32_t nUserUID ;
-	uint8_t tMailType ; 
+	uint8_t eType ; 
 };
 
 struct  stMsgSavePlayerAdvice
@@ -725,7 +757,100 @@ struct stMsgRequestClientIpRet
 	char vIP[17];
 };
 
+// invite 
+struct stMsgDBCheckInvite
+	:public stMsg
+{
+	stMsgDBCheckInvite(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_DB_CHECK_INVITER ; }
+	uint32_t nInviteUserUID ;
+};
+
+struct stMsgDBCheckInviteRet
+	:public stMsg
+{
+	stMsgDBCheckInviteRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_DB_CHECK_INVITER ; }
+	uint8_t nRet ; // 0 success , 1 inviter not exsit ;
+	uint32_t nInviteUseUID ;
+};
+
+// push notification 
+struct stMsgReadNoticePlayer
+	:public stMsg
+{
+	stMsgReadNoticePlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType  = MSG_READ_NOTICE_PLAYER ;}
+	uint32_t nUserUID ;
+};
+
+struct stNoticePlayerEntry
+{
+	uint32_t nUserUID ;
+	uint32_t nNoticeFlag ; 
+	char pToken[32] ;
+};
+
+struct stMsgReadNoticePlayerRet
+	:public stMsg
+{
+	stMsgReadNoticePlayerRet(){ cSysIdentifer = ID_MSG_PORT_APNS ; usMsgType = MSG_READ_NOTICE_PLAYER ; }
+	uint8_t nRet ; // 0 success , 1 can not find ;
+	stNoticePlayerEntry tPlayerEntery ;
+};
+
+struct stMsgSaveNoticePlayer
+	: public stMsg
+{
+	stMsgSaveNoticePlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_NOTICE_PLAYER ; }
+	bool nOpt ; // 0 add , 1 reamove flag ;
+	stNoticePlayerEntry tPlayer ;
+};
+
+struct stMsgPushNotice
+	:public stMsg
+{
+	stMsgPushNotice(){ cSysIdentifer = ID_MSG_PORT_APNS ; usMsgType  = MSG_PUSH_NOTICE ; }
+	uint16_t nJonsLen ;
+	PLACE_HOLDER(char* jsonString); // { targets:[345,3455,355],flag : 23 ,content: "this is a message" }
+};
+
 //----above is new , below is old---------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //--------------------------------------------
 // message between DB and Gamesever ;

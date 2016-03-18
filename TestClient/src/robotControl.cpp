@@ -1,8 +1,9 @@
 #include "robotControl.h"
 #include <ctime>
 #include "SitableRoomData.h"
-#define  TIME_CHECK_MODE 2*60
-#define  TIME_WORK_TIME_HOUR 1
+//#define  TIME_CHECK_MODE 2*60
+#define  TIME_CHECK_MODE 5
+#define  TIME_WORK_TIME_HOUR 4
 bool CRobotControl::init( CRobotConfigFile::stRobotItem* pRobot,CSitableRoomData* pRoomData, uint32_t nUserUID )
 {
 	m_bHaveDelayActionTask = false ;
@@ -18,6 +19,7 @@ bool CRobotControl::init( CRobotConfigFile::stRobotItem* pRobot,CSitableRoomData
 	m_pRobotItem = pRobot ;
 	m_pRoomData = pRoomData ;
 	m_nUserUID = nUserUID ;
+	printf("robot init uid = %d\n",nUserUID);
 	return true ;
 }
 
@@ -176,10 +178,11 @@ void CRobotControl::updateCheckState( float fdeta )
 		break;
 	case CRobotControl::eRs_SitingDown:
 		break;
-	case CRobotControl::eRs_StandUp:
+	case CRobotControl::eRs_StandUp:                                             
 		{
 			if ( m_pRoomData->getRoomState() == eRoomState_Close )
 			{
+				printf("uid = %u keep standup room is closed\n",getUserUID());
 				return ;
 			}
 
@@ -234,6 +237,7 @@ void CRobotControl::setSeatidx(uint8_t nIdx )
 void CRobotControl::enterWorkMode()
 {
 	m_eMode = eMode_Working ;
+	printf("enter work mode uid = %d\n",getUserUID());
 }
 
 void CRobotControl::enterIdleMode()
@@ -245,6 +249,7 @@ void CRobotControl::enterIdleMode()
 		printf("uid = %d ,enter idle mode i try to stand up \n", getUserUID());
 		standUp();
 	}
+	printf("enter idle mode uid = %d\n",getUserUID());
 }
 
 void CRobotControl::standUp()
@@ -309,10 +314,14 @@ bool CRobotControl::onMsg(stMsg* pmsg)
 	case MSG_PLAYER_SITDOWN:
 		{
 			stMsgPlayerSitDownRet* pRet = (stMsgPlayerSitDownRet*)pmsg ;
-			if ( pRet->nRet == 1 )
+			if ( pRet->nRet == 1 || 3 == pRet->nRet )
 			{
 				// must leave , coin not enough ;
 				printf("coin error , must leave room to take coin \n") ;
+			}
+			else if ( 4 == pRet->nRet )
+			{
+				printf("uid = %u alreayd sit down ? , i should leave room",getUserUID());
 			}
 			else
 			{

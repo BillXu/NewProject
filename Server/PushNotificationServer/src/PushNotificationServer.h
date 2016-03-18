@@ -1,21 +1,22 @@
 #pragma once
-#include "ServerNetwork.h"
+#include "ISeverApp.h"
 #include "ServerConfig.h"
 #include "PushNotificationThread.h"
+#include "ServerConfig.h"
+#include "Singleton.h"
+#include "NoticePlayerManager.h"
 class CPushNotificationServer
-	:public CServerNetworkDelegate
+	:public IServerApp
+	,public CSingleton<CPushNotificationServer>
 {
 public:
 	~CPushNotificationServer();
-	bool Init();
-	virtual bool OnMessage( RakNet::Packet* pData );
-	virtual void OnNewPeerConnected(RakNet::RakNetGUID& nNewPeer, RakNet::Packet* pData );
-	virtual void OnPeerDisconnected(RakNet::RakNetGUID& nPeerDisconnected, RakNet::Packet* pData );
-	void Update();
-	void StopServer(){ m_bRunning = false ; }
+	bool init();
+	bool onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
+	uint16_t getLocalSvrMsgPortType(){ return ID_MSG_PORT_APNS ;}
+	void onExit()override{ m_nPushThread.StopServer();}
 protected:
 	CPushNotificationThread m_nPushThread ;
-	CServerNetwork* m_pSvrNetWork ;
-	CSeverConfigMgr m_ServerConfigMgr ;
-	bool m_bRunning ;
+	CSeverConfigMgr m_stSvrConfigMgr ;
+	CNoticePlayerManager m_tNoticePlayerMgr ;
 };

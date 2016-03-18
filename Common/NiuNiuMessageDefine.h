@@ -195,6 +195,12 @@ struct stMsgNNRequestRoomRank
 	stMsgNNRequestRoomRank(){ usMsgType = MSG_REQUEST_ROOM_RANK ;}
 };
 
+struct stMsgNNRequestLastTermRoomRank
+	:public stMsgToNNRoom
+{
+	stMsgNNRequestLastTermRoomRank(){ usMsgType = MSG_REQUEST_LAST_TERM_ROOM_RANK ;}
+};
+
 struct stMsgNNRequestRoomRankRet
 	:public stMsgRequestRoomRankRet
 {
@@ -234,19 +240,19 @@ struct stMsgRemindNiuNiuRoomNewInform
 	stMsgRemindNiuNiuRoomNewInform(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REMIND_NEW_ROOM_INFORM ; }
 };
 
-struct stMsgRequestNiuNiuRoomInform
-	:public stMsgToRoom
-{
-	stMsgRequestNiuNiuRoomInform(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_REQUEST_ROOM_INFORM ; }
-};
-
-struct  stMsgRequestNiuNiuRoomInformRet
-	:public stMsg
-{
-	stMsgRequestNiuNiuRoomInformRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_INFORM ; }
-	uint16_t nLen ;
-	PLACE_HOLDER(char* pInform);
-};
+//struct stMsgRequestNiuNiuRoomInform
+//	:public stMsgToRoom
+//{
+//	stMsgRequestNiuNiuRoomInform(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_REQUEST_ROOM_INFORM ; }
+//};
+//
+//struct  stMsgRequestNiuNiuRoomInformRet
+//	:public stMsg
+//{
+//	stMsgRequestNiuNiuRoomInformRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_INFORM ; }
+//	uint16_t nLen ;
+//	PLACE_HOLDER(char* pInform);
+//};
 
 #pragma pack(pop)
 

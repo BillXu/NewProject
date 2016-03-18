@@ -102,6 +102,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				msgEnter.tPlayerData.nUserSessionID = GetPlayer()->GetSessionID() ;
 				msgEnter.tPlayerData.nUserUID = GetPlayer()->GetUserUID() ;
 				msgEnter.tPlayerData.nNewPlayerHaloWeight = GetPlayer()->GetBaseData()->getNewPlayerHaloWeight() ;
+				msgEnter.tPlayerData.nPlayerType = GetPlayer()->GetBaseData()->getPlayerType();
 				CGameServerApp::SharedGameServerApp()->sendMsg(msgEnter.tPlayerData.nUserSessionID,(char*)&msgEnter,sizeof(msgEnter)) ;
 
 				m_nStateInRoomID = pRet->nRoomID;
@@ -146,13 +147,29 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d leave room coin = %lld , back coin = %lld, temp coin = %d",GetPlayer()->GetUserUID(),GetPlayer()->GetBaseData()->getCoin(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin() ) ;
 			GetPlayer()->GetBaseData()->setCoin(pRet->nCoin + GetPlayer()->GetBaseData()->getTempCoin()) ;
 			GetPlayer()->GetBaseData()->setTempCoin(0) ;
-			m_vData[pRet->nGameType].bDirty = true ;
+			
 			m_vData[pRet->nGameType].nPlayTimes += pRet->nPlayerTimes ;
 			m_vData[pRet->nGameType].nWinTimes += pRet->nWinTimes ;
 			if ( m_vData[pRet->nGameType].nSingleWinMost < pRet->nSingleWinMost )
 			{
 				m_vData[pRet->nGameType].nSingleWinMost = pRet->nSingleWinMost ;
 			}
+
+			if ( pRet->nPlayerTimes != 0 )
+			{
+				m_vData[pRet->nGameType].bDirty = true ;
+			}
+
+			// decrease halo weight 
+			if ( GetPlayer()->GetBaseData()->getNewPlayerHaloWeight() >= pRet->nPlayerTimes )
+			{
+				GetPlayer()->GetBaseData()->setNewPlayerHalo(GetPlayer()->GetBaseData()->getNewPlayerHaloWeight() - pRet->nPlayerTimes );
+			}
+			else
+			{
+				GetPlayer()->GetBaseData()->setNewPlayerHalo(0);
+			}
+
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room final coin = %lld",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
 		}
 		break;
@@ -170,13 +187,18 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				CLogMgr::SharedLogMgr()->PrintLog("player enter other room so uid = %d add temp = %d, final = %lld,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin(),GetPlayer()->GetBaseData()->getCoin() ) ;
 			}
 
-			m_vData[pRet->nGameType].bDirty = true ;
 			m_vData[pRet->nGameType].nPlayTimes += pRet->nPlayerTimes ;
 			m_vData[pRet->nGameType].nWinTimes += pRet->nWinTimes ;
 			if ( m_vData[pRet->nGameType].nSingleWinMost < pRet->nSingleWinMost )
 			{
 				m_vData[pRet->nGameType].nSingleWinMost = pRet->nSingleWinMost ;
 			}
+
+			if ( pRet->nPlayerTimes != 0 )
+			{
+				m_vData[pRet->nGameType].bDirty = true ;
+			}
+
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d delay leave room coin = %lld",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
 		}
 		break;
@@ -427,7 +449,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			}
 
 			// check coin weather engough 
-			if ( GetPlayer()->GetBaseData()->getCoin() < pRoomConfig->nRentFeePerDay * pRet->nDays )
+			if ( GetPlayer()->GetBaseData()->getCoin() < pRoomConfig->nRentFeePerDay * pRet->nMinites )
 			{
 				msgBack.nRet = 4 ;
 				msgBack.nRoomID = 0 ;
@@ -445,14 +467,14 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				return true ;
 			}
 
-			GetPlayer()->GetBaseData()->decressMoney(pRoomConfig->nRentFeePerDay * pRet->nDays );
+			GetPlayer()->GetBaseData()->decressMoney(pRoomConfig->nRentFeePerDay * pRet->nMinites );
 
 			msgReq.nReqOrigID = GetPlayer()->GetUserUID() ;
 			msgReq.nRequestSubType = eCrossSvrReqSub_Default;
 			msgReq.nRequestType = eCrossSvrReq_CreateRoom ;
 			msgReq.nTargetID = 0 ;
 			msgReq.vArg[0] = pRet->nConfigID ;
-			msgReq.vArg[1] = pRet->nDays ;
+			msgReq.vArg[1] = pRet->nMinites ;
 			msgReq.vArg[2] = pRet->nRoomType ;
 			pRet->vRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
 

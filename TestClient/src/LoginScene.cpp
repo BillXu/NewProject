@@ -131,12 +131,33 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			//SendMsg(&msgRoomList,sizeof(msgRoomList));
 
 			printf("recived base data\n");
+			stMsgTellPlayerType msg ;
+			msg.nPlayerType = ePlayer_Robot ;
+			SendMsg(&msg, sizeof(msg)) ;
+
+			//uint8_t nCnt = 14 ;
+			//while ( nCnt )
+			//{
+			//	stMsgCreateRoom msgCreate ;
+			//	msgCreate.nConfigID = 29 ;
+			//	msgCreate.nMinites = 30 ;
+			//	msgCreate.nRoomType = nCnt % 2 == 0 ? eRoom_TexasPoker : eRoom_NiuNiu;
+			//	if ( eRoom_TexasPoker == msgCreate.nRoomType )
+			//	{
+			//		msgCreate.nConfigID = 2 ;
+			//	}
+			//	memset(msgCreate.vRoomName,0,sizeof(msgCreate.vRoomName)) ;
+			//	sprintf_s(msgCreate.vRoomName,"roname = %d",nCnt);
+			//	SendMsg(&msgCreate, sizeof(msgCreate)) ;
+			//	--nCnt ;
+			//}
+			//CLogMgr::SharedLogMgr()->PrintLog("create room ok");
 			doEnterGame();
 		}
 		break; ;
-	case MSG_NN_ENTER_ROOM:
+	case MSG_PLAYER_ENTER_ROOM:
 		{
-			stMsgNNEnterRoomRet* pRet = (stMsgNNEnterRoomRet*)pMsg ;
+			stMsgPlayerEnterRoomRet* pRet = (stMsgPlayerEnterRoomRet*)pMsg ;
 			if ( pRet->nRet )
 			{
 				printf("enter niuniu room failed ret = %d\n",pRet->nRet) ;
@@ -145,54 +166,6 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			else
 			{
 				printf("enter niuniu room success\n") ;
-			}
-		}
-		break;
-	case MSG_TP_ENTER_ROOM:
-		{
-			// 0 success ; 1 do not meet room condition , 2 aready in room ; 3  unknown error ; 4 waiting last game settlement ;
-			stMsgRoomEnterRet* pRetMsg = (stMsgRoomEnterRet*)pMsg ;
-			if ( pRetMsg->nRet )
-			{
-				delayEnterRoom() ;
-			}
-
-			switch ( pRetMsg->nRet )
-			{
-			case 0:
-				{
-					CLogMgr::SharedLogMgr()->SystemLog("%s EnterRoom Success !",m_pClient->GetPlayerData()->GetName()) ;
-				}
-				break; 
-			case 1 :
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("%s ivalid session id  !",m_pClient->GetPlayerData()->stBaseData.cName) ;
-					InformIdle();
-				}
-				break ;
-			case 2:
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("%s already in room !",m_pClient->GetPlayerData()->GetName()) ;
-				}
-				break; 
-			case 3:
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("%s room id error !",m_pClient->GetPlayerData()->GetName()) ;
-					InformIdle();
-				}
-				break; 
-			case 4:
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("%s waiting last game settlement !",m_pClient->GetPlayerData()->GetName()) ;
-					InformIdle();
-				}
-				break;
-			default:
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("%s Default error !",m_pClient->GetPlayerData()->GetName()) ;
-					InformIdle();
-				}
-				break;
 			}
 		}
 		break;
@@ -219,7 +192,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			return true ;
 		}
 		break;
-	case MSG_ROBOT_ADD_MONEY:
+	case MSG_ADD_MONEY:
 		{
 			stMsgRobotAddMoneyRet* pRet = (stMsgRobotAddMoneyRet*)pMsg ;
 			m_pClient->GetPlayerData()->stBaseData.nCoin = pRet->nFinalCoin ;
@@ -240,26 +213,11 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 
 void CLoginScene::doEnterGame()
 {
-	if ( m_pClient->GetPlayerData()->getDstGameType() == eRoom_TexasPoker )
-	{
-		stMsgTaxasEnterRoom msg ;
-		msg.nIDType = 0 ;
-		msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
-		SendMsg(&msg,sizeof(msg));
-		printf("enter room taxas...\n");
-	}
-	else if ( m_pClient->GetPlayerData()->getDstGameType() == eRoom_NiuNiu )
-	{
-		stMsgNNEnterRoom msg ;
-		msg.nIDType = 0 ;
-		msg.nTargetID = m_pClient->GetPlayerData()->getDstRoomID() ;
-		SendMsg(&msg,sizeof(msg));
-		printf("enter niuniu room id = %d \n",msg.nTargetID) ;
-	}
-	else
-	{
-		printf("unknown target room type = %d\n",m_pClient->GetPlayerData()->getDstGameType() ) ;
-	}
+	stMsgPlayerEnterRoom msg ;
+	msg.nRoomGameType = m_pClient->GetPlayerData()->getDstGameType() ;
+	msg.nRoomID = m_pClient->GetPlayerData()->getDstRoomID() ;
+	SendMsg(&msg,sizeof(msg));
+	printf("enter room type = %d id = %d...\n",msg.nRoomGameType,msg.nRoomID);
 	
 	m_eCurState = els_Normal ;
 }

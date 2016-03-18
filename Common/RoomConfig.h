@@ -11,12 +11,13 @@ struct stBaseRoomConfig
 	uint32_t nRentFeePerDay;
 	uint32_t nDeskFee;
 	float fDividFeeRate;  // chou shui bi li
-	//unsigned char nRoomLevel ;
 	
-	//unsigned int nMinNeedToEnter ;
-	//unsigned char nWaitOperateTime ; // second ;
-	//unsigned int nCreateCount ;
-	//uint32_t nCreateFee ;
+	std::vector<int32_t> vRewardID ;
+	uint32_t nCoinTopLimit ;
+	uint32_t nCoinLowLimit ;
+	bool bIsNeedRegistered ;
+	bool bIsOmitNewPlayerHalo ;
+	uint32_t nMaxLose ;
 };
 
 struct stSitableRoomConfig

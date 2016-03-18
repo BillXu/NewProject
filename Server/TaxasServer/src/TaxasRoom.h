@@ -111,15 +111,15 @@ public:
 	virtual ~CTaxasRoom();
 	uint8_t getRoomType()override ;
 	bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )override;
-	void serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )override;
+	void serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
+	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
 	void prepareState();
 
 	void sendMsgToPlayer( stMsg* pmsg , uint16_t nLen , uint32_t nSessionID )override ;
 
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
 	
-	bool canStartGame()override ;
 	ISitableRoomPlayer* doCreateSitableRoomPlayer()override ;
 	uint32_t coinNeededToSitDown()override ;
 	void prepareCards()override ;

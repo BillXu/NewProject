@@ -111,6 +111,8 @@
     <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\DataServer\src\EventCenter.h" />
     <ClInclude Include="..\DataServer\src\Events.h" />
+    <ClInclude Include="..\DataServer\src\ExchangeCenter.h" />
+    <ClInclude Include="..\DataServer\src\ExchangeConfig.h" />
     <ClInclude Include="..\DataServer\src\GameServerApp.h" />
     <ClInclude Include="..\DataServer\src\IPlayerComponent.h" />
     <ClInclude Include="..\DataServer\src\main.h" />
@@ -123,10 +125,14 @@
     <ClInclude Include="..\DataServer\src\PlayerMission.h" />
     <ClInclude Include="..\DataServer\src\PokerCircle.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
+    <ClInclude Include="..\ServerCommon\IGlobalModule.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
+    <ClInclude Include="..\ServerCommon\RewardConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerCommon.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
+    <ClInclude Include="..\ServerCommon\ServerStringTable.h" />
+    <ClInclude Include="..\ServerCommon\SeverUtility.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +152,8 @@
     <ClCompile Include="..\..\Common\TitleLevelConfig.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="..\DataServer\src\EventCenter.cpp" />
+    <ClCompile Include="..\DataServer\src\ExchangeCenter.cpp" />
+    <ClCompile Include="..\DataServer\src\ExchangeConfig.cpp" />
     <ClCompile Include="..\DataServer\src\GameServerApp.cpp" />
     <ClCompile Include="..\DataServer\src\IPlayerComponent.cpp" />
     <ClCompile Include="..\DataServer\src\main.cpp" />
@@ -158,7 +166,10 @@
     <ClCompile Include="..\DataServer\src\PlayerMission.cpp" />
     <ClCompile Include="..\DataServer\src\PokerCircle.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
+    <ClCompile Include="..\ServerCommon\RewardConfig.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp" />
+    <ClCompile Include="..\ServerCommon\SeverUtility.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>

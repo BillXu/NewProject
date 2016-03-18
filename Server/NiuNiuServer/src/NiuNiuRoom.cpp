@@ -43,16 +43,21 @@ void CNiuNiuRoom::prepareState()
 	}
 }
 
-void CNiuNiuRoom::serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )
+void CNiuNiuRoom::serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )
 {
-	ISitableRoom::serializationFromDB(nRoomID,vJsValue);
-	m_nBaseBet = vJsValue["baseBet"].asUInt();
+	ISitableRoom::serializationFromDB(pConfig,nRoomID,vJsValue);
+	m_nBaseBet = ((stNiuNiuRoomConfig*)pConfig)->nBaseBet;
 }
 
 void CNiuNiuRoom::willSerializtionToDB(Json::Value& vOutJsValue)
 {
 	ISitableRoom::willSerializtionToDB(vOutJsValue);
-	vOutJsValue["baseBet"] = m_nBaseBet ;
+}
+
+void CNiuNiuRoom::roomItemDetailVisitor(Json::Value& vOutJsValue)
+{
+	ISitableRoom::roomItemDetailVisitor(vOutJsValue) ;
+	//vOutJsValue["baseBet"] = getBaseBet() ;
 }
 
 ISitableRoomPlayer* CNiuNiuRoom::doCreateSitableRoomPlayer()
@@ -74,26 +79,26 @@ bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 
 	switch ( prealMsg->usMsgType )
 	{
-	case MSG_REQUEST_ROOM_INFORM:
-		{
-			std::string strInform = getRewardDesc() ;
-			stMsgRequestNiuNiuRoomInformRet msg ;
+	//case MSG_REQUEST_ROOM_INFORM:
+	//	{
+	//		std::string strInform = getRewardDesc() ;
+	//		stMsgRequestNiuNiuRoomInformRet msg ;
 
-			msg.nLen = strlen(strInform.c_str() );
-			if ( msg.nLen == 0 )
-			{
-				sendMsgToPlayer(&msg,sizeof(msg),nPlayerSessionID) ;
-				return true ;
-			}
+	//		msg.nLen = strlen(strInform.c_str() );
+	//		if ( msg.nLen == 0 )
+	//		{
+	//			sendMsgToPlayer(&msg,sizeof(msg),nPlayerSessionID) ;
+	//			return true ;
+	//		}
 
-			uint16_t nLen = sizeof(msg) + msg.nLen ;
-			char* pBuffer = new char[nLen];
-			memcpy(pBuffer,&msg,sizeof(msg));
-			memcpy(pBuffer + sizeof(msg),strInform.c_str(),msg.nLen);
-			sendMsgToPlayer((stMsg*)pBuffer,nLen,nPlayerSessionID) ;
-			delete[] pBuffer ;
-		}
-		break;
+	//		uint16_t nLen = sizeof(msg) + msg.nLen ;
+	//		char* pBuffer = new char[nLen];
+	//		memcpy(pBuffer,&msg,sizeof(msg));
+	//		memcpy(pBuffer + sizeof(msg),strInform.c_str(),msg.nLen);
+	//		sendMsgToPlayer((stMsg*)pBuffer,nLen,nPlayerSessionID) ;
+	//		delete[] pBuffer ;
+	//	}
+	//	break;
 	case MSG_NN_MODIFY_ROOM_NAME:
 		{
 			stMsgModifyNiuNiuRoomNameRet msgBack ;
@@ -201,17 +206,19 @@ void CNiuNiuRoom::sendRoomInfoToPlayer(uint32_t nSessionID)
 
 	uint8_t nSeatCount = getSeatCount();
 	stNNRoomInfoPayerItem item ;
+	uint8_t nDisCardCnt = getDistributeCardCnt();
 	for ( uint8_t nIdx = 0 ; nIdx < nSeatCount ; ++nIdx )
 	{
 		CNiuNiuRoomPlayer* psit = (CNiuNiuRoomPlayer*)getPlayerByIdx(nIdx) ;
 		if ( psit )
 		{
+			memset(item.vHoldChard,0,sizeof(item.vHoldChard)) ;
 			item.nBetTimes = psit->getBetTimes() ;
 			item.nCoin = psit->getCoin() ;
 			item.nIdx = psit->getIdx() ;
 			item.nStateFlag = psit->getState() ;
 			item.nUserUID = psit->getUserUID() ;
-			for ( uint8_t nCardIdx = 0 ; nCardIdx < NIUNIU_HOLD_CARD_COUNT ; ++nCardIdx )
+			for ( uint8_t nCardIdx = 0 ; nCardIdx < nDisCardCnt ; ++nCardIdx )
 			{
 				item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx) ;
 			}
@@ -231,6 +238,26 @@ void CNiuNiuRoom::onTimeSave(bool bRightNow)
 uint8_t CNiuNiuRoom::getMaxRate()
 {
 	return getReateByNiNiuType(CNiuNiuPeerCard::NiuNiuType::Niu_FiveSmall,10);
+}
+
+uint8_t CNiuNiuRoom::getDistributeCardCnt()
+{
+	uint32_t nState = getCurRoomState()->getStateID() ;
+	switch (nState)
+	{
+	case eRoomState_NN_Disribute4Card:
+	case eRoomState_NN_TryBanker:
+	case eRoomState_NN_RandBanker:
+	case eRoomState_NN_StartBet:
+		return 4 ;
+	case eRoomState_NN_FinalCard:
+	case eRoomState_NN_CaculateCard:
+	case eRoomState_NN_GameResult:
+		return 5 ;
+	default:
+		break;
+	}
+	return 0 ;
 }
 
 uint32_t CNiuNiuRoom::getBaseBet()
@@ -364,7 +391,7 @@ void CNiuNiuRoom::prepareCards()
 
 uint32_t CNiuNiuRoom::coinNeededToSitDown()
 {
-	return getBaseBet()* 4 * getMaxRate() * 25 * 2 + getDeskFee() ;
+	return getBaseBet()* 4 * getMaxRate() * 5 + getDeskFee() ;
 }
 
 void CNiuNiuRoom::caculateGameResult()
@@ -452,9 +479,6 @@ void CNiuNiuRoom::caculateGameResult()
 	CLogMgr::SharedLogMgr()->PrintLog("result player idx = %d , finalCoin = %llu, offset coin = %I64d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
 
 	sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
-}
 
-bool CNiuNiuRoom::canStartGame()
-{
-	return getPlayerCntWithState(eRoomPeer_WaitNextGame) >= 2 ;
+	debugRank();
 }

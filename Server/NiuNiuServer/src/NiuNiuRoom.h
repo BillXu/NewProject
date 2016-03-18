@@ -7,8 +7,9 @@ class CNiuNiuRoom
 public:
 	CNiuNiuRoom();
 	bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID , Json::Value& vJsValue)override;
-	void serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )override;
+	void serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
+	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
 	void prepareState()override ;
 	void sendMsgToPlayer( stMsg* pmsg , uint16_t nLen , uint32_t nSessionID )override;
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID ) override;
@@ -19,6 +20,7 @@ public:
 	void setBetBottomTimes(uint8_t nTimes ){ m_nBetBottomTimes = nTimes ;}
 	uint8_t getBetBottomTimes(){ return m_nBetBottomTimes ;}
 	uint8_t getMaxRate();
+	uint8_t getDistributeCardCnt();
 	uint32_t getBaseBet(); // ji chu di zhu ;
 	uint64_t& getBankCoinLimitForBet();
 	void setBankCoinLimitForBet( uint64_t nCoin );
@@ -33,7 +35,6 @@ public:
 	uint8_t getRoomType()override{ return eRoom_NiuNiu ;}
 	void prepareCards()override;
 	uint32_t coinNeededToSitDown()override;
-	bool canStartGame()override ;
 	void caculateGameResult();
 protected:
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;

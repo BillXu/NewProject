@@ -2,6 +2,7 @@
 #include "TaxasMessageDefine.h"
 #include "assert.h"
 #include <string>
+#include "RobotControlTaxas.h"
 //#include "cocos2d.h"
 void CTaxasPokerData::setTaxasPlayerData(stTaxasPeerBaseData* pdata )
 {
@@ -25,6 +26,11 @@ void CTaxasPokerData::setTaxasPlayerData(stTaxasPeerBaseData* pdata )
 
 bool CTaxasPokerData::onMsg(stMsg* pmsg )
 {
+	if ( CSitableRoomData::onMsg(pmsg) )
+	{
+		return true ;
+	}
+
 	switch (pmsg->usMsgType)
 	{
 	case MSG_TP_ROOM_BASE_INFO:
@@ -54,6 +60,7 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 				if ( pPlayer == nullptr )
 				{
 					pPlayer = new stTaxasPlayer ;
+					m_vSitDownPlayer[pRet->nSeatIdx] = pPlayer ;
 				}
 				pPlayer->reset() ;
 				pPlayer->nBetCoinThisRound = pRet->nBetCoinThisRound ;
@@ -122,6 +129,10 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 		{
 			stMsgTaxasRoomWaitPlayerAct* pRet = (stMsgTaxasRoomWaitPlayerAct*)pmsg ;
 			nCurWaitPlayerActionIdx = pRet->nActPlayerIdx ;
+			if ( nCurWaitPlayerActionIdx == m_pRobot->getSeatIdx() )
+			{
+				m_pRobot->informRobotAction(0) ;
+			}
 			printf("wait act idx = %d\n",nCurWaitPlayerActionIdx);
 		}
 		break;
@@ -153,7 +164,7 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 					}
 					pPlayer->betCoin(nBetCoin);
 					
-					printf("data here follow bet coin this round = %I64d\n",pPlayer->nBetCoinThisRound);
+					printf("data here follow bet coin this round = %d\n",pPlayer->nBetCoinThisRound);
 				}
 				break;
 			case eRoomPeerAction_GiveUp:
@@ -197,7 +208,7 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 				break;
 			}
 			pPlayer->nCurAct = pret->nPlayerAct ;
-			printf("recieved player do act = %d , value = %I64d, final coin = %I64d\n",pret->nPlayerAct,pret->nValue,pPlayer->nCoin);
+			printf("recieved player do act = %d , value = %I64d, final coin = %d\n",pret->nPlayerAct,pret->nValue,pPlayer->nCoin);
 		}
 		break;
 	case MSG_TP_PUBLIC_CARD:
@@ -316,4 +327,9 @@ void CTaxasPokerData::resetBetRoundState()
 		pPlayer->nBetCoinThisRound = 0 ;
 		pPlayer->nCurAct = eRoomPeerAction_None ;
 	}
+}
+
+CRobotControl* CTaxasPokerData::doCreateRobotControl()
+{
+	return new CRobotControlTaxas ;
 }

@@ -4,6 +4,9 @@
 #include "PlayerMail.h"
 #include "EventCenter.h"
 #include "LogManager.h"
+#include "RewardConfig.h"
+#include "ServerStringTable.h"
+#include "ExchangeCenter.h"
 #ifndef USHORT_MAX
 #define USHORT_MAX 65535 
 #endif
@@ -43,10 +46,16 @@ bool CGameServerApp::init()
 	}
 	setConnectServerConfig(pConfig);
 
+	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
+	CRewardConfig::getInstance()->LoadFile("../configFile/rewardConfig.txt");
+
 	m_pConfigManager = new CConfigManager ;
 	m_pConfigManager->LoadAllConfigFile("../configFile/") ;
 	// init component ;
 	m_pPlayerManager = new CPlayerManager ;
+
+	auto pExc = new CExchangeCenter("../configFile/exchange.txt");
+	registerModule(pExc);
 	
 	time_t tNow = time(NULL) ;
 	m_nCurDay = localtime(&tNow)->tm_mday ;
@@ -106,5 +115,12 @@ void CGameServerApp::CheckNewDay()
 
 void CGameServerApp::onConnectedToSvr()
 {
+	IServerApp::onConnectedToSvr() ;
 	m_tPokerCircle.readTopics();
+}
+
+void CGameServerApp::onExit()
+{
+	IServerApp::onExit() ;
+	m_pPlayerManager->onExit() ;
 }

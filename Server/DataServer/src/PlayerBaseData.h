@@ -27,7 +27,7 @@ public:
 	void TimerSave()override;
 	uint64_t GetAllCoin(){ return m_stBaseData.nCoin;}
 	uint64_t getCoin(){ return m_stBaseData.nCoin ; }
-	uint64_t GetAllDiamoned(){ return m_stBaseData.nDiamoned;}
+	uint32_t GetAllDiamoned(){ return m_stBaseData.nDiamoned;}
 	void setCoin(int64_t nCoin ){ m_bMoneyDataDirty = m_stBaseData.nCoin != nCoin ; m_stBaseData.nCoin = nCoin ; }
 	bool AddMoney(int64_t nOffset,bool bDiamond = false );
 	bool decressMoney(int64_t nOffset,bool bDiamond = false );
@@ -44,10 +44,14 @@ public:
 	uint16_t GetPhotoID(){ return m_stBaseData.nPhotoID ;}
 	bool isPlayerRegistered();
 	uint8_t getNewPlayerHaloWeight();
+	void setNewPlayerHalo(uint8_t nPlayHalo );
 	uint32_t getTempCoin(){ return m_nTempCoin ; }
 	void setTempCoin( uint32_t nTempCoin ){ m_bMoneyDataDirty = m_nTempCoin != nTempCoin ; m_nTempCoin = nTempCoin ; }
+	void onGetReward( uint8_t nIdx ,uint16_t nRewardID, uint16_t nGameType , uint32_t nRoomID );
+	ePlayerType getPlayerType(){ return m_ePlayerType ;}
 protected:
 	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
+	void onBeInviteBy(uint32_t nInviteUID );
 public:
 	friend class CPlayerOnlineBox ;
 protected:
@@ -55,6 +59,7 @@ protected:
 	void OnNewDay(stEventArg* pArg);
 private:
 	stServerBaseData m_stBaseData ;
+	ePlayerType m_ePlayerType ; 
 	uint32_t m_nTempCoin ;
 
 	std::string m_strCurIP ; // ip address ; used by wechat pay ;

@@ -2,7 +2,7 @@
 bool CServerStringTable::OnPaser(CReaderRow& refReaderRow )
 {
 	m_allString.vMapIDString[refReaderRow["id"]->IntValue()] = refReaderRow["stringValue"]->StringValue();
-	printf("%s\n",refReaderRow["stringValue"]->StringValue());
+	//printf("%s\n",refReaderRow["stringValue"]->StringValue());
 	return true ;
 }
 

@@ -339,7 +339,7 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 // 			CRobotManager::SharedRobotMgr()->AddIdleRobotPlayer(this) ;
 // 		}
 // 		break;
-	case MSG_ROBOT_ADD_MONEY:
+	case MSG_ADD_MONEY:
 		{
 			stMsgRobotAddMoney* pAdd = (stMsgRobotAddMoney*)pMsg ;
 			GetBaseData()->AddMoney(pAdd->nWantCoin);

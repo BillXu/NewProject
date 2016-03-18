@@ -6,6 +6,7 @@
 #include <time.h>
 #include <assert.h>
 #include <synchapi.h>
+#include "IGlobalModule.h"
 
 #define TIME_WAIT_FOR_RECONNECT 5
 bool IServerApp::init()
@@ -20,6 +21,7 @@ bool IServerApp::init()
 	m_pTimerMgr = new CTimerManager ;
 
 	m_fReconnectTick = 0 ;
+
 	return true ;
 }
 
@@ -30,10 +32,17 @@ IServerApp::IServerApp()
 	m_eConnectState = CNetWorkMgr::eConnectType_None ;
 	memset(&m_stConnectConfig,0,sizeof(m_stConnectConfig));
 	m_fReconnectTick = 0 ;
+	m_vAllModule.clear() ;
 }
 
 IServerApp::~IServerApp()
 {
+	for ( auto pp : m_vAllModule )
+	{
+		delete pp.second ;
+		pp.second = nullptr ;
+	}
+
 	if ( m_pTimerMgr )
 	{
 		delete m_pTimerMgr ;
@@ -190,6 +199,13 @@ void IServerApp::stop()
 
 bool IServerApp::onLogicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
 {
+	for ( auto pp : m_vAllModule )
+	{
+		if ( pp.second->onMsg(prealMsg,eSenderPort,nSessionID) )
+		{
+			return true ;
+		}
+	}
 	return false ;
 }
 
@@ -204,6 +220,12 @@ void IServerApp::update(float fDeta )
 			doConnectToTargetSvr() ;
 			m_fReconnectTick = 0 ;
 		}
+	}
+
+	// moudle update ;
+	for ( auto pp : m_vAllModule )
+	{
+		pp.second->update(fDeta);
 	}
 }
 
@@ -275,4 +297,38 @@ uint16_t IServerApp::getVerifyType()
 		break;
 	}
 	return MSG_VERIFY_END ;
+}
+
+void IServerApp::onExit()
+{
+	for ( auto pp : m_vAllModule )
+	{
+		pp.second->onExit();
+	}
+}
+
+void IServerApp::onConnectedToSvr()
+{
+	for ( auto pp : m_vAllModule )
+	{
+		pp.second->onConnectedSvr();
+	}
+}
+
+void IServerApp::registerModule(IGlobalModule* pModule)
+{
+	auto pp = getModuleByType(pModule->getModuleType()) ;
+	assert(pp == nullptr && "already have this module" );
+	m_vAllModule[pModule->getModuleType()] = pModule ;
+	pModule->init(this);
+}
+
+IGlobalModule* IServerApp::getModuleByType(uint16_t nType )
+{
+	auto pp = m_vAllModule.find(nType) ;
+	if ( pp != m_vAllModule.end() )
+	{
+		return pp->second ;
+	}
+	return pp->second ;
 }

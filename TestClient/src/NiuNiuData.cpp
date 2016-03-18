@@ -69,7 +69,7 @@ bool stNiuNiuData::isHaveNiu(uint8_t nIdx )
 	{
 		if ( (pPlayerItem->vHoldChard[nIdx] > 0 && pPlayerItem->vHoldChard[nIdx] <= 54) != true )
 		{
-			printf("recived card error can not tell wheth have niu , num = %d\n") ;
+			printf("recived card error can not tell wheth have niu , num = %d\n",pPlayerItem->vHoldChard[nIdx]) ;
 			return false ;
 		}
 
@@ -123,6 +123,7 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 				{
 					memcpy(pPlayerItem->vHoldChard,pItem->vCardCompsitNum,sizeof(pItem->vCardCompsitNum));
 				}
+				++pItem;
 			}
 		}
 		break;
@@ -143,6 +144,7 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 				if ( pPlayer == nullptr )
 				{
 					pPlayer = new stNiuNiuPlayer ;
+					m_vSitDownPlayer[pPlayerItem->nIdx] = pPlayer;
 				}
 				pPlayer->reset();
 				pPlayer->nBetTimes = pPlayerItem->nBetTimes ;
@@ -194,5 +196,10 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 		return false;
 	}
 	return true ;
+}
+
+CRobotControl* stNiuNiuData::doCreateRobotControl()
+{
+	return new CRobotControlNiuNiu ;
 }
 

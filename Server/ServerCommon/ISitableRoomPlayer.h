@@ -22,13 +22,16 @@ public:
 	virtual void reset(IRoom::stStandPlayer* pPlayer);
 	bool isHaveHalo();
 	virtual void switchPeerCard(ISitableRoomPlayer* pPlayer ) = 0;
-	uint8_t getHaloWeight(){ return nNewPlayerHaloWeight ; }
 	bool isDelayStandUp(){ return m_isDelayStandUp ;}
 	void delayStandUp(){ m_isDelayStandUp = true ; }
 	uint32_t getWinTimes(){ return nWinTimes ; }
 	uint32_t getPlayTimes(){ return nPlayTimes ;}
 	uint64_t getSingleWinMost(){ return nSingleWinMost ;}
 	void increaseWinTimes(){ ++nWinTimes ;}
+	void setTempHaloWeight( uint16_t nTempHalo ){ nTempHaloWeight = nTempHalo ; }
+	uint8_t getHaloWeight(){ return nNewPlayerHaloWeight; }
+private:
+	uint16_t getTotalHaloWeight(){ return nNewPlayerHaloWeight + nTempHaloWeight; }
 private:
 	bool m_isDelayStandUp;
 	uint8_t m_nIdx ;
@@ -39,6 +42,7 @@ private:
 	uint32_t nUserUID ;
 	uint32_t nSessionID ;
 	uint8_t nNewPlayerHaloWeight;
+	uint16_t nTempHaloWeight ;
 	uint32_t nPlayTimes ;
 	uint32_t nWinTimes ;
 	uint64_t nSingleWinMost ;

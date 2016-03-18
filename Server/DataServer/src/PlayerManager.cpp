@@ -10,21 +10,106 @@
 #include "AutoBuffer.h"
 #include "PlayerMail.h"
 #include "PlayerGameData.h"
+#include "RewardConfig.h"
+
+void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* pRecData)
+{
+	if ( isContentData() )
+	{
+		CLogMgr::SharedLogMgr()->SystemLog("already have player data uid = %d , recive twice ",pData->nUserUID );
+		return ;
+	}
+
+	if ( pRecData )
+	{
+		pData = new stPlayerDetailData ;
+		memcpy(pData,pRecData,sizeof(stPlayerDetailData));
+	}
+	else
+	{
+		pData = nullptr ;
+	}
+
+	if ( vBrifeSubscribers.size() > 0  )
+	{
+		stMsgRequestPlayerDataRet msgBack ;
+		msgBack.nRet = isContentData() ? 0 : 1 ;
+		msgBack.isDetail = false ;
+
+		CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailDataClient));
+		auB.addContent(&msgBack,sizeof(msgBack));
+		if ( msgBack.nRet == 0 )
+		{
+			uint16_t nLen = sizeof(stPlayerBrifData) ;
+			auB.addContent((char*)pData,nLen );
+		}
+
+		for ( auto pp : vBrifeSubscribers )
+		{
+			CGameServerApp::SharedGameServerApp()->sendMsg(pp.second.nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("send data detail profile to subscrible = %d",pp.second.nSessionID) ;
+		}
+
+		vBrifeSubscribers.clear() ;
+	}
+
+	if ( vDetailSubscribers.size() > 0 )
+	{
+		stMsgRequestPlayerDataRet msgBack ;
+		msgBack.nRet = isContentData() ? 0 : 1 ;
+		msgBack.isDetail = true ;
+
+		CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailDataClient));
+		auB.addContent(&msgBack,sizeof(msgBack));
+		if ( msgBack.nRet == 0 )
+		{
+			uint16_t nLen = sizeof(stPlayerDetailDataClient) ;
+			auB.addContent((char*)pData,nLen );
+		}
+
+		for ( auto pp : vDetailSubscribers )
+		{
+			CGameServerApp::SharedGameServerApp()->sendMsg(pp.second.nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("send data profile detail to subscrible = %d",pp.second.nSessionID) ;
+		}
+	}
+
+}
+
+void CSelectPlayerDataCacher::stPlayerDataPrifle::addSubscriber( uint32_t nSessionId , bool isDetail )
+{
+	if ( isDetail )
+	{
+		auto iter = vDetailSubscribers.find(nSessionId) ;
+		if ( iter == vDetailSubscribers.end() )
+		{
+			stSubscriber vt ;
+			vt.isDetail = isDetail ;
+			vt.nSessionID = nSessionId ;
+			vDetailSubscribers[nSessionId] = vt ;
+		}
+	}
+	else
+	{
+		auto iter = vBrifeSubscribers.find(nSessionId) ;
+		if ( iter == vBrifeSubscribers.end() )
+		{
+			stSubscriber vt ;
+			vt.isDetail = isDetail ;
+			vt.nSessionID = nSessionId ;
+			vBrifeSubscribers[nSessionId] = vt ;
+		}
+	}
+
+}
+
 CSelectPlayerDataCacher::CSelectPlayerDataCacher()
 {
-	m_vBrifData.clear();
 	m_vDetailData.clear();
 }
 
 CSelectPlayerDataCacher::~CSelectPlayerDataCacher()
 {
-	for ( MAP_ID_DATA::value_type va : m_vBrifData )
-	{
-		delete va.second ;
-		va.second = nullptr ;
-	}
-	m_vBrifData.clear() ;
-
 	for ( MAP_ID_DATA::value_type va : m_vDetailData )
 	{
 		delete va.second ;
@@ -35,20 +120,12 @@ CSelectPlayerDataCacher::~CSelectPlayerDataCacher()
 
 void CSelectPlayerDataCacher::removePlayerDataCache( uint32_t nUID )
 {
-	MAP_ID_DATA::iterator iter = m_vBrifData.find(nUID) ;
-	if ( iter != m_vBrifData.end() )
-	{
-		delete iter->second ;
-		m_vBrifData.erase(iter) ;
-		return ;
-	}
-
-	iter = m_vDetailData.find(nUID) ;
+	auto iter = m_vDetailData.find(nUID) ;
 	if ( iter != m_vDetailData.end() )
 	{
 		delete iter->second ;
+		iter->second = nullptr ;
 		m_vDetailData.erase(iter) ;
-		return ;
 	}
 }
 
@@ -57,50 +134,92 @@ void CSelectPlayerDataCacher::cachePlayerData(stMsgSelectPlayerDataRet* pmsg )
 	if ( pmsg->nRet )
 	{
 		CLogMgr::SharedLogMgr()->PrintLog("cahe player data failed");
-		return ;
 	}
 
 	stPlayerBrifData* pData = (stPlayerBrifData*)((char*)pmsg + sizeof(stMsgSelectPlayerDataRet));
-	if ( pmsg->isDetail )
+	if ( !pmsg->isDetail )
 	{
-		removePlayerDataCache(pData->nUserUID);
-		stPlayerDetailDataClient* pCdata = new stPlayerDetailDataClient ;
-		memcpy(pCdata,pData,sizeof(stPlayerDetailDataClient));
-		m_vDetailData[pData->nUserUID] = pCdata ;
+		CLogMgr::SharedLogMgr()->ErrorLog("here must is detail , uid = %d",pData->nUserUID ) ;
+	}
+
+	if ( pmsg->nRet )
+	{
+		pData = nullptr ;
+	}
+
+	auto iter = m_vDetailData.find(pmsg->nDataPlayerUID) ;
+	if ( iter == m_vDetailData.end() )
+	{
+		if ( pData )
+		{
+			stPlayerDataPrifle* pDataPri = new stPlayerDataPrifle ;
+			pDataPri->nPlayerUID = pData->nUserUID ;
+			pDataPri->recivedData(pData);
+			m_vDetailData[pDataPri->nPlayerUID] = pDataPri  ;
+			CLogMgr::SharedLogMgr()->ErrorLog("why no cacher foot print uid = %d",pData->nUserUID) ;
+		}
+		else
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("what is this situation for data prifle uid = %d",pmsg->nDataPlayerUID) ;
+		}
 	}
 	else
 	{
-		stPlayerBrifData* pCdata = new stPlayerBrifData ;
-		memcpy(pCdata,pData,sizeof(stPlayerBrifData));
-		m_vBrifData[pData->nUserUID] = pCdata ;
+		CLogMgr::SharedLogMgr()->PrintLog("recievd data prifle uid = %d",pData->nUserUID) ;
+		iter->second->recivedData(pData) ;
+		removePlayerDataCache(pmsg->nDataPlayerUID);
 	}
 }
 
-bool CSelectPlayerDataCacher::getPlayerData(uint32_t nUID , stPlayerBrifData* pData , bool isDetail )
+bool CSelectPlayerDataCacher::sendPlayerDataProfile(uint32_t nReqUID ,bool isDetail , uint32_t nSubscriberSessionID )
 {
-	MAP_ID_DATA::iterator iter ;
-	if ( isDetail )
+	MAP_ID_DATA::iterator iter = m_vDetailData.find(nReqUID) ;
+	if ( iter == m_vDetailData.end() )
 	{
-		iter = m_vDetailData.find(nUID) ;
-		if ( iter == m_vDetailData.end() )
+		stPlayerDataPrifle* pData = new stPlayerDataPrifle ;
+		pData->nPlayerUID = nReqUID ;
+		pData->addSubscriber(nSubscriberSessionID,isDetail) ;
+		m_vDetailData[pData->nPlayerUID] = pData  ;
+
+		stMsgSelectPlayerData msgReq ;
+		msgReq.isDetail = true ;
+		msgReq.nTargetPlayerUID = nReqUID ;
+		CGameServerApp::SharedGameServerApp()->sendMsg(nSubscriberSessionID,(char*)&msgReq,sizeof(msgReq)) ;
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d not online req form db , add session id = %d to subscrible list" , nReqUID,nSubscriberSessionID) ;
+		pData->tRequestDataTime = time(nullptr) ;
+		return true ;
+	}
+
+	auto pData = iter->second ;
+	if ( pData->isContentData() == false )
+	{
+		pData->addSubscriber(nSubscriberSessionID,isDetail) ;
+		CLogMgr::SharedLogMgr()->PrintLog("already req uid = %d data , just add session id  = %d to subscrible list",nReqUID,nSubscriberSessionID) ;
+
+		time_t tNow = time(nullptr) ;
+		if ( (tNow - iter->second->tRequestDataTime) > 6 )
 		{
-			return false ;
+			stMsgSelectPlayerData msgReq ;
+			msgReq.isDetail = true ;
+			msgReq.nTargetPlayerUID = nReqUID ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(nSubscriberSessionID,(char*)&msgReq,sizeof(msgReq)) ;
+			pData->tRequestDataTime = time(nullptr) ;
+			CLogMgr::SharedLogMgr()->PrintLog("request uid = %d data time out , request again",pData->nPlayerUID) ;
 		}
 	}
 	else
 	{
-		iter = m_vBrifData.find(nUID) ;
-		if ( iter == m_vBrifData.end() )
-		{
-			iter = m_vDetailData.find(nUID) ;
-			if ( iter == m_vDetailData.end() )
-			{
-				return false ;
-			}
-		}
+		stMsgRequestPlayerDataRet msgBack ;
+		msgBack.nRet = 0 ;
+		msgBack.isDetail = isDetail ;
+	
+		CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailDataClient));
+		auB.addContent(&msgBack,sizeof(msgBack));
+		uint16_t nLen = isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ;
+		auB.addContent((char*)pData->pData,nLen );
+		CGameServerApp::SharedGameServerApp()->sendMsg(nSubscriberSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+		CLogMgr::SharedLogMgr()->PrintLog("send data profile uid = %d to subscrible = %d",nReqUID,nSubscriberSessionID) ;
 	}
- 
-	memcpy(pData,iter->second,isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData));
 	return true ;
 }
 
@@ -115,6 +234,7 @@ CPlayerManager::~CPlayerManager()
 	MAP_SESSIONID_PLAYERS::iterator iter = m_vAllActivePlayers.begin();
 	for ( ; iter != m_vAllActivePlayers.end() ; ++iter )
 	{
+		iter->second->OnPlayerDisconnect();
 		delete iter->second ;
 		iter->second = NULL ;
 	}
@@ -127,6 +247,21 @@ CPlayerManager::~CPlayerManager()
 		iter_R->second = NULL ;
 	}
 	m_vOfflinePlayers.clear() ;
+}
+
+void CPlayerManager::onExit()
+{
+	MAP_SESSIONID_PLAYERS::iterator iter = m_vAllActivePlayers.begin();
+	for ( ; iter != m_vAllActivePlayers.end() ; ++iter )
+	{
+		iter->second->OnPlayerDisconnect();
+	}
+
+	MAP_UID_PLAYERS::iterator iter_R = m_vOfflinePlayers.begin() ;
+	for ( ; iter_R != m_vOfflinePlayers.end(); ++iter_R )
+	{
+		iter_R->second->OnPlayerDisconnect();
+	}
 }
 
 bool CPlayerManager::OnMessage( stMsg* pMessage , eMsgPort eSenderPort , uint32_t nSessionID )
@@ -282,43 +417,13 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				return true ;
 			}
 
-			if ( m_tPlayerDataCaher.getPlayerData(pRet->nPlayerUID,&stData,pRet->isDetail) )
-			{
-				auB.addContent(&msgBack,sizeof(msgBack));
-				auB.addContent(&stData,pRet->isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
-				CLogMgr::SharedLogMgr()->PrintLog("get player data from cahe") ;
-				return true ;
-			}
-
-			CLogMgr::SharedLogMgr()->PrintLog("req detail player not online , req from db target uid = %u",pRet->nPlayerUID) ;
-			stMsgSelectPlayerData msgReq ;
-			msgReq.isDetail = pRet->isDetail ;
-			msgReq.nReqPlayerSessionID = nSessionID  ;
-			msgReq.nTargetPlayerUID = pRet->nPlayerUID ;
-			CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgReq,sizeof(msgReq)) ;
+			m_tPlayerDataCaher.sendPlayerDataProfile(pRet->nPlayerUID,pRet->isDetail,nSessionID);
 		}
 		break;
 	case MSG_SELECT_DB_PLAYER_DATA:
 		{
 			stMsgSelectPlayerDataRet* pRet = (stMsgSelectPlayerDataRet*)prealMsg ;
-			stMsgRequestPlayerDataRet msgBack ;
-			msgBack.nRet = pRet->nRet ;
-			msgBack.isDetail = pRet->isDetail ;
-			if ( pRet->nRet )
-			{
-				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nReqPlayerSessionID,(char*)&msgBack,sizeof(msgBack)) ;
-			}
-			else
-			{
-				m_tPlayerDataCaher.cachePlayerData(pRet);
-				CAutoBuffer auB (sizeof(msgBack) + sizeof(stPlayerDetailDataClient));
-				auB.addContent(&msgBack,sizeof(msgBack));
-				uint16_t nLen = pRet->isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ;
-				auB.addContent((char*)prealMsg + sizeof(stMsgSelectPlayerDataRet),nLen );
-				CGameServerApp::SharedGameServerApp()->sendMsg(pRet->nReqPlayerSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
-			}
-			CLogMgr::SharedLogMgr()->PrintLog("session id = %d req play data ret = %d",pRet->nReqPlayerSessionID,pRet->nRet ) ;
+			m_tPlayerDataCaher.cachePlayerData(pRet);
 		}
 		break;
 	case MSG_PLAYER_LOGIN:
@@ -620,15 +725,39 @@ bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eM
 {
 	if ( pRequest->nRequestType == eCrossSvrReq_Inform )
 	{
-		CPlayer* pp = GetPlayerByUserUID(pRequest->nTargetID) ;
-		if ( pp )
+		CPlayerMailComponent::PostMailToPlayer(eMail_PlainText,((char*)pRequest) + sizeof(stMsgCrossServerRequest),pRequest->nJsonsLen,pRequest->nTargetID) ;
+		return true ;
+	}
+	else if ( eCrossSvrReq_GameOver == pRequest->nRequestType )
+	{
+		if ( vJsValue->isArray() == false || vJsValue->size() == 0 )
 		{
-			((CPlayerMailComponent*)pp->GetComponent(ePlayerComponent_Mail))->ReciveMail(((char*)pRequest) + sizeof(stMsgCrossServerRequest),pRequest->nJsonsLen);
+			CLogMgr::SharedLogMgr()->ErrorLog("why game over result is null room type = %d room id = %d",(uint32_t)pRequest->vArg[0],pRequest->nReqOrigID) ;
+			return true ;
 		}
-		else
+
+		for ( uint8_t nIdx = 0 ; nIdx < vJsValue->size(); ++nIdx )
 		{
-			CPlayerMailComponent::PostMailToDB(((char*)pRequest) + sizeof(stMsgCrossServerRequest),pRequest->nJsonsLen,pRequest->nTargetID);
+			Json::Value item = (*vJsValue)[nIdx] ;
+			uint32_t nUID = item["userUID"].asInt() ;
+			uint16_t nRewardID = item["rewardID"].asInt() ;
+			CPlayer* pp = GetPlayerByUserUID(nUID) ;
+			if ( pp )
+			{
+				pp->GetBaseData()->onGetReward(nIdx,nRewardID,(uint16_t)pRequest->vArg[0],pRequest->nReqOrigID) ;
+			}
+			else
+			{	
+				Json::Value jEventArg ;
+				jEventArg["rewardID"] = nRewardID;
+				jEventArg["gameType"] = (uint16_t)pRequest->vArg[0];
+				jEventArg["roomID"] = pRequest->nReqOrigID;
+				jEventArg["rankIdx"] = nIdx ;
+				CPlayerMailComponent::PostOfflineEvent(CPlayerMailComponent::Event_Reward,jEventArg,nUID);
+			}
+
 		}
+
 		return true ;
 	}
 	return false ;

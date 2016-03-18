@@ -56,20 +56,26 @@ bool CTaxasRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& 
 	return true ;
 }
 
-void CTaxasRoom::serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )
+void CTaxasRoom::serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )
 {
-	m_nLittleBlind = vJsValue["littleBlind"].asInt();
-	m_nMinTakeIn = vJsValue["miniTakeIn"].asInt() ;
-	m_nMaxTakeIn = vJsValue["maxTakeIn"].asInt();
-	ISitableRoom::serializationFromDB(nRoomID,vJsValue) ;
+	stTaxasRoomConfig* pRoomConfig = (stTaxasRoomConfig*)pConfig ;
+	m_nLittleBlind = pRoomConfig->nBigBlind * 0.5f ;
+	m_nMinTakeIn = pRoomConfig->nMiniTakeInCoin ;
+	m_nMaxTakeIn = pRoomConfig->nMaxTakeInCoin;
+	ISitableRoom::serializationFromDB(pConfig,nRoomID,vJsValue) ;
 }
 
 void CTaxasRoom::willSerializtionToDB(Json::Value& vOutJsValue)
 {
-	vOutJsValue["littleBlind"] = m_nLittleBlind ;
-	vOutJsValue["miniTakeIn"] = m_nMinTakeIn ;
-	vOutJsValue["maxTakeIn"] = m_nMaxTakeIn ;
 	ISitableRoom::willSerializtionToDB(vOutJsValue) ;
+}
+
+void CTaxasRoom::roomItemDetailVisitor(Json::Value& vOutJsValue)
+{
+	ISitableRoom::roomItemDetailVisitor(vOutJsValue) ;
+	//vOutJsValue["bigBlind"] = getLittleBlind() * 2 ;
+	//vOutJsValue["minTakeIn"] = getMinTakeIn() ;
+	//vOutJsValue["maxTakeIn"] = getMaxTakeIn() ;
 }
 
 void CTaxasRoom::prepareState()
@@ -147,11 +153,6 @@ bool CTaxasRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nP
 		return false ;
 	}
 	return true ;
-}
-
-bool CTaxasRoom::canStartGame()
-{
-	return getPlayerCntWithState(eRoomPeer_WaitNextGame) >= 2;
 }
 
 ISitableRoomPlayer* CTaxasRoom::doCreateSitableRoomPlayer()
@@ -351,6 +352,14 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 	msgOtherAct.nValue = nValue ;
 	sendRoomMsg(&msgOtherAct,sizeof(msgOtherAct)) ;
 	CLogMgr::SharedLogMgr()->PrintLog("player do act") ;
+
+	if ( pData->isDelayStandUp() && act == eRoomPeerAction_GiveUp )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d have delay standup , give up act , right standup and update offset ",pData->getUserUID());
+		updatePlayerOffset(pData->getUserUID(),pData->getCoinOffsetThisGame());
+		playerDoStandUp(pData);	
+	}
+
 	return 0 ;
 }
 
@@ -960,7 +969,7 @@ void CTaxasRoom::CaculateVicePool(stVicePool& pPool )
 	}
 
 	CTaxasPlayer* pWiner = nullptr ;
-	for ( uint8_t nIdx = m_vSortByPeerCardsAsc.size() - 1 ; nIdx >= 0; --nIdx )
+	for ( int8_t nIdx = m_vSortByPeerCardsAsc.size() - 1 ; nIdx >= 0; --nIdx )
 	{
 		CTaxasPlayer* pData = (CTaxasPlayer*)m_vSortByPeerCardsAsc[nIdx];
 		if ( pData == nullptr || pData->isHaveState( eRoomPeer_WaitCaculate ) == false )
@@ -1032,7 +1041,29 @@ void CTaxasRoom::sendRoomInfoToPlayer(uint32_t nSessionID )
 	msgBaseInfo.nMaxTakeIn = m_nMaxTakeIn ;
 	msgBaseInfo.nDeskFee = getDeskFee();
 	msgBaseInfo.nChatRoomID = getChatRoomID();
-	memcpy(msgBaseInfo.vPublicCardNums,m_vPublicCardNums,sizeof(msgBaseInfo.vPublicCardNums));
+	memset(msgBaseInfo.vPublicCardNums,0,sizeof(msgBaseInfo.vPublicCardNums));
+	if ( m_nPublicCardRound == 1 )
+	{
+		for ( uint8_t nidx = 0 ; nidx < 3 ; ++nidx )
+		{
+			msgBaseInfo.vPublicCardNums[nidx] = m_vPublicCardNums[nidx];
+		}
+	}
+	else if ( 2 == m_nPublicCardRound )
+	{
+		for ( uint8_t nidx = 0 ; nidx < 4 ; ++nidx )
+		{
+			msgBaseInfo.vPublicCardNums[nidx] = m_vPublicCardNums[nidx];
+		}
+	}
+	else if ( 3 == m_nPublicCardRound )
+	{
+		for ( uint8_t nidx = 0 ; nidx < 5 ; ++nidx )
+		{
+			msgBaseInfo.vPublicCardNums[nidx] = m_vPublicCardNums[nidx];
+		}
+	}
+
 	sendMsgToPlayer(&msgBaseInfo,sizeof(msgBaseInfo),nSessionID) ;
 
 	// send vice pool 

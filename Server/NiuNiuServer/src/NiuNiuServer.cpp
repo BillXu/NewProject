@@ -3,6 +3,7 @@
 #include <ctime>
 #include "LogManager.h"
 #include "ServerStringTable.h"
+#include "RewardConfig.h"
 bool CNiuNiuServerApp::init()
 {
 	IServerApp::init();
@@ -20,8 +21,9 @@ bool CNiuNiuServerApp::init()
 	m_tMgr.LoadFile("../configFile/RoomConfig.txt") ;
 
 	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
+	CRewardConfig::getInstance()->LoadFile("../configFile/rewardConfig.txt");
 
-	m_tRoomMgr.init();
+	m_tRoomMgr.init(getRoomConfigMgr());
 	return true ;
 }
 

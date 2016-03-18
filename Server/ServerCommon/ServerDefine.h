@@ -15,6 +15,7 @@ struct stEnterRoomData
 	uint32_t nUserUID ;
 	uint32_t nUserSessionID ;
 	uint8_t nNewPlayerHaloWeight ; // xin shou  guang huan quan zhong 
+	uint8_t nPlayerType ; // ePlayerType 
 	bool isRegisted ;
 	uint64_t nCoin ;
 };

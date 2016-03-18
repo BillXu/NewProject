@@ -55,6 +55,16 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	pRoomConfig->nRentFeePerDay = refReaderRow["RendFeePerDay"]->IntValue() ;
 	pRoomConfig->nDeskFee = refReaderRow["DeskFee"]->IntValue() ;
 	pRoomConfig->fDividFeeRate = refReaderRow["DividFeeRate"]->FloatValue() ;
+	pRoomConfig->nCoinLowLimit = refReaderRow["CoinLowLimit"]->IntValue();
+	pRoomConfig->nCoinTopLimit = refReaderRow["CoinTopLimit"]->IntValue();
+	pRoomConfig->bIsNeedRegistered = refReaderRow["NeedRegister"]->IntValue();
+	pRoomConfig->bIsOmitNewPlayerHalo = refReaderRow["isOmitNewPlayerHalo"]->IntValue();
+	pRoomConfig->nMaxLose = refReaderRow["MaxLose"]->IntValue() ;
+	refReaderRow["Reward"]->VecInt(pRoomConfig->vRewardID);
+	if ( pRoomConfig->vRewardID.empty() )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("room config id = %d reward is null",pRoomConfig->nConfigID) ;
+	}
 	m_vAllConfig.push_back(pRoomConfig) ;
 	return true ;
 }
@@ -78,7 +88,7 @@ void CRoomConfigMgr::OnFinishPaseFile()
 
 int CRoomConfigMgr::GetConfigCnt( )
 {
-	return m_vAllConfig.size() ;
+	return (uint32_t)m_vAllConfig.size() ;
 }
 
 stBaseRoomConfig* CRoomConfigMgr::GetConfigByConfigID( uint16_t nConfigID )

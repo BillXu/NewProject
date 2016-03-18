@@ -51,7 +51,13 @@
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
-    <ClCompile Include="..\ServerCommon\ServerNetwork.cpp">
+    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NoticePlayerManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\Timer.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,7 +104,13 @@
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerNetwork.h">
+    <ClInclude Include="..\ServerCommon\ISeverApp.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NoticePlayerManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\Timer.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,9 +11,11 @@
 #include <algorithm>
 #include "ServerStringTable.h"
 #include <json/json.h>
+#include "RewardConfig.h"
+#include "RewardConfig.h"
+#include "SeverUtility.h"
 #define TIME_SECONDS_PER_DAY (60*60*24)
-#define TIME_SAVE_ROOM_INFO 60*30
-#define TIME_DURING_ROOM_CLOSE 60*30
+#define TIME_DURING_ROOM_CLOSE 60*6
 IRoom::IRoom()
 {
 	m_nRoomID = 0 ;
@@ -34,8 +36,10 @@ IRoom::IRoom()
 	m_bIsDelte = false ;
 
 	m_bRoomInfoDiry = false ;
+	m_nTermNumber = 1 ;
 
 	memset(&m_stLimitConition,0,sizeof(m_stLimitConition)) ;
+	m_vLastGameRank.clear() ;
 }
 
 IRoom::~IRoom()
@@ -70,6 +74,13 @@ IRoom::~IRoom()
 	m_vRoomStates.clear() ;
 
 	removeAllRankItemPlayer();
+
+	for ( auto rankItem : m_vLastGameRank )
+	{
+		delete rankItem ;
+		rankItem = nullptr ;
+	}
+	m_vLastGameRank.clear() ;
 }
 
 void IRoom::removeAllRankItemPlayer()
@@ -94,20 +105,45 @@ void IRoom::onRoomClosed()
 	CLogMgr::SharedLogMgr()->SystemLog("room id = %d closed",getRoomID());
 
 	// tong ji guanjun 
-	uint32_t nChampionUID = 0;
 	sortRoomRankItem();
-	auto champ = getSortRankItemListBegin();
-	stRoomRankItem* pPlayerChampion = nullptr ;
-	if ( champ != getSortRankItemListEnd() )
+	if ( m_vSortedRankItems.empty() )
 	{
-		pPlayerChampion = *champ ;
-		nChampionUID = pPlayerChampion->nUserUID ;
+		onTimeSave();
+		return  ;
 	}
 
-	if ( nChampionUID == 0 )
+	// process reward ;
+	stMsgCrossServerRequest msgReq ;
+	msgReq.cSysIdentifer = ID_MSG_PORT_DATA ;
+	msgReq.nReqOrigID = getRoomID();
+	msgReq.nTargetID = getRoomID();
+	msgReq.nRequestType = eCrossSvrReq_GameOver ;
+	msgReq.nRequestSubType = eCrossSvrReqSub_Default ;
+
+	Json::Value vArray ;
+	uint8_t nIdx = 0 ;
+	for ( auto pRanker : m_vSortedRankItems )
 	{
-		return ;
+		if ( nIdx >= m_vRewards.size() )
+		{
+			break;
+		}
+
+		Json::Value item ;
+		item["userUID"] = pRanker->nUserUID ;
+		item["rewardID"] = m_vRewards[nIdx] ;
+		vArray[nIdx] = item ;
+		++nIdx ;
 	}
+	
+	Json::StyledWriter wWrite ; 
+	std::string strJson = wWrite.write(vArray);
+	msgReq.nJsonsLen = strJson.size() ;
+	CAutoBuffer aub(sizeof(msgReq) + msgReq.nJsonsLen );
+	aub.addContent(&msgReq,sizeof(msgReq)) ;
+	aub.addContent(strJson.c_str(),msgReq.nJsonsLen) ;
+	sendMsgToPlayer((stMsg*)aub.getBufferPtr(),aub.getContentSize(),0) ;
+	CLogMgr::SharedLogMgr()->PrintLog("room id = %d game over , result js = %s",getRoomID(),strJson.c_str()) ;
 
 	// save log ;
 	stMsgSaveLog msgLog ;
@@ -116,35 +152,57 @@ void IRoom::onRoomClosed()
 	msgLog.nTargetID = getRoomID() ;
 	memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
 	msgLog.vArg[0] = getRoomType() ;
-	msgLog.vArg[1] = nChampionUID ;
-	if ( pPlayerChampion != nullptr )
+	msgLog.vArg[1] = getProfit() ;
+
+	Json::Value arrayLog ;
+	uint8_t logIdx = 0 ;
+	for ( auto pR : m_vSortedRankItems )
 	{
-		msgLog.vArg[2] = pPlayerChampion->nGameOffset ;
+		if ( logIdx >= 3 )
+		{
+			break ;
+		}
+
+		Json::Value item ;
+		item["userUID"] = pR->nUserUID ;
+		item["gameOffset"] = pR->nGameOffset;
+		item["otherOffset"] = pR->nOtherOffset ;
+		arrayLog[logIdx++] = item ;
 	}
-	msgLog.vArg[3] = getProfit() ;
-	sendMsgToPlayer(&msgLog,sizeof(msgLog),getRoomID()) ;
-	if ( pPlayerChampion == nullptr )
+	Json::StyledWriter logWrite ;
+	std::string logJson = logWrite.write(arrayLog) ;
+	msgLog.nJsonExtnerLen = logJson.size() ;
+
+	CAutoBuffer logBuffer(sizeof(msgLog) + msgLog.nJsonExtnerLen);
+	logBuffer.addContent(&msgLog,sizeof(msgLog)) ;
+	logBuffer.addContent(logJson.c_str(),msgLog.nJsonExtnerLen) ;
+	sendMsgToPlayer((stMsg*)logBuffer.getBufferPtr(),logBuffer.getContentSize(),getRoomID()) ;
+
+	// send push notification 
+	const char* pContent = CServerStringTable::getInstance()->getStringByID(3); // taxas 
+	if ( getRoomType() == eRoom_NiuNiu )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("room id = %d , type = %d , have no champion",getRoomID(),getRoomType()) ;
+		pContent = CServerStringTable::getInstance()->getStringByID(4); // niu niu  
+	}
+	
+	if ( strlen(pContent) > 219 )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("msg too len : %s",pContent) ;
+		onTimeSave();
 		return ;
 	}
+	char pBuffer[512] = { 0 } ;
+	sprintf_s(pBuffer,sizeof(pBuffer),pContent,getRoomID()) ;
+	CSendPushNotification::getInstance()->reset();
+	CSendPushNotification::getInstance()->setContent(pBuffer,1) ;
+	for ( auto pp : m_vSortedRankItems )
+	{
+		CSendPushNotification::getInstance()->addTarget(pp->nUserUID) ;
+	}
 
-	// send reward inform ;
-	stMsgCrossServerRequest msgReq ;
-	msgReq.cSysIdentifer = ID_MSG_PORT_DATA ;
-	msgReq.nReqOrigID = getRoomID();
-	msgReq.nTargetID = nChampionUID;
-	msgReq.nRequestType = eCrossSvrReq_Inform ;
-	msgReq.nRequestSubType = eCrossSvrReqSub_Default ;
-
-	std::string str = CServerStringTable::getInstance()->getStringByID(1) ;
-	char pBuffer[200] = {0} ;
-	sprintf_s(pBuffer,sizeof(pBuffer),str.c_str(),getRoomName()) ;
-	msgReq.nJsonsLen = strlen(pBuffer) ;
-	CAutoBuffer aub(sizeof(msgReq) + msgReq.nJsonsLen );
-	aub.addContent(&msgReq,sizeof(msgReq)) ;
-	aub.addContent(pBuffer,msgReq.nJsonsLen) ;
-	sendMsgToPlayer((stMsg*)aub.getBufferPtr(),aub.getContentSize(),0) ;
+	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
+	sendMsgToPlayer((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID());
+	onTimeSave();
 }
 
 void IRoom::onRoomOpened()
@@ -154,13 +212,18 @@ void IRoom::onRoomOpened()
 	addTotoalProfit(getProfit());
 	setProfit(0);
 	// reset all history in db;
-	stMsgRemoveRoomPlayer msgPlayer ;
-	msgPlayer.nRoomID = getRoomID();
-	msgPlayer.nRoomType = getRoomType();
-	sendMsgToPlayer(&msgPlayer,sizeof(msgPlayer),0) ;
-
+	//stMsgRemoveRoomPlayer msgPlayer ;
+	//msgPlayer.nRoomID = getRoomID();
+	//msgPlayer.nRoomType = getRoomType();
+	//sendMsgToPlayer(&msgPlayer,sizeof(msgPlayer),0) ;
+	
+	// refresh last game rank ;
+	refreshLastGameRank();
 	// remove all histroy 
 	removeAllRankItemPlayer();
+	++m_nTermNumber ;
+	m_bRoomInfoDiry = true ;
+	CLogMgr::SharedLogMgr()->SystemLog("room id = %u star to termNumber = %u",getRoomID(),m_nTermNumber) ;
 }
 
 void IRoom::onRoomWillDoDelete()
@@ -185,14 +248,21 @@ bool IRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsVa
 	m_nRoomID = nRoomID ;
 	m_nConfigID = pConfig->nConfigID ;
 	m_nDeskFree = pConfig->nDeskFee ;
+	m_vRewards.assign(pConfig->vRewardID.begin(),pConfig->vRewardID.end()) ;
+	m_stLimitConition.isRegisted = pConfig->bIsNeedRegistered ;
+	m_stLimitConition.nCoinLowLimit = pConfig->nCoinLowLimit ;
+	m_stLimitConition.nCoinUpLimit =pConfig->nCoinTopLimit ;
+	m_isOmitNewPlayerHalo = pConfig->bIsOmitNewPlayerHalo;
+	m_nMaxLose = pConfig->nMaxLose ;
+
 	m_nCreateTime = time(nullptr) ;
 	m_nChatRoomID = 0;
 	m_nCurProfit = 0 ;
 	m_nTotalProfit = 0 ;
 	m_nDeadTime = 0 ;
 	m_nOpenTime = m_nCreateTime ;
-	m_isOmitNewPlayerHalo = false ;
 	m_nRoomOwnerUID = 0 ;
+	m_nTermNumber = 1 ;
 
 	memset(&m_stLimitConition,0,sizeof(m_stLimitConition)) ;
 	
@@ -251,12 +321,18 @@ void IRoom::prepareState()
 	setInitState(vState[0]);
 }
 
-void IRoom::serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )
+void IRoom::serializationFromDB(stBaseRoomConfig* pConfig ,uint32_t nRoomID , Json::Value& vJsValue )
 {
 	m_nRoomID = nRoomID ;
-	m_strRewardDesc = vJsValue["rewardDesc"].asCString();
+	//m_strRewardDesc = vJsValue["rewardDesc"].asCString();
 	memset(m_vRoomName,0,sizeof(m_vRoomName));
-	sprintf_s(m_vRoomName,sizeof(m_vRoomName),"%s",vJsValue["name"].asCString()) ;
+	auto t = vJsValue["name"];
+	auto ty = t.type();
+	if ( !t)
+	{
+		sprintf_s(m_vRoomName,sizeof(m_vRoomName),"%s",vJsValue["name"].asCString()) ;
+	}
+
 	m_nRoomOwnerUID = vJsValue["ownerUID"].asUInt();
 	m_nCreateTime = vJsValue["createTime"].asUInt() ;
 	m_nDeadTime = vJsValue["deadTime"].asUInt() ;
@@ -265,22 +341,60 @@ void IRoom::serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )
 	m_nCurProfit = vJsValue["curProfit"].asUInt() ;
 	m_nTotalProfit = vJsValue["totalProfit"].asUInt() ;
 	m_nChatRoomID = vJsValue["chatId"].asUInt() ;
-	m_nConfigID = vJsValue["configID"].asUInt();
-	m_isOmitNewPlayerHalo = vJsValue["isOmitHalo"].asBool() ;
-	m_nDeskFree = vJsValue["deskFee"].asUInt() ;
+	m_nTermNumber = vJsValue["termNumber"].asUInt() ;
+	m_isOmitNewPlayerHalo = pConfig->bIsOmitNewPlayerHalo;
+	m_nMaxLose = pConfig->nMaxLose ;
+
+	m_nConfigID = pConfig->nConfigID;
+	m_nDeskFree = pConfig->nDeskFee;
+	m_vRewards.assign(pConfig->vRewardID.begin(),pConfig->vRewardID.end()) ;
+	m_stLimitConition.isRegisted = pConfig->bIsNeedRegistered ;
+	m_stLimitConition.nCoinLowLimit = pConfig->nCoinLowLimit ;
+	m_stLimitConition.nCoinUpLimit =pConfig->nCoinTopLimit ;
+
+	//// read last game Rank 
+	//if ( vJsValue["lastGameRank"].empty() == false  )
+	//{
+	//	Json::Value& vArray = vJsValue["lastGameRank"] ;
+	//	for ( uint8_t nIdx = 0 ; nIdx < vArray.size(); ++nIdx )
+	//	{
+	//		Json::Value& vItem = vArray[nIdx] ;
+	//		stRoomRankItem* pItem  = new stRoomRankItem ;
+	//		pItem->bIsDiryt = false ;
+	//		pItem->nGameOffset = vItem["nGameOffset"].asInt();
+	//		pItem->nOtherOffset = vItem["nOtherOffset"].asInt() ;
+	//		pItem->nUserUID = vItem["nUserUID"].asInt();
+	//		m_vLastGameRank.push_back(pItem);
+	//		CLogMgr::SharedLogMgr()->PrintLog("room id = %d last Rank idx = %d , uid = %d , offset = %d",getRoomID(),nIdx , pItem->nUserUID,pItem->nGameOffset ) ;
+	//	}
+	//}
+	//else
+	//{
+	//	CLogMgr::SharedLogMgr()->PrintLog("uid = %d have no last rank",getRoomID()) ;
+	//}
 
 	stMsgReadRoomPlayer msgReadRoomPlayerData ;
 	msgReadRoomPlayerData.nRoomID = nRoomID ;
 	msgReadRoomPlayerData.nRoomType = getRoomType() ;
+	msgReadRoomPlayerData.nTermNumber = m_nTermNumber ;
 	sendMsgToPlayer(&msgReadRoomPlayerData,sizeof(msgReadRoomPlayerData),nRoomID) ;
-	CLogMgr::SharedLogMgr()->PrintLog("read room player data uid = %d",nRoomID ) ;
+	CLogMgr::SharedLogMgr()->PrintLog("read room player data room id  = %d termNumber = %u",nRoomID,m_nTermNumber) ;
+
+	if ( m_nTermNumber >= 1 )
+	{
+		stMsgReadRoomPlayer msgLastTermPlayers ;
+		msgLastTermPlayers.nRoomID = nRoomID ;
+		msgLastTermPlayers.nRoomType = getRoomType() ;
+		msgLastTermPlayers.nTermNumber = m_nTermNumber - 1 ;
+		sendMsgToPlayer(&msgLastTermPlayers,sizeof(msgLastTermPlayers),nRoomID) ;
+		CLogMgr::SharedLogMgr()->PrintLog("read room player for last data room id  = %d termNumber = %u",nRoomID,msgLastTermPlayers.nTermNumber) ;
+	}
+
 	prepareState();
 }
 
 void IRoom::serializationToDB( bool bIsNewCreate )
 {
-	CLogMgr::SharedLogMgr()->ErrorLog("test stage do not store room info");
-	return ;
 	Json::StyledWriter jsWrite ;
 	Json::Value vValue ;
 	willSerializtionToDB(vValue) ;
@@ -291,6 +405,7 @@ void IRoom::serializationToDB( bool bIsNewCreate )
 	msgSave.nRoomType = getRoomType() ;
 	msgSave.nRoomID = getRoomID() ;
 	msgSave.nJsonLen = strJson.size() ;
+	msgSave.nConfigID = getConfigID();
 	msgSave.nRoomOwnerUID = m_nRoomOwnerUID ;
 
 	CAutoBuffer autoBuffer(sizeof(msgSave) + msgSave.nJsonLen);
@@ -303,9 +418,8 @@ void IRoom::serializationToDB( bool bIsNewCreate )
 
 void IRoom::willSerializtionToDB(Json::Value& vOutJsValue)
 {
-	vOutJsValue["roomType"] = getRoomType() ;
 	vOutJsValue["name"] = getRoomName() ;
-	vOutJsValue["rewardDesc"] = getRewardDesc() ;
+	//vOutJsValue["rewardDesc"] = getRewardDesc() ;
 	vOutJsValue["ownerUID"] = getOwnerUID() ; 
 	vOutJsValue["createTime"] = getCreateTime();
 	vOutJsValue["deadTime"] = getDeadTime() ;
@@ -314,9 +428,23 @@ void IRoom::willSerializtionToDB(Json::Value& vOutJsValue)
 	vOutJsValue["curProfit"] = (uint32_t)m_nCurProfit ;
 	vOutJsValue["totalProfit"] = (uint32_t) m_nTotalProfit ;
 	vOutJsValue["chatId"] = m_nChatRoomID ;
-	vOutJsValue["configID"] = getConfigID() ;
-	vOutJsValue["isOmitHalo"] = m_isOmitNewPlayerHalo ;
-	vOutJsValue["deskFee"] = m_nDeskFree ;
+	vOutJsValue["termNumber"] = m_nTermNumber ;
+
+	//if ( m_vLastGameRank.empty() == false )
+	//{
+	//	Json::Value arryLastGameRank ;
+	//	uint8_t nIdx = 0 ;
+	//	for ( auto pR : m_vLastGameRank )
+	//	{
+	//		Json::Value vItem ;
+	//		vItem["nGameOffset"] = pR->nGameOffset ;
+	//		vItem["nOtherOffset"] = pR->nOtherOffset ;
+	//		vItem["nUserUID"] = pR->nUserUID ;
+	//		arryLastGameRank[nIdx++] = vItem ;
+	//	}
+	//	vOutJsValue["lastGameRank"] = arryLastGameRank ;
+	//}
+
 }
 
 uint8_t IRoom::canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer )  // return 0 means ok ;
@@ -348,7 +476,32 @@ uint8_t IRoom::canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer )  // retur
 		CLogMgr::SharedLogMgr()->PrintLog("player coin is too many, so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
 		return 4 ; // player coin is too many ;
 	}
+
+	if ( isPlayerLoseReachMax(pEnterRoomPlayer->nUserUID) )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("player lose reach limit, so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
+		return 5 ; // lose too many ;
+	}
+
 	return 0 ;
+}
+
+bool IRoom::isPlayerLoseReachMax(uint32_t nUserUID )
+{
+	if ( getMaxLose() != 0 )
+	{
+		auto pR = m_vRoomRankHistroy.find(nUserUID) ;
+		if ( pR != m_vRoomRankHistroy.end() )
+		{
+			int64_t nFinal = pR->second->nGameOffset + getMaxLose() ;
+			if ( nFinal < 0 )
+			{
+				CLogMgr::SharedLogMgr()->SystemLog("user uid = %d lose too many in this room ,can not palyer again",nUserUID) ;
+				return true ;
+			}
+		}
+	}
+	return false ;
 }
 
 void IRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer )
@@ -367,6 +520,12 @@ void IRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer )
 	}
 
 	memcpy(pStandPlayer,pEnterRoomPlayer,sizeof(stEnterRoomData));
+	if ( isOmitNewPlayerHalo() )
+	{
+		pStandPlayer->nNewPlayerHaloWeight = 0 ;
+		CLogMgr::SharedLogMgr()->PrintLog("room id = %d omit new player halo so halo weith = 0  for uid = %d", getRoomID(),pStandPlayer->nUserUID) ;
+	}
+
 	addRoomPlayer(pStandPlayer) ;
 
 	sendRoomInfoToPlayer(pEnterRoomPlayer->nUserSessionID) ;
@@ -375,6 +534,55 @@ void IRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer )
 void IRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 {
 	CLogMgr::SharedLogMgr()->PrintLog("player uid = %d , will leave room process this function",pPlayer->nUserUID);
+}
+
+bool IRoom::canStartGame()
+{
+	if ( m_vInRoomPlayers.empty() )
+	{
+		//CLogMgr::SharedLogMgr()->PrintLog("room = %u have room player , so do not start game ",getRoomID());
+		return false ;
+	}
+	// if have any player not robot ?
+	for ( auto pp : m_vInRoomPlayers )
+	{
+		if ( pp.second->nPlayerType != ePlayer_Robot )
+		{
+			return true ;
+		}
+	}
+	//CLogMgr::SharedLogMgr()->PrintLog("room = %u all player are robot so need not start game ",getRoomID());
+	return false ;
+}
+
+void IRoom::roomItemDetailVisitor(Json::Value& vOutJsValue)
+{
+	vOutJsValue["configID"] = getConfigID() ;
+	vOutJsValue["coinLimit"] = m_stLimitConition.nCoinLowLimit ;
+	vOutJsValue["openTime"] = getOpenTime();
+	vOutJsValue["closeTime"] = getCloseTime();
+	vOutJsValue["state"] = getCurRoomState()->getStateID();
+
+	if ( m_vRewards.size() >= 1 )
+	{
+		auto pReward = CRewardConfig::getInstance()->getRewardByID( m_vRewards[0] ) ;
+		if ( pReward )
+			vOutJsValue["reward0"] = pReward->strRewardDesc.c_str();
+	}
+
+	if ( m_vRewards.size() >= 2 )
+	{
+		auto pReward = CRewardConfig::getInstance()->getRewardByID( m_vRewards[1] ) ;
+		if ( pReward )
+			vOutJsValue["reward1"] = pReward->strRewardDesc.c_str();
+	}
+
+	if ( m_vRewards.size() >= 3 )
+	{
+		auto pReward = CRewardConfig::getInstance()->getRewardByID( m_vRewards[2] ) ;
+		if ( pReward )
+			vOutJsValue["reward2"] = pReward->strRewardDesc.c_str();
+	}
 }
 
 void IRoom::playerDoLeaveRoom( stStandPlayer* pp )
@@ -386,7 +594,6 @@ void IRoom::playerDoLeaveRoom( stStandPlayer* pp )
 		msgdoLeave.nCoin = pp->nCoin ;
 		msgdoLeave.nGameType = getRoomType() ;
 		msgdoLeave.nRoomID = getRoomID() ;
-		msgdoLeave.nNewPlayerHaloWeight = pp->nNewPlayerHaloWeight ;
 		msgdoLeave.nUserUID = pp->nUserUID ;
 		msgdoLeave.nWinTimes = pp->nWinTimes ;
 		msgdoLeave.nPlayerTimes = pp->nPlayerTimes ;
@@ -431,6 +638,30 @@ void IRoom::removePlayer(stStandPlayer* pPlayer )
 	{
 		m_vReseverPlayerObjects.push_back(pPlayer);
 		m_vInRoomPlayers.erase(iter) ;
+	}
+}
+
+void IRoom::refreshLastGameRank()
+{
+	// clear data ;
+	for ( auto rankItem : m_vLastGameRank )
+	{
+		delete rankItem ;
+		rankItem = nullptr ;
+	}
+	m_vLastGameRank.clear() ;
+	sortRoomRankItem();
+	int8_t nCnt = 10 ;
+	for ( auto pRank : m_vSortedRankItems )
+	{
+		stRoomRankItem* p = new stRoomRankItem ;
+		memcpy(p,pRank,sizeof(stRoomRankItem));
+		p->bIsDiryt = false ;
+		m_vLastGameRank.push_back(p) ;
+		if ( --nCnt <= 0 )
+		{
+			break;
+		}
 	}
 }
 
@@ -502,33 +733,27 @@ void IRoom::updatePlayerOffset(uint32_t nUserUID , int64_t nOffsetGame, int64_t 
 		targ->second->nGameOffset += nOffsetGame ;
 		targ->second->nOtherOffset += nOtherOffset ;
 		targ->second->bIsDiryt = true ;
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d update offset = %lld , final = %lld",nUserUID,nOffsetGame,targ->second->nGameOffset) ;
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d update offset = %lld , final = %d",nUserUID,nOffsetGame,targ->second->nGameOffset) ;
 		return ;
 	}
 	stRoomRankItem* p = new stRoomRankItem ;
 	p->nUserUID = nUserUID ;
 	p->nGameOffset = nOffsetGame ;
 	p->nOtherOffset = nOtherOffset ;
-	p->bIsDiryt = false ;
+	p->bIsDiryt = true ;
 	m_vRoomRankHistroy[p->nUserUID] = p ;
 	m_vSortedRankItems.push_back(p) ;
 
 	CLogMgr::SharedLogMgr()->PrintLog("uid = %d update offset = %lld , final = %lld",nUserUID,nOffsetGame,nOffsetGame) ;
-	// send msg to db  add this peer ;
-	stMsgSaveRoomPlayer msgSave ;
-	msgSave.isUpdate = false ;
-	msgSave.nRoomID = getRoomID() ;
-	msgSave.nRoomType = getRoomType() ;
-	msgSave.savePlayer.nGameOffset = nOffsetGame ;
-	msgSave.savePlayer.nOtherOffset = nOtherOffset;
-	msgSave.savePlayer.nUserUID = p->nUserUID ;
-	sendMsgToPlayer(&msgSave,sizeof(msgSave),getRoomID());
-	return ;
 }
 
 bool sortFuncRankItem(IRoom::stRoomRankItem* pLeft , IRoom::stRoomRankItem* pRight )
 {
-	return (pLeft->nGameOffset + pLeft->nOtherOffset) >= (pRight->nGameOffset + pRight->nOtherOffset) ;
+	if ( (pLeft->nGameOffset + pLeft->nOtherOffset) > (pRight->nGameOffset + pRight->nOtherOffset) )
+	{
+		return true ;
+	}
+	return false ;
 }
 
 void IRoom::sortRoomRankItem()
@@ -536,8 +761,18 @@ void IRoom::sortRoomRankItem()
 	if ( m_bDirySorted && m_vSortedRankItems.size() >= 2 )
 	{
 		m_vSortedRankItems.sort(sortFuncRankItem);
+		onRankChanged();
 	}
 	m_bDirySorted = false ;
+}
+
+void IRoom::onRankChanged()
+{
+	uint16_t nRankIdx = 0 ;
+	for ( auto pp : m_vSortedRankItems )
+	{
+		pp->nRankIdx = nRankIdx++ ;
+	}
 }
 
 void IRoom::sendRoomMsg( stMsg* pmsg , uint16_t nLen )
@@ -588,9 +823,14 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 	case MSG_READ_ROOM_PLAYER:
 		{
 			stMsgReadRoomPlayerRet* pRet = (stMsgReadRoomPlayerRet*)prealMsg ; 
+			if ( pRet->nTermNumber + 1 < m_nTermNumber )
+			{
+				CLogMgr::SharedLogMgr()->SystemLog("recieved last last term player data , skip id  room id = %u",getRoomID()) ;
+				break; 
+			}
+
 			CLogMgr::SharedLogMgr()->PrintLog("room id = %d recive room player data cnt = %d",getRoomID(),pRet->nCnt) ;
 			stSaveRoomPlayerEntry* pp = (stSaveRoomPlayerEntry*)(((char*)prealMsg) + sizeof(stMsgReadRoomPlayerRet));
-			m_bDirySorted = true ;
 			while ( pRet->nCnt-- )
 			{
 				stRoomRankItem* p = new stRoomRankItem ;
@@ -598,9 +838,24 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 				p->nUserUID = pp->nUserUID ;
 				p->nGameOffset = pp->nGameOffset ;
 				p->nOtherOffset = pp->nOtherOffset ;
-				m_vRoomRankHistroy[p->nUserUID] = p ;
-				m_vSortedRankItems.push_back(p) ;
+				if ( pRet->nTermNumber == m_nTermNumber )  // current term rank item ;
+				{
+					m_vRoomRankHistroy[p->nUserUID] = p ;
+					m_vSortedRankItems.push_back(p) ;
+					m_bDirySorted = true ;
+				}
+				else if ( pRet->nTermNumber + 1 == m_nTermNumber ) // last term rank 
+				{
+					m_vLastGameRank.push_back(p) ;
+				}
+
 				++pp;
+			}
+
+			if ( pRet->nTermNumber + 1 == m_nTermNumber && m_vLastGameRank.size() >= 2 ) // last term rank 
+			{
+				 m_vLastGameRank.sort(sortFuncRankItem);
+				 CLogMgr::SharedLogMgr()->PrintLog("sort last rank player room id = %u",getRoomID());
 			}
 		}
 		break;
@@ -624,22 +879,79 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 		break;
 	case MSG_REQUEST_ROOM_RANK:
 		{
+			auto pPlayer = getPlayerBySessionID(nPlayerSessionID) ;
+			if ( pPlayer == nullptr )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("session id = %u you are not in room why request rank ?",nPlayerSessionID );
+				break;
+			}
+
 			std::map<uint32_t,stRoomRankEntry> vWillSend ;
 			sortRoomRankItem();
-			// add 15 player into list ;
+			int16_t nSelfRankIdx = -1 ;
+			// add 5 player into list ;
 			LIST_ROOM_RANK_ITEM::iterator iter = getSortRankItemListBegin();
-			for ( uint8_t nIdx = 0 ; iter != getSortRankItemListEnd() && nIdx < 15; ++iter,++nIdx )
+			for ( uint8_t nIdx = 0 ; iter != getSortRankItemListEnd(); ++iter,++nIdx )
 			{
+				// push rank 5 to send to client ;
+				stRoomRankItem* pItem = (*iter) ;
+				if ( pItem->nUserUID == pPlayer->nUserUID )
+				{
+					nSelfRankIdx = nIdx ;
+				}
+
+				if ( nIdx < 5 || pItem->nUserUID == pPlayer->nUserUID  )
+				{
+					stRoomRankEntry entry ;
+					entry.nGameOffset = pItem->nGameOffset ;
+					entry.nOtherOffset = pItem->nOtherOffset ;
+					entry.nUserUID = pItem->nUserUID ;
+					vWillSend[pItem->nUserUID] = entry ;
+				}
+				else
+				{
+					if ( nSelfRankIdx != -1 )
+					{
+						break;
+					}
+				}
+
+			}
+
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d request rank room id = %u",pPlayer->nUserUID,getRoomID());
+			// send room info to player ;
+			stMsgRequestRoomRankRet msgRet ;
+			msgRet.nCnt = vWillSend.size() ;
+			msgRet.nSelfRankIdx = nSelfRankIdx ;
+			CAutoBuffer msgBuffer(sizeof(msgRet) + msgRet.nCnt * sizeof(stRoomRankEntry));
+			msgBuffer.addContent(&msgRet,sizeof(msgRet));
+			for ( auto& itemSendPlayer : vWillSend )
+			{
+				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
+				CLogMgr::SharedLogMgr()->PrintLog("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
+			}
+			sendMsgToPlayer((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
+		}
+		break;
+	case MSG_REQUEST_LAST_TERM_ROOM_RANK:
+		{
+			std::map<uint32_t,stRoomRankEntry> vWillSend ;
+			// add at most 3 player into list ;
+			LIST_ROOM_RANK_ITEM::iterator iter = m_vLastGameRank.begin();
+			for ( uint8_t nIdx = 0 ; iter != m_vLastGameRank.end() && nIdx < 3; ++iter,++nIdx )
+			{
+				// push rank 3 to send to client ;
 				stRoomRankItem* pItem = (*iter) ;
 				stRoomRankEntry entry ;
 				entry.nGameOffset = pItem->nGameOffset ;
 				entry.nOtherOffset = pItem->nOtherOffset ;
 				entry.nUserUID = pItem->nUserUID ;
 				vWillSend[pItem->nUserUID] = entry ;
+
 			}
 
 			// send room info to player ;
-			stMsgRequestRoomRankRet msgRet ;
+			stMsgRequestLastTermRoomRankRet msgRet ;
 			msgRet.nCnt = vWillSend.size() ;
 			CAutoBuffer msgBuffer(sizeof(msgRet) + msgRet.nCnt * sizeof(stRoomRankEntry));
 			msgBuffer.addContent(&msgRet,sizeof(msgRet));
@@ -648,6 +960,7 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
 			}
 			sendMsgToPlayer((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("session id = %u request last game rank , room id = %u",nPlayerSessionID,getRoomID());
 		}
 		break;
 	default:
@@ -659,6 +972,7 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 
 void IRoom::onTimeSave( bool bRightNow )
 {
+	CLogMgr::SharedLogMgr()->PrintLog("time save room info room id = %u",getRoomID());
 	// save room player data 
 	for ( auto& ranData : m_vSortedRankItems )
 	{
@@ -667,23 +981,22 @@ void IRoom::onTimeSave( bool bRightNow )
 			ranData->bIsDiryt = false ;
 
 			stMsgSaveRoomPlayer msgSave ;
-			msgSave.isUpdate = true ;
 			msgSave.nRoomID = getRoomID() ;
 			msgSave.nRoomType = getRoomType() ;
 			msgSave.savePlayer.nGameOffset = ranData->nGameOffset;
 			msgSave.savePlayer.nOtherOffset = ranData->nOtherOffset ;
 			msgSave.savePlayer.nUserUID = ranData->nUserUID ;
+			msgSave.nTermNumber = m_nTermNumber ;
 			sendMsgToPlayer(&msgSave,sizeof(msgSave),getRoomID());
-			CLogMgr::SharedLogMgr()->PrintLog("time save room player data room id = %d  , uid = %d",getRoomID(),ranData->nUserUID);
+			CLogMgr::SharedLogMgr()->PrintLog("time save room player data room id = %d  , uid = %d, offset = %u",getRoomID(),ranData->nUserUID,ranData->nGameOffset);
 		}
 	}
 
 	if ( m_bRoomInfoDiry )
 	{
-		m_bRoomInfoDiry = false ;
 		serializationToDB();
+		m_bRoomInfoDiry = false ;
 	}
-
 }
 
 void IRoom::goToState(IRoomState* pTargetState )
@@ -874,7 +1187,7 @@ void IRoom::debugRank()
 	m_vSortedRankItems;
 	for ( auto& rank : m_vSortedRankItems )
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("uid = %d, offset = %lld , room id = %d",rank->nUserUID,rank->nGameOffset,getRoomID() ) ;
+		CLogMgr::SharedLogMgr()->SystemLog("uid = %d, offset = %d , room id = %d",rank->nUserUID,rank->nGameOffset,getRoomID() ) ;
 		nFinal += rank->nGameOffset ;
 	}
 

@@ -98,6 +98,11 @@ void CLoginApp::onExit()
 
 bool CLoginApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
 {
+	if ( IServerApp::onLogicMsg(prealMsg,eSenderPort,nSessionID) )
+	{
+		return true;
+	}
+
 	if ( m_pDBMgr )
 	{
 		m_pDBMgr->OnMessage(prealMsg,eSenderPort,nSessionID ) ;

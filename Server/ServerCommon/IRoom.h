@@ -6,6 +6,7 @@
 #include <map>
 #include "CommonDefine.h"
 #include "ServerDefine.h"
+#include <vector>
 class IRoomState ;
 class IRoomPlayer ;
 struct stMsg ;
@@ -31,9 +32,11 @@ public:
 	struct stRoomRankItem
 	{
 		uint32_t nUserUID ;
-		int64_t nGameOffset ;
-		int64_t nOtherOffset ;
+		int32_t nGameOffset ;
+		int32_t nOtherOffset ;
+		uint16_t nRankIdx ;
 		bool bIsDiryt ;
+		stRoomRankItem(){ nRankIdx = 0 ; }
 	};
 public:
 	typedef std::list<stStandPlayer*> LIST_STAND_PLAYER ;
@@ -46,7 +49,7 @@ public:
 	IRoom();
 	virtual ~IRoom();
 	virtual bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue );
-	virtual void serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue );
+	virtual void serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue );
 	virtual void willSerializtionToDB(Json::Value& vOutJsValue);
 	virtual void prepareState();
 	void serializationToDB(bool bIsNewCreate = false);
@@ -57,7 +60,8 @@ public:
 	virtual uint8_t canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer );  // return 0 means ok ;
 	virtual void onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer );
 	virtual void onPlayerWillLeaveRoom(stStandPlayer* pPlayer );
-	virtual bool canStartGame() = 0 ;
+	virtual bool canStartGame() ;
+	virtual void roomItemDetailVisitor(Json::Value& vOutJsValue);
 	void playerDoLeaveRoom(stStandPlayer* pp );
 	uint32_t getOpenTime(){ return m_nOpenTime ; }
 	uint32_t getDeadTime(){ return m_nDeadTime ;}
@@ -66,6 +70,7 @@ public:
 private:
 	bool addRoomPlayer(stStandPlayer* pPlayer );
 	void removePlayer(stStandPlayer* pPlayer );
+	void refreshLastGameRank();
 public:
 	stStandPlayer* getPlayerByUserUID(uint32_t nUserUID );
 	stStandPlayer* getPlayerBySessionID(uint32_t nSessionID );
@@ -77,6 +82,7 @@ public:
 	STAND_PLAYER_ITER endIterForPlayers();
 	void updatePlayerOffset(uint32_t nUserUID , int64_t nOffsetGame, int64_t nOtherOffset = 0 );
 	void sortRoomRankItem();
+	virtual void onRankChanged();
 	LIST_ROOM_RANK_ITEM::iterator getSortRankItemListBegin(){ return m_vSortedRankItems.begin() ;}
 	LIST_ROOM_RANK_ITEM::iterator getSortRankItemListEnd(){ return m_vSortedRankItems.end() ; }
 
@@ -125,6 +131,8 @@ public:
 	virtual void onRoomClosed();
 	virtual void onRoomOpened();
 	virtual void onRoomWillDoDelete();
+	uint32_t getMaxLose(){ return m_nMaxLose ;}
+	bool isPlayerLoseReachMax(uint32_t nUserUID );
 protected:
 	bool addRoomState(IRoomState* pRoomState );
 	bool isOmitNewPlayerHalo(){ return m_isOmitNewPlayerHalo ; }
@@ -147,6 +155,7 @@ private:
 	uint32_t m_nDeadTime ;
 	uint32_t m_nOpenTime ;
 	uint32_t m_nDuringTime ; // by seconds ;
+	uint32_t m_nTermNumber ; // dang qian shi di ji qi 
 
 	char m_vRoomName[MAX_LEN_ROOM_NAME] ;
 	std::string m_strRewardDesc ;
@@ -155,9 +164,12 @@ private:
 	uint32_t m_nChatRoomID ;
 	uint16_t m_nConfigID ;
 	uint32_t m_nDeskFree ;
+	uint32_t m_nMaxLose ;
+	std::vector<int32_t> m_vRewards ;
 	bool m_isOmitNewPlayerHalo ;
 
 	MAP_UID_ROOM_RANK_ITEM m_vRoomRankHistroy ;
 	LIST_ROOM_RANK_ITEM m_vSortedRankItems ;
+	LIST_ROOM_RANK_ITEM m_vLastGameRank ;
 	bool m_bDirySorted ;
 };

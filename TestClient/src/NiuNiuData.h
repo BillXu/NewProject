@@ -28,6 +28,7 @@ public:
 	stSitableRoomPlayer* doCreateSitDownPlayer()override { return new stNiuNiuPlayer ;}
 	uint8_t getTargetSvrPort(){ return ID_MSG_PORT_NIU_NIU ;}
 	uint8_t getRoomType(){ return eRoom_NiuNiu ;}
+	CRobotControl* doCreateRobotControl();
 public:
 	uint8_t nBankerIdx ;
 	uint32_t nBottomBet ;

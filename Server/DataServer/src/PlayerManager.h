@@ -9,15 +9,35 @@ struct stMsg ;
 class CSelectPlayerDataCacher
 {
 public:
-	typedef std::map<uint32_t,stPlayerBrifData*> MAP_ID_DATA;
+	struct stSubscriber
+	{
+		uint32_t nSessionID ;
+		bool isDetail ;
+	};
+
+	struct stPlayerDataPrifle
+	{
+		uint32_t nPlayerUID ;
+		stPlayerDetailData* pData ;
+		time_t tRequestDataTime ;
+		
+		std::map<uint32_t,stSubscriber> vBrifeSubscribers ;
+		std::map<uint32_t,stSubscriber> vDetailSubscribers ;
+		stPlayerDataPrifle(){ nPlayerUID = 0 ; pData = nullptr ; tRequestDataTime = 0 ; }
+		~stPlayerDataPrifle(){ delete pData ; pData = nullptr ; vBrifeSubscribers.clear() ; vDetailSubscribers.clear() ;}
+		bool isContentData(){ return pData != nullptr ; }
+		void recivedData(stPlayerBrifData* pRecData) ;
+		void addSubscriber( uint32_t nSessionId , bool isDetail );
+	};
+
+	typedef std::map<uint32_t,stPlayerDataPrifle*> MAP_ID_DATA;
 public:
 	CSelectPlayerDataCacher();
 	~CSelectPlayerDataCacher();
 	void removePlayerDataCache( uint32_t nUID );
 	void cachePlayerData(stMsgSelectPlayerDataRet* pmsg );
-	bool getPlayerData(uint32_t nUID , stPlayerBrifData* pData , bool isDetail );
+	bool sendPlayerDataProfile(uint32_t nReqUID ,bool isDetail , uint32_t nSubscriberSessionID );
 protected:
-	MAP_ID_DATA m_vBrifData ;
 	MAP_ID_DATA m_vDetailData ;
 };
 class CPlayerManager
@@ -34,6 +54,7 @@ public:
 	CPlayer* GetPlayerBySessionID(uint32_t nSessionID , bool bInclueOffline = false );
 	void Update(float fDeta );
 	CPlayer* GetFirstActivePlayer();
+	void onExit();
 protected:
 	void OnPlayerOffline(CPlayer* pOfflinePlayer);
 	bool ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );

@@ -12,8 +12,11 @@ public:
 public:
 	~ISitableRoom();
 	bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID , Json::Value& vJsValue) override;
-	void serializationFromDB(uint32_t nRoomID , Json::Value& vJsValue )override;
+	void serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
+	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
+	void onRankChanged()override ;
+	bool canStartGame()override ;
 	// event function 
 	virtual void onPlayerSitDown( ISitableRoomPlayer* pPlayer ){}
 	virtual void onPlayerWillStandUp(ISitableRoomPlayer* pPlayer );
@@ -38,6 +41,7 @@ public:
 	void onGameWillBegin()override ;
 	void doProcessNewPlayerHalo();
 private:
+	time_t m_tTimeCheckRank ;
 	uint8_t m_nSeatCnt ;
 	ISitableRoomPlayer** m_vSitdownPlayers ;
 private:

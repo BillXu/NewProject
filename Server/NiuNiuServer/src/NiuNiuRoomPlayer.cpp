@@ -38,7 +38,7 @@ void CNiuNiuRoomPlayer::doSitdown(uint8_t nIdx )
 
 void CNiuNiuRoomPlayer::willStandUp()
 {
-
+	ISitableRoomPlayer::willStandUp() ;
 }
 
 void CNiuNiuRoomPlayer::onGetCard( uint8_t nIdx , uint8_t nCard )

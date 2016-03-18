@@ -16,8 +16,9 @@ public:
 	CRoomConfigMgr* GetConfigMgr(){ return m_pRoomConfig ; }
 	CRoomManager* GetRoomMgr(){ return m_pRoomMgr ; }
 	uint16_t getLocalSvrMsgPortType(){ return ID_MSG_PORT_TAXAS ; }
-	virtual void onConnectedToSvr();
+	void onConnectedToSvr()override;
 	void update(float fDeta )override;
+	void onExit()override;
 protected:
 	bool ProcessPublicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
 public:

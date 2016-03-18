@@ -62,6 +62,50 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	CLogMgr::SharedLogMgr()->PrintLog("recive db req = %d",pmsg->usMsgType);
 	switch( pmsg->usMsgType )
 	{
+	case MSG_SAVE_NOTICE_PLAYER:
+		{
+			stMsgSaveNoticePlayer* pRet = (stMsgSaveNoticePlayer*)pmsg ;
+			if ( pRet->nOpt == 0 )  // add or update
+			{
+				char pTokenStr[65] = {0} ;
+				m_pTheApp->GetDBThread()->EscapeString(pTokenStr,pRet->tPlayer.pToken,sizeof(pRet->tPlayer.pToken)) ;
+				pRequest->eType = eRequestType_Add ;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"INSERT INTO palyerapnstoken (userUID, flag,token) VALUES ('%u', '%u','%s') ON DUPLICATE KEY UPDATE flag = '%u',token = '%s';",pRet->tPlayer.nUserUID,pRet->tPlayer.nNoticeFlag,pTokenStr,pRet->tPlayer.nNoticeFlag,pTokenStr) ;
+			}
+			else  // remove flag ;
+			{
+				pRequest->eType = eRequestType_Update ;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"UPDATE palyerapnstoken SET flag = '0' WHERE userUID = '%u'",pRet->tPlayer.nUserUID) ;
+			}
+
+		}
+		break;
+	case MSG_SAVE_EXCHANGE:
+		{
+			stMsgSaveExchanges* pRet = (stMsgSaveExchanges*)pmsg ;
+			pRequest->eType = eRequestType_Add ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"INSERT INTO exchangecenter (exchangeID, count) VALUES ('%u', '%u') ON DUPLICATE KEY UPDATE count = '%u' ",pRet->nExchangeID,pRet->nCount,pRet->nCount ) ;
+		}
+		break;
+	case MSG_READ_EXCHANGE:
+		{
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM exchangecenter WHERE exchangeID != '0' " ) ;
+		}
+		break;
+	case MSG_READ_NOTICE_PLAYER:
+		{
+			stMsgReadNoticePlayer* pRet = (stMsgReadNoticePlayer*)pmsg ;
+			pdata->nExtenArg1 = pRet->nUserUID ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM palyerapnstoken WHERE userUID = '%u' ",pRet->nUserUID) ;
+		}
+		break;
 	case MSG_CIRCLE_SAVE_ADD_TOPIC:
 		{
 			stMsgSaveAddCircleTopic* pRet = (stMsgSaveAddCircleTopic*)pmsg ;
@@ -91,7 +135,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	case MSG_SELECT_DB_PLAYER_DATA:
 		{
 			stMsgSelectPlayerData* pRet = (stMsgSelectPlayerData*)pmsg ;
-			pdata->nExtenArg1 = pRet->nReqPlayerSessionID ;
+			pdata->nExtenArg1 = pRet->nTargetPlayerUID ;
 			pdata->nExtenArg2 = pRet->isDetail ;
 			pRequest->eType = eRequestType_Select ;
 			if ( pRet->isDetail )
@@ -124,7 +168,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pdata->nExtenArg1 = pRet->nUserUID ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM mail WHERE userUID = '%d' and state = '0' limit 50",pRet->nUserUID) ;
+				"SELECT * FROM mail WHERE userUID = '%u' and state = '0' limit 50",pRet->nUserUID) ;
 		}
 		break;
 	case MSG_PLAYER_SET_MAIL_STATE:
@@ -132,18 +176,24 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgResetMailsState* pRet = (stMsgResetMailsState*)pmsg ;
 			pRequest->eType = eRequestType_Update ;
 
-			if ( pRet->tMailType == eMail_Max )
+			if ( pRet->eType == eMail_Sys_End )
 			{
 				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-					"UPDATE mail SET state = '1' WHERE userUID = '%d' and state = '0' ",pRet->nUserUID) ;
+					"UPDATE mail SET state = '1' WHERE userUID = '%u' and mailType < '%d' and state = '0' ",pRet->nUserUID,eMail_Sys_End) ;
+				CLogMgr::SharedLogMgr()->PrintLog("reset mail state for uid = %d offline sys ",pRet->nUserUID);
+			}
+			else if ( pRet->eType == eMail_RealMail_Begin )
+			{
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+					"UPDATE mail SET state = '1' WHERE userUID = '%u' and mailType > '%d' and state = '0' ",pRet->nUserUID,eMail_RealMail_Begin) ;
+				CLogMgr::SharedLogMgr()->PrintLog("reset mail state for uid = %d normal mail ",pRet->nUserUID);
 			}
 			else
 			{
 				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-					"UPDATE mail SET state = '1' WHERE userUID = '%d' and mailType = '%d' and state = '0' ",pRet->nUserUID,pRet->tMailType) ;
+					"UPDATE mail SET state = '1' WHERE userUID = '%u' and mailType < '%d' and state = '0' ",pRet->nUserUID,eMail_Sys_End) ;
+				CLogMgr::SharedLogMgr()->ErrorLog( "unknown mail type = %u , invlid type ,uid = %u",pRet->eType,pRet->nUserUID );
 			}
-			
-			CLogMgr::SharedLogMgr()->PrintLog("reset mail state for uid = %d",pRet->nUserUID);
 		}
 		break ;
 	case MSG_SAVE_FRIEND_LIST:
@@ -175,6 +225,15 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
 				"call CreateNewRegisterPlayerData(%d,'guest%d','%d')",pCreate->nUserUID,nRandID,pCreate->isRegister) ;
+		}
+		break;
+	case MSG_DB_CHECK_INVITER:
+		{
+			stMsgDBCheckInvite* pRet = (stMsgDBCheckInvite*)pmsg ;
+			pdata->nExtenArg1 = pRet->nInviteUserUID;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT playerName FROM playerbasedata WHERE userUID = '%d'",pRet->nInviteUserUID) ;
 		}
 		break;
 	case MSG_READ_PLAYER_BASE_DATA:
@@ -210,7 +269,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->eType = eRequestType_Update ;
 			std::string strUploadPic = stMysqlField::UnIntArraryToString(pRet->vUploadedPic,MAX_UPLOAD_PIC) ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE playerbasedata SET playerName = '%s', signature = '%s',vUploadedPic = '%s',photoID = '%d',isRegister = '%d',sex = '%d' WHERE userUID = '%d'",pRet->vName,pRet->vSigure,strUploadPic.c_str(),pRet->nIsRegister,pRet->nPhotoID,pRet->nSex,pRet->nUserUID) ;
+				"UPDATE playerbasedata SET playerName = '%s', signature = '%s',vUploadedPic = '%s',photoID = '%d',isRegister = '%d',sex = '%d',inviterUID = '%u' WHERE userUID = '%d'",pRet->vName,pRet->vSigure,strUploadPic.c_str(),pRet->nIsRegister,pRet->nPhotoID,pRet->nSex,pRet->nInviterUID,pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_PLAYER_MONEY:
@@ -218,7 +277,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgSavePlayerMoney* pRet = (stMsgSavePlayerMoney*)pmsg ;
 			pRequest->eType = eRequestType_Update ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE playerbasedata SET coin = '%I64d', diamond = '%d' WHERE userUID = '%d'",pRet->nCoin,pRet->nDiamoned,pRet->nUserUID) ;
+				"UPDATE playerbasedata SET coin = '%I64d', diamond = '%d',nCupCnt = '%d' WHERE userUID = '%d'",pRet->nCoin,pRet->nDiamoned,pRet->nCupCnt,pRet->nUserUID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("save player coin = %I64d uid = %d",pRet->nCoin,pRet->nUserUID);
 		}
 		break;
@@ -263,21 +322,21 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"UPDATE playerbasedata SET mostCoinEver = '%I64d', vipLevel = '%d', nYesterdayCoinOffset = '%I64d', \
 				nTodayCoinOffset = '%I64d',offlineTime = '%d',continueLoginDays = '%d',lastLoginTime = '%d',lastTakeCharityCoinTime = '%d', \
-				longitude = '%f',latitude = '%f',vJoinedClubID = '%s',newPlayerHaloWeight = '%d' WHERE userUID = '%d' ",
+				longitude = '%f',latitude = '%f',vJoinedClubID = '%s',newPlayerHaloWeight = '%d',nVipCardType = '%d',vipCardEndTime = '%d',lastTakeCardGiftTime = '%u',totalInvitePrizeCoin = '%u',takeCharityTimes = '%u' WHERE userUID = '%d' ",
 				pRet->nMostCoinEver,pRet->nVipLevel,pRet->nYesterdayCoinOffset,pRet->nTodayCoinOffset,pRet->tOfflineTime,pRet->nContinueDays,pRet->tLastLoginTime,pRet->tLastTakeCharityCoinTime,pRet->dfLongitude,pRet->dfLatidue,
-				strJoinedClub.c_str(),pRet->nNewPlayerHaloWeight,pRet->nUserUID) ;
+				strJoinedClub.c_str(),pRet->nNewPlayerHaloWeight,pRet->nCardType,pRet->nCardEndTime,pRet->nLastTakeCardGiftTime,pRet->nTotalInvitePrizeCoin,pRet->nTakeCharityTimes,pRet->nUserUID) ;
 		}
 		break;
-	case MSG_SAVE_CREATE_ROOM_INFO:
-		{
-			stMsgSaveCreateRoomInfo* pRet = (stMsgSaveCreateRoomInfo*)pmsg ;
-			pRequest->eType = eRequestType_Add;
-			
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroom ( roomType,roomID, configID,ownerUID,createTime,chatRoomID) VALUES ( '%d' ,'%d', '%u','%u','%u','%I64d')",
-			 						pRet->nRoomType,pRet->nRoomID,pRet->nConfigID,pRet->nRoomOwnerUID,pRet->nCreateTime,pRet->nChatRoomID) ;
-			CLogMgr::SharedLogMgr()->PrintLog("save create taxas room room id = %d",pRet->nRoomID);
-		}
-		break;
+	//case MSG_SAVE_CREATE_ROOM_INFO:
+	//	{
+	//		stMsgSaveCreateRoomInfo* pRet = (stMsgSaveCreateRoomInfo*)pmsg ;
+	//		pRequest->eType = eRequestType_Add;
+	//		
+	//		pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroom ( roomType,roomID, configID,ownerUID,createTime,chatRoomID) VALUES ( '%d' ,'%d', '%u','%u','%u','%I64d')",
+	//		 						pRet->nRoomType,pRet->nRoomID,pRet->nConfigID,pRet->nRoomOwnerUID,pRet->nCreateTime,pRet->nChatRoomID) ;
+	//		CLogMgr::SharedLogMgr()->PrintLog("save create taxas room room id = %d",pRet->nRoomID);
+	//	}
+	//	break;
 	case MSG_SAVE_UPDATE_ROOM_INFO:
 		{
 			stMsgSaveUpdateRoomInfo* pRet = (stMsgSaveUpdateRoomInfo*)pmsg ;
@@ -286,14 +345,14 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			if ( pRet->bIsNewCreate )
 			{
 				pRequest->eType = eRequestType_Add ;
-				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroom ( roomType,roomID,ownerUID,jsonDetail) VALUES ( '%d' ,'%d','%u','%s')",
-					pRet->nRoomType,pRet->nRoomID,pRet->nRoomOwnerUID,aBuffer.getBufferPtr()) ;
+				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroomnew ( roomType,roomID,ownerUID,configID,jsonDetail) VALUES ( '%d' ,'%d','%u','%u','%s')",
+					pRet->nRoomType,pRet->nRoomID,pRet->nRoomOwnerUID,pRet->nConfigID,aBuffer.getBufferPtr()) ;
 			}
 			else
 			{
 				pRequest->eType = eRequestType_Update ;
 				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-					"UPDATE gameroom SET jsonDetail = '%s' WHERE roomID = '%d' and roomType = '%d' and isDelete = '0' "
+					"UPDATE gameroomnew SET jsonDetail = '%s' WHERE roomID = '%d' and roomType = '%d' and isDelete = '0' "
 					,aBuffer.getBufferPtr(),pRet->nRoomID,pRet->nRoomType ) ;
 			}
 			CLogMgr::SharedLogMgr()->PrintLog("save room update info room id = %d",pRet->nRoomID);
@@ -304,7 +363,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadRoomInfo* pRet = (stMsgReadRoomInfo*)pmsg ;
 			pRequest->eType = eRequestType_Select;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM gameroom WHERE roomType = '%d' and isDelete = '0' ",pRet->nRoomType) ;
+				"SELECT * FROM gameroomnew WHERE roomType = '%d' and isDelete = '0' ",pRet->nRoomType) ;
 			CLogMgr::SharedLogMgr()->PrintLog("read all room rooms");
 		}
 		break;
@@ -313,8 +372,8 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgSaveDeleteRoom* pRet = (stMsgSaveDeleteRoom*)pmsg ;
 			pRequest->eType = eRequestType_Update;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE gameroom SET isDelete = '1' WHERE roomID = '%d' and roomType = '%d' ",pRet->nRoomID,pRet->nRoomType) ;
-			CLogMgr::SharedLogMgr()->PrintLog("read taxas room players room id = %d",pRet->nRoomID);
+				"UPDATE gameroomnew SET isDelete = '1' WHERE roomID = '%d' and roomType = '%d' ",pRet->nRoomID,pRet->nRoomType) ;
+			CLogMgr::SharedLogMgr()->PrintLog("delete room id = %d",pRet->nRoomID);
 			pdata->nExtenArg1 = pRet->nRoomID;
 		}
 		break;
@@ -361,21 +420,10 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	case MSG_SAVE_ROOM_PLAYER:
 		{
 			stMsgSaveRoomPlayer* pRet = (stMsgSaveRoomPlayer*)pmsg ;
-			if ( pRet->isUpdate )
-			{
-				pRequest->eType = eRequestType_Update;
-				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-					"UPDATE roomplayers SET offsetCoin = '%lld',otherOffset = '%lld' WHERE roomID = '%u' and playerUID = '%u'and roomType = '%u' and flag = '0' "
-					,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset,pRet->nRoomID,pRet->savePlayer.nUserUID,pRet->nRoomType) ;
-				CLogMgr::SharedLogMgr()->PrintLog("updata room player data room id = %u , uid = %u",pRet->nRoomID,pRet->savePlayer.nUserUID );
-			}
-			else
-			{
-				pRequest->eType = eRequestType_Add;
-				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomplayers (roomID, roomType,playerUID,offsetCoin,otherOffset ) VALUES ('%u','%u' ,'%u','%I64d','%I64d')",
-					pRet->nRoomID,pRet->nRoomType,pRet->savePlayer.nUserUID,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset) ;
-				CLogMgr::SharedLogMgr()->PrintLog("add taxas room player data room id = %u , uid = %u",pRet->nRoomID,pRet->savePlayer.nUserUID);
-			}
+			pRequest->eType = eRequestType_Add;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomrankplayers (roomID, roomType,termNumber,playerUID,offsetCoin,otherOffset ) VALUES ('%u','%u','%u' ,'%u','%I64d','%I64d') ON DUPLICATE KEY UPDATE offsetCoin = '%I64d', otherOffset = '%I64d' ",
+				pRet->nRoomID,pRet->nRoomType,pRet->nTermNumber,pRet->savePlayer.nUserUID,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset) ;
+			CLogMgr::SharedLogMgr()->PrintLog("update room player data room id = %u , type = %u , term = %u ,uid = %u",pRet->nRoomID,pRet->nRoomType,pRet->nTermNumber,pRet->savePlayer.nUserUID);
 		}
 		break;
 	case MSG_READ_ROOM_PLAYER:
@@ -383,21 +431,22 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadRoomPlayer* pRet = (stMsgReadRoomPlayer*)pmsg ;
 			pRequest->eType = eRequestType_Select;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM roomplayers WHERE roomID = '%u' and flag = '0' and roomType = '%u' order by offsetCoin desc limit 90 ",pRet->nRoomID,pRet->nRoomType) ;
+				"SELECT * FROM roomrankplayers WHERE roomID = '%u' and termNumber = '%u' and roomType = '%u' order by offsetCoin desc limit 90 ",pRet->nRoomID,pRet->nTermNumber,pRet->nRoomType) ;
 			CLogMgr::SharedLogMgr()->PrintLog("read room players room id = %d , type = %d",pRet->nRoomID,pRet->nRoomType );
 			pdata->nExtenArg1 = pRet->nRoomID;
-			pdata->nExtenArg2 = eSenderPort ;
+			pdata->nExtenArg2 = pRet->nTermNumber ;
+			pdata->eFromPort = eSenderPort ;
 		}
 		break;
-	case MSG_REMOVE_ROOM_PLAYER:
-		{
-			stMsgRemoveRoomPlayer* pRet = (stMsgRemoveRoomPlayer*)pmsg ;
-			pRequest->eType = eRequestType_Update;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE roomplayers SET flag = '1' WHERE roomID = '%u' and flag = '0' and roomType = %u",pRet->nRoomID,pRet->nRoomType) ;
-			CLogMgr::SharedLogMgr()->PrintLog("remove room player data room id = %u, type = %u ",pRet->nRoomID,pRet->nRoomType );
-		}
-		break;
+	//case MSG_REMOVE_ROOM_PLAYER:
+	//	{
+	//		stMsgRemoveRoomPlayer* pRet = (stMsgRemoveRoomPlayer*)pmsg ;
+	//		pRequest->eType = eRequestType_Update;
+	//		pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+	//			"UPDATE roomplayers SET flag = '1' WHERE roomID = '%u' and flag = '0' and roomType = %u",pRet->nRoomID,pRet->nRoomType) ;
+	//		CLogMgr::SharedLogMgr()->PrintLog("remove room player data room id = %u, type = %u ",pRet->nRoomID,pRet->nRoomType );
+	//	}
+	//	break;
 // 	case MSG_PLAYER_SAVE_BASE_DATA:
 // 		{
 // 			stMsgGameServerSaveBaseData* pSaveBaseData = (stMsgGameServerSaveBaseData*)pmsg ;
@@ -826,6 +875,25 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	CLogMgr::SharedLogMgr()->PrintLog("processed db ret = %d",pResult->nRequestUID);
 	switch ( pResult->nRequestUID )
 	{
+	case MSG_READ_EXCHANGE:
+		{
+			stMsgReadExchangesRet msgBack ;
+			msgBack.nCnt = pResult->nAffectRow ;
+			CAutoBuffer auBuffer( sizeof(msgBack) + sizeof(stExchangeItem) * msgBack.nCnt ) ;
+			auBuffer.addContent(&msgBack,sizeof(msgBack)) ;
+
+			for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow; ++nIdx )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
+				stExchangeItem item ;
+				item.nExchangeID = pRow["authorUID"]->IntValue();
+				item.nExchangedCnt = pRow["content"]->nBufferLen;
+				auBuffer.addContent(&item,sizeof(item));
+
+			}
+			m_pTheApp->sendMsg(pdata->nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+		}
+		break;
 	case MSG_CIRCLE_READ_TOPICS:
 		{
 			uint16_t nPageCnt = ( pResult->nAffectRow + CIRCLE_TOPIC_CNT_PER_PAGE - 1 )  / CIRCLE_TOPIC_CNT_PER_PAGE ;
@@ -874,7 +942,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 				return ;
 			}
-			msgBack.nReqPlayerSessionID = pdata->nExtenArg1 ;
+			msgBack.nDataPlayerUID = pdata->nExtenArg1 ;
 			msgBack.isDetail = pdata->nExtenArg2 ;
 			CAutoBuffer auB(sizeof(msgBack) + sizeof(stPlayerDetailDataClient) );
 			stPlayerDetailDataClient tData;
@@ -969,11 +1037,12 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			{
 				CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
 				stMsgReadMailListRet msgRet ;
+				msgRet.nUserUID = pdata->nExtenArg1 ;
 				msgRet.bFinal = (nIdx + 1) == pResult->nAffectRow ;
 				msgRet.pMails.eType = pRow["mailType"]->IntValue();
 				msgRet.pMails.nPostTime = pRow["postTime"]->IntValue();
 				msgRet.pMails.nContentLen = pRow["mailContent"]->nBufferLen ;
-				if ( msgRet.pMails.nContentLen == 0 )
+				if ( msgRet.pMails.nContentLen == 0 && msgRet.pMails.eType != eMail_ReadTimeTag )
 				{
 					CLogMgr::SharedLogMgr()->ErrorLog("why this mail len is null uid = %d type = %d, post time = %u",pRow["userUID"]->IntValue(),msgRet.pMails.eType,msgRet.pMails.nPostTime);
 				}
@@ -1059,8 +1128,22 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msg.stBaseData.nContinueDays = pRow["continueLoginDays"]->IntValue() ;
 				msg.stBaseData.isRegister = pRow["isRegister"]->IntValue() ;
 				msg.stBaseData.nNewPlayerHaloWeight = pRow["newPlayerHaloWeight"]->IntValue() ;
+				msg.stBaseData.nInviteUID = pRow["inviterUID"]->IntValue() ;
+				msg.stBaseData.nCardType = pRow["nVipCardType"]->IntValue();
+				msg.stBaseData.nCardEndTime = pRow["vipCardEndTime"]->IntValue() ;
+				msg.stBaseData.tLastTakeCardGiftTime = pRow["lastTakeCardGiftTime"]->IntValue();
+				msg.stBaseData.nTotalInvitePrizeCoin = pRow["totalInvitePrizeCoin"]->IntValue() ;
+				msg.stBaseData.nTakeCharityTimes = pRow["takeCharityTimes"]->IntValue();
 				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 			}
+		}
+		break;
+	case MSG_DB_CHECK_INVITER:
+		{
+			stMsgDBCheckInviteRet msgBack ;
+			msgBack.nInviteUseUID = pdata->nExtenArg1 ;
+			msgBack.nRet = pResult->nAffectRow > 0 ? 0 : 1 ;
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 		}
 		break;
 	case MSG_READ_PLAYER_TAXAS_DATA:
@@ -1146,6 +1229,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					msgRet.nRoomType = pRow["roomType"]->IntValue();
 					msgRet.nRoomID = pRow["roomID"]->IntValue();
 					msgRet.nRoomOwnerUID = pRow["ownerUID"]->IntValue();
+					msgRet.nConfigID = pRow["configID"]->IntValue();
 					msgRet.nJsonLen = pRow["jsonDetail"]->nBufferLen ; 
 					if ( msgRet.nJsonLen > 0 )
 					{
@@ -1211,9 +1295,10 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					}
 
 					stMsgReadRoomPlayerRet msgRet ;
-					msgRet.cSysIdentifer = pdata->nExtenArg2 ; // send port ;
+					msgRet.cSysIdentifer = pdata->eFromPort ; // send port ;
 					msgRet.nRoomID = pdata->nExtenArg1;
 					msgRet.nCnt = nSendCnt ;
+					msgRet.nTermNumber = pdata->nExtenArg2;
 					msgRet.bIsLast = nPageIdx == nPage - 1 ;
 					CAutoBuffer auBuffer(sizeof(msgRet) + msgRet.nCnt * sizeof(stSaveRoomPlayerEntry));
 					auBuffer.addContent(&msgRet,sizeof(msgRet)) ;
@@ -1234,6 +1319,21 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
+	case MSG_READ_NOTICE_PLAYER:
+		{
+			stMsgReadNoticePlayerRet msgBack ;
+			memset(&msgBack.tPlayerEntery,0,sizeof(msgBack.tPlayerEntery)) ;
+			msgBack.nRet = pResult->nAffectRow > 0 ? 0 : 1 ;
+			msgBack.tPlayerEntery.nUserUID = pdata->nExtenArg1 ;
+			if ( msgBack.nRet == 0 )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[0] ;
+				msgBack.tPlayerEntery.nNoticeFlag = pRow["flag"]->IntValue() ;
+				memcpy(msgBack.tPlayerEntery.pToken,pRow["token"]->BufferData(),32);
+			}
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+		}
+		break ;
 	case MSG_SAVE_CREATE_ROOM_INFO:
 	case MSG_SAVE_UPDATE_ROOM_INFO:
 	case MSG_SAVE_REMOVE_TAXAS_ROOM_PLAYERS:
@@ -1248,6 +1348,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_SAVE_PLAYER_MONEY:
 	case MSG_CIRCLE_SAVE_DELETE_TOPIC:
 	case MSG_CIRCLE_SAVE_ADD_TOPIC:
+	case MSG_SAVE_NOTICE_PLAYER:
+	case MSG_SAVE_EXCHANGE:
 		{
 			if ( pResult->nAffectRow <= 0 )
 			{
@@ -1685,6 +1787,7 @@ void CDBManager::GetPlayerDetailData(stPlayerDetailData* pData, CMysqlRow&prow)
 	memset(pData->cSignature,0,sizeof(pData->cSignature)) ;
 	sprintf_s(pData->cSignature,sizeof(pData->cSignature),"%s",prow["signature"]->CStringValue()) ;
 	pData->nMostCoinEver = prow["mostCoinEver"]->IntValue64();
+	pData->nCupCnt = prow["nCupCnt"]->IntValue();
 	pData->dfLatidue = prow["latitude"]->FloatValue();
 	pData->dfLongitude = prow["longitude"]->FloatValue();
 

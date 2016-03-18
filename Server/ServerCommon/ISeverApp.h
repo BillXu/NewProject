@@ -5,8 +5,8 @@
 #include "Timer.h"
 #include "ServerConfig.h"
 #include "MessageIdentifer.h"
-
 struct stMsg ;
+class IGlobalModule ;
 class IServerApp
 	:CNetMessageDelegate
 {
@@ -29,8 +29,10 @@ public:
 	bool isConnected();
 	void setConnectServerConfig(stServerConfig* pConfig );
 	CTimerManager* getTimerMgr(){ return m_pTimerMgr ; }
-	virtual void onExit(){};
-	virtual void onConnectedToSvr(){};
+	virtual void onExit();
+	virtual void onConnectedToSvr();
+	void registerModule(IGlobalModule* pModule);
+	IGlobalModule* getModuleByType(uint16_t nType );
 protected:
 	void doConnectToTargetSvr();
 	uint16_t getVerifyType(); // et:MSG_VERIFY_DATA ,MSG_VERIFY_TAXAS,MSG_VERIFY_LOGIN
@@ -45,4 +47,6 @@ private:
 	float m_fReconnectTick ;
 
 	char m_pSendBuffer[MAX_MSG_BUFFER_LEN] ;
+
+	std::map<uint16_t,IGlobalModule*> m_vAllModule ;
 };

@@ -30,6 +30,9 @@ public:
 	uint64_t getPlayerAddCoinUpLimit( uint8_t nPlayerSvrIdx);
 	void resetBetRoundState();
 	stSitableRoomPlayer* doCreateSitDownPlayer()override { return new stTaxasPlayer ;}
+	uint8_t getRoomType()override{return eRoom_TexasPoker ;}
+	uint8_t getTargetSvrPort()override{ return ID_MSG_PORT_TAXAS ;}
+	CRobotControl* doCreateRobotControl();
 public:
 	uint32_t nLittleBlind;
 	uint32_t nMiniTakeIn ;

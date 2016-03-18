@@ -9,13 +9,32 @@
 
 void CRobotControlNiuNiu::informRobotAction(uint8_t nActType)
 {
+	stSitableRoomPlayer* pPlayer = getRoomData()->getPlayerByIdx( getSeatIdx() ) ;
+	if ( !pPlayer )
+	{
+		printf("not sit down \n");
+		return ;
+	}
+
+	if ( pPlayer->isHaveState(eRoomPeer_CanAct) == false )
+	{
+		printf("uid = %u not join this game wait next\n",pPlayer->nUserUID);
+		return ;
+	}
 
 	switch ( nActType )
 	{
 	case eAct_Bet:
 		{
+			auto roomData = (stNiuNiuData*)getRoomData();
+			if ( roomData->nBankerIdx == getSeatIdx() )
+			{
+				printf("uid = %u i am banker need not bet \n",pPlayer->nUserUID );
+				return ;
+			}
+
 			float nRate = (float)rand() / float(RAND_MAX);
-			nRate = 1.0f + nRate * 4.0f ;
+			nRate = 1.0f + nRate * 3.0f ;
 			fireDelayAction(nActType,nRate,nullptr);
 		}
 		break;

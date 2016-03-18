@@ -26,6 +26,7 @@ public:
 	void OnReactive(uint32_t nSessionID )override{ sendGameDataToClient(); }
 	void OnOtherDoLogined() override{sendGameDataToClient();}
 	uint32_t getCurRoomID(){ return m_nStateInRoomID ;}
+	uint16_t getCurRoomType(){ return m_nStateInRoomType ; }
 	void addOwnRoom(eRoomType eType , uint32_t nRoomID , uint16_t nConfigID );
 	bool isCreateRoomCntReachLimit(eRoomType eType);
 	bool deleteOwnRoom(eRoomType eType , uint32_t nRoomID );

@@ -6,7 +6,9 @@
 #include "AutoBuffer.h"
 #include <cassert>
 #include "IRoomState.h"
+#include "RoomConfig.h"
 #define ROOM_LIST_ITEM_CNT_PER_PAGE 5 
+#define TIME_SAVE_ROOM_INFO 60*10
 IRoomManager::IRoomManager()
 {
 
@@ -17,8 +19,10 @@ IRoomManager::~IRoomManager()
 
 }
 
-bool IRoomManager::init()
+bool IRoomManager::init(CRoomConfigMgr* pConfigMgr)
 {
+	m_fTimeSaveTicket = TIME_SAVE_ROOM_INFO * 2;
+	m_pConfigMgr = pConfigMgr ;
 	m_nMaxRoomID = 1 ;
 	m_vCongfigIDRooms.clear();
 	m_vRooms.clear();
@@ -82,7 +86,6 @@ bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 		if ( onCrossServerRequestRet(pRet,pJsValue) == false )
 		{
 			IRoom* pRoom = GetRoomByID(pRet->nTargetID);
-			assert(pRoom&&"this request no one to process or target id error");
 			if ( pRoom )
 			{
 				return pRoom->onCrossServerRequestRet(pRet,pJsValue);
@@ -152,8 +155,16 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			CAutoBuffer auBufo (pRet->nJsonLen + 1 );
 			auBufo.addContent( ((char*)pRet) + sizeof(stMsgReadRoomInfoRet),pRet->nJsonLen);
 			jsReader.parse(auBufo.getBufferPtr(),jsRoot);
+			stBaseRoomConfig* pConfig = m_pConfigMgr->GetConfigByConfigID(pRet->nConfigID) ;
+			if ( pConfig == nullptr )
+			{
+				delete pRoom ;
+				pRoom = nullptr ;
+				CLogMgr::SharedLogMgr()->ErrorLog("read room info , room = %d , config = %d is null",pRet->nRoomID,pRet->nConfigID) ;
+				break;
+			}
+			pRoom->serializationFromDB(pConfig,pRet->nRoomID,jsRoot);
 			m_vRooms[pRoom->getRoomID()] = pRoom ;
-			pRoom->serializationFromDB(pRet->nRoomID,jsRoot);
 
 			if ( pRet->nRoomID > m_nMaxRoomID )
 			{
@@ -218,6 +229,63 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			if ( msgBack.nRet == 0 )
 			{
 				pRoom->onPlayerEnterRoom(&pRet->tPlayerData);
+			}
+		}
+		break;
+	case MSG_REQUEST_ROOM_LIST:
+		{
+			std::vector<IRoom*> vActiveRoom ;
+			MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
+			for ( ; iter != m_vRooms.end(); ++iter )
+			{
+				if ( iter->second->isRoomAlive() )
+				{
+					vActiveRoom.push_back(iter->second) ;
+				}
+			}
+
+			stMsgRequestRoomListRet msgRet ;
+			msgRet.nRoomCnt = vActiveRoom.size() ;
+			msgRet.nRoomType = getMgrRoomType();
+			CAutoBuffer auBuffer(sizeof(msgRet) + sizeof(uint32_t) * msgRet.nRoomCnt );
+			auBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+			for ( auto pRoom : vActiveRoom )
+			{
+				uint32_t nid = pRoom->getRoomID();
+				auBuffer.addContent(&nid,sizeof(nid)) ;
+			}
+			sendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID);
+			CLogMgr::SharedLogMgr()->PrintLog("send msg room list ") ;
+		}
+		break;
+	case MSG_REQUEST_ROOM_ITEM_DETAIL:
+		{
+			stMsgRequestRoomItemDetail* pret = (stMsgRequestRoomItemDetail*)prealMsg ;
+			auto pRoom = GetRoomByID(pret->nRoomID);
+
+			stMsgRequestRoomItemDetailRet msgRet ;
+			msgRet.nRet = 1 ;
+			msgRet.nRoomType = getMgrRoomType() ;
+			msgRet.nRoomID = pret->nRoomID ;
+			if ( pRoom )
+			{
+				msgRet.nRet = 0 ;
+				Json::Value vDetail ;
+				pRoom->roomItemDetailVisitor(vDetail) ;
+				Json::StyledWriter write ;
+				std::string strDe = write.write(vDetail);
+				msgRet.nJsonLen = strDe.size() ;
+				CAutoBuffer auBffer (sizeof(msgRet) + msgRet.nJsonLen );
+				auBffer.addContent(&msgRet,sizeof(msgRet)) ;
+				auBffer.addContent(strDe.c_str(),msgRet.nJsonLen) ;
+				sendMsg((stMsg*)auBffer.getBufferPtr(),auBffer.getContentSize(),nSessionID) ;
+				CLogMgr::SharedLogMgr()->PrintLog("send item detial room id = %d detail: %s",msgRet.nRoomID,strDe.c_str()) ;
+			}
+			else
+			{
+				msgRet.nJsonLen = 0 ;
+				sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
+				CLogMgr::SharedLogMgr()->ErrorLog("can not find room detail room id = %d",msgRet.nRoomID) ;
 			}
 		}
 		break;
@@ -318,6 +386,14 @@ void IRoomManager::update(float fDelta )
 	{
 		pRoom->onRoomWillDoDelete();
 		doDeleteRoom(pRoom) ;
+	}
+
+	// check time save 
+	m_fTimeSaveTicket -= fDelta ;
+	if ( m_fTimeSaveTicket < 0 )
+	{
+		m_fTimeSaveTicket = TIME_SAVE_ROOM_INFO ;
+		onTimeSave();
 	}
 }
 
@@ -563,8 +639,8 @@ void IRoomManager::onConnectedToSvr()
 	{
 		stMsgReadRoomInfo msgRead ;
 		msgRead.nRoomType = getMgrRoomType() ;
-		//sendMsg(&msgRead,sizeof(msgRead),0) ;
-		CLogMgr::SharedLogMgr()->ErrorLog("test stage do not read room info");
+		sendMsg(&msgRead,sizeof(msgRead),0) ;
+		//CLogMgr::SharedLogMgr()->ErrorLog("test stage do not read room info");
 		CLogMgr::SharedLogMgr()->PrintLog("read room info ") ;
 	}
 }

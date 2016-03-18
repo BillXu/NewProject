@@ -124,6 +124,8 @@ char CTaxasPokerPeerCard::PK(CTaxasPokerPeerCard* pPeerCard )
 			}
 		}
 		break;
+            default:
+            break;
 	}
 
 	// sort common final card 

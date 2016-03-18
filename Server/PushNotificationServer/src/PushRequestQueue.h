@@ -9,8 +9,8 @@ struct stNotice
 	char pDeveiceToken[32] ;  // must proccesed in client ; change to htonl();  // change to network big endain ;
 	char pAlert[219];    // a json right value , Warnning: must include [" " ] if not { } value ;
 protected:
+	stNotice(){ memset(cSound,0,sizeof(cSound)); memset(pAlert,0,sizeof(pAlert)); }
 	friend class CPushRequestQueue ;
-	stNotice(){} 
 };
 
 typedef std::list<stNotice*> LIST_NOTICES ;
