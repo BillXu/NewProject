@@ -43,6 +43,7 @@ struct stMsgNNRoomInfo
     uint32_t nChatRoomID;
     uint32_t nBlind;
 	uint32_t nDeskFee ;
+	uint32_t nCloseTime ;
 	PLACE_HOLDER(stNNRoomInfoPayerItem*) ;
 };
 

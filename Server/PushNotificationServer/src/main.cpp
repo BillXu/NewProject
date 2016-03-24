@@ -14,9 +14,20 @@ int main()
 	//  	std::string str = tt.HMAC_SHA1((BYTE*)pM,strlen(pM),(BYTE*)pKey,strlen(pKey)) ;
 	//	zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
 	//	zsummer::log4z::ILog4zManager::GetInstance()->Start();
-
-	CPushNotificationServer theApp ;
-	bool bok = theApp.init() ;
+	//uint32_t nArg = 2 ;
+	//int8_t fRate = -3 ;
+	//if ( nArg + fRate < 0 )
+	//{
+	//	int b = 3 ;
+	//}
+	//else
+	//{
+	//	int a = 0 ;
+	//}
+	//int32_t nValue = nArg + fRate ;
+	//int8_t tt = nArg - fRate ;
+	//int64_t m = tt ;
+	bool bok = CPushNotificationServer::getInstance()->init();
 	if ( !bok )
 	{
 		printf("init svr error\n");
@@ -24,7 +35,7 @@ int main()
 		scanf("%c",&c);
 		return 0 ;
 	}
-	theApp.run();
-	theApp.onExit();
+	CPushNotificationServer::getInstance()->run();
+	CPushNotificationServer::getInstance()->onExit();
 	return 0 ;
 }

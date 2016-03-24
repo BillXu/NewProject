@@ -886,8 +886,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			{
 				CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
 				stExchangeItem item ;
-				item.nExchangeID = pRow["authorUID"]->IntValue();
-				item.nExchangedCnt = pRow["content"]->nBufferLen;
+				item.nExchangeID = pRow["exchangeID"]->IntValue();
+				item.nExchangedCnt = pRow["count"]->nBufferLen;
 				auBuffer.addContent(&item,sizeof(item));
 
 			}

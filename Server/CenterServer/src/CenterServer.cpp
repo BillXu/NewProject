@@ -205,8 +205,8 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				{
 					msg.bIsGateFull = false ;
 					msg.uIdx = nIdx;
-					m_vGateInfos->nIdx = nIdx ;
-					m_vGateInfos->nNetworkID = pData->_connectID ; 
+					m_vGateInfos[nIdx].nIdx = nIdx ;
+					m_vGateInfos[nIdx].nNetworkID = pData->_connectID ; 
 					CLogMgr::SharedLogMgr()->SystemLog("Gate server started idx = %d connected ip = %s",nIdx,strIP.c_str()) ;
 					break;
 				}
@@ -332,6 +332,17 @@ void CCenterServerApp::OnGateDisconnected(CONNECT_ID& nNetworkID )
 		SendClientDisconnectMsg(iter->first) ;
 	}
 	pGate->Reset();
+
+	for ( uint16_t nIdx = 0 ; nIdx < m_uGateCounts ; ++nIdx )
+	{
+		if ( m_vGateInfos[nIdx].nNetworkID == nNetworkID )
+		{
+			m_vGateInfos[nIdx].nIdx = nIdx ;
+			m_vGateInfos[nIdx].nNetworkID = INVALID_CONNECT_ID ; 
+			CLogMgr::SharedLogMgr()->SystemLog("Gate server disconnected idx = %d ",nIdx) ;
+			break;
+		}
+	}
 }
 
 CCenterServerApp::stGateInfo* CCenterServerApp::GetGateInfoByNetworkID(CONNECT_ID nNetworkID )

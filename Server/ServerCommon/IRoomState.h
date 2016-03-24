@@ -38,6 +38,7 @@ public:
 		time_t nNow = time(nullptr) ;
 		if ( m_pRoom->getCloseTime() && m_pRoom->getCloseTime() < nNow )
 		{
+			m_pRoom->onRoomClosed();
 			m_pRoom->goToState(eRoomState_Close) ;
 			return ;
 		}
@@ -63,7 +64,6 @@ public:
 	void enterState(IRoom* pRoom )override
 	{ 
 		m_pRoom = pRoom ;
-		m_pRoom->onRoomClosed();
 	}
 
 	void update(float)override

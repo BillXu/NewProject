@@ -797,7 +797,17 @@ void CTaxasRoom::didCaculateGameResult()
 			continue;
 		}
 		CLogMgr::SharedLogMgr()->ErrorLog("game end update offset");
-		updatePlayerOffset(pPlayer->getUserUID(),pPlayer->getCoinOffsetThisGame());
+		int32_t nTaxFee = pPlayer->getCoinOffsetThisGame() * getChouShuiRate();
+		if ( nTaxFee > 0 )
+		{
+			pPlayer->setCoin(pPlayer->getCoin() - (uint64_t)nTaxFee );
+			updatePlayerOffset(pPlayer->getUserUID(),pPlayer->getCoinOffsetThisGame() - nTaxFee );
+			CLogMgr::SharedLogMgr()->PrintLog("room id = %u uid = %u , give tax = %d coin = %lld",getRoomID(),nTaxFee,pPlayer->getCoin()) ;
+		}
+		else
+		{
+			updatePlayerOffset(pPlayer->getUserUID(),pPlayer->getCoinOffsetThisGame());
+		}
 	}
 
 	debugRank();
@@ -1041,6 +1051,7 @@ void CTaxasRoom::sendRoomInfoToPlayer(uint32_t nSessionID )
 	msgBaseInfo.nMaxTakeIn = m_nMaxTakeIn ;
 	msgBaseInfo.nDeskFee = getDeskFee();
 	msgBaseInfo.nChatRoomID = getChatRoomID();
+	msgBaseInfo.nCloseTime = getCloseTime() ;
 	memset(msgBaseInfo.vPublicCardNums,0,sizeof(msgBaseInfo.vPublicCardNums));
 	if ( m_nPublicCardRound == 1 )
 	{

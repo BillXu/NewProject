@@ -34,11 +34,11 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 		{
 			msgBack.nRet = 3 ;
 		}
-		else if ( pPlayer->getCoin() < nBetCoin )
+		else if ( (int64_t)pPlayer->getCoin() < nBetCoin )
 		{
 			msgBack.nRet = 2 ;
 		}
-		else if ( m_pRoom->getBankCoinLimitForBet() < nBetCoin * m_pRoom->getMaxRate() )
+		else if ( (int64_t)m_pRoom->getBankCoinLimitForBet() < nBetCoin * m_pRoom->getMaxRate() )
 		{
 			msgBack.nRet = 1 ;
 		}

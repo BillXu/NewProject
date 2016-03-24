@@ -199,6 +199,7 @@ void CNiuNiuRoom::sendRoomInfoToPlayer(uint32_t nSessionID)
 	msgInfo.nChatRoomID = getChatRoomID() ;
 	msgInfo.nPlayerCnt = getSitDownPlayerCount();
 	msgInfo.nRoomID = getRoomID() ;
+	msgInfo.nCloseTime = getCloseTime() ;
 	msgInfo.nRoomState = getCurRoomState()->getStateID();
 	
 	CAutoBuffer auBuffer(sizeof(msgInfo) + sizeof(stNNRoomInfoPayerItem) * msgInfo.nPlayerCnt);
@@ -419,7 +420,7 @@ void CNiuNiuRoom::caculateGameResult()
 		}
 
 		int64_t nLoseCoin = pNNP->getBetTimes() * getBaseBet() * m_nBetBottomTimes ;
-		if ( nLoseCoin > pNNP->getCoin() )
+		if ( nLoseCoin > (int64_t)pNNP->getCoin() )
 		{
 			nLoseCoin = pNNP->getCoin() ;
 			CLogMgr::SharedLogMgr()->ErrorLog("you do not have coin why you bet so many coin , uid = %d",pNNP->getUserUID());
@@ -447,22 +448,30 @@ void CNiuNiuRoom::caculateGameResult()
 		}
 
 		int64_t nBankerLoseCoin = pNNP->getBetTimes() * getBaseBet() * m_nBetBottomTimes ;
-		if ( nBankerLoseCoin > pBanker->getCoin() )
+		if ( nBankerLoseCoin > (int64_t)pBanker->getCoin() )
 		{
 			nBankerLoseCoin = pBanker->getCoin() ;
 		}
 
 		nBankerOffset -= nBankerLoseCoin ;
 		pBanker->setCoin(pBanker->getCoin() - nBankerLoseCoin ) ;
-		pNNP->setCoin(pNNP->getCoin() + nBankerLoseCoin ) ;
+		int64_t nWithoutTaxWin = nBankerLoseCoin * (1-getChouShuiRate()) ;
+		pNNP->setCoin(pNNP->getCoin() + nWithoutTaxWin ) ;
+		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , uid = %u without tax win = %I64d",getRoomID(),pNNP->getUserUID(),nWithoutTaxWin) ;
 
 		stNNGameResultItem item ;
 		item.nFinalCoin = pNNP->getCoin() ;
-		item.nOffsetCoin = nBankerLoseCoin ;
+		item.nOffsetCoin = nWithoutTaxWin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
 		updatePlayerOffset(pNNP->getUserUID(),item.nOffsetCoin) ;
 		pNNP->increaseWinTimes();
+	}
+
+	if ( nBankerOffset > 0 )
+	{
+		nBankerOffset = nBankerOffset * ( 1 - getChouShuiRate() );
+		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , banker uid = %u without tax win = %I64d",getRoomID(),pBanker->getUserUID(),nBankerOffset) ;
 	}
 
 	stNNGameResultItem item ;

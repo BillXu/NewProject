@@ -171,6 +171,9 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			}
 
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room final coin = %lld",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
+			stMsg msg ;
+			msg.usMsgType = MSG_PLAYER_UPDATE_MONEY ;
+			GetPlayer()->GetBaseData()->OnMessage(&msg,ID_MSG_PORT_CLIENT) ;
 		}
 		break;
 	case MSG_SVR_DELAYED_LEAVE_ROOM:
@@ -200,6 +203,9 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			}
 
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d delay leave room coin = %lld",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
+			stMsg msg ;
+			msg.usMsgType = MSG_PLAYER_UPDATE_MONEY ;
+			GetPlayer()->GetBaseData()->OnMessage(&msg,ID_MSG_PORT_CLIENT) ;
 		}
 		break;
 	case MSG_READ_PLAYER_NIUNIU_DATA:
@@ -695,7 +701,7 @@ bool CPlayerGameData::isCreateRoomCntReachLimit(eRoomType eType)
 		return true;
 	}
 
-	return m_vMyOwnRooms[eType].size() >= 5 ;
+	return m_vMyOwnRooms[eType].size() >= 1 ;
 }
 
 bool CPlayerGameData::deleteOwnRoom(eRoomType eType , uint32_t nRoomID )

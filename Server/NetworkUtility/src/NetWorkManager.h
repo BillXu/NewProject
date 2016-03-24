@@ -78,6 +78,7 @@ public:
 	void DisconnectServer();
     char* GetIPStringByConnectID(CONNECT_ID id );
     void ShutDown();
+	CClientNetworkImp* getNetworkImp(){ return m_pNetPeer ; }
 public:
     static int s_nCurrentDataSize ;
 protected:

@@ -9,7 +9,7 @@ CPushNotificationServer::~CPushNotificationServer()
 bool CPushNotificationServer::init()
 {
 	IServerApp::init();
-	CLogMgr::SharedLogMgr()->SetOutputFile("LoginSvr");
+	CLogMgr::SharedLogMgr()->SetOutputFile("ApnsSvr");
 	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
 
 	stServerConfig* pSvrConfigItem = m_stSvrConfigMgr.GetServerConfig(eSvrType_DataBase );
@@ -17,6 +17,16 @@ bool CPushNotificationServer::init()
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("Data base config is null , can not start login svr ") ;
 		return false;
+	}
+
+	m_nPushThread.InitSSLContex();
+	if ( m_nPushThread.ConnectToAPNs() == false )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("connect to apns svr failed") ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->SystemLog("connect to apns svr success") ;
 	}
 
 	// connected to center ;
@@ -28,15 +38,7 @@ bool CPushNotificationServer::init()
 	}
 	setConnectServerConfig(pSvrConfigItem);
 
-	m_nPushThread.InitSSLContex();
-	if ( m_nPushThread.ConnectToAPNs() == false )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("connect to apns svr failed") ;
-	}
-	else
-	{
-		CLogMgr::SharedLogMgr()->SystemLog("connect to apns svr success") ;
-	}
+	m_nPushThread.Start();
 	return true; 
 }
 

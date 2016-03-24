@@ -36,6 +36,7 @@ public:
 protected:
 	void doConnectToTargetSvr();
 	uint16_t getVerifyType(); // et:MSG_VERIFY_DATA ,MSG_VERIFY_TAXAS,MSG_VERIFY_LOGIN
+	CNetWorkMgr* getNetwork(){ return m_pNetWork ;}
 private:
 	bool m_bRunning;
 	CONNECT_ID m_nTargetSvrNetworkID ;

@@ -145,7 +145,7 @@ bool CGateServer::OnMessage( Packet* pPacket )
 		}
 
 		CLogMgr::SharedLogMgr()->SystemLog("setup network for clients to client ok " );
-		CLogMgr::SharedLogMgr()->SystemLog("Gate Server Start ok idx = %d !",m_nSvrIdx ) ;
+		CLogMgr::SharedLogMgr()->SystemLog("Gate Server Start ok idx = %d port = %u!",m_nSvrIdx,pGateConfig->nPort ) ;
 	}
 	else
 	{

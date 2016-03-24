@@ -197,11 +197,11 @@ void CPushNotificationThread::ProduceSendBuffer(char** pBuffer , int& nLen , stN
 	memset(payloadBinary,0,sizeof(payloadBinary)) ;
 	if ( strlen(pSendNotice->cSound) == 0 )
 	{
-		sprintf_s(payloadBinary,"{\"aps\":{\"alert\":%s,\"badge\":%d ,\"sound\" : \"default\"} }",pSendNotice->pAlert,pSendNotice->nBadge);
+		sprintf_s(payloadBinary,"{\"aps\":{\"alert\":\"%s\",\"badge\":%d ,\"sound\" : \"default\"} }",pSendNotice->pAlert,pSendNotice->nBadge);
 	}
 	else
 	{
-		sprintf_s(payloadBinary,"{\"aps\":{\"alert\":%s,\"badge\":%d ,\"sound\" : \"%s\"}}",pSendNotice->pAlert,pSendNotice->nBadge,pSendNotice->cSound);
+		sprintf_s(payloadBinary,"{\"aps\":{\"alert\":\"%s\",\"badge\":%d ,\"sound\" : \"%s\"}}",pSendNotice->pAlert,pSendNotice->nBadge,pSendNotice->cSound);
 	}
 	static char pTemp[293] ;
 	memset(pTemp,0,sizeof(pTemp)) ;

@@ -11,7 +11,7 @@
 #include <time.h>
 #ifndef SERVER
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
-#define POKER_CLIENT
+#define POKER_CLIENT 1
 #endif
 #endif // !SERVER
 

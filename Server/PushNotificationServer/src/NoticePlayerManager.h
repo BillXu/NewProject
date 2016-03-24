@@ -11,8 +11,8 @@ struct stNoticePlayer
 		uint32_t nType ;
 		std::string strContent ;
 	};
-	time_t tStartReadingTime ;
-	bool bReadingData ;
+
+
 	bool isHaveFlag( uint32_t nFlag )
 	{
 		return (nNoticeFlag & nFlag) == nFlag ;
@@ -21,8 +21,11 @@ struct stNoticePlayer
 	void pushNotice(const char* pNotices , uint32_t nNoticFlag);
 
 	void doReadData();
-
+	stNoticePlayer(){ tStartReadingTime = 0 ; bReadingData = false ; }
+public:
 	std::list<stWaitNotice> vWaitPushNotices ;
+	time_t tStartReadingTime ;
+	bool bReadingData ;
 };
 
 class CNoticePlayerManager

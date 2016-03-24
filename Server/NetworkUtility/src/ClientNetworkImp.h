@@ -31,6 +31,7 @@ public:
 	bool getFirstPacket(Packet** ppPacket ); // must delete out side ;
 	void addPacket(Packet* pPacket ) ;
 	bool sendMsg(const char* pData , size_t nLen ) ;
+	boost::asio::io_service* getServicePtr(){ return &m_io_service ; }
 private:  
 	void handleConnect(const boost::system::error_code& error);
 

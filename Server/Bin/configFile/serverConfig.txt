@@ -11,3 +11,4 @@ svrType	svrTips	svrIP	svrPort	password	account
 9	CenterSvr	127.0.0.1	8001	0	0
 10	DataSvr	127.0.0.1	8002	0	0
 11	taxasPoker	139.196.56.147	8002	0	0
+0	gate	127.0.0.1	50002	123456	0

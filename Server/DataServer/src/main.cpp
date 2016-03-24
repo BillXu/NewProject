@@ -65,7 +65,7 @@ void RunFunc ( CGameServerApp* pApp )
 	{
 	}
 }
-
+#include <time.h>
 
 int main()
 {

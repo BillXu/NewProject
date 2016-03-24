@@ -42,6 +42,11 @@ uint32_t stNiuNiuData::getLeftCanBetCoin()
 	}
 
 	auto pBanker = (stNiuNiuPlayer*)getPlayerByIdx(nBankerIdx);
+	if ( pBanker == nullptr )
+	{
+		printf("banker idx = %u , no banker \n",nBankerIdx);
+		return 0 ;
+	}
 	if ( getFinalBaseBet() * nPlayerTimes > pBanker->nCoin )
 	{
 		return 0 ;

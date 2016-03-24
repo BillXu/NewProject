@@ -133,7 +133,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			printf("recived base data donot tell robot type \n");
 			stMsgTellPlayerType msg ;
 			msg.nPlayerType = ePlayer_Robot ;
-			//SendMsg(&msg, sizeof(msg)) ;
+			SendMsg(&msg, sizeof(msg)) ;
 
 			//uint8_t nCnt = 14 ;
 			//while ( nCnt )

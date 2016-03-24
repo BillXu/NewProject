@@ -1,9 +1,9 @@
 机器人ID	是否启用 1是，0 否	机器人账号	机器人密码	Ai文件名	最少剩下金币	必赢概率(百分之)	当达到多少人数时，申请离开房间	行动延迟起始（秒）行动延迟结束（秒）		初始筹码	前往的房间ID	上线时间点	前往的房价类型（0 德州，1牛牛）
 RobotID	IsEnable	RobotAccount	RobotPassword	AiFileName	MinLeftCoin	MustWinRate	LeaveWhenPlayerCount	ActDelayBegin	ActDelayEnd	initCoin	dstRoomID	workPoint	nDstGameType
-1	1	R1	1	RobotAIConfig.xml	500	80	5	1	6	1000	2	15:50,19:3,10:36	0
-2	1	18917562006	123456	RobotAIConfig.xml	1000	80	6	1	6	2000	2	15:50,19:3,10:36	0
-3	1	R3	1	RobotAIConfig.xml	2000	80	7	1	6	4000	2	15:50,19:3,10:36	1
-4	1	R4	1	RobotAIConfig.xml	5000	80	8	1	6	10000	2	15:50,19:3,10:36	1
+1	1	R1	1	RobotAIConfig.xml	500	80	5	1	6	1000	2	15:20,19:3,10:36	0
+2	1	18917562006	123456	RobotAIConfig.xml	1000	80	6	1	6	2000	2	15:20,19:3,10:36	0
+3	1	R3	1	RobotAIConfig.xml	2000	80	7	1	6	4000	2	15:20,19:3,10:36	1
+4	1	R4	1	RobotAIConfig.xml	5000	80	8	1	6	10000	2	15:20,19:3,10:36	1
 5	0	R5	1	RobotAIConfig.xml	10000	80	9	1	6	20000	40		0
 6	0	R6	1	RobotAIConfig.xml	20000	80	5	1	6	40000	40		0
 7	0	R7	1	RobotAIConfig.xml	50000	80	6	1	6	100000	40		0

@@ -23,7 +23,7 @@ void CNiuNiuRoomRandBankerState::enterState(IRoom* pRoom)
 		if ( pPlayer && pPlayer->isHaveState(eRoomPeer_CanAct) && pPlayer->getTryBankerTimes() == m_pRoom->getBetBottomTimes() )
 		{
 			
-			if ( pPlayer->getTryBankerTimes() == 0 && (pPlayer->getCoin() >= nLeatCoinNeedForBankerWhenNoneTryBanker ) )
+			if ( pPlayer->getTryBankerTimes() == 0 && ((int64_t)pPlayer->getCoin() >= nLeatCoinNeedForBankerWhenNoneTryBanker ) )
 			{
 				vMaybeBanker.push_back(pPlayer) ;
 			}

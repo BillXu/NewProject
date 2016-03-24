@@ -17,6 +17,7 @@ bool CExchangeConfig::OnPaser(CReaderRow& refReaderRow )
 	pItem->strDesc = refReaderRow["desc"]->StringValue() ;
 	pItem->strIcon = refReaderRow["icon"]->StringValue() ;
 	auto already = getExchangeByID(pItem->nConfigID) ;
+	printf("%s\n",pItem->strDesc.c_str());
 	if ( already )
 	{
 		printf("already have exchange item config id = %d\n",pItem->nConfigID) ;

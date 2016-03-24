@@ -191,7 +191,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			msgRet.nRoomType = pRoom->getRoomType() ;
 			msgRet.nCanWithdrawProfit = pRoom->getProfit() ;
 			msgRet.nConfigID = pRoom->getConfigID() ;
-			msgRet.nDeadTime = pRoom->getDeadTime() ;
+			msgRet.nDeadTime = pRoom->getCloseTime() ;
 			msgRet.nFollows = 2 ;
 			msgRet.nRoomID = pRoom->getRoomID() ;
 			msgRet.nTotalProfit = pRoom->getTotalProfit() ;
@@ -238,7 +238,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
 			for ( ; iter != m_vRooms.end(); ++iter )
 			{
-				if ( iter->second->isRoomAlive() )
+				if ( iter->second->isSystemCreate() )
 				{
 					vActiveRoom.push_back(iter->second) ;
 				}
@@ -426,7 +426,7 @@ void IRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 		msgRet.vArg[0] = pRoom->getConfigID() ;
 		msgRet.vArg[1] = pRoom->getRoomID() ;
 		msgRet.vArg[2] = pRoom->getRoomType() ;
-		msgRet.vArg[3] = ( pRoom->getDeadTime() - pRoom->getCreateTime() ) / (60*60*24) ;
+		msgRet.vArg[3] = ( pRoom->getCloseTime() - pRoom->getCreateTime() ) / 60 ;
 		sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
 
 		if ( bSuccess )

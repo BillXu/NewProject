@@ -62,6 +62,8 @@ private:
 	ePlayerType m_ePlayerType ; 
 	uint32_t m_nTempCoin ;
 
+	uint8_t nReadingDataFromDB ; // 0 not read , 1 reading , 2 already read ;
+
 	std::string m_strCurIP ; // ip address ; used by wechat pay ;
 	// not store in db 
 	bool m_bGivedLoginReward ;

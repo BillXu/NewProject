@@ -67,6 +67,7 @@ public:
 	uint32_t getDeadTime(){ return m_nDeadTime ;}
 	uint32_t getCloseTime(){ return m_nOpenTime + m_nDuringTime  ;}
 	uint32_t getDeskFee(){ return m_nDeskFree ;}
+	bool isSystemCreate();
 private:
 	bool addRoomPlayer(stStandPlayer* pPlayer );
 	void removePlayer(stStandPlayer* pPlayer );
@@ -111,8 +112,6 @@ public:
 	void setDeadTime(uint32_t nDeadTime);
 	void setRoomName(const char* pRoomName);
 	const char* getRoomName();
-	void setRewardDesc(const char* pRewardDesc );
-	std::string getRewardDesc(){ return m_strRewardDesc ;}
 	bool isRoomAlive();
 	void setProfit(uint64_t nProfit );
 	uint64_t getProfit(){ return m_nCurProfit ;}
@@ -133,11 +132,13 @@ public:
 	virtual void onRoomWillDoDelete();
 	uint32_t getMaxLose(){ return m_nMaxLose ;}
 	bool isPlayerLoseReachMax(uint32_t nUserUID );
+	float getChouShuiRate(){ return m_fDividFeeRate ;}
 protected:
 	bool addRoomState(IRoomState* pRoomState );
 	bool isOmitNewPlayerHalo(){ return m_isOmitNewPlayerHalo ; }
 	void debugRank();
 private:
+	uint32_t m_nCloseState ;
 	bool m_bRoomInfoDiry ;
 	uint32_t m_nRoomID ;
 	LIST_STAND_PLAYER m_vReseverPlayerObjects;
@@ -158,12 +159,13 @@ private:
 	uint32_t m_nTermNumber ; // dang qian shi di ji qi 
 
 	char m_vRoomName[MAX_LEN_ROOM_NAME] ;
-	std::string m_strRewardDesc ;
+
 	uint64_t m_nCurProfit;
 	uint64_t m_nTotalProfit ;
 	uint32_t m_nChatRoomID ;
 	uint16_t m_nConfigID ;
 	uint32_t m_nDeskFree ;
+	float m_fDividFeeRate;
 	uint32_t m_nMaxLose ;
 	std::vector<int32_t> m_vRewards ;
 	bool m_isOmitNewPlayerHalo ;

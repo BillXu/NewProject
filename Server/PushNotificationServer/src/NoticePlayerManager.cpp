@@ -178,7 +178,6 @@ void CNoticePlayerManager::pushNotice(uint32_t nUserUID , const char* pNoticeCon
 	if ( !pp )
 	{
 		pp = new stNoticePlayer ;
-		memset(pp,0,sizeof(stNoticePlayer));
 		pp->bReadingData = true ;
 		pp->tStartReadingTime = time(nullptr);
 		pp->nUserUID = nUserUID ;

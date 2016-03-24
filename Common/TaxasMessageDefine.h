@@ -181,6 +181,7 @@ struct stMsgTaxasRoomInfoBase
 	uint32_t  nMostBetCoinThisRound;
 	uint32_t nDeskFee;
 	uint8_t vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
+	uint32_t nCloseTime ;
 };
 
 struct stMsgTaxasRoomInfoVicePool

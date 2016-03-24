@@ -23,9 +23,9 @@
 #include "ServerStringTable.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
-#define COIN_BE_INVITED 2000
+#define COIN_BE_INVITED 588
 #define COIN_INVITE_PRIZE 3000
-#define  COIN_FOR_VIP_CARD 2000
+#define  COIN_FOR_VIP_CARD 6800
 CPlayerBaseData::CPlayerBaseData(CPlayer* player )
 	:IPlayerComponent(player)
 {
@@ -55,6 +55,7 @@ void CPlayerBaseData::Init()
 	m_ePlayerType = ePlayer_Normal ;
 
 	m_strCurIP = "" ;
+	nReadingDataFromDB = 0 ;
 	Reset();
 }
 
@@ -65,6 +66,7 @@ void CPlayerBaseData::Reset()
 	setTempCoin(0);
 	m_strCurIP = "" ;
 	m_bGivedLoginReward = false ;
+	nReadingDataFromDB = 0 ;
 
 	m_bMoneyDataDirty = false;
 	m_bCommonLogicDataDirty = false;
@@ -76,6 +78,7 @@ void CPlayerBaseData::Reset()
 	stMsgDataServerGetBaseData msg ;
 	msg.nUserUID = GetPlayer()->GetUserUID() ;
 	SendMsg(&msg,sizeof(msg)) ;
+	nReadingDataFromDB = 1 ;
 	CLogMgr::SharedLogMgr()->PrintLog("requesting userdata for uid = %d",msg.nUserUID);
 	// register new day event ;
 	CEventCenter::SharedEventCenter()->RegisterEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
@@ -196,7 +199,8 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 			struct tm pTempNow,pLastTake ;
 			pTempNow = *localtime(&tNow) ;
-			pLastTake = *localtime((time_t*)&m_stBaseData.tLastTakeCardGiftTime) ;
+			time_t nLastTake = m_stBaseData.tLastTakeCardGiftTime ;
+			pLastTake = *localtime(&nLastTake) ;
 			if ( pTempNow.tm_year == pLastTake.tm_year && pTempNow.tm_mon == pLastTake.tm_mon && pTempNow.tm_yday == pLastTake.tm_yday )
 			{
 				msgBack.nRet = 3 ;
@@ -450,6 +454,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			}
 			memcpy(&m_stBaseData,&pBaseData->stBaseData,sizeof(m_stBaseData));
 			CLogMgr::SharedLogMgr()->PrintLog("recived base data uid = %d",pBaseData->stBaseData.nUserUID);
+			nReadingDataFromDB = 2 ;
 			SendBaseDatToClient();
 			CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->getPlayerDataCaher().removePlayerDataCache(pBaseData->stBaseData.nUserUID) ;
 			return true ;
@@ -593,7 +598,8 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			time_t tNow = time(nullptr) ;
 			struct tm pTimeCur, pTimeLast ;
 			pTimeCur = *localtime(&tNow);
-			pTimeLast = *localtime((time_t*)&m_stBaseData.tLastTakeCharityCoinTime);
+			time_t nLastTakeTime = m_stBaseData.tLastTakeCharityCoinTime;
+			pTimeLast = *localtime(&nLastTakeTime);
 			if ( pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_mon == pTimeLast.tm_mon && pTimeCur.tm_yday == pTimeLast.tm_yday ) // the same day ; do nothing
 			{
 
@@ -637,9 +643,11 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			
 			// check times limit state ;
 			time_t tNow = time(nullptr) ;
-			struct tm pTimeCur, pTimeLast ;
+			struct tm pTimeCur ;
+			struct tm pTimeLast ;
 			pTimeCur = *localtime(&tNow);
-			pTimeLast = *localtime((time_t*)&m_stBaseData.tLastTakeCharityCoinTime);
+			time_t nLastTakeTime = m_stBaseData.tLastTakeCharityCoinTime;
+			pTimeLast = *localtime(&nLastTakeTime);
 			if ( pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_mon == pTimeLast.tm_mon && pTimeCur.tm_yday == pTimeLast.tm_yday ) // the same day ; do nothing
 			{
 
@@ -818,12 +826,19 @@ bool CPlayerBaseData::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResul
 
 void CPlayerBaseData::SendBaseDatToClient()
 {
-	stMsgPlayerBaseData msg ;
-	memcpy(&msg.stBaseData,&m_stBaseData,sizeof(msg.stBaseData));
-	msg.nSessionID = GetPlayer()->GetSessionID() ;
-	SendMsg(&msg,sizeof(msg)) ;
-	CLogMgr::SharedLogMgr()->PrintLog("send base data to session id = %d ",GetPlayer()->GetSessionID() );
-	CLogMgr::SharedLogMgr()->SystemLog("send data uid = %d , final coin = %I64d, sex = %d",GetPlayer()->GetUserUID(),GetAllCoin(),msg.stBaseData.nSex);
+	if ( nReadingDataFromDB == 2 )
+	{
+		stMsgPlayerBaseData msg ;
+		memcpy(&msg.stBaseData,&m_stBaseData,sizeof(msg.stBaseData));
+		msg.nSessionID = GetPlayer()->GetSessionID() ;
+		SendMsg(&msg,sizeof(msg)) ;
+		CLogMgr::SharedLogMgr()->PrintLog("send base data to session id = %d ",GetPlayer()->GetSessionID() );
+		CLogMgr::SharedLogMgr()->SystemLog("send data uid = %d , final coin = %I64d, sex = %d",GetPlayer()->GetUserUID(),GetAllCoin(),msg.stBaseData.nSex);
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("uid = %u not read from db , why send to client ?") ;
+	}
 }
 
 void CPlayerBaseData::OnProcessContinueLogin()
@@ -847,8 +862,9 @@ void CPlayerBaseData::OnProcessContinueLogin()
  		{
  			CLogMgr::SharedLogMgr()->ErrorLog("local time return null ?") ;
  		}
-  
- 		pTempTimer = localtime((time_t*)&m_stBaseData.tLastLoginTime) ;
+		
+		time_t tLastLoginTime = m_stBaseData.tLastLoginTime;
+ 		pTempTimer = localtime(&tLastLoginTime) ;
  		struct tm pTimeLastLogin  ;
  		if ( pTempTimer )
  		{
@@ -892,6 +908,15 @@ void CPlayerBaseData::OnProcessContinueLogin()
 
 void CPlayerBaseData::TimerSave()
 {
+	if ( nReadingDataFromDB != 2 )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("uid = %u , not finish read why save to db ? ",GetPlayer()->GetUserUID()) ;
+		m_bMoneyDataDirty = false ;
+		m_bCommonLogicDataDirty = false;
+		m_bPlayerInfoDataDirty = false;
+		return ;
+	}
+
 	if ( m_bMoneyDataDirty )
 	{
 		m_bMoneyDataDirty = false ;
@@ -1075,7 +1100,20 @@ void CPlayerBaseData::OnReactive(uint32_t nSessionID )
 {
 	CEventCenter::SharedEventCenter()->RegisterEventListenner(eEvent_NewDay,this,CPlayerBaseData::EventFunc ) ;
 	CLogMgr::SharedLogMgr()->PrintLog("player reactive send base data");
-	SendBaseDatToClient();
+
+	if ( nReadingDataFromDB != 2 )
+	{
+		stMsgDataServerGetBaseData msg ;
+		msg.nUserUID = GetPlayer()->GetUserUID() ;
+		SendMsg(&msg,sizeof(msg)) ;
+		nReadingDataFromDB = 1 ;
+		CLogMgr::SharedLogMgr()->ErrorLog("still not ready player data , wait a moment uid = %u",GetPlayer()->GetUserUID()) ;
+	}
+	else
+	{
+		SendBaseDatToClient();
+		OnProcessContinueLogin();
+	}
 
 	stMsgRequestClientIp msgReq ;
 	SendMsg(&msgReq,sizeof(msgReq)) ; 
@@ -1088,8 +1126,19 @@ void CPlayerBaseData::OnOtherDoLogined()
 	SendMsg(&msgReq,sizeof(msgReq)) ; 
 	CLogMgr::SharedLogMgr()->PrintLog("send request ip , sessioni id = %d",GetPlayer()->GetSessionID()) ;
 
-	SendBaseDatToClient();
-	OnProcessContinueLogin();
+	if ( nReadingDataFromDB != 2 )
+	{
+		stMsgDataServerGetBaseData msg ;
+		msg.nUserUID = GetPlayer()->GetUserUID() ;
+		SendMsg(&msg,sizeof(msg)) ;
+		nReadingDataFromDB = 1 ;
+		CLogMgr::SharedLogMgr()->ErrorLog("still not ready player data , wait a moment uid = %u",GetPlayer()->GetUserUID()) ;
+	}
+	else
+	{
+		SendBaseDatToClient();
+		OnProcessContinueLogin();
+	}
 }
 
 void CPlayerBaseData::OnPlayerDisconnect()
