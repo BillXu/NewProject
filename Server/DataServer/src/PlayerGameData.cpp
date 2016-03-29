@@ -12,12 +12,12 @@ void CPlayerGameData::Reset()
 	IPlayerComponent::Reset();
 	m_nStateInRoomID = 0;
 	m_nStateInRoomType = eRoom_Max;
+	m_nSubRoomIdx = 0 ;
 	memset(&m_vData,0,sizeof(m_vData));
 	for (auto& r : m_vMyOwnRooms )
 	{
 		r.clear() ;
 	}
-	m_vFollowedRooms.clear();
 
 	stMsgReadPlayerTaxasData msgr ;
 	msgr.nUserUID = GetPlayer()->GetUserUID() ;
@@ -49,7 +49,6 @@ void CPlayerGameData::Init()
 	{
 		r.clear() ;
 	}
-	m_vFollowedRooms.clear();
 
 	stMsgReadMyOwnTaxasRooms msgReqr ;
 	msgReqr.nUserUID = GetPlayer()->GetUserUID();
@@ -97,6 +96,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 
 				msgEnter.nGameType = pRet->nRoomGameType ;
 				msgEnter.nRoomID = pRet->nRoomID ;
+				msgEnter.nSubIdx = pRet->nSubIdx ;
 				msgEnter.tPlayerData.isRegisted = GetPlayer()->GetBaseData()->isPlayerRegistered() ;
 				msgEnter.tPlayerData.nCoin = GetPlayer()->GetBaseData()->getCoin() ;
 				msgEnter.tPlayerData.nUserSessionID = GetPlayer()->GetSessionID() ;
@@ -107,7 +107,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 
 				m_nStateInRoomID = pRet->nRoomID;
 				m_nStateInRoomType = pRet->nRoomGameType;
-				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d enter to enter room id = %d , type = %d coin = %lld", GetPlayer()->GetUserUID(), m_nStateInRoomID, m_nStateInRoomType,msgEnter.tPlayerData.nCoin ) ;
+				CLogMgr::SharedLogMgr()->PrintLog("player uid = %d enter to enter room id = %d , type = %d coin = %u", GetPlayer()->GetUserUID(), m_nStateInRoomID, m_nStateInRoomType,msgEnter.tPlayerData.nCoin ) ;
 			}
 			else
 			{
@@ -129,13 +129,15 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			{
 				m_nStateInRoomID = 0;
 				m_nStateInRoomType = eRoom_Max;
+				m_nSubRoomIdx = 0 ;
 				CLogMgr::SharedLogMgr()->PrintLog("player enter room failed ret = %d uid = %d",msgRet.nRet,GetPlayer()->GetUserUID()) ;
 			}
 			else
 			{
 				m_nStateInRoomID = pRet->nRoomID;
 				m_nStateInRoomType = pRet->nGameType;
-				CLogMgr::SharedLogMgr()->PrintLog("player do enter oom id = %d , type = %d uid = %d",m_nStateInRoomID,m_nStateInRoomType,GetPlayer()->GetUserUID()) ;
+				m_nSubRoomIdx = (uint8_t)pRet->nSubIdx ;
+				CLogMgr::SharedLogMgr()->PrintLog("player do enter oom id = %d , type = %d uid = %d subIdx = %u",m_nStateInRoomID,m_nStateInRoomType,GetPlayer()->GetUserUID(),m_nSubRoomIdx) ;
 			}
 		}
 		break;
@@ -144,7 +146,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			m_nStateInRoomID = 0;
 			m_nStateInRoomType = eRoom_Max;
 			stMsgSvrDoLeaveRoom* pRet = (stMsgSvrDoLeaveRoom*)pMessage ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d leave room coin = %lld , back coin = %lld, temp coin = %d",GetPlayer()->GetUserUID(),GetPlayer()->GetBaseData()->getCoin(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin() ) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d leave room coin = %u , back coin = %lld, temp coin = %u",GetPlayer()->GetUserUID(),GetPlayer()->GetBaseData()->getCoin(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin() ) ;
 			GetPlayer()->GetBaseData()->setCoin(pRet->nCoin + GetPlayer()->GetBaseData()->getTempCoin()) ;
 			GetPlayer()->GetBaseData()->setTempCoin(0) ;
 			
@@ -170,7 +172,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				GetPlayer()->GetBaseData()->setNewPlayerHalo(0);
 			}
 
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room final coin = %lld",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room final coin = %u",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
 			stMsg msg ;
 			msg.usMsgType = MSG_PLAYER_UPDATE_MONEY ;
 			GetPlayer()->GetBaseData()->OnMessage(&msg,ID_MSG_PORT_CLIENT) ;
@@ -182,12 +184,12 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			if ( isNotInAnyRoom() )
 			{
 				GetPlayer()->GetBaseData()->setCoin( pRet->nCoin + GetPlayer()->GetBaseData()->getCoin() ) ;
-				CLogMgr::SharedLogMgr()->PrintLog("player not enter other room just uid = %d add coin = %lld, final = %lld,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getCoin()) ;
+				CLogMgr::SharedLogMgr()->PrintLog("player not enter other room just uid = %d add coin = %lld, final = %u,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getCoin()) ;
 			}
 			else
 			{
 				GetPlayer()->GetBaseData()->setTempCoin(GetPlayer()->GetBaseData()->getTempCoin() + pRet->nCoin) ;
-				CLogMgr::SharedLogMgr()->PrintLog("player enter other room so uid = %d add temp = %d, final = %lld,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin(),GetPlayer()->GetBaseData()->getCoin() ) ;
+				CLogMgr::SharedLogMgr()->PrintLog("player enter other room so uid = %d add temp = %lld, final = %u,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin(),GetPlayer()->GetBaseData()->getCoin() ) ;
 			}
 
 			m_vData[pRet->nGameType].nPlayTimes += pRet->nPlayerTimes ;
@@ -202,7 +204,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				m_vData[pRet->nGameType].bDirty = true ;
 			}
 
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d delay leave room coin = %lld",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d delay leave room coin = %u",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
 			stMsg msg ;
 			msg.usMsgType = MSG_PLAYER_UPDATE_MONEY ;
 			GetPlayer()->GetBaseData()->OnMessage(&msg,ID_MSG_PORT_CLIENT) ;
@@ -228,7 +230,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			auto& gdata = m_vData[eRoom_TexasPoker] ;
 			gdata.bDirty = false ;
 			memcpy(&gdata,&pRet->tData,sizeof(pRet->tData)) ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid taxas data followed rooms = %d , owner rooms = %d",m_vFollowedRooms.size(),m_vMyOwnRooms[eRoom_TexasPoker].size());
+			CLogMgr::SharedLogMgr()->PrintLog("uid taxas data  , owner rooms = %d",m_vMyOwnRooms[eRoom_TexasPoker].size());
 			sendGameDataToClient();
 		}
 		break;
@@ -276,60 +278,60 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d ,read own creator room" , GetPlayer()->GetUserUID() ) ;
 		}
 		break;
-	case MSG_ADD_RENT_TIME:
-		{
-			stMsgAddRoomRentTime* pRet = (stMsgAddRoomRentTime*)pMessage ;
-			CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_ADD_RENT_TIME check room id , and kou qian  do not forget ");
+	//case MSG_ADD_RENT_TIME:
+	//	{
+	//		stMsgAddRoomRentTime* pRet = (stMsgAddRoomRentTime*)pMessage ;
+	//		CLogMgr::SharedLogMgr()->ErrorLog("MSG_TP_ADD_RENT_TIME check room id , and kou qian  do not forget ");
 
-			stMsgAddRoomRentTimeRet msgBack ;
-			msgBack.nAddDays = pRet->nAddDays ;
-			msgBack.nRet = 0 ;
-			msgBack.nRoomID = pRet->nRoomID ;
-			msgBack.nRoomType = pRet->nRoomType ;
+	//		stMsgAddRoomRentTimeRet msgBack ;
+	//		msgBack.nAddDays = pRet->nAddDays ;
+	//		msgBack.nRet = 0 ;
+	//		msgBack.nRoomID = pRet->nRoomID ;
+	//		msgBack.nRoomType = pRet->nRoomType ;
 
-			uint16_t nRoomConfigID = 0 ;
-			if ( eRoom_Max > pRet->nRoomType )
-			{
-				nRoomConfigID = getMyOwnRoomConfig((eRoomType)pRet->nRoomType,pRet->nRoomID) ;
-			}
-			else
-			{
-				msgBack.nRet = 3 ;
-				SendMsg(&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
+	//		uint16_t nRoomConfigID = 0 ;
+	//		if ( eRoom_Max > pRet->nRoomType )
+	//		{
+	//			nRoomConfigID = getMyOwnRoomConfig((eRoomType)pRet->nRoomType,pRet->nRoomID) ;
+	//		}
+	//		else
+	//		{
+	//			msgBack.nRet = 3 ;
+	//			SendMsg(&msgBack,sizeof(msgBack)) ;
+	//			return true ;
+	//		}
 
-			CRoomConfigMgr* pConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room);
-			stBaseRoomConfig* pRoomConfig = pConfigMgr->GetConfigByConfigID(nRoomConfigID) ;
-			if ( pRoomConfig == nullptr )
-			{
-				msgBack.nRet = 1 ;
-				SendMsg(&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
+	//		CRoomConfigMgr* pConfigMgr = (CRoomConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Room);
+	//		stBaseRoomConfig* pRoomConfig = pConfigMgr->GetConfigByConfigID(nRoomConfigID) ;
+	//		if ( pRoomConfig == nullptr )
+	//		{
+	//			msgBack.nRet = 1 ;
+	//			SendMsg(&msgBack,sizeof(msgBack)) ;
+	//			return true ;
+	//		}
 
-			if ( GetPlayer()->GetBaseData()->getCoin() < pRet->nAddDays * pRoomConfig->nRentFeePerDay )
-			{
-				msgBack.nRet = 2 ;
-				SendMsg(&msgBack,sizeof(msgBack)) ;
-				return true ;
-			}
+	//		if ( GetPlayer()->GetBaseData()->getCoin() < pRet->nAddDays * pRoomConfig->nRentFeePerDay )
+	//		{
+	//			msgBack.nRet = 2 ;
+	//			SendMsg(&msgBack,sizeof(msgBack)) ;
+	//			return true ;
+	//		}
 
-			GetPlayer()->GetBaseData()->decressMoney(pRet->nAddDays * pRoomConfig->nRentFeePerDay);
+	//		GetPlayer()->GetBaseData()->decressMoney(pRet->nAddDays * pRoomConfig->nRentFeePerDay);
 
-			stMsgCrossServerRequest msgRoomProfitReq ;
-			msgRoomProfitReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
-			msgRoomProfitReq.nReqOrigID = GetPlayer()->GetUserUID() ;
-			msgRoomProfitReq.nTargetID = pRet->nRoomID ;
-			msgRoomProfitReq.nRequestType = eCrossSvrReq_AddRentTime ;
-			msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
-			msgRoomProfitReq.vArg[0] = pRet->nAddDays ;
-			msgRoomProfitReq.vArg[1] = pRet->nRoomType ;
-			msgRoomProfitReq.vArg[2] = pRet->nAddDays * pRoomConfig->nRentFeePerDay ;
-			SendMsg(&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
-		}
-		break;
-	case MSG_CACULATE_ROOM_PROFILE:
+	//		stMsgCrossServerRequest msgRoomProfitReq ;
+	//		msgRoomProfitReq.cSysIdentifer = CPlayer::getMsgPortByRoomType(pRet->nRoomType) ;
+	//		msgRoomProfitReq.nReqOrigID = GetPlayer()->GetUserUID() ;
+	//		msgRoomProfitReq.nTargetID = pRet->nRoomID ;
+	//		msgRoomProfitReq.nRequestType = eCrossSvrReq_AddRentTime ;
+	//		msgRoomProfitReq.nRequestSubType = eCrossSvrReqSub_Default ;
+	//		msgRoomProfitReq.vArg[0] = pRet->nAddDays ;
+	//		msgRoomProfitReq.vArg[1] = pRet->nRoomType ;
+	//		msgRoomProfitReq.vArg[2] = pRet->nAddDays * pRoomConfig->nRentFeePerDay ;
+	//		SendMsg(&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
+	//	}
+	//	break;
+	/*case MSG_CACULATE_ROOM_PROFILE:
 		{
 			stMsgCaculateTaxasRoomProfit* pRet = (stMsgCaculateTaxasRoomProfit*)pMessage ;
 
@@ -368,7 +370,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			SendMsg(&msgRoomProfitReq,sizeof(msgRoomProfitReq)) ;
 			return true;
 		}
-		break;
+		break;*/
 	case MSG_DELETE_ROOM:
 		{
 			stMsgDeleteRoomRet msgBack ;
@@ -486,6 +488,10 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 
 			Json::Value vArg ;
 			vArg["roonName"] = pRet->vRoomName;
+			if (msgReq.nReqOrigID == MATCH_MGR_UID )
+			{
+				vArg["subRoomCnt"] = 8 ;
+			}
 			CON_REQ_MSG_JSON(msgReq,vArg,autoBuf) ;
 			CGameServerApp::SharedGameServerApp()->sendMsg(msgReq.nReqOrigID,autoBuf.getBufferPtr(),autoBuf.getContentSize()) ;
 		}
@@ -544,7 +550,7 @@ bool CPlayerGameData::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResul
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("add my own room , unknown room type = %d , uid = %d",msgBack.nRoomType,GetPlayer()->GetUserUID()) ;
 			}
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d , create room id = %d , config id = %d", GetPlayer()->GetUserUID(),msgBack.nRoomID,pResult->vArg[0] ) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d , create room id = %d , config id = %d", GetPlayer()->GetUserUID(),msgBack.nRoomID,(int32_t)pResult->vArg[0] ) ;
 		}
 		else
 		{
@@ -685,7 +691,6 @@ void CPlayerGameData::addOwnRoom(eRoomType eType , uint32_t nRoomID , uint16_t n
 	}
 	stMyOwnRoom myroom ;
 	myroom.nRoomID = nRoomID ;
-	myroom.nConfigID = nConfigID;
 	m_vMyOwnRooms[eType].insert(MAP_ID_MYROOW::value_type(myroom.nRoomID,myroom));
 }
 
@@ -720,20 +725,20 @@ bool CPlayerGameData::deleteOwnRoom(eRoomType eType , uint32_t nRoomID )
 	return false ;
 }
 
-uint16_t CPlayerGameData::getMyOwnRoomConfig( eRoomType eType , uint32_t nRoomID ) 
-{
-	if ( eType >= eRoom_Max )
-	{
-		return 0;
-	}
-
-	MAP_ID_MYROOW::iterator iter = m_vMyOwnRooms[eType].find(nRoomID) ;
-	if ( iter != m_vMyOwnRooms[eType].end() )
-	{
-		return iter->second.nConfigID ;
-	}
-	return 0 ;
-}
+//uint16_t CPlayerGameData::getMyOwnRoomConfig( eRoomType eType , uint32_t nRoomID ) 
+//{
+//	if ( eType >= eRoom_Max )
+//	{
+//		return 0;
+//	}
+//
+//	MAP_ID_MYROOW::iterator iter = m_vMyOwnRooms[eType].find(nRoomID) ;
+//	if ( iter != m_vMyOwnRooms[eType].end() )
+//	{
+//		return iter->second.nConfigID ;
+//	}
+//	return 0 ;
+//}
 
 bool CPlayerGameData::isRoomIDMyOwn(eRoomType eType , uint32_t nRoomID)
 {

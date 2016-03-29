@@ -14,13 +14,11 @@ CTaxasServerApp* CTaxasServerApp::SharedGameServerApp()
 CTaxasServerApp::~CTaxasServerApp()
 {
 	delete m_pRoomConfig ;
-	delete m_pRoomMgr ;
 }
 
 CTaxasServerApp::CTaxasServerApp()
 {
 	 m_pRoomConfig = NULL;
-	 m_pRoomMgr = NULL;
 }
 
 bool CTaxasServerApp::init()
@@ -54,49 +52,7 @@ bool CTaxasServerApp::init()
 	m_pRoomConfig = new CRoomConfigMgr ;
 	m_pRoomConfig->LoadFile("../configFile/RoomConfig.txt") ;
 	
-	m_pRoomMgr = new CRoomManager ;
-	m_pRoomMgr->init(m_pRoomConfig);
+	auto pp = new CRoomManager(m_pRoomConfig) ;
+	registerModule(pp) ;
 	return true ;
-}
-
-bool CTaxasServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
-{
-	if ( ProcessPublicMsg(prealMsg,eSenderPort,nSessionID) )
-	{
-		return true ;
-	}
-
-	if ( m_pRoomMgr && m_pRoomMgr->onMsg(prealMsg,eSenderPort,nSessionID) )
-	{
-		return true ;
-	}
-
-	CLogMgr::SharedLogMgr()->ErrorLog("unprocess msg = %d , from port = %d , nsssionid = %d",prealMsg->usMsgType,eSenderPort,nSessionID ) ;
-	return true ;
-}
-
-bool CTaxasServerApp::ProcessPublicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
-{
-	return false ;
-}
-
-void CTaxasServerApp::onConnectedToSvr()
-{
-	IServerApp::onConnectedToSvr();
-	if ( m_pRoomMgr )
-	{
-		m_pRoomMgr->onConnectedToSvr() ;
-	}
-}
-
-void CTaxasServerApp::update(float fDeta )
-{
-	IServerApp::update(fDeta) ;
-	m_pRoomMgr->update(fDeta);
-}
-
-void CTaxasServerApp::onExit()
-{
-	IServerApp::onExit();
-	m_pRoomMgr->onTimeSave();
 }

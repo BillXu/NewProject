@@ -265,6 +265,11 @@ void CRobotControl::sitDown()
 {
 	stMsgPlayerSitDown msg ;
 	msg.nIdx = m_pRoomData->getRandEmptySeatIdx();
+	if ( msg.nIdx == (uint8_t)-1 )
+	{
+		printf("not find proper seat idx \n");
+		return ;
+	}
 	msg.nRoomID = m_pRoomData->getRoomID() ;
 	msg.nTakeInCoin = getTakeInCoinWhenSitDown() ;
 	msg.cSysIdentifer = m_pRoomData->getTargetSvrPort() ;

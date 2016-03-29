@@ -10,8 +10,8 @@ void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 	CLogMgr::SharedLogMgr()->PrintLog("room id = %d start final card ",pRoom->getRoomID()) ;
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
 	// distribute final card ;
-	uint8_t nPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ; ;
-	uint8_t nSeatCnt = m_pRoom->getSeatCount() ;
+	uint8_t nPlayerCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ; ;
+	uint8_t nSeatCnt = (uint8_t)m_pRoom->getSeatCount() ;
 	// send msg ;
 	stMsgNNDistributeFinalCard msgFinalCard ;
 	msgFinalCard.nPlayerCnt = nPlayerCnt ;

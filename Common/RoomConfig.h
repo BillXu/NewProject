@@ -31,14 +31,14 @@ struct stSitableRoomConfig
 struct stTaxasRoomConfig
 	:public stSitableRoomConfig
 {
-	uint64_t nMaxTakeInCoin ;
-	uint64_t nBigBlind ;
+	uint32_t nMaxTakeInCoin ;
+	uint32_t nBigBlind ;
 };
 
 struct stNiuNiuRoomConfig
 	:public stSitableRoomConfig
 {
-	uint64_t nBaseBet ;
+	uint32_t nBaseBet ;
 };
 
 struct stGoldenRoomConfig

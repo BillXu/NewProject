@@ -1,17 +1,18 @@
 #include "IRoomManager.h"
 #include "LogManager.h"
-#include "IRoom.h"
+#include "IRoomInterface.h"
 #include "ServerMessageDefine.h"
 #include "RoomConfig.h"
 #include "AutoBuffer.h"
 #include <cassert>
 #include "IRoomState.h"
 #include "RoomConfig.h"
+#include "ISeverApp.h"
 #define ROOM_LIST_ITEM_CNT_PER_PAGE 5 
 #define TIME_SAVE_ROOM_INFO 60*10
-IRoomManager::IRoomManager()
+IRoomManager::IRoomManager(CRoomConfigMgr* pConfigMgr)
 {
-
+	m_pConfigMgr = pConfigMgr ;
 }
 
 IRoomManager::~IRoomManager()
@@ -19,21 +20,29 @@ IRoomManager::~IRoomManager()
 
 }
 
-bool IRoomManager::init(CRoomConfigMgr* pConfigMgr)
+void IRoomManager::init(IServerApp* svrApp)
 {
-	m_fTimeSaveTicket = TIME_SAVE_ROOM_INFO * 2;
-	m_pConfigMgr = pConfigMgr ;
+	IGlobalModule::init(svrApp);
+
 	m_nMaxRoomID = 1 ;
-	m_vCongfigIDRooms.clear();
 	m_vRooms.clear();
 	m_vCreatorAndRooms.clear();
 	m_pGoTyeAPI.init("https://qplusapi.gotye.com.cn:8443/api/");
 	m_pGoTyeAPI.setDelegate(this);
-	return true ;
+}
+
+void IRoomManager::sendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID )
+{
+	getSvrApp()->sendMsg(nSessionID,(char*)pmsg,nLen);
 }
 
 bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
 {
+	if ( IGlobalModule::onMsg(prealMsg,eSenderPort,nSessionID) )
+	{
+		return true ;
+	}
+
 	if ( onPublicMsg(prealMsg,eSenderPort,nSessionID) )
 	{
 		return true ;
@@ -55,12 +64,6 @@ bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 
 		if ( onCrossServerRequest(pRet,eSenderPort,pJsValue) == false )
 		{
-			IRoom* pRoom = GetRoomByID(pRet->nTargetID);
-			if ( pRoom )
-			{
-				return pRoom->onCrossServerRequest(pRet,eSenderPort,pJsValue);
-			}
-			else
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("unprocess cross svr request type = %d",pRet->nRequestType) ;
 				return false ;
@@ -85,11 +88,6 @@ bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 
 		if ( onCrossServerRequestRet(pRet,pJsValue) == false )
 		{
-			IRoom* pRoom = GetRoomByID(pRet->nTargetID);
-			if ( pRoom )
-			{
-				return pRoom->onCrossServerRequestRet(pRet,pJsValue);
-			}
 			return false ;
 		}
 		return true ;
@@ -105,7 +103,7 @@ bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 
 	// msg give to room process 
 	stMsgToRoom* pRoomMsg = (stMsgToRoom*)prealMsg;
-	IRoom* pRoom = GetRoomByID(pRoomMsg->nRoomID) ;
+	IRoomInterface* pRoom = GetRoomByID(pRoomMsg->nRoomID) ;
 	if ( pRoom == NULL )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("can not find room to process id = %d ,from = %d, room id = %d",prealMsg->usMsgType,eSenderPort,pRoomMsg->nRoomID ) ;
@@ -119,6 +117,12 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 {
 	switch ( prealMsg->usMsgType )
 	{
+	case MSG_GET_MAX_ROOM_ID:
+		{
+			stMsgGetMaxRoomIDRet* pRet = (stMsgGetMaxRoomIDRet*)prealMsg ;
+			m_nMaxRoomID = pRet->nMaxRoomID ;
+		}
+		break;
 	case MSG_READ_MY_OWN_ROOMS:
 		{
 			stMsgReadMyOwnRooms* pRet = (stMsgReadMyOwnRooms*)prealMsg ;
@@ -135,9 +139,8 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			CAutoBuffer auBuffer(msgRead.nCnt * sizeof(stMyOwnRoom) + sizeof(msgRead));
 			auBuffer.addContent(&msgRead,sizeof(msgRead)) ;
 			stMyOwnRoom info ;
-			for ( IRoom* proom : vRL )
+			for ( IRoomInterface* proom : vRL )
 			{
-				info.nConfigID = proom->getConfigID() ;
 				info.nRoomID = proom->getRoomID() ;
 				auBuffer.addContent(&info,sizeof(info)) ;
 			}
@@ -149,7 +152,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		{
 			stMsgReadRoomInfoRet* pRet = (stMsgReadRoomInfoRet*)prealMsg ;
 			CLogMgr::SharedLogMgr()->PrintLog("read room info room id = %d",pRet->nRoomID);
-			IRoom* pRoom = doCreateRoomObject((eRoomType)pRet->nRoomType) ;
+			IRoomInterface* pRoom = doCreateRoomObject((eRoomType)pRet->nRoomType,pRet->nRoomOwnerUID != MATCH_MGR_UID ) ;
 			Json::Reader jsReader ;
 			Json::Value jsRoot;
 			CAutoBuffer auBufo (pRet->nJsonLen + 1 );
@@ -163,7 +166,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 				CLogMgr::SharedLogMgr()->ErrorLog("read room info , room = %d , config = %d is null",pRet->nRoomID,pRet->nConfigID) ;
 				break;
 			}
-			pRoom->serializationFromDB(pConfig,pRet->nRoomID,jsRoot);
+			pRoom->serializationFromDB(this,pConfig,pRet->nRoomID,jsRoot);
 			m_vRooms[pRoom->getRoomID()] = pRoom ;
 
 			if ( pRet->nRoomID > m_nMaxRoomID )
@@ -171,34 +174,27 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 				m_nMaxRoomID = pRet->nRoomID ;
 			}
 
-			addRoomToCreator(pRoom);
-			addRoomToConfigRooms(pRoom);
+			addRoomToCreator(pRoom->getOwnerUID(),pRoom);
 		}
 		break;
-	case MSG_REQUEST_MY_OWN_ROOM_DETAIL:
-		{
-			stMsgToRoom* pRet = (stMsgToRoom*)prealMsg ;
-			stMsgRequestMyOwnRoomDetailRet msgRet ;
-			msgRet.nRet = 0 ;
-			IRoom* pRoom = GetRoomByID(pRet->nRoomID);
-			if ( pRoom == nullptr )
-			{
-				msgRet.nRet = 1 ;
-				sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
-				return true ;
-			}
+	//case MSG_REQUEST_MY_OWN_ROOM_DETAIL:
+	//	{
+	//		stMsgToRoom* pRet = (stMsgToRoom*)prealMsg ;
+	//		stMsgRequestMyOwnRoomDetailRet msgRet ;
+	//		msgRet.nRet = 0 ;
+	//		IRoomInterface* pRoom = GetRoomByID(pRet->nRoomID);
+	//		if ( pRoom == nullptr )
+	//		{
+	//			msgRet.nRet = 1 ;
+	//			sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
+	//			return true ;
+	//		}
 
-			msgRet.nRoomType = pRoom->getRoomType() ;
-			msgRet.nCanWithdrawProfit = pRoom->getProfit() ;
-			msgRet.nConfigID = pRoom->getConfigID() ;
-			msgRet.nDeadTime = pRoom->getCloseTime() ;
-			msgRet.nFollows = 2 ;
-			msgRet.nRoomID = pRoom->getRoomID() ;
-			msgRet.nTotalProfit = pRoom->getTotalProfit() ;
-			sprintf_s(msgRet.vRoomName,sizeof(msgRet.vRoomName),"%s",pRoom->getRoomName());
-			sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
-		}
-		break;
+	//		msgRet.nRoomType = pRoom->getRoomType() ;
+	//		msgRet.nRoomID = pRoom->getRoomID() ;
+	//		sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
+	//	}
+	//	break;
 	case MSG_SVR_ENTER_ROOM:
 		{
 			stMsgSvrEnterRoomRet msgBack ;
@@ -206,11 +202,11 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			stMsgSvrEnterRoom* pRet = (stMsgSvrEnterRoom*)prealMsg ;
 			msgBack.nGameType = pRet->nGameType ;
 			msgBack.nRoomID = pRet->nRoomID ;
-
-			IRoom* pRoom = GetRoomByID(pRet->nRoomID) ;
+			
+			IRoomInterface* pRoom = GetRoomByID(pRet->nRoomID) ;
 			if ( pRoom == nullptr )
 			{
-				msgBack.nRet = 5 ;
+				msgBack.nRet = 8 ;
 				sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
 				break;
 			}
@@ -224,32 +220,30 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 
 			msgBack.nRet = pRoom->canPlayerEnterRoom(&pRet->tPlayerData) ;
 			msgBack.nRoomID = pRoom->getRoomID() ;
+			msgBack.nSubIdx = (uint8_t)pRet->nSubIdx ;
 			sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
 
 			if ( msgBack.nRet == 0 )
 			{
-				pRoom->onPlayerEnterRoom(&pRet->tPlayerData);
+				pRoom->onPlayerEnterRoom(&pRet->tPlayerData,msgBack.nSubIdx);
 			}
 		}
 		break;
 	case MSG_REQUEST_ROOM_LIST:
 		{
-			std::vector<IRoom*> vActiveRoom ;
-			MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
-			for ( ; iter != m_vRooms.end(); ++iter )
+			LIST_ROOM vRL ;
+			if ( getRoomCreatorRooms(MATCH_MGR_UID,vRL) == false )
 			{
-				if ( iter->second->isSystemCreate() )
-				{
-					vActiveRoom.push_back(iter->second) ;
-				}
+				CLogMgr::SharedLogMgr()->PrintLog("system not create room so , need not respone list" ) ;
+				return true ;
 			}
 
 			stMsgRequestRoomListRet msgRet ;
-			msgRet.nRoomCnt = vActiveRoom.size() ;
+			msgRet.nRoomCnt = vRL.size() ;
 			msgRet.nRoomType = getMgrRoomType();
 			CAutoBuffer auBuffer(sizeof(msgRet) + sizeof(uint32_t) * msgRet.nRoomCnt );
 			auBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
-			for ( auto pRoom : vActiveRoom )
+			for ( auto pRoom : vRL )
 			{
 				uint32_t nid = pRoom->getRoomID();
 				auBuffer.addContent(&nid,sizeof(nid)) ;
@@ -267,8 +261,14 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			msgRet.nRet = 1 ;
 			msgRet.nRoomType = getMgrRoomType() ;
 			msgRet.nRoomID = pret->nRoomID ;
+			msgRet.nOwnerUID = 0 ;
 			if ( pRoom )
 			{
+				if ( pRoom->getOwnerUID() != MATCH_MGR_UID )
+				{
+					msgRet.nOwnerUID = pRoom->getOwnerUID() ;
+				}
+
 				msgRet.nRet = 0 ;
 				Json::Value vDetail ;
 				pRoom->roomItemDetailVisitor(vDetail) ;
@@ -295,7 +295,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 	return true ;
 }
 
-IRoom* IRoomManager::GetRoomByID(uint32_t nRoomID )
+IRoomInterface* IRoomManager::GetRoomByID(uint32_t nRoomID )
 {
 	MAP_ID_ROOM::iterator iter = m_vRooms.find(nRoomID) ;
 	if ( iter != m_vRooms.end() )
@@ -305,65 +305,9 @@ IRoom* IRoomManager::GetRoomByID(uint32_t nRoomID )
 	return NULL ;
 }
 
-//IRoom* CRoomManager::GetQuickEnterRoom(uint64_t nCoin )
-//{
-//	LIST_ROOM vValidRooms , vLiveRooms;
-//	MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
-//	for ( ; iter != m_vRooms.end() ; ++iter )
-//	{
-//		if ( iter->second->isRoomAlive() )
-//		{
-//			uint8_t nPCnt = iter->second->GetPlayerCntWithState(eRoomPeer_SitDown);
-//			if ( nPCnt > 0 && nPCnt != iter->second->getSeatCnt() )
-//			{
-//				vValidRooms.push_back(iter->second);
-//			}
-//			else
-//			{
-//				vLiveRooms.push_back(iter->second) ;
-//			}
-//		}
-//	}
-//
-//	uint16_t nRandom = 0 ;
-//	if ( vValidRooms.empty() == false )
-//	{
-//		nRandom = rand() % vValidRooms.size() ;
-//		LIST_ROOM::iterator iter = vValidRooms.begin() ;
-//		while ( nRandom-- )
-//		{
-//			++iter ;
-//		}
-//
-//		if ( iter == vValidRooms.end() )
-//		{
-//			--iter ;
-//			CLogMgr::SharedLogMgr()->ErrorLog("will not run to here   iter == vValidRooms.end() ");
-//		}
-//		return *iter ;
-//	}
-//
-//	if ( vLiveRooms.empty() == false )
-//	{
-//		nRandom = rand() % vLiveRooms.size() ;
-//		LIST_ROOM::iterator iterL = vLiveRooms.begin() ;
-//		while ( nRandom-- )
-//		{
-//			++iterL ;
-//		}
-//
-//		if ( iterL == vLiveRooms.end() )
-//		{
-//			--iterL ;
-//			CLogMgr::SharedLogMgr()->ErrorLog("will not run to here   iter == vLiveRooms.end() ");
-//		}
-//		return *iterL ;
-//	}
-//	return nullptr ;
-//}
-
 void IRoomManager::update(float fDelta )
 {
+	IGlobalModule::update(fDelta);
 	// check delete rooms ;
 	LIST_ROOM vDoDelteRoom ;
 
@@ -376,24 +320,15 @@ void IRoomManager::update(float fDelta )
 		}
 
 		// for check delete 
-		if ( iter->second->isDeleteRoom() && iter->second->getCurRoomState()->getStateID() == eRoomState_Dead )
+		if ( iter->second->isDeleteRoom())
 		{
 			vDoDelteRoom.push_back(iter->second) ;
 		}
 	}
 
-	for ( IRoom* pRoom : vDoDelteRoom )
+	for ( IRoomInterface* pRoom : vDoDelteRoom )
 	{
-		pRoom->onRoomWillDoDelete();
-		doDeleteRoom(pRoom) ;
-	}
-
-	// check time save 
-	m_fTimeSaveTicket -= fDelta ;
-	if ( m_fTimeSaveTicket < 0 )
-	{
-		m_fTimeSaveTicket = TIME_SAVE_ROOM_INFO ;
-		onTimeSave();
+		removeRoom(pRoom);
 	}
 }
 
@@ -415,36 +350,13 @@ void IRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 		}
 
 		IRoom* pRoom = (IRoom*)pUserData ;
-
-		stMsgCrossServerRequestRet msgRet ;
-		msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
-		msgRet.nReqOrigID = pRoom->getRoomID();
-		msgRet.nTargetID = pRoom->getOwnerUID();
-		msgRet.nRequestType = eCrossSvrReq_CreateRoom ;
-		msgRet.nRequestSubType = eCrossSvrReqSub_Default;
-		msgRet.nRet = bSuccess ? 0 : 2 ;
-		msgRet.vArg[0] = pRoom->getConfigID() ;
-		msgRet.vArg[1] = pRoom->getRoomID() ;
-		msgRet.vArg[2] = pRoom->getRoomType() ;
-		msgRet.vArg[3] = ( pRoom->getCloseTime() - pRoom->getCreateTime() ) / 60 ;
-		sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
-
 		if ( bSuccess )
 		{
 			pRoom->setChatRoomID(nChatRoomID);
-
-			pRoom->serializationToDB(true);
-			addRoomToCreator(pRoom);
-			addRoomToConfigRooms(pRoom);
 		}
 		else
 		{
-			if ( m_vRooms.find(pRoom->getRoomID())!= m_vRooms.end() )
-			{
-				m_vRooms.erase(m_vRooms.find(pRoom->getRoomID())) ;
-				delete pRoom ;
-				pRoom = nullptr ;
-			}
+			CLogMgr::SharedLogMgr()->ErrorLog("request chat room id error ") ;
 		}
 	}
 	else if ( nUserTypeArg == eCrossSvrReq_DeleteRoom )
@@ -463,60 +375,61 @@ void IRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 
 bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)
 {
-	if ( eCrossSvrReq_RoomProfit == pRequest->nRequestType )
+	/*	if ( eCrossSvrReq_RoomProfit == pRequest->nRequestType )
 	{
-		stMsgCrossServerRequestRet msgRet ;
-		msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
-		msgRet.nReqOrigID = pRequest->nTargetID ;
-		msgRet.nTargetID = pRequest->nReqOrigID ;
-		msgRet.nRequestType = pRequest->nRequestType ;
-		msgRet.nRequestSubType = pRequest->nRequestSubType ;
-		msgRet.nRet = 0 ;
-		msgRet.vArg[0] = true ;
-		msgRet.vArg[2] = eRoom_NiuNiu ;
+	stMsgCrossServerRequestRet msgRet ;
+	msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
+	msgRet.nReqOrigID = pRequest->nTargetID ;
+	msgRet.nTargetID = pRequest->nReqOrigID ;
+	msgRet.nRequestType = pRequest->nRequestType ;
+	msgRet.nRequestSubType = pRequest->nRequestSubType ;
+	msgRet.nRet = 0 ;
+	msgRet.vArg[0] = true ;
+	msgRet.vArg[2] = eRoom_NiuNiu ;
 
-		IRoom* pRoom = GetRoomByID(pRequest->nTargetID );
-		if ( pRoom != nullptr )
-		{
-			msgRet.vArg[1] = pRoom->getProfit();
-			pRoom->setProfit(0) ;
-			pRoom->addTotoalProfit(msgRet.vArg[1]) ;
-		}
-		else
-		{
-			msgRet.nRet = 1 ;
-			msgRet.vArg[1] = 0;
-		}
-		sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
-		return true ;
+	IRoom* pRoom = GetRoomByID(pRequest->nTargetID );
+	if ( pRoom != nullptr )
+	{
+	msgRet.vArg[1] = pRoom->getProfit();
+	pRoom->setProfit(0) ;
+	pRoom->addTotoalProfit(msgRet.vArg[1]) ;
+	}
+	else
+	{
+	msgRet.nRet = 1 ;
+	msgRet.vArg[1] = 0;
+	}
+	sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
+	return true ;
 	}
 	else if ( eCrossSvrReq_AddRentTime == pRequest->nRequestType )
 	{
-		IRoom* pRoom = GetRoomByID(pRequest->nTargetID) ;
-		stMsgCrossServerRequestRet msgRet ;
-		msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
-		msgRet.nReqOrigID = pRequest->nTargetID ;
-		msgRet.nTargetID = pRequest->nReqOrigID ;
-		msgRet.nRequestType = pRequest->nRequestType ;
-		msgRet.nRequestSubType = pRequest->nRequestSubType ;
-		msgRet.nRet = 0 ;
-		msgRet.vArg[0] = pRequest->vArg[0] ;
-		msgRet.vArg[1] = pRequest->vArg[1] ;
-		msgRet.vArg[2] = pRequest->vArg[2] ;
-		if ( pRoom == nullptr )
-		{
-			msgRet.nRet = 1 ;
-		}
-		else
-		{
-			pRoom->addLiftTime(pRequest->vArg[0]) ;
-		}
-		sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
-		return true ;
-	}
-	else if ( eCrossSvrReq_CreateRoom == pRequest->nRequestType )
+	IRoom* pRoom = GetRoomByID(pRequest->nTargetID) ;
+	stMsgCrossServerRequestRet msgRet ;
+	msgRet.cSysIdentifer = ID_MSG_PORT_DATA ;
+	msgRet.nReqOrigID = pRequest->nTargetID ;
+	msgRet.nTargetID = pRequest->nReqOrigID ;
+	msgRet.nRequestType = pRequest->nRequestType ;
+	msgRet.nRequestSubType = pRequest->nRequestSubType ;
+	msgRet.nRet = 0 ;
+	msgRet.vArg[0] = pRequest->vArg[0] ;
+	msgRet.vArg[1] = pRequest->vArg[1] ;
+	msgRet.vArg[2] = pRequest->vArg[2] ;
+	if ( pRoom == nullptr )
 	{
-		uint16_t nConfigID = pRequest->vArg[0];
+	msgRet.nRet = 1 ;
+	}
+	else
+	{
+	pRoom->addLiftTime(pRequest->vArg[0]) ;
+	}
+	sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
+	return true ;
+	}
+	else */
+	if ( eCrossSvrReq_CreateRoom == pRequest->nRequestType )
+	{
+		uint16_t nConfigID = (uint16_t)pRequest->vArg[0];
 		assert(vJsValue&&"must not be null");
 		std::string strName = (*vJsValue)["roonName"].asCString();
 
@@ -533,9 +446,14 @@ bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		msgRet.vArg[3] = pRequest->vArg[1] ;
 		Json::Value vCreateJs ;
 		vCreateJs["name"] = strName ;
-		vCreateJs["ownerUID"] = pRequest->nReqOrigID ; 
 		vCreateJs["duringTime"] = (uint32_t)pRequest->vArg[1] * 60 ;
-		IRoom* pRoom = doCreateInitedRoomObject(++m_nMaxRoomID,nConfigID,(eRoomType)pRequest->vArg[2],vCreateJs);
+		vCreateJs["ownerUID"] = (uint32_t)pRequest->nReqOrigID;
+		if ( (*vJsValue)["subRoomCnt"].isNull() == false )
+		{
+			vCreateJs["subRoomCnt"] = (*vJsValue)["subRoomCnt"].asUInt();
+		}
+		CLogMgr::SharedLogMgr()->PrintLog("recived create room name = %s",strName.c_str()) ;
+		IRoomInterface* pRoom = doCreateInitedRoomObject(++m_nMaxRoomID,pRequest->nReqOrigID != MATCH_MGR_UID,nConfigID,(eRoomType)pRequest->vArg[2],vCreateJs);
 		if ( pRoom == nullptr )
 		{
 			--m_nMaxRoomID;
@@ -545,40 +463,31 @@ bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 		}
 
 		m_vRooms[pRoom->getRoomID()] = pRoom ;
-		pRoom->setRoomName(strName.c_str());
-		if ( false == reqeustChatRoomID(pRoom) )
-		{
-			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d create room failed can not connect to chat svr",pRoom->getOwnerUID());
-			m_vRooms.erase(m_vRooms.find(pRoom->getRoomID())) ;
-			delete pRoom ;
-			pRoom = nullptr ;
-			msgRet.nRet = 3;
-			sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
-			return true ;
-		}
+		addRoomToCreator(pRequest->nReqOrigID,pRoom);
+
+		msgRet.vArg[1] = pRoom->getRoomID();
+		sendMsg(&msgRet,sizeof(msgRet),msgRet.nTargetID);
 		return true ;
 	}
 	else if ( eCrossSvrReq_DeleteRoom == pRequest->nRequestType )
 	{
-		IRoom* pRoom = GetRoomByID(pRequest->vArg[1] );
+		IRoomInterface* pRoom = GetRoomByID((uint32_t)pRequest->vArg[1] );
 		if ( pRoom == nullptr )
 		{
 			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d delete room = %d , not exsit",pRequest->nReqOrigID,pRequest->vArg[1]) ;
 			return true ;
 		}
-		removeRoom(pRoom) ;
+		pRoom->deleteRoom();
 		return true ;
 	}
 	else if ( eCrossSvrReq_ApplyLeaveRoom == pRequest->nRequestType )
 	{
-		IRoom* pRoom = GetRoomByID(pRequest->nTargetID );
+		IRoomInterface* pRoom = GetRoomByID(pRequest->nTargetID );
 		if ( pRoom )
 		{
-			IRoom::stStandPlayer* pp = pRoom->getPlayerByUserUID(pRequest->nReqOrigID) ;
-			if ( pp )
+			if ( pRoom->onPlayerApplyLeaveRoom(pRequest->nReqOrigID) )
 			{
-				pRoom->onPlayerWillLeaveRoom(pp) ;
-				pRoom->playerDoLeaveRoom(pp);
+
 			}
 			else
 			{
@@ -591,7 +500,7 @@ bool IRoomManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsg
 				msgEnter.nTargetID = pRequest->nReqOrigID ;
 				msgEnter.vArg[0] = pRoom->getRoomType() ;
 				msgEnter.vArg[1] = pRoom->getRoomID() ;
-				pRoom->sendMsgToPlayer(&msgEnter,sizeof(msgEnter),pRoom->getRoomID()) ;
+				sendMsg(&msgEnter,sizeof(msgEnter),pRoom->getRoomID()) ;
 				CLogMgr::SharedLogMgr()->PrintLog("you are not in room but i let you go!") ;
 			}
 		}
@@ -633,8 +542,12 @@ bool IRoomManager::reqeustChatRoomID(IRoom* pRoom)
 	return m_pGoTyeAPI.performRequest("CreateRoom",str.c_str(),str.size(),pRoom,eCrossSvrReq_CreateRoom);
 }
 
-void IRoomManager::onConnectedToSvr()
+void IRoomManager::onConnectedSvr()
 {
+	IGlobalModule::onConnectedSvr();
+	stMsgGetMaxRoomID msgBack ;
+	sendMsg(&msgBack,sizeof(msgBack),0) ;
+
 	if ( m_vRooms.empty() )
 	{
 		stMsgReadRoomInfo msgRead ;
@@ -645,9 +558,9 @@ void IRoomManager::onConnectedToSvr()
 	}
 }
 
-void IRoomManager::addRoomToCreator(IRoom* pRoom)
+void IRoomManager::addRoomToCreator(uint32_t nOwnerUID ,IRoomInterface* pRoom)
 {
-	MAP_UID_CR::iterator iter =  m_vCreatorAndRooms.find(pRoom->getOwnerUID());
+	MAP_UID_CR::iterator iter =  m_vCreatorAndRooms.find(nOwnerUID);
 	if ( iter != m_vCreatorAndRooms.end() )
 	{
 		iter->second.vRooms.push_back(pRoom) ;
@@ -655,25 +568,9 @@ void IRoomManager::addRoomToCreator(IRoom* pRoom)
 	}
 
 	stRoomCreatorInfo sInfo ;
-	sInfo.nPlayerUID = pRoom->getOwnerUID() ;
+	sInfo.nPlayerUID = nOwnerUID ;
 	sInfo.vRooms.push_back(pRoom) ;
 	m_vCreatorAndRooms[sInfo.nPlayerUID] = sInfo ;
-}
-
-void IRoomManager::addRoomToConfigRooms(IRoom* pRoom)
-{
-	MAP_CONFIG_ROOMS::iterator iter = m_vCongfigIDRooms.find( pRoom->getConfigID() ) ;
-	if ( iter == m_vCongfigIDRooms.end() )
-	{
-		LIST_ROOM vRooms ;
-		vRooms.push_back(pRoom);
-		m_vCongfigIDRooms[pRoom->getConfigID()] = vRooms ;
-		return ;
-	}
-
-	LIST_ROOM& vRoom = iter->second ;
-	vRoom.push_back(pRoom) ;
-	return ;
 }
 
 bool IRoomManager::getRoomCreatorRooms(uint32_t nCreatorUID, LIST_ROOM& vInfo )
@@ -689,6 +586,7 @@ bool IRoomManager::getRoomCreatorRooms(uint32_t nCreatorUID, LIST_ROOM& vInfo )
 
 void IRoomManager::onTimeSave()
 {
+	IGlobalModule::onTimeSave();
 	MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
 	for ( ; iter != m_vRooms.end() ; ++iter )
 	{
@@ -699,18 +597,14 @@ void IRoomManager::onTimeSave()
 	}
 }
 
-void IRoomManager::removeRoom(IRoom* pRoom )
+void IRoomManager::removeRoom( IRoomInterface* pRoom )
 {
-	pRoom->deleteRoom();
 	// remove from db ;
 	stMsgSaveDeleteRoom msgSaveDelte ;
 	msgSaveDelte.nRoomID = pRoom->getRoomID() ;
 	msgSaveDelte.nRoomType = pRoom->getRoomType() ;
 	sendMsg(&msgSaveDelte,sizeof(msgSaveDelte),0 ) ;
-}
 
-void IRoomManager::doDeleteRoom(IRoom* pRoom )
-{
 	// remove m_vRooms ;
 	auto iter = m_vRooms.find(pRoom->getRoomID()) ;
 	if ( iter != m_vRooms.end() )
@@ -718,24 +612,8 @@ void IRoomManager::doDeleteRoom(IRoom* pRoom )
 		m_vRooms.erase(iter) ;
 	}
 
-	// m_vCongfigIDRooms 
-	auto iter_config = m_vCongfigIDRooms.find(pRoom->getConfigID());
-	if ( iter_config != m_vCongfigIDRooms.end() )
-	{
-		LIST_ROOM& list = iter_config->second ;
-		LIST_ROOM::iterator iterC = list.begin() ;
-		for ( ; iterC != list.end(); ++iterC )
-		{
-			if ( (*iterC)->getRoomID() == pRoom->getRoomID() )
-			{
-				list.erase(iterC) ;
-				break;
-			}
-		}
-	}
-
-	// remove m_vCreatorAndRooms ;
-	auto iter_Create = m_vCreatorAndRooms.find(pRoom->getOwnerUID()) ;
+	// remove m_vCreatorAndRooms ; maybe sys create
+	auto iter_Create = m_vCreatorAndRooms.find( pRoom->getOwnerUID() ) ;
 	if ( iter_Create != m_vCreatorAndRooms.end() )
 	{
 		LIST_ROOM& list = iter_Create->second.vRooms ;
@@ -745,31 +623,27 @@ void IRoomManager::doDeleteRoom(IRoom* pRoom )
 			if ( (*iterC)->getRoomID() == pRoom->getRoomID() )
 			{
 				list.erase(iterC) ;
-				break;
+				break; ;
 			}
 		}
 	}
 
-	// remove from db ;
-	stMsgSaveDeleteRoom msgSaveDelte ;
-	msgSaveDelte.nRoomID = pRoom->getRoomID() ;
-	msgSaveDelte.nRoomType = pRoom->getRoomType() ;
-	sendMsg(&msgSaveDelte,sizeof(msgSaveDelte),0 ) ;
+	delete pRoom ;
+	pRoom = nullptr ;
+}
 
+void IRoomManager::deleteRoomChatID( uint32_t nChatID )
+{
 	// delete chat room id ;
 	Json::Value cValue ;
 	cValue["email"] = "378569952@qq.com" ;
 	cValue["devpwd"] = "bill007" ;
 	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
-	cValue["room_id"] = pRoom->getChatRoomID() ;
+	cValue["room_id"] = nChatID ;
 	Json::StyledWriter sWrite ;
 	std::string str = sWrite.write(cValue);
 	m_pGoTyeAPI.performRequest("DeleteRoom",str.c_str(),str.size(),nullptr,eCrossSvrReq_DeleteRoom);
 
-	CLogMgr::SharedLogMgr()->SystemLog("do delete room id = %d",pRoom->getRoomID()) ;
-	// delete room ;
-	delete pRoom ;
-	pRoom = nullptr ;
-	return ;
+	CLogMgr::SharedLogMgr()->PrintLog("delte chat room id = %u",nChatID) ;
 }
 

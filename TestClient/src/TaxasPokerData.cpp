@@ -3,6 +3,7 @@
 #include "assert.h"
 #include <string>
 #include "RobotControlTaxas.h"
+#include "json/json.h"
 //#include "cocos2d.h"
 void CTaxasPokerData::setTaxasPlayerData(stTaxasPeerBaseData* pdata )
 {
@@ -14,8 +15,8 @@ void CTaxasPokerData::setTaxasPlayerData(stTaxasPeerBaseData* pdata )
 		pPlayer = new stTaxasPlayer ;
 	}
 	pPlayer->reset() ;
-	pPlayer->nBetCoinThisRound = pdata->nBetCoinThisRound ;
-	pPlayer->nCoin = pdata->nTakeInMoney ;
+	pPlayer->nBetCoinThisRound = (uint32_t)pdata->nBetCoinThisRound ;
+	pPlayer->nCoin = (uint32_t)pdata->nTakeInMoney ;
 	pPlayer->nIdx = pdata->nSeatIdx ;
 	pPlayer->nCurAct = pdata->eCurAct ;
 	pPlayer->nStateFlag = pdata->nStateFlag ;
@@ -33,21 +34,31 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 
 	switch (pmsg->usMsgType)
 	{
-	case MSG_TP_ROOM_BASE_INFO:
+	case MSG_ROOM_INFO:
 		{
-			stMsgTaxasRoomInfoBase* pRet = (stMsgTaxasRoomInfoBase*)pmsg ;
-			setBaseInfo(pRet->nRoomID,pRet->nMaxSeat,pRet->nDeskFee,pRet->eCurRoomState);
-			nLittleBlind = pRet->nLittleBlind;
-			nMiniTakeIn = pRet->nMiniTakeIn;
-			nMaxTakeIn = pRet->nMaxTakeIn;
+			stMsgRoomInfo* pInfo = (stMsgRoomInfo*)pmsg ;
+			char* pBuffer = (char*)pmsg ;
+			pBuffer = pBuffer + sizeof(stMsgRoomInfo);
+
+			Json::Reader rt ;
+			Json::Value jCont ;
+			rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
+			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState);
+
+
+			nLittleBlind = jCont["litBlind"].asUInt();
+			nMiniTakeIn = jCont["minTakIn"].asUInt();
+			nMaxTakeIn = jCont["maxTakIn"].asUInt();
 			// running members ;
-			nCurWaitPlayerActionIdx = pRet->nCurWaitPlayerActionIdx;
-			nCurMainBetPool = pRet->nCurMainBetPool;
-			nMostBetCoinThisRound = pRet->nMostBetCoinThisRound;
-			uint8_t nCCnt = TAXAS_PUBLIC_CARD ;
-			while ( nCCnt-- )
+			nCurWaitPlayerActionIdx = jCont["curActIdx"].asInt();
+			nCurMainBetPool = jCont["curPool"].asUInt();
+			nMostBetCoinThisRound = jCont["mostBet"].asUInt();
+
+			Json::Value vPub = jCont["pubCards"];
+			memset(vPublicCardNums,0,sizeof(vPublicCardNums));
+			for ( uint8_t nIdx = 0 ; nIdx < (uint8_t)vPub.size(); ++nIdx )
 			{
-				vPublicCardNums[nCCnt] = pRet->vPublicCardNums[nCCnt];
+				vPublicCardNums[nIdx] = vPub[nIdx].asUInt();
 			}
 		}
 		break;
@@ -142,7 +153,7 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 			auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(pret->nPlayerIdx) ;
 			if ( pPlayer == nullptr || pPlayer->isValid() == false )
 			{
-				assert(0&& "act player do not sit down");
+				printf("act player do not sit down\n");
 				return true ;
 			}
 

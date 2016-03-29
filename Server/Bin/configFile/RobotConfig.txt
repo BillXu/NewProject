@@ -1,22 +1,22 @@
 机器人ID	是否启用 1是，0 否	机器人账号	机器人密码	Ai文件名	最少剩下金币	必赢概率(百分之)	当达到多少人数时，申请离开房间	行动延迟起始（秒）行动延迟结束（秒）		初始筹码	前往的房间ID	上线时间点	前往的房价类型（0 德州，1牛牛）
 RobotID	IsEnable	RobotAccount	RobotPassword	AiFileName	MinLeftCoin	MustWinRate	LeaveWhenPlayerCount	ActDelayBegin	ActDelayEnd	initCoin	dstRoomID	workPoint	nDstGameType
-1	1	R1	1	RobotAIConfig.xml	500	80	5	1	6	1000	2	15:20,19:3,10:36	0
-2	1	18917562006	123456	RobotAIConfig.xml	1000	80	6	1	6	2000	2	15:20,19:3,10:36	0
-3	1	R3	1	RobotAIConfig.xml	2000	80	7	1	6	4000	2	15:20,19:3,10:36	1
-4	1	R4	1	RobotAIConfig.xml	5000	80	8	1	6	10000	2	15:20,19:3,10:36	1
-5	0	R5	1	RobotAIConfig.xml	10000	80	9	1	6	20000	40		0
-6	0	R6	1	RobotAIConfig.xml	20000	80	5	1	6	40000	40		0
-7	0	R7	1	RobotAIConfig.xml	50000	80	6	1	6	100000	40		0
-8	0	R8	1	RobotAIConfig.xml	100000	80	7	1	6	200000	41		0
-9	0	R9	1	RobotAIConfig.xml	500000	80	8	1	6	1000000	42		0
-10	0	R10	1	RobotAIConfig.xml	1000000	80	9	1	6	2000000	43		0
-11	0	R11	1	RobotAIConfig.xml	500	80	5	1	6	1000	44		0
-12	0	R12	1	RobotAIConfig.xml	1000	80	6	1	6	2000	45		0
-13	0	R13	1	RobotAIConfig.xml	2000	80	7	1	6	4000	46		0
-14	0	R14	1	RobotAIConfig.xml	5000	80	8	1	6	10000	47		0
-15	0	R15	1	RobotAIConfig.xml	10000	80	9	1	6	20000	48		0
-16	0	R16	1	RobotAIConfig.xml	20000	80	5	1	6	40000	49		0
-17	0	R17	1	RobotAIConfig.xml	50000	80	6	1	6	100000	50		0
+1	1	1	1	RobotAIConfig.xml	500	80	5	1	6	1000	1	15:20,18:40,10:36	0
+2	1	18917562006	123456	RobotAIConfig.xml	1000	80	6	1	6	2000	1	15:20,18:40,10:36	0
+3	1	R3	1	RobotAIConfig.xml	2000	80	7	1	6	4000	1	15:20,18:40,10:36	0
+4	1	R4	1	RobotAIConfig.xml	5000	80	8	1	6	10000	1	15:20,18:40,10:36	0
+5	1	R5	1	RobotAIConfig.xml	10000	80	9	1	6	20000	1	15:20,18:40,10:36	0
+6	1	R6	1	RobotAIConfig.xml	20000	80	5	1	6	40000	1	15:20,18:40,10:36	0
+7	1	R7	1	RobotAIConfig.xml	50000	80	6	1	6	100000	1	15:20,18:40,10:36	0
+8	1	R8	1	RobotAIConfig.xml	100000	80	7	1	6	200000	1	15:20,18:40,10:36	0
+9	1	R9	1	RobotAIConfig.xml	500000	80	8	1	6	1000000	1	15:20,18:40,10:36	0
+10	1	R10	1	RobotAIConfig.xml	1000000	80	9	1	6	2000000	1	15:20,18:40,10:36	0
+11	1	R11	1	RobotAIConfig.xml	500	80	5	1	6	1000	2	15:20,18:40,10:36	1
+12	1	R12	1	RobotAIConfig.xml	1000	80	6	1	6	2000	2	15:20,18:40,10:36	1
+13	1	R13	1	RobotAIConfig.xml	2000	80	7	1	6	4000	2	15:20,18:40,10:36	1
+14	1	R14	1	RobotAIConfig.xml	5000	80	8	1	6	10000	2	15:20,18:40,10:36	1
+15	1	R15	1	RobotAIConfig.xml	10000	80	9	1	6	20000	2	15:20,18:40,10:36	1
+16	1	R16	1	RobotAIConfig.xml	20000	80	5	1	6	40000	2	15:20,18:40,10:36	1
+17	1	R17	1	RobotAIConfig.xml	50000	80	6	1	6	100000	2	15:20,18:40,10:36	1
 18	0	R18	1	RobotAIConfig.xml	100000	80	7	1	6	200000	51		0
 19	0	R19	1	RobotAIConfig.xml	500000	80	8	1	6	1000000	52		0
 20	0	R20	1	RobotAIConfig.xml	1000000	80	9	1	6	2000000	53		0

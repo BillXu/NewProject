@@ -15,8 +15,8 @@ public:
 	void addState( uint32_t nStateFlag ){ m_nState |=(nStateFlag); }
 	void setState( uint32_t nStateFlag ){ m_nState = nStateFlag ;}
 	uint32_t getState(){ return m_nState ; }
-	uint64_t getCoin(){ return nCoin ;}
-	void setCoin( int64_t nNewCoin ){ nCoin = nNewCoin ;}
+	uint32_t getCoin(){ return nCoin ;}
+	void setCoin( int32_t nNewCoin ){ nCoin = nNewCoin ;}
 	uint32_t getUserUID(){ return nUserUID ; }
 	uint32_t getSessionID(){ return nSessionID ; }
 	virtual void reset(IRoom::stStandPlayer* pPlayer);
@@ -26,7 +26,7 @@ public:
 	void delayStandUp(){ m_isDelayStandUp = true ; }
 	uint32_t getWinTimes(){ return nWinTimes ; }
 	uint32_t getPlayTimes(){ return nPlayTimes ;}
-	uint64_t getSingleWinMost(){ return nSingleWinMost ;}
+	uint32_t getSingleWinMost(){ return nSingleWinMost ;}
 	void increaseWinTimes(){ ++nWinTimes ;}
 	void setTempHaloWeight( uint16_t nTempHalo ){ nTempHaloWeight = nTempHalo ; }
 	uint8_t getHaloWeight(){ return nNewPlayerHaloWeight; }
@@ -38,12 +38,12 @@ private:
 	uint32_t m_nState ;
 	uint8_t m_nHaloState ; // 0 not invoke , 1 in effect , 2 not in effect ;
 
-	uint64_t nCoin ;
+	uint32_t nCoin ;
 	uint32_t nUserUID ;
 	uint32_t nSessionID ;
 	uint8_t nNewPlayerHaloWeight;
 	uint16_t nTempHaloWeight ;
 	uint32_t nPlayTimes ;
 	uint32_t nWinTimes ;
-	uint64_t nSingleWinMost ;
+	uint32_t nSingleWinMost ;
 };

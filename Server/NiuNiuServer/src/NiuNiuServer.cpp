@@ -23,7 +23,8 @@ bool CNiuNiuServerApp::init()
 	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
 	CRewardConfig::getInstance()->LoadFile("../configFile/rewardConfig.txt");
 
-	m_tRoomMgr.init(getRoomConfigMgr());
+	auto* pMgr = new CNiuNiuRoomManager(&m_tMgr);
+	registerModule(pMgr);
 	return true ;
 }
 
@@ -32,30 +33,3 @@ uint16_t CNiuNiuServerApp::getLocalSvrMsgPortType()
 	return ID_MSG_PORT_NIU_NIU ;
 }
 
-bool CNiuNiuServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
-{
-	if ( m_tRoomMgr.onMsg(prealMsg,eSenderPort,nSessionID) )
-	{
-		return true ;
-	}
-
-	return false ;
-}
-
-void CNiuNiuServerApp::update(float fDeta )
-{
-	IServerApp::update(fDeta) ;
-	m_tRoomMgr.update(fDeta) ;
-}
-
-void CNiuNiuServerApp::onExit()
-{
-	IServerApp::onExit();
-	m_tRoomMgr.onTimeSave();
-}
-
-void CNiuNiuServerApp::onConnectedToSvr()
-{
-	IServerApp::onConnectedToSvr();
-	m_tRoomMgr.onConnectedToSvr();
-}

@@ -10,7 +10,7 @@ void CNiuNiuRoomTryBanker::enterState(IRoom* pRoom)
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
 	m_nBiggestTimeTryBanker = 0 ;
 	setStateDuringTime(TIME_NIUNIU_TRY_BANKER) ;
-	m_nLeftTryBankerPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
+	m_nLeftTryBankerPlayerCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
 	CLogMgr::SharedLogMgr()->PrintLog("room id = %d , try banker ",m_pRoom->getRoomID());
 }
 
@@ -82,7 +82,7 @@ bool CNiuNiuRoomTryBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 void CNiuNiuRoomTryBanker::onStateDuringTimeUp()
 {
 	CNiuNiuRoom::LIST_SITDOWN_PLAYERS vMaybeBanker ;
-	uint8_t nSeatCnt = m_pRoom->getSeatCount() ;
+	uint8_t nSeatCnt = (uint8_t)m_pRoom->getSeatCount() ;
 	for ( uint8_t nIdx = 0 ; nIdx < nSeatCnt ; ++nIdx )
 	{
 		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getPlayerByIdx(nIdx) ;

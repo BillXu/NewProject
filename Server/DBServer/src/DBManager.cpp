@@ -327,34 +327,23 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				strJoinedClub.c_str(),pRet->nNewPlayerHaloWeight,pRet->nCardType,pRet->nCardEndTime,pRet->nLastTakeCardGiftTime,pRet->nTotalInvitePrizeCoin,pRet->nTakeCharityTimes,pRet->nUserUID) ;
 		}
 		break;
-	//case MSG_SAVE_CREATE_ROOM_INFO:
-	//	{
-	//		stMsgSaveCreateRoomInfo* pRet = (stMsgSaveCreateRoomInfo*)pmsg ;
-	//		pRequest->eType = eRequestType_Add;
-	//		
-	//		pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroom ( roomType,roomID, configID,ownerUID,createTime,chatRoomID) VALUES ( '%d' ,'%d', '%u','%u','%u','%I64d')",
-	//		 						pRet->nRoomType,pRet->nRoomID,pRet->nConfigID,pRet->nRoomOwnerUID,pRet->nCreateTime,pRet->nChatRoomID) ;
-	//		CLogMgr::SharedLogMgr()->PrintLog("save create taxas room room id = %d",pRet->nRoomID);
-	//	}
-	//	break;
+
+	case MSG_GET_MAX_ROOM_ID:
+		{
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"(select max(gameroomnew.roomID) FROM gameroomnew)") ;
+		}
+		break;
 	case MSG_SAVE_UPDATE_ROOM_INFO:
 		{
 			stMsgSaveUpdateRoomInfo* pRet = (stMsgSaveUpdateRoomInfo*)pmsg ;
 			CAutoBuffer aBuffer(pRet->nJsonLen+1);
 			aBuffer.addContent(((char*)pRet) + sizeof(stMsgSaveUpdateRoomInfo),pRet->nJsonLen) ;
-			if ( pRet->bIsNewCreate )
-			{
-				pRequest->eType = eRequestType_Add ;
-				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroomnew ( roomType,roomID,ownerUID,configID,jsonDetail) VALUES ( '%d' ,'%d','%u','%u','%s')",
-					pRet->nRoomType,pRet->nRoomID,pRet->nRoomOwnerUID,pRet->nConfigID,aBuffer.getBufferPtr()) ;
-			}
-			else
-			{
-				pRequest->eType = eRequestType_Update ;
-				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-					"UPDATE gameroomnew SET jsonDetail = '%s' WHERE roomID = '%d' and roomType = '%d' and isDelete = '0' "
-					,aBuffer.getBufferPtr(),pRet->nRoomID,pRet->nRoomType ) ;
-			}
+
+			pRequest->eType = eRequestType_Add ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameroomnew ( roomType,roomID,ownerUID,configID,jsonDetail) VALUES ( '%d' ,'%d','%u','%u','%s') ON DUPLICATE KEY UPDATE jsonDetail = '%s'",
+			pRet->nRoomType,pRet->nRoomID,pRet->nRoomOwnerUID,pRet->nConfigID,aBuffer.getBufferPtr(),aBuffer.getBufferPtr()) ;
+
 			CLogMgr::SharedLogMgr()->PrintLog("save room update info room id = %d",pRet->nRoomID);
 		}
 		break;
@@ -421,7 +410,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 		{
 			stMsgSaveRoomPlayer* pRet = (stMsgSaveRoomPlayer*)pmsg ;
 			pRequest->eType = eRequestType_Add;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomrankplayers (roomID, roomType,termNumber,playerUID,offsetCoin,otherOffset ) VALUES ('%u','%u','%u' ,'%u','%I64d','%I64d') ON DUPLICATE KEY UPDATE offsetCoin = '%I64d', otherOffset = '%I64d' ",
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomrankplayers (roomID, roomType,termNumber,playerUID,offsetCoin,otherOffset ) VALUES ('%u','%u','%u' ,'%u','%d','%d') ON DUPLICATE KEY UPDATE offsetCoin = '%d', otherOffset = '%d' ",
 				pRet->nRoomID,pRet->nRoomType,pRet->nTermNumber,pRet->savePlayer.nUserUID,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset) ;
 			CLogMgr::SharedLogMgr()->PrintLog("update room player data room id = %u , type = %u , term = %u ,uid = %u",pRet->nRoomID,pRet->nRoomType,pRet->nTermNumber,pRet->savePlayer.nUserUID);
 		}
@@ -1279,6 +1268,13 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			stArgData* pdata = (stArgData*)pResult->pUserData ;
 			if ( pResult->nAffectRow == 0 )
 			{
+				stMsgReadRoomPlayerRet msgRet ;
+				msgRet.cSysIdentifer = pdata->eFromPort ; // send port ;
+				msgRet.nRoomID = pdata->nExtenArg1;
+				msgRet.nCnt = 0 ;
+				msgRet.nTermNumber = pdata->nExtenArg2;
+				msgRet.bIsLast = true;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet)) ;
 				CLogMgr::SharedLogMgr()->PrintLog("room id = %d have no history players",pdata->nExtenArg1) ;
 			}
 			else
@@ -1306,8 +1302,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					{
 						CMysqlRow& pRow = *pResult->vResultRows[nPageStartIdx + nReadIdx] ;
 						stSaveRoomPlayerEntry entryData ;
-						entryData.nGameOffset = pRow["offsetCoin"]->IntValue64();
-						entryData.nOtherOffset = pRow["otherOffset"]->IntValue64();
+						entryData.nGameOffset = pRow["offsetCoin"]->IntValue();
+						entryData.nOtherOffset = pRow["otherOffset"]->IntValue();
 						//entryData.nPlayerTimes = pRow["playTimes"]->IntValue();
 						//entryData.nWinTimes = pRow["winTimes"]->IntValue();
 						entryData.nUserUID = pRow["playerUID"]->IntValue() ;
@@ -1317,6 +1313,20 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 					CLogMgr::SharedLogMgr()->PrintLog("read room players room id = %d, page idx = %d ",msgRet.nRoomID,nPageIdx);
 				}
 			}
+		}
+		break;
+	case MSG_GET_MAX_ROOM_ID:
+		{
+			stMsgGetMaxRoomIDRet msgBack ;
+			msgBack.nMaxRoomID = 1 ;
+			msgBack.cSysIdentifer = pdata->eFromPort ; // send port ;
+			if ( pResult->nAffectRow > 0 )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[0] ;
+				msgBack.nMaxRoomID = pRow["max(gameroomnew.roomID)"]->IntValue();
+			}
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			CLogMgr::SharedLogMgr()->PrintLog("read max room id = %u",msgBack.nMaxRoomID);
 		}
 		break;
 	case MSG_READ_NOTICE_PLAYER:

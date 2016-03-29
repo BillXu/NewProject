@@ -103,7 +103,7 @@ bool IServerApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 	{
 		m_nTargetSvrNetworkID = pMsg->_connectID ;
 		stMsg cMsg ;
-		cMsg.cSysIdentifer = getTargetSvrPortType() ;
+		cMsg.cSysIdentifer = (uint8_t)getTargetSvrPortType() ;
 		cMsg.usMsgType = getVerifyType() ;
 		m_pNetWork->SendMsg((char*)&cMsg,sizeof(stMsg),pMsg->_connectID) ;
 		CLogMgr::SharedLogMgr()->SystemLog("Connected to Target Svr") ;
@@ -139,6 +139,7 @@ bool IServerApp::run()
 	}
 
 	onExit();
+	CLogMgr::SharedLogMgr()->SystemLog("sleep 4k mili seconds");
 	Sleep(4000);
 	shutDown();
 	return true ;

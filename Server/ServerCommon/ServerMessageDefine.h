@@ -56,6 +56,18 @@ struct stMsgOnPlayerLogin
 	uint32_t nUserUID ;
 };
 
+struct stMsgGetMaxRoomID
+	:public stMsg
+{
+	stMsgGetMaxRoomID(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_GET_MAX_ROOM_ID; }
+};
+
+struct stMsgGetMaxRoomIDRet
+	:public stMsg
+{
+	stMsgGetMaxRoomIDRet(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_GET_MAX_ROOM_ID; }
+	uint32_t nMaxRoomID ; 
+};
 // game and db 
 struct stMsgDataServerGetBaseData
 	:public stMsg
@@ -76,8 +88,8 @@ struct stMsgDataServerGetBaseDataRet
 struct stSaveRoomPlayerEntry
 {
 	uint32_t nUserUID ;
-	int64_t nGameOffset ;
-	int64_t nOtherOffset ;
+	int32_t nGameOffset ;
+	int32_t nOtherOffset ;
 };
 
 struct stMsgSaveRoomPlayer
@@ -258,7 +270,6 @@ struct stMsgSaveUpdateRoomInfo
 	:public stMsg
 {
 	stMsgSaveUpdateRoomInfo(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_UPDATE_ROOM_INFO ;}
-	bool bIsNewCreate ;
 	uint8_t nRoomType ; // eRoomType ;
 	uint32_t nRoomID ;
 	uint32_t nRoomOwnerUID ;
@@ -402,7 +413,6 @@ struct stMsgReadMyOwnRooms
 struct stMyOwnRoom
 {
 	uint32_t nRoomID;
-	uint16_t nConfigID ;
 };
 
 struct stMsgReadMyOwnTaxasRoomsRet
@@ -500,6 +510,7 @@ struct stMsgSvrEnterRoom
 	stMsgSvrEnterRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_SVR_ENTER_ROOM ; }
 	uint8_t nGameType ;
 	uint8_t nRoomID ;
+	int8_t nSubIdx ;  // -1 means sys decide ;
 	stEnterRoomData tPlayerData ;
 };
 
@@ -509,7 +520,8 @@ struct stMsgSvrEnterRoomRet
 	stMsgSvrEnterRoomRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_SVR_ENTER_ROOM ; }
 	uint8_t nRet ; // 0 success , 1 already in this room , 2 not register player  can not enter ; 3 player coin is too few ; 4 ;  player coin is too many ; 5 can not find room id ,  6 room type error 
 	uint8_t nGameType ;
-	uint8_t nRoomID ;
+	uint32_t nRoomID ;
+	int8_t nSubIdx ; 
 };
 
 //struct stMsgSvrApplyLeaveRoom

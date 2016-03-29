@@ -9,7 +9,7 @@ void CNiuNiuRoomRandBankerState::enterState(IRoom* pRoom)
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
 
 	CNiuNiuRoom::LIST_SITDOWN_PLAYERS vMaybeBanker ;
-	uint8_t nSeatCnt = m_pRoom->getSeatCount() ;
+	uint8_t nSeatCnt = (uint8_t)m_pRoom->getSeatCount() ;
 	int64_t nLeatCoinNeedForBankerWhenNoneTryBanker = 0 ;
 	if ( m_pRoom->getBetBottomTimes() == 0 )
 	{

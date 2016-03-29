@@ -21,9 +21,9 @@ CNiuNiuRoom::CNiuNiuRoom()
 	getPoker()->InitTaxasPoker() ;
 }
 
-bool CNiuNiuRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )
+bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )
 {
-	ISitableRoom::init(pConfig,nRoomID,vJsValue) ;
+	ISitableRoom::onFirstBeCreated(pRoomMgr,pConfig,nRoomID,vJsValue) ;
 	m_nBaseBet = ((stNiuNiuRoomConfig*)pConfig)->nBaseBet;
 
 	return true ;
@@ -43,9 +43,9 @@ void CNiuNiuRoom::prepareState()
 	}
 }
 
-void CNiuNiuRoom::serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )
+void CNiuNiuRoom::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )
 {
-	ISitableRoom::serializationFromDB(pConfig,nRoomID,vJsValue);
+	ISitableRoom::serializationFromDB(pRoomMgr,pConfig,nRoomID,vJsValue);
 	m_nBaseBet = ((stNiuNiuRoomConfig*)pConfig)->nBaseBet;
 }
 
@@ -63,11 +63,6 @@ void CNiuNiuRoom::roomItemDetailVisitor(Json::Value& vOutJsValue)
 ISitableRoomPlayer* CNiuNiuRoom::doCreateSitableRoomPlayer()
 {
 	return new CNiuNiuRoomPlayer();
-}
-
-void CNiuNiuRoom::sendMsgToPlayer( stMsg* pmsg , uint16_t nLen , uint32_t nSessionID )
-{
-	CNiuNiuServerApp::getInstance()->sendMsg(nSessionID,(char*)pmsg,nLen);
 }
 
 bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
@@ -99,28 +94,28 @@ bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 	//		delete[] pBuffer ;
 	//	}
 	//	break;
-	case MSG_NN_MODIFY_ROOM_NAME:
-		{
-			stMsgModifyNiuNiuRoomNameRet msgBack ;
-			if ( isRoomAlive() == false )
-			{
-				msgBack.nRet = 2 ;
-				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
-				return true;
-			}
-			stMsgModifyNiuNiuRoomName* pRet = (stMsgModifyNiuNiuRoomName*)prealMsg ;
-			msgBack.nRet = 0 ;
-			pRet->vNewRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
-			setRoomName(pRet->vNewRoomName);
-			sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
-			return true;
-		}
-		break;
-	case MSG_NN_REQUEST_ROOM_INFO:
-		{
-			sendRoomInfoToPlayer(nPlayerSessionID);
-		}
-		break;
+	//case MSG_NN_MODIFY_ROOM_NAME:
+	//	{
+	//		stMsgModifyNiuNiuRoomNameRet msgBack ;
+	//		if ( isRoomAlive() == false )
+	//		{
+	//			msgBack.nRet = 2 ;
+	//			sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+	//			return true;
+	//		}
+	//		stMsgModifyNiuNiuRoomName* pRet = (stMsgModifyNiuNiuRoomName*)prealMsg ;
+	//		msgBack.nRet = 0 ;
+	//		pRet->vNewRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
+	//		setRoomName(pRet->vNewRoomName);
+	//		sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+	//		return true;
+	//	}
+	//	break;
+	//case MSG_NN_REQUEST_ROOM_INFO:
+	//	{
+	//		sendRoomInfoToPlayer(nPlayerSessionID);
+	//	}
+	//	break;
 	default:
 		return false;
 	}
@@ -170,42 +165,21 @@ uint32_t CNiuNiuRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp
 	}
 }
 
-bool CNiuNiuRoom::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue )
+void CNiuNiuRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 {
-	if ( ISitableRoom::onCrossServerRequest(pRequest,eSenderPort,vJsValue) )
-	{
-		return true ;
-	}
-	return false ;
+	vOutJsValue["bankIdx"] = m_nBankerIdx;
+	vOutJsValue["baseBet"] = getBaseBet();
+	vOutJsValue["bankerTimes"] = m_nBetBottomTimes;
 }
 
-bool CNiuNiuRoom::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue )
+void CNiuNiuRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 {
-	if ( ISitableRoom::onCrossServerRequestRet(pResult,vJsValue) )
-	{
-		return true ;
-	}
-	return false ;
-}
-
-void CNiuNiuRoom::sendRoomInfoToPlayer(uint32_t nSessionID)
-{
-	stMsgNNRoomInfo msgInfo ;
-	msgInfo.nBankerBetTimes = m_nBetBottomTimes ;
-	msgInfo.nBankerIdx = m_nBankerIdx ;
-	msgInfo.nDeskFee =  getDeskFee() ;
-	msgInfo.nBlind = getBaseBet() ;
-	msgInfo.nBottomBet = getBaseBet();
-	msgInfo.nChatRoomID = getChatRoomID() ;
-	msgInfo.nPlayerCnt = getSitDownPlayerCount();
-	msgInfo.nRoomID = getRoomID() ;
-	msgInfo.nCloseTime = getCloseTime() ;
-	msgInfo.nRoomState = getCurRoomState()->getStateID();
-	
+	stMsgNNRoomPlayers msgInfo ;
+	msgInfo.nPlayerCnt = (uint8_t)getSitDownPlayerCount();
 	CAutoBuffer auBuffer(sizeof(msgInfo) + sizeof(stNNRoomInfoPayerItem) * msgInfo.nPlayerCnt);
 	auBuffer.addContent(&msgInfo,sizeof(msgInfo));
 
-	uint8_t nSeatCount = getSeatCount();
+	uint8_t nSeatCount = (uint8_t)getSeatCount();
 	stNNRoomInfoPayerItem item ;
 	uint8_t nDisCardCnt = getDistributeCardCnt();
 	for ( uint8_t nIdx = 0 ; nIdx < nSeatCount ; ++nIdx )
@@ -229,11 +203,6 @@ void CNiuNiuRoom::sendRoomInfoToPlayer(uint32_t nSessionID)
 
 	sendMsgToPlayer((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID) ;
 	CLogMgr::SharedLogMgr()->PrintLog("send room info to session id = %d, player cnt = %d ", nSessionID,msgInfo.nPlayerCnt) ;
-}
-
-void CNiuNiuRoom::onTimeSave(bool bRightNow)
-{
-	ISitableRoom::onTimeSave();
 }
 
 uint8_t CNiuNiuRoom::getMaxRate()
@@ -312,7 +281,7 @@ void CNiuNiuRoom::onGameDidEnd()
 	m_nBankerCoinLimitForBet = 0 ;
 	m_nBetBottomTimes = 0 ;
 
-	uint8_t nSeatCnt = getSeatCount() ;
+	uint8_t nSeatCnt = (uint8_t)getSeatCount() ;
 	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
 	{
 		ISitableRoomPlayer* pSitDown = getPlayerByIdx(nIdx) ;
@@ -368,7 +337,7 @@ bool sortPlayerByCard(ISitableRoomPlayer* pLeft , ISitableRoomPlayer* pRight )
 void CNiuNiuRoom::prepareCards()
 {
 	// parepare cards for all player ;
-	uint8_t nSeatCnt = getSeatCount() ;
+	uint8_t nSeatCnt = (uint8_t)getSeatCount() ;
 	for ( uint8_t nIdx = 0 ; nIdx < nSeatCnt ; ++nIdx )
 	{
 		CNiuNiuRoomPlayer* pRoomPlayer = (CNiuNiuRoomPlayer*)getPlayerByIdx(nIdx) ;
@@ -400,7 +369,7 @@ void CNiuNiuRoom::caculateGameResult()
 	// caculate result ;
 	CNiuNiuRoomPlayer* pBanker = (CNiuNiuRoomPlayer*)getPlayerByIdx(getBankerIdx()) ;
 	assert(pBanker && "why banker is null ?");
-	CLogMgr::SharedLogMgr()->PrintLog("banker coin = %I64d",pBanker->getCoin()) ;
+	CLogMgr::SharedLogMgr()->PrintLog("banker coin = %u",pBanker->getCoin()) ;
 
 	// send result msg ;
 	stMsgNNGameResult msgResult ;
@@ -409,7 +378,7 @@ void CNiuNiuRoom::caculateGameResult()
 	CAutoBuffer auBuffer(sizeof(msgResult) + msgResult.nPlayerCnt * sizeof(stNNGameResultItem));
 	auBuffer.addContent(&msgResult,sizeof(msgResult)) ;
 
-	int64_t nBankerOffset = 0 ;
+	int32_t nBankerOffset = 0 ;
 	// caclulate banker win ;
 	for ( ISitableRoomPlayer* pPlayer : m_vSortByPeerCardsAsc )
 	{
@@ -419,8 +388,8 @@ void CNiuNiuRoom::caculateGameResult()
 			break;
 		}
 
-		int64_t nLoseCoin = pNNP->getBetTimes() * getBaseBet() * m_nBetBottomTimes ;
-		if ( nLoseCoin > (int64_t)pNNP->getCoin() )
+		uint32_t nLoseCoin = max(5,pNNP->getBetTimes()) * getBaseBet() * m_nBetBottomTimes ;
+		if ( nLoseCoin > pNNP->getCoin() )
 		{
 			nLoseCoin = pNNP->getCoin() ;
 			CLogMgr::SharedLogMgr()->ErrorLog("you do not have coin why you bet so many coin , uid = %d",pNNP->getUserUID());
@@ -435,7 +404,10 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nOffsetCoin = -1* nLoseCoin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
-		updatePlayerOffset(pNNP->getUserUID(),item.nOffsetCoin) ;
+		if ( getDelegate() )
+		{
+			getDelegate()->onUpdatePlayerGameResult(this,pNNP->getUserUID(),item.nOffsetCoin);
+		}
 	}
 
 	// caculate banker lose 
@@ -447,31 +419,34 @@ void CNiuNiuRoom::caculateGameResult()
 			break;
 		}
 
-		int64_t nBankerLoseCoin = pNNP->getBetTimes() * getBaseBet() * m_nBetBottomTimes ;
-		if ( nBankerLoseCoin > (int64_t)pBanker->getCoin() )
+		uint32_t nBankerLoseCoin = max(5,pNNP->getBetTimes()) * getBaseBet() * m_nBetBottomTimes ;
+		if ( nBankerLoseCoin > pBanker->getCoin() )
 		{
 			nBankerLoseCoin = pBanker->getCoin() ;
 		}
 
 		nBankerOffset -= nBankerLoseCoin ;
 		pBanker->setCoin(pBanker->getCoin() - nBankerLoseCoin ) ;
-		int64_t nWithoutTaxWin = nBankerLoseCoin * (1-getChouShuiRate()) ;
-		pNNP->setCoin(pNNP->getCoin() + nWithoutTaxWin ) ;
-		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , uid = %u without tax win = %I64d",getRoomID(),pNNP->getUserUID(),nWithoutTaxWin) ;
+		float nWithoutTaxWin = nBankerLoseCoin * (1-getChouShuiRate()) ;
+		pNNP->setCoin(pNNP->getCoin() + (int32_t)nWithoutTaxWin ) ;
+		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , uid = %u without tax win = %0.3f",getRoomID(),pNNP->getUserUID(),nWithoutTaxWin) ;
 
 		stNNGameResultItem item ;
 		item.nFinalCoin = pNNP->getCoin() ;
-		item.nOffsetCoin = nWithoutTaxWin ;
+		item.nOffsetCoin = (int32_t)nWithoutTaxWin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
-		updatePlayerOffset(pNNP->getUserUID(),item.nOffsetCoin) ;
+ ;		if ( getDelegate() )
+		{
+			getDelegate()->onUpdatePlayerGameResult(this,pNNP->getUserUID(),item.nOffsetCoin);
+		}
 		pNNP->increaseWinTimes();
 	}
 
 	if ( nBankerOffset > 0 )
 	{
-		nBankerOffset = nBankerOffset * ( 1 - getChouShuiRate() );
-		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , banker uid = %u without tax win = %I64d",getRoomID(),pBanker->getUserUID(),nBankerOffset) ;
+		nBankerOffset = (int32_t)(nBankerOffset * ( 1 - getChouShuiRate() ));
+		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , banker uid = %u without tax win = %d",getRoomID(),pBanker->getUserUID(),nBankerOffset) ;
 	}
 
 	stNNGameResultItem item ;
@@ -479,15 +454,16 @@ void CNiuNiuRoom::caculateGameResult()
 	item.nOffsetCoin = nBankerOffset ;
 	item.nPlayerIdx = pBanker->getIdx() ;
 	auBuffer.addContent(&item,sizeof(item)) ;
-	updatePlayerOffset(pBanker->getUserUID(),item.nOffsetCoin) ;
+	if ( getDelegate() )
+	{
+		getDelegate()->onUpdatePlayerGameResult(this,pBanker->getUserUID(),item.nOffsetCoin);
+	}
 	if ( item.nOffsetCoin > 0 )
 	{
 		pBanker->increaseWinTimes();
 	}
 
-	CLogMgr::SharedLogMgr()->PrintLog("result player idx = %d , finalCoin = %llu, offset coin = %I64d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
+	CLogMgr::SharedLogMgr()->PrintLog("result player idx = %d , finalCoin = %d, offset coin = %d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
 
 	sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
-
-	debugRank();
 }

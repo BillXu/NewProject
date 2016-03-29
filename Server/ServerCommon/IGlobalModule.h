@@ -4,6 +4,13 @@ class IServerApp ;
 class IGlobalModule
 {
 public:
+	enum  eModule
+	{
+		eMod_None,
+		eMod_RoomMgr,
+		eMod_Max
+	}; 
+public:
 	IGlobalModule(){ m_fTicket = 300; m_app = nullptr ;}
 	virtual ~IGlobalModule(){}
 	virtual uint16_t getModuleType() = 0 ;

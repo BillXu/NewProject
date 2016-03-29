@@ -452,7 +452,12 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 		{
 			uint16_t nRewardID = jArg["rewardID"].asInt() ;
 			uint16_t nGameType = jArg["gameType"].asInt()  ;
-			uint32_t nRoomID = jArg["roomID"].asInt()  ;
+
+			const char* nRoomID = "null name"  ;
+			if ( jArg["roomName"].isNull() == false )
+			{
+				nRoomID = jArg["roomName"].asCString()  ;
+			}
 			uint16_t nRankIdx = jArg["rankIdx"].asInt()  ;
 			GetPlayer()->GetBaseData()->onGetReward(nRankIdx,nRewardID,nGameType,nRoomID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("do give reward uid = %u, nreward id = %u",GetPlayer()->GetUserUID(),nRewardID) ;

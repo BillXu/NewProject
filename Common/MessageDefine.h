@@ -54,6 +54,7 @@ struct stMsgControlFlag
 public:
 	stMsgControlFlag(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_CONTROL_FLAG ; }
 	uint32_t nFlag ;  // 0 , not in check , 1 , means in check , should hide something ;
+	uint16_t nVerfion ;
 };
 
 // register an login ;
@@ -198,8 +199,9 @@ struct stMsgPlayerUpdateMoney
 	:public stMsg
 {
 	stMsgPlayerUpdateMoney(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_UPDATE_MONEY ; }
-	uint64_t nFinalCoin ;
-	unsigned int nFinalDiamoned ;
+	uint32_t nFinalCoin ;
+	uint32_t nFinalDiamoned ;
+	uint32_t nCupCnt ;
 };
 
 struct stMsgDlgNotice
@@ -558,8 +560,9 @@ struct stMsgCheckInviterRet
 struct stMsgToRoom
 	:public stMsg
 {
-	stMsgToRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; }
+	stMsgToRoom(){ cSysIdentifer = ID_MSG_PORT_TAXAS; nSubRoomIdx = -1 ;}
 	uint32_t nRoomID ;
+	int8_t nSubRoomIdx ;
 };
 
 struct stMsgToNNRoom
@@ -596,8 +599,33 @@ struct stMsgRequestRoomItemDetailRet
 	uint8_t nRet ; // 0 success , 1 not find room ;
 	uint8_t nRoomType ;
 	uint32_t nRoomID ;
+	uint32_t nOwnerUID ; // 0 means public rooms , other value , private room ;
 	uint16_t nJsonLen ;
-	PLACE_HOLDER(char* pLen ); // { configID : 23 , playerCnt : 0 , reward0 : "23 cup" , reward1 : "12 cup" , reward2 : "3 cup" , coinLimit : "233", openTime : 23345 , closeTime: 2345, state : 23  }
+	PLACE_HOLDER(char* pLen ); 
+	// public room : { configID : 23 ,name : "number 1 poker", openTime : 23345 , closeTime: 2345, state : 23  }
+	// private room:  { configID : 23 , closeTime: 2345, state : 23 ,createTime : 2345 };
+};
+
+struct stMsgRequestRoomRewardInfo
+	:public stMsgToRoom
+{
+	stMsgRequestRoomRewardInfo(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_REQUEST_ROOM_REWARD_INFO ;}
+};
+
+struct stMsgRequestRoomRewardInfoRet
+	:public stMsg
+{
+	stMsgRequestRoomRewardInfoRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_REWARD_INFO ; }
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* pLen ); // { 0 : "1 reward desc",1 : "1 reward desc" , 2 : "2 reward desc",3 : "3 reward desc" };
+};
+
+struct stMsgRequestRoomInfo
+	:public stMsgToRoom
+{
+	stMsgRequestRoomInfo(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_REQUEST_ROOM_INFO ; }
 };
 
 // create room
@@ -684,13 +712,35 @@ struct stMsgRoomEnterNewState
 	float m_fStateDuring ; 
 };
 
+// room info 
+struct stMsgRoomInfo
+	:public stMsg
+{
+	stMsgRoomInfo(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_ROOM_INFO ; }
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+	uint8_t nMaxSeat;
+	uint32_t nChatRoomID;
+	uint32_t eCurRoomState ; // eRoomState ;
+	uint32_t nDeskFee;
+	float fChouShuiRate ; 
+	uint32_t nCloseTime ;
+	uint8_t nSubIdx ; 
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* jsonstr);
+	//taxas js {"litBlind":20,"minTakIn":200,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] }	
+
+	// niu niu js {"bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2 };
+};
+
 // enter and leave 
 struct stMsgPlayerEnterRoom
 	:public stMsgToRoom
 {
-	stMsgPlayerEnterRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_ENTER_ROOM ; }
+	stMsgPlayerEnterRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_ENTER_ROOM ; nSubIdx = -1 ; }
 	uint8_t nRoomGameType ;
 	uint32_t nRoomID ;
+	int8_t nSubIdx ; // -1 means sys decide ;
 };
 
 struct stMsgPlayerEnterRoomRet 

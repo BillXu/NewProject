@@ -30,7 +30,7 @@ public:
 	void addOwnRoom(eRoomType eType , uint32_t nRoomID , uint16_t nConfigID );
 	bool isCreateRoomCntReachLimit(eRoomType eType);
 	bool deleteOwnRoom(eRoomType eType , uint32_t nRoomID );
-	uint16_t getMyOwnRoomConfig(eRoomType eType ,  uint32_t nRoomID ) ;
+	/*uint16_t getMyOwnRoomConfig(eRoomType eType ,  uint32_t nRoomID ) ;*/
 	bool isRoomIDMyOwn(eRoomType eType , uint32_t nRoomID);
 	bool isNotInAnyRoom(){ return m_nStateInRoomID == 0 && m_nStateInRoomType == eRoom_Max ; }
 protected:
@@ -38,8 +38,8 @@ protected:
 protected:
 	uint32_t m_nStateInRoomID ;
 	uint8_t m_nStateInRoomType ;
+	uint8_t m_nSubRoomIdx ; 
 
 	stGameData m_vData[eRoom_Max] ;
 	MAP_ID_MYROOW m_vMyOwnRooms[eRoom_Max];
-	SET_ROOM_ID m_vFollowedRooms ;
 };

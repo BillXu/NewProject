@@ -167,7 +167,6 @@ void CSelectPlayerDataCacher::cachePlayerData(stMsgSelectPlayerDataRet* pmsg )
 	{
 		CLogMgr::SharedLogMgr()->PrintLog("recievd data prifle uid = %d",pData->nUserUID) ;
 		iter->second->recivedData(pData) ;
-		removePlayerDataCache(pmsg->nDataPlayerUID);
 	}
 }
 
@@ -730,28 +729,38 @@ bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eM
 	}
 	else if ( eCrossSvrReq_GameOver == pRequest->nRequestType )
 	{
-		if ( vJsValue->isArray() == false || vJsValue->size() == 0 )
+		if ( vJsValue->isNull() )
 		{
 			CLogMgr::SharedLogMgr()->ErrorLog("why game over result is null room type = %d room id = %d",(uint32_t)pRequest->vArg[0],pRequest->nReqOrigID) ;
 			return true ;
 		}
 
-		for ( uint8_t nIdx = 0 ; nIdx < vJsValue->size(); ++nIdx )
+		const char* pName = "null" ;
+		if ( (*vJsValue)["roomName"].isNull() == false )
 		{
-			Json::Value item = (*vJsValue)[nIdx] ;
+			pName = (*vJsValue)["roomName"].asCString();
+		}
+		
+		CLogMgr::SharedLogMgr()->PrintLog("%s game over ",pName);
+		Json::Value vPlayers = (*vJsValue)["players"];
+		for ( uint8_t nIdx = 0 ; nIdx < vPlayers.size(); ++nIdx )
+		{
+			Json::Value item = vPlayers[nIdx] ;
 			uint32_t nUID = item["userUID"].asInt() ;
 			uint16_t nRewardID = item["rewardID"].asInt() ;
 			CPlayer* pp = GetPlayerByUserUID(nUID) ;
 			if ( pp )
 			{
-				pp->GetBaseData()->onGetReward(nIdx,nRewardID,(uint16_t)pRequest->vArg[0],pRequest->nReqOrigID) ;
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , get reward id = %u ",nUID,nRewardID ) ;
+				pp->GetBaseData()->onGetReward(nIdx,nRewardID,(uint16_t)pRequest->vArg[0],pName) ;
 			}
 			else
 			{	
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , not online post msg get reward id = %u ",nUID,nRewardID ) ;
 				Json::Value jEventArg ;
 				jEventArg["rewardID"] = nRewardID;
 				jEventArg["gameType"] = (uint16_t)pRequest->vArg[0];
-				jEventArg["roomID"] = pRequest->nReqOrigID;
+				jEventArg["roomName"] = pName;
 				jEventArg["rankIdx"] = nIdx ;
 				CPlayerMailComponent::PostOfflineEvent(CPlayerMailComponent::Event_Reward,jEventArg,nUID);
 			}

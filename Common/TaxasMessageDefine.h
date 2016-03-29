@@ -41,33 +41,20 @@ struct stMsgRequestMyOwnRoomsRet
 	PLACE_HOLDER(uint32_t* pRoomIDs);
 };
 
-struct stMsgRequestMyOwnRoomDetail
-	:public stMsgToRoom
-{
-	stMsgRequestMyOwnRoomDetail(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
-};
-
-struct stMsgRequestMyOwnRoomDetailRet
-	:public stMsg
-{
-	stMsgRequestMyOwnRoomDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
-	uint8_t nRet ; // 0 success , 1 can not find room ;
-	uint8_t nRoomType ; 
-	char vRoomName[MAX_LEN_ROOM_NAME] ;
-	uint32_t nRoomID ;
-	uint16_t nConfigID ;
-	uint64_t nTotalProfit;
-	uint32_t nCanWithdrawProfit;
-	uint32_t nDeadTime;
-	uint32_t nFollows ; 
-};
-
-
-struct stMsgRequestTaxasRoomInfo
-	:public stMsgToRoom
-{
-	stMsgRequestTaxasRoomInfo(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_REQUEST_ROOM_INFO ; }
-};
+//struct stMsgRequestMyOwnRoomDetail
+//	:public stMsgToRoom
+//{
+//	stMsgRequestMyOwnRoomDetail(){ cSysIdentifer = ID_MSG_PORT_TAXAS ; usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
+//};
+//
+//struct stMsgRequestMyOwnRoomDetailRet
+//	:public stMsg
+//{
+//	stMsgRequestMyOwnRoomDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
+//	uint8_t nRet ; // 0 success , 1 can not find room ;
+//	uint8_t nRoomType ; 
+//	uint32_t nRoomID ;
+//};
 
 struct stMsgModifyTaxasRoomName
 	:public stMsgToRoom
@@ -159,30 +146,30 @@ struct  stMsgTaxasQuickEnterRoom
 	uint64_t nCurCoin ;
 };
 
-struct stMsgTaxasRoomInfoBase
-	:public stMsg
-{
-	stMsgTaxasRoomInfoBase(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_ROOM_BASE_INFO; }
-	uint32_t nRoomID ;
-	uint32_t nOwnerUID ;
-	uint8_t vRoomName[MAX_LEN_ROOM_NAME];
-	uint8_t nMaxSeat;
-	uint32_t nLittleBlind;
-	uint32_t nMiniTakeIn ;
-	uint32_t nMaxTakeIn ;
-	uint32_t nChatRoomID;
-	// running members ;
-	uint32_t eCurRoomState ; // eeRoomState ;
-	uint8_t nBankerIdx ;
-	uint8_t nLittleBlindIdx ;
-	uint8_t nBigBlindIdx ;
-	int8_t nCurWaitPlayerActionIdx ;
-	uint32_t  nCurMainBetPool ;
-	uint32_t  nMostBetCoinThisRound;
-	uint32_t nDeskFee;
-	uint8_t vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
-	uint32_t nCloseTime ;
-};
+//struct stMsgTaxasRoomInfoBase
+//	:public stMsg
+//{
+//	stMsgTaxasRoomInfoBase(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_TP_ROOM_BASE_INFO; }
+//	uint32_t nRoomID ;
+//	uint32_t nOwnerUID ;
+//	uint8_t vRoomName[MAX_LEN_ROOM_NAME];
+//	uint8_t nMaxSeat;
+//	uint32_t nLittleBlind;
+//	uint32_t nMiniTakeIn ;
+//	uint32_t nMaxTakeIn ;
+//	uint32_t nChatRoomID;
+//	// running members ;
+//	uint32_t eCurRoomState ; // eeRoomState ;
+//	uint8_t nBankerIdx ;
+//	uint8_t nLittleBlindIdx ;
+//	uint8_t nBigBlindIdx ;
+//	int8_t nCurWaitPlayerActionIdx ;
+//	uint32_t  nCurMainBetPool ;
+//	uint32_t  nMostBetCoinThisRound;
+//	uint32_t nDeskFee;
+//	uint8_t vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
+//	uint32_t nCloseTime ;
+//};
 
 struct stMsgTaxasRoomInfoVicePool
 	:public stMsg
@@ -305,7 +292,7 @@ struct stMsgTaxasPlayerAct
 {
 	stMsgTaxasPlayerAct(){ cSysIdentifer = ID_MSG_PORT_TAXAS; usMsgType = MSG_TP_PLAYER_ACT ; }
 	uint8_t nPlayerAct ; // eRoomPeerAction ;   add, give up , follow , allin , pass 
-	uint64_t nValue ;    // used when add act 
+	uint32_t nValue ;    // used when add act 
 };
 
 struct stMsgTaxasPlayerActRet

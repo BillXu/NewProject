@@ -12,7 +12,7 @@ class CPlayerMailComponent
 public:
 	enum eOfflineEvent 
 	{
-		Event_Reward, // {rankIdx : 2 rewardID: 23,gameType: 2 , roomID : 234 }
+		Event_Reward, // {rankIdx : 2 rewardID: 23,gameType: 2 , roomName : 234 }
 		Event_AddCoin, // { comment: "why add coin" addCoin : 34556 }
 		Event_Max,
 	};

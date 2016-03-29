@@ -61,15 +61,15 @@ struct stTaxasPeerData
 
 struct stPlayedPeerRecord
 {
-	int64_t nMoneyOffset ;
-	uint64_t nMoneyLastLeft ;
+	uint32_t nMoneyOffset ;
+	uint32_t nMoneyLastLeft ;
 };
 
 struct stVicePool
 {
 	uint8_t nIdx ;
 	bool bUsed ;
-	uint64_t nCoin ;
+	uint32_t nCoin ;
 	VEC_INT8 vInPoolPlayerIdx ;
 	VEC_INT8 vWinnerIdxs ;
 
@@ -110,13 +110,11 @@ public:
 	CTaxasRoom();
 	virtual ~CTaxasRoom();
 	uint8_t getRoomType()override ;
-	bool init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )override;
-	void serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
+	bool onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )override;
+	void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
 	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
 	void prepareState();
-
-	void sendMsgToPlayer( stMsg* pmsg , uint16_t nLen , uint32_t nSessionID )override ;
 
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
 	
@@ -126,10 +124,11 @@ public:
 
 	void onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )override ;
 	uint32_t getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp)override ;
-	void sendRoomInfoToPlayer(uint32_t nSessionID)override ;
+	void roomInfoVisitor(Json::Value& vOutJsValue)override ;
+	void sendRoomPlayersInfo(uint32_t nSessionID)override ;
 
 	// taxas define 
-	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint64_t& nValue );  // return error code , 0 success ;
+	uint8_t OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint32_t& nValue );  // return error code , 0 success ;
 	uint8_t GetCurWaitActPlayerIdx(){ return m_nCurWaitPlayerActionIdx ; }
 
 	// logic function 
@@ -172,8 +171,8 @@ protected:
 	uint8_t m_nLittleBlindIdx ;
 	uint8_t m_nBigBlindIdx ;
 	int8_t m_nCurWaitPlayerActionIdx ;
-	uint64_t  m_nCurMainBetPool ;
-	uint64_t  m_nMostBetCoinThisRound;
+	uint32_t  m_nCurMainBetPool ;
+	uint32_t  m_nMostBetCoinThisRound;
 	uint8_t m_vPublicCardNums[TAXAS_PUBLIC_CARD] ; 
 	uint8_t m_nPublicCardRound ; //valid value , 0,1 , 2 , 3 ,4 
 	stVicePool m_vAllVicePools[MAX_PEERS_IN_TAXAS_ROOM] ;

@@ -78,7 +78,7 @@ enum  eCrossSvrReqType
 	eCrossSvrReq_LeaveRoomRet, // var[0] roomType {eRoomType} ; var[1] nRoomID ;
 	eCrossSvrReq_DeleteRoom, // var[0] roomType {eRoomType} ; var[1] nRoomID ;
 	eCrossSvrReq_SyncNiuNiuData, // var[0] player times , var[1] win times , var[2] SingleWinMoset ;
-	eCrossSvrReq_GameOver, // var[0] roomType  json arg: {{userUID: 234,rewardID : 23 },{userUID: 234,rewardID : 23 },{userUID: 234,rewardID : 23 },{userUID: 234,rewardID : 23 }} ;
+	eCrossSvrReq_GameOver, // var[0] roomType  json arg:roomName: "chap Match", players:{{userUID: 234,rewardID : 23 },{userUID: 234,rewardID : 23 },{userUID: 234,rewardID : 23 },{userUID: 234,rewardID : 23 }} ;
 	eCrossSvrReq_Max,
 };
 

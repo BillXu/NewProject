@@ -10,6 +10,7 @@
 #include "ServerStringTable.h"
 #include "SeverUtility.h"
 #include <time.h>
+#include "IRoomDelegate.h"
 ISitableRoom::~ISitableRoom()
 {
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
@@ -30,10 +31,9 @@ ISitableRoom::~ISitableRoom()
 	m_vReserveSitDownObject.clear() ;
 }
 
-bool ISitableRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue ) 
+bool ISitableRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue ) 
 {
-	IRoom::init(pConfig,nRoomID,vJsValue) ;
-	m_tTimeCheckRank = time(nullptr) ;
+	IRoom::onFirstBeCreated(pRoomMgr,pConfig,nRoomID,vJsValue) ;
 	stSitableRoomConfig* pC = (stSitableRoomConfig*)pConfig;
 	m_nSeatCnt = pC->nMaxSeat ;
 	m_vSitdownPlayers = new ISitableRoomPlayer*[m_nSeatCnt] ;
@@ -44,9 +44,9 @@ bool ISitableRoom::init(stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value
 	return true ;
 }
 
-void ISitableRoom::serializationFromDB(stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )
+void ISitableRoom::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )
 {
-	IRoom::serializationFromDB(pConfig,nRoomID,vJsValue);
+	IRoom::serializationFromDB(pRoomMgr,pConfig,nRoomID,vJsValue);
 	stSitableRoomConfig* pC = (stSitableRoomConfig*)pConfig;
 	m_nSeatCnt = pC->nMaxSeat ;
 	m_vSitdownPlayers = new ISitableRoomPlayer*[m_nSeatCnt] ;
@@ -65,117 +65,6 @@ void ISitableRoom::roomItemDetailVisitor(Json::Value& vOutJsValue)
 {
 	IRoom::roomItemDetailVisitor(vOutJsValue);
 	vOutJsValue["playerCnt"] = getSitDownPlayerCount();
-}
-
-void ISitableRoom::onRankChanged()
-{
-	time_t tNow = time(nullptr) ;
-	if ( tNow - m_tTimeCheckRank < 60*15 )  // 15 minite check once 
-	{
-		//IRoom::onRankChanged() ;  // 15 minite update once 
-		return ;
-	}
-	m_tTimeCheckRank = tNow ;
-	// check qian san ming shi fou bian hua ;
-	CSendPushNotification::getInstance()->reset() ;
-	auto checkter = getSortRankItemListBegin();
-	auto endIter = getSortRankItemListEnd() ;
-	uint16_t nCheckIdx = 0 ;
-	uint8_t nChangeCnt = 0 ;
-	for ( ; checkter != endIter; ++checkter ,++nCheckIdx )
-	{
-		if ( nCheckIdx >= 3 )
-		{
-			break;
-		}
- 
-		if ( (*checkter)->nRankIdx >= 3 ) // first enter qian san 
-		{
-			auto pPlayer = getPlayerByUserUID((*checkter)->nUserUID);
-			if ( !pPlayer )  // not in this room send push notification ;
-			{
-				// send push notification ;
-				CSendPushNotification::getInstance()->addTarget((*checkter)->nUserUID);
-				++nChangeCnt;
-				CLogMgr::SharedLogMgr()->PrintLog("room id = %d , uid = %d enter qian san ", getRoomID(),(*checkter)->nUserUID) ;
-			}
-		}
-	}
-
-	if ( nChangeCnt <= 0 )
-	{
-		IRoom::onRankChanged() ;
-		return ;
-	}
-
-	// send push notification ;
-	if (eRoom_NiuNiu == getRoomType() )
-	{
-		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(7),1);
-	}
-	else if ( eRoom_TexasPoker == getRoomType() )
-	{
-		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(6),1);
-	}
-	else
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("unknown room type = %d can not send rank change apns",getRoomType()) ;
-	}
-	
-	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
-	if ( abf )
-	{
-		sendMsgToPlayer((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID()) ;
-	}
-
-	CSendPushNotification::getInstance()->reset() ;
-	
-	// check leave qian san player 
-	checkter = getSortRankItemListBegin();
-	bool isNeedInform = false ;
-	for ( ; checkter != endIter && nChangeCnt > 0; ++checkter )
-	{
-		if ( (*checkter)->nRankIdx < 3 ) // leave qian san 
-		{
-			auto pPlayer = getPlayerByUserUID((*checkter)->nUserUID);
-			if ( !pPlayer )  // not in this room send push notification ;
-			{
-				// send push notification ;
-				CSendPushNotification::getInstance()->addTarget((*checkter)->nUserUID);
-				isNeedInform = true ;
-				--nChangeCnt ;
-				CLogMgr::SharedLogMgr()->PrintLog("room id = %d , uid = %d leave qian san ", getRoomID(),(*checkter)->nUserUID) ;
-			}
-		}
-	}
-
-	if ( isNeedInform == false )
-	{
-		IRoom::onRankChanged() ;
-		return ;
-	}
-
-	// send push notification ;
-	if (eRoom_NiuNiu == getRoomType() )
-	{
-		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(9),1);
-	}
-	else if ( eRoom_TexasPoker == getRoomType() )
-	{
-		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(8),1);
-	}
-	else
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("unknown room type = %d can not send rank change apns",getRoomType()) ;
-	}
-
-	abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
-	if ( abf )
-	{
-		sendMsgToPlayer((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID()) ;
-	}
-
-	IRoom::onRankChanged() ;
 }
 
 bool ISitableRoom::canStartGame()
@@ -282,7 +171,7 @@ void ISitableRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 	pSitPlayer = getSitdownPlayerByUID(pPlayer->nUserUID) ;
 	if ( pSitPlayer == nullptr )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("player direct standup and can leave uid = %d",pPlayer->nUserUID) ;
+		CLogMgr::SharedLogMgr()->PrintLog("player direct standup and can leave uid = %u",pPlayer->nUserUID) ;
 		return ;
 	}
 
@@ -292,11 +181,11 @@ void ISitableRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 	{
 		pSitPlayer->setCoin(nLeastLeftCoin) ;
 		pPlayer->nCoin += ( nCoin - nLeastLeftCoin );
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d will leave take away coin = %lld, left coin = %d",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %u will leave take away coin = %u, left coin = %u",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("need coin too many ,uid = %d will leave take away coin = %lld, left coin = %d",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
+		CLogMgr::SharedLogMgr()->PrintLog("need coin too many ,uid = %u will leave take away coin = %u, left coin = %u",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
 	}
 }
 
@@ -308,10 +197,10 @@ void ISitableRoom::onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )
 	}
 }
 
-uint8_t ISitableRoom::getEmptySeatCount()
+uint16_t ISitableRoom::getEmptySeatCount()
 {
-	uint8_t nCount = 0 ;
-	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+	uint16_t nCount = 0 ;
+	for ( uint16_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
 	{
 		if ( m_vSitdownPlayers[nIdx] == nullptr )
 		{
@@ -321,7 +210,7 @@ uint8_t ISitableRoom::getEmptySeatCount()
 	return nCount ;
 }
 
-ISitableRoomPlayer* ISitableRoom::getPlayerByIdx(uint8_t nIdx )
+ISitableRoomPlayer* ISitableRoom::getPlayerByIdx(uint16_t nIdx )
 {
 	assert(nIdx < getSeatCount() && "invalid player idx");
 	if ( nIdx >= getSeatCount() )
@@ -341,12 +230,12 @@ bool ISitableRoom::isSeatIdxEmpty( uint8_t nIdx )
 	return m_vSitdownPlayers[nIdx] == nullptr ;
 }
 
-uint8_t ISitableRoom::getSitDownPlayerCount()
+uint16_t ISitableRoom::getSitDownPlayerCount()
 {
 	return getSeatCount() - getEmptySeatCount() ;
 }
 
-uint8_t ISitableRoom::getSeatCount()
+uint16_t ISitableRoom::getSeatCount()
 {
 	return m_nSeatCnt ;
 }
@@ -363,7 +252,7 @@ ISitableRoomPlayer* ISitableRoom::getReuseSitableRoomPlayerObject()
 	return doCreateSitableRoomPlayer();
 }
 
-uint8_t ISitableRoom::getPlayerCntWithState( uint32_t nState )
+uint16_t ISitableRoom::getPlayerCntWithState( uint32_t nState )
 {
 	uint8_t nCount = 0 ;
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
@@ -529,7 +418,7 @@ void ISitableRoom::onGameDidEnd()
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
 	{
 		auto pPlayer = m_vSitdownPlayers[nIdx] ;
-		if ( pPlayer && (pPlayer->isDelayStandUp() || isPlayerLoseReachMax(pPlayer->getUserUID() ) ) )
+		if ( pPlayer && (pPlayer->isDelayStandUp() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
 		{
 			playerDoStandUp(pPlayer);	
 			pPlayer = nullptr ;
@@ -555,14 +444,14 @@ void ISitableRoom::onGameDidEnd()
 void ISitableRoom::onGameWillBegin()
 {
 	IRoom::onGameWillBegin() ;
-	uint8_t nSeatCnt = getSeatCount() ;
+	uint16_t nSeatCnt = getSeatCount() ;
 	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
 	{
 		ISitableRoomPlayer* pp = getPlayerByIdx(nIdx) ;
 		if ( pp )
 		{
 			pp->setCoin(pp->getCoin() - getDeskFee() ) ;
-			setProfit(getProfit() + getDeskFee() ) ;
+			addTotoalProfit(getDeskFee());
 			pp->onGameBegin();
 		}
 	}

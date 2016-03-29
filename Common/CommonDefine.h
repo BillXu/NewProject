@@ -76,11 +76,14 @@ enum ePlayerType
 enum eRoomState
 {
 	eRoomState_None,
+	eRoomState_Opening,
 	eRoomState_Dead,
+	eRoomState_WillDead,
 	eRoomState_TP_Dead = eRoomState_Dead,
 	eRoomState_WaitJoin,
 	eRoomState_NN_WaitJoin = eRoomState_WaitJoin ,
 	eRoomState_TP_WaitJoin = eRoomState_WaitJoin,
+	eRoomState_WillClose,
 	eRoomState_Close,
 	eRoomState_DidGameOver,
 	eRoomState_StartGame,
@@ -238,7 +241,7 @@ enum eMailType
 	eMail_RealMail_Begin, // will mail will show in golden server windown ;
 	eMail_PlainText,  // need not parse , just display the content ;
 	eMail_InvitePrize, // { targetUID : 2345 , addCoin : 300 } // you invite player to join game ,and give prize to you 
-	eMail_WinMatch, // { gameType:234,roomID:234,rankIdx:2,addCoin:345,cup : 2 , diamomd : 34 }
+	eMail_WinMatch, // { gameType:234,roomName:234,rankIdx:2,addCoin:345,cup : 2 , diamomd : 34 }
 	eMail_Max,
 };
 

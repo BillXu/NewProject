@@ -4,6 +4,7 @@
 #include "CommonDefine.h"
 #include <ctime>
 #include "IRoom.h"
+#include "IRoomDelegate.h"
 class IRoom ;
 struct stMsg ;
 class IRoomState
@@ -35,10 +36,8 @@ public:
 	void update(float)override
 	{
 		// check close 
-		time_t nNow = time(nullptr) ;
-		if ( m_pRoom->getCloseTime() && m_pRoom->getCloseTime() < nNow )
+		if ( m_pRoom->getDelegate() && m_pRoom->getDelegate()->isRoomShouldClose(m_pRoom) )
 		{
-			m_pRoom->onRoomClosed();
 			m_pRoom->goToState(eRoomState_Close) ;
 			return ;
 		}
@@ -68,18 +67,9 @@ public:
 
 	void update(float)override
 	{
-		time_t nNow = time(nullptr) ;
-		if ( m_pRoom->getDeadTime() && m_pRoom->getDeadTime() < nNow )
+		if ( m_pRoom->getDelegate() == nullptr || m_pRoom->getDelegate()->isRoomShouldClose(m_pRoom) == false )
 		{
-			m_pRoom->goToState(eRoomState_Dead) ;
-			return ;
-		}
-
-		if ( nNow > m_pRoom->getOpenTime() )  // reopen game ;
-		{			
-			m_pRoom->onRoomOpened();
 			m_pRoom->goToState(eRoomState_WaitJoin) ;
-			return ;
 		}
 	}
 protected:
@@ -104,8 +94,7 @@ public:
 	void update(float)override
 	{
 		// check close 
-		time_t nNow = time(nullptr) ;
-		if ( m_pRoom->getCloseTime() && m_pRoom->getCloseTime() < nNow )
+		if ( m_pRoom->getDelegate() && m_pRoom->getDelegate()->isRoomShouldClose(m_pRoom) )
 		{
 			m_pRoom->goToState(eRoomState_Close) ;
 			return ;
@@ -114,20 +103,4 @@ public:
 	}
 protected:
 	IRoom* m_pRoom ;
-};
-
-
-// dead state 
-class IRoomStateDead
-	:public IRoomState
-{
-public:
-	enum { eStateID = eRoomState_Dead };
-public:
-	IRoomStateDead(){ m_nState = eRoomState_Dead; }
-	virtual ~IRoomStateDead(){}
-	virtual void enterState(IRoom* pRoom)
-	{
-		pRoom->deleteRoom() ;
-	}
 };

@@ -521,6 +521,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
  			stMsgPlayerUpdateMoney msgUpdate ;
  			msgUpdate.nFinalCoin = GetAllCoin();
  			msgUpdate.nFinalDiamoned = GetAllDiamoned();
+			msgUpdate.nCupCnt = m_stBaseData.nCupCnt ;
  			SendMsg(&msgUpdate,sizeof(msgUpdate));
 		}
 		break;
@@ -1185,7 +1186,7 @@ void CPlayerBaseData::setNewPlayerHalo(uint8_t nPlayHalo )
 	m_bCommonLogicDataDirty = true ;
 }
 
-void CPlayerBaseData::onGetReward( uint8_t nIdx ,uint16_t nRewardID, uint16_t nGameType , uint32_t nRoomID  )
+void CPlayerBaseData::onGetReward( uint8_t nIdx ,uint16_t nRewardID, uint16_t nGameType ,const char* nRoomName  )
 {
 	auto Reward = CRewardConfig::getInstance()->getRewardByID(nRewardID) ;
 	if ( Reward == nullptr )
@@ -1213,7 +1214,7 @@ void CPlayerBaseData::onGetReward( uint8_t nIdx ,uint16_t nRewardID, uint16_t nG
 
 	Json::Value jValue ;
 	jValue["gameType"] = nGameType ;
-	jValue["roomID"] = nRoomID ;
+	jValue["roomName"] = nRoomName ;
 	jValue["rankIdx"] = nIdx ;
 	jValue["addCoin"] = Reward->nCoin ;
 	jValue["cup"] = Reward->nCupCnt ;

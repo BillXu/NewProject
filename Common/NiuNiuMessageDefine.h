@@ -14,11 +14,11 @@ struct stMsgNNLeaveRoomRet
 	stMsgNNLeaveRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_LEAVE_ROOM ; }
 };
 
-struct stMsgNNRequestRoomInfo
-	:public stMsgToNNRoom
-{
-	stMsgNNRequestRoomInfo(){ usMsgType = MSG_NN_REQUEST_ROOM_INFO ;}
-};
+//struct stMsgNNRequestRoomInfo
+//	:public stMsgToNNRoom
+//{
+//	stMsgNNRequestRoomInfo(){ usMsgType = MSG_NN_REQUEST_ROOM_INFO ;}
+//};
 
 struct stNNRoomInfoPayerItem
 {
@@ -30,20 +30,11 @@ struct stNNRoomInfoPayerItem
 	uint8_t vHoldChard[NIUNIU_HOLD_CARD_COUNT] ;
 };
 
-struct stMsgNNRoomInfo 
+struct stMsgNNRoomPlayers
 	:public stMsg
 {
-	stMsgNNRoomInfo(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_NN_ROOM_INFO ; }
-	uint32_t nRoomID ;
-	uint8_t nBankerIdx ;
-	uint32_t nBottomBet ;
-	uint8_t nBankerBetTimes ;
+	stMsgNNRoomPlayers(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_NN_ROOM_PLAYERS ; }
 	uint8_t nPlayerCnt ;
-	uint8_t nRoomState ;
-    uint32_t nChatRoomID;
-    uint32_t nBlind;
-	uint32_t nDeskFee ;
-	uint32_t nCloseTime ;
 	PLACE_HOLDER(stNNRoomInfoPayerItem*) ;
 };
 
@@ -164,8 +155,8 @@ struct stMsgNNDistributeFinalCard
 struct stNNGameResultItem
 {
 	uint8_t nPlayerIdx ;
-	int64_t nOffsetCoin ;
-	uint64_t nFinalCoin ;
+	int32_t nOffsetCoin ;
+	int32_t nFinalCoin ;
 };
 struct stMsgNNGameResult
 	:public stMsg
@@ -208,11 +199,11 @@ struct stMsgNNRequestRoomRankRet
     
 };
 
-struct stMsgRequestMyOwnNiuNiuRoomDetail
-	:public stMsgToNNRoom
-{
-	stMsgRequestMyOwnNiuNiuRoomDetail(){ usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
-};
+//struct stMsgRequestMyOwnNiuNiuRoomDetail
+//	:public stMsgToNNRoom
+//{
+//	stMsgRequestMyOwnNiuNiuRoomDetail(){ usMsgType = MSG_REQUEST_MY_OWN_ROOM_DETAIL ; }
+//};
 
 struct stMsgRequestNiuNiuRoomList
 	:public stMsgToNNRoom

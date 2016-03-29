@@ -7,7 +7,7 @@ struct stEnterRoomLimitCondition
 {
 	bool isRegisted ;
 	uint32_t nCoinLowLimit ;
-	uint64_t nCoinUpLimit ;
+	uint32_t nCoinUpLimit ;
 };
 
 struct stEnterRoomData
@@ -17,7 +17,7 @@ struct stEnterRoomData
 	uint8_t nNewPlayerHaloWeight ; // xin shou  guang huan quan zhong 
 	uint8_t nPlayerType ; // ePlayerType 
 	bool isRegisted ;
-	uint64_t nCoin ;
+	uint32_t nCoin ;
 };
 
 

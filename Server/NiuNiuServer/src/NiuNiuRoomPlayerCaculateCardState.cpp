@@ -7,7 +7,7 @@
 void CNiuNiuRoomStatePlayerCaculateCardState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (ISitableRoom*)pRoom;
-	m_nWaitOperPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
+	m_nWaitOperPlayerCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
 	setStateDuringTime(TIME_NIUNIU_PLAYER_CACULATE_CARD) ;
 	CLogMgr::SharedLogMgr()->PrintLog("enter cacualte card state");
 	m_vOperoateRecord.clear();

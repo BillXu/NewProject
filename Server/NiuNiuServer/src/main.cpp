@@ -90,8 +90,8 @@ int main()
 	//uint8_t n = t.GetType();
 	//return 0 ;
 
-	CNiuNiuServerApp& theApp = *CNiuNiuServerApp::getInstance() ;
-	bool bok = theApp.init() ;
+	CNiuNiuServerApp* theApp = CNiuNiuServerApp::getInstance() ;
+	bool bok = theApp->init() ;
 	if ( !bok )
 	{
 		printf("init data svr error , start up error\n");
@@ -99,12 +99,12 @@ int main()
 		scanf_s("%c",&c);
 		return 0 ;
 	}
-	CreateThred(&theApp);
+	CreateThred(theApp);
 #ifdef NDEBUG
-	RunFunc(&theApp);
+	RunFunc(theApp);
 #endif // _DEBUG
 #ifdef _DEBUG
-	theApp.run();
+	theApp->run();
 #endif // _DEBUG
 	return 0 ;
 }

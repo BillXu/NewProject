@@ -13,7 +13,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParam)
 	while(bRunning)
 	{
 		memset(pBuffer,0,sizeof(pBuffer)) ;
-		scanf("%s",pBuffer) ;
+		scanf_s("%s",pBuffer,sizeof(pBuffer)) ;
 		if ( strcmp(pBuffer,"exit") == 0 || strcmp(pBuffer,"Q") == 0 )
 		{
 			bRunning = false ;
@@ -144,15 +144,15 @@ int main()
 	{
 		printf("init svr error\n");
 		char c ;
-		scanf("%c",&c);
+		scanf_s("%c",&c,1);
 		return 0 ;
 	}
 	CreateThred(&theApp);
-#ifdef NDEBUG
+//#ifdef NDEBUG
 	RunFunc(&theApp);
-#endif // _DEBUG
-#ifdef _DEBUG
-	theApp.run();
-#endif // _DEBUG
+//#endif // _DEBUG
+//#ifdef _DEBUG
+//	theApp.run();
+//#endif // _DEBUG
 	return 0 ;
 }

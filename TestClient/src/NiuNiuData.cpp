@@ -2,6 +2,7 @@
 #include <string>
 #include "CardPoker.h"
 #include "RobotControlNiuNiu.h"
+#include "json/json.h"
 stNiuNiuData::stNiuNiuData()
 {
 	nBankerBetTimes = 0 ;
@@ -132,16 +133,11 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 			}
 		}
 		break;
-	case MSG_NN_ROOM_INFO:
+	case MSG_NN_ROOM_PLAYERS:
 		{
-			stMsgNNRoomInfo* pInfo = (stMsgNNRoomInfo*)pmsg ;
-			nBankerIdx = pInfo->nBankerIdx;
-			nBottomBet = pInfo->nBottomBet ;
-			nBankerBetTimes = pInfo->nBankerBetTimes;
-			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->nRoomState);
-
+			stMsgNNRoomPlayers* pInfo = (stMsgNNRoomPlayers*)pmsg ;
 			char* pBuffer = (char*)pmsg ;
-			pBuffer = pBuffer + sizeof(stMsgNNRoomInfo);
+			pBuffer = pBuffer + sizeof(stMsgNNRoomPlayers);
 			stNNRoomInfoPayerItem* pPlayerItem = (stNNRoomInfoPayerItem*)pBuffer ;
 			while ( pInfo->nPlayerCnt-- )
 			{
@@ -160,6 +156,22 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 				memcpy(pPlayer->vHoldChard,pPlayerItem->vHoldChard,sizeof(pPlayer->vHoldChard));
 				++pPlayerItem ;
 			}
+		}
+		break;
+	case MSG_ROOM_INFO:
+		{
+			stMsgRoomInfo* pInfo = (stMsgRoomInfo*)pmsg ;
+			char* pBuffer = (char*)pmsg ;
+			pBuffer = pBuffer + sizeof(stMsgRoomInfo);
+
+			Json::Reader rt ;
+			Json::Value jCont ;
+			rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
+
+			nBankerIdx = jCont["bankIdx"].asInt();
+			nBottomBet = jCont["baseBet"].asInt();
+			nBankerBetTimes = jCont["bankerTimes"].asInt();
+			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState);
 		}
 		break;
 	case MSG_NN_GAME_RESULT:

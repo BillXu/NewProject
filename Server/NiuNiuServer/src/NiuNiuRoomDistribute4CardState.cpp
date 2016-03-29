@@ -10,7 +10,7 @@ void CNiuNiuRoomDistribute4CardState::enterState(IRoom* pRoom)
 	m_pRoom = (ISitableRoom*)pRoom ;
 
 	// distribute card ;
-	uint8_t nPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
+	uint8_t nPlayerCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
 	// send msg ;
 	stMsgNNDistriute4Card msgForCard ;
 	msgForCard.nPlayerCnt = nPlayerCnt;

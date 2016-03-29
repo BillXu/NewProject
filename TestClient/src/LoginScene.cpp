@@ -135,7 +135,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			msg.nPlayerType = ePlayer_Robot ;
 			SendMsg(&msg, sizeof(msg)) ;
 
-			//uint8_t nCnt = 14 ;
+			//uint8_t nCnt = 6 ;
 			//while ( nCnt )
 			//{
 			//	stMsgCreateRoom msgCreate ;
@@ -152,6 +152,16 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			//	--nCnt ;
 			//}
 			//CLogMgr::SharedLogMgr()->PrintLog("create room ok");
+			//return true ;
+			////uint8_t nCnt = 30 ;
+			////while ( nCnt)
+			////{
+			////	stMsgDeleteRoom msgDel ;
+			////	msgDel.nRoomType = eRoom_TexasPoker;
+			////	msgDel.nRoomID = nCnt-- ;
+			////	SendMsg(&msgDel, sizeof(msgDel)) ;
+			////}
+			////CLogMgr::SharedLogMgr()->PrintLog("delete room ok");
 			doEnterGame();
 		}
 		break; ;
@@ -169,26 +179,33 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			}
 		}
 		break;
-	case MSG_TP_ROOM_BASE_INFO:
+	case MSG_ROOM_INFO:
 		{
-			// change room scene and push this msg;
-			printf("recieved taxas room info...\n");
-			CTaxasPokerScene* pScene = new CTaxasPokerScene(m_pClient) ;
-			//pScene->init("../ConfigFile/RobotAIConfig - new.xml");
-			char pBuffer[255] = { 0 };
-			sprintf_s(pBuffer,"../ConfigFile/%s",m_pClient->GetPlayerData()->pRobotItem->strAiFileName.c_str());
-			pScene->init(pBuffer);
-			m_pClient->ChangeScene(pScene) ;
-			pScene->OnMessage(pPacket) ;
-			return true ;
-		}
-		break;
-	case MSG_NN_ROOM_INFO:
-		{
-			CNiuNiuScene* pScene = new CNiuNiuScene(m_pClient) ;
-			pScene->init(nullptr) ;
-			m_pClient->ChangeScene(pScene) ;
-			pScene->OnMessage(pPacket) ;
+			stMsgRoomInfo* pRet = (stMsgRoomInfo*)pMsg ;
+			if ( pRet->nRoomType == eRoom_TexasPoker )
+			{
+				// change room scene and push this msg;
+				printf("recieved taxas room info...\n");
+				CTaxasPokerScene* pScene = new CTaxasPokerScene(m_pClient) ;
+				//pScene->init("../ConfigFile/RobotAIConfig - new.xml");
+				char pBuffer[255] = { 0 };
+				sprintf_s(pBuffer,"../ConfigFile/%s",m_pClient->GetPlayerData()->pRobotItem->strAiFileName.c_str());
+				pScene->init(pBuffer);
+				m_pClient->ChangeScene(pScene) ;
+				pScene->OnMessage(pPacket) ;
+			}
+			else if ( eRoom_NiuNiu == pRet->nRoomType )
+			{
+				CNiuNiuScene* pScene = new CNiuNiuScene(m_pClient) ;
+				pScene->init(nullptr) ;
+				m_pClient->ChangeScene(pScene) ;
+				pScene->OnMessage(pPacket) ;
+			}
+			else
+			{
+				printf("unknown room type = %u\n",pRet->nRoomType) ;
+			}
+
 			return true ;
 		}
 		break;

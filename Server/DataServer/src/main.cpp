@@ -88,11 +88,6 @@ int main()
 		return 0 ;
 	}
 	CreateThred(&theApp);
-#ifdef NDEBUG
 	RunFunc(&theApp);
-#endif // _DEBUG
-#ifdef _DEBUG
-	theApp.run();
-#endif // _DEBUG
 	return 0 ;
 }
