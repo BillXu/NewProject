@@ -90,7 +90,9 @@ public:
 	// room attribute
 	uint32_t getTotalProfit(){ return m_nTotalProfit ;}
 	void addTotoalProfit(uint32_t nAdd ){ m_nTotalProfit += nAdd ; m_bRoomInfoDiry = true; }
-	void setTotalProfit( uint32_t nProfit ){ m_nTotalProfit = nProfit ;}
+	void setTotalProfit( uint32_t nProfit ){ m_nTotalProfit = nProfit ;m_bRoomInfoDiry = true; }
+	bool isRoomInfoDirty(){ return m_bRoomInfoDiry  ; }
+	void setRoomInfoDirty( bool isDirty ){ m_bRoomInfoDiry = isDirty;}
 	void setChatRoomID(uint32_t nChatRoomID );
 	uint32_t getChatRoomID(){ return m_nChatRoomID ; }
 	bool isDeleteRoom()override;
@@ -112,8 +114,6 @@ private:
 	MAP_ID_ROOM_STATE m_vRoomStates ;
 
 	CPoker m_tPoker ;
-
-	uint32_t m_nCreateTime ;
 
 	uint32_t m_nTotalProfit ;
 	uint32_t m_nChatRoomID ;

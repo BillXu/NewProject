@@ -10,8 +10,8 @@
 #define JSON_DLL
 #include <json/json.h>
 #pragma comment(lib,"JsonDll.lib")
-//#define GATE_IP "139.196.56.147"
-#define GATE_IP "127.0.0.1"
+#define GATE_IP "139.196.56.147"
+//#define GATE_IP "127.0.0.1"
 BOOL WINAPI ConsoleHandler(DWORD msgType)
 {    
 
@@ -249,6 +249,22 @@ void CTempTest::setValue(T* v ,int nlen )
 #include <regex>
 int main()
 {
+	//time_t nTen = 60*60*24 - 10*60 ; // wait 10 miniter 	
+	//time_t nFive = 60*60*24 - 5*60 ; // wait 5 miniter 	
+	//time_t tNow = time(nullptr);
+	//struct tm ttNow = *localtime(&tNow);
+	//ttNow.tm_hour = 21;
+	//ttNow.tm_min = 0 ;
+	//ttNow.tm_sec = 0 ;
+	//time_t t9_00 = mktime(&ttNow) ;
+	//time_t t9_10 = t9_00 + 10*60 ;
+	//time_t t9_30 = t9_00 + 30*60 ;
+	//time_t t9_40 = t9_00 + 40*60 ;
+	//time_t t10_00 = t9_00 + 60*60 ;
+	//time_t t10_10 = t10_00 + 10*60 ;
+	//time_t t10_30 = t10_00 + 30*60 ;
+	//time_t t10_40 = t10_00 + 40*60 ;
+	//printf("%llu",ttNow);
 	//std::regex patern ("0{0,1}1[3-9]\\d{9}" );
 	//bool bmatch = std::regex_match("013920061456",patern);
 	//char* p= "hello	s t";
@@ -370,11 +386,14 @@ int main()
 	nRobotConfige.LoadFile("../ConfigFile/RobotConfig.txt");
 	CConfigReader::s_SkillRow = 0 ;
 	CRobotConfigFile::stRobotItem* pitem = NULL ;
-	uint16_t nCnt = 1 ;
+	uint16_t nCnt = 100 ;
+#ifdef DEBUG
+	nCnt = 1 ;
+#endif
 	while ( nCnt-- && (pitem = nRobotConfige.EnumConfigItem() ))
 	{
 		pClient = new CClientRobot ;
-		bool bR = pClient->Init(GATE_IP);
+		bool bR = pClient->Init(GATE_IP,50002);
 		pClient->GetPlayerData()->SetLoginConfig(pitem) ;
 		if ( !bR )
 		{

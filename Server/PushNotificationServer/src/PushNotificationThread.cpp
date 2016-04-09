@@ -10,7 +10,13 @@
 
 #define CERTF "./pem/ck.pem" /*服务端的证书(需经CA签名)*/
 #define KEYF "./pem/ck.pem" /*服务端的私钥(建议加密存储)*/
+
+#ifdef NDEBUG
+#define HOST_NAME "gateway.push.apple.com"
+#else
 #define HOST_NAME "gateway.sandbox.push.apple.com"
+#endif
+
 #define PORT 2195 /*服务端的端口*/
 
 CPushNotificationThread::CPushNotificationThread()

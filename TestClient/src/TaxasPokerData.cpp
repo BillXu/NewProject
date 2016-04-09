@@ -43,7 +43,7 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 			Json::Reader rt ;
 			Json::Value jCont ;
 			rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
-			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState);
+			setBaseInfo(pInfo->nRoomID,pInfo->nMaxSeat,pInfo->nDeskFee,pInfo->eCurRoomState,pInfo->nSubIdx);
 
 
 			nLittleBlind = jCont["litBlind"].asUInt();
@@ -108,7 +108,7 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 				pPlayer->betCoin(nLittleBlind);
 			}
 
-			pPlayer = (stTaxasPlayer*)getPlayerByIdx(pRet->nBankerIdx) ;
+			pPlayer = (stTaxasPlayer*)getPlayerByIdx(pRet->nBigBlindIdx) ;
 			if ( pPlayer )
 			{
 				pPlayer->betCoin(nLittleBlind*2);
@@ -253,6 +253,11 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 			for ( uint8_t nIdx = 0 ; nIdx < pRet->nWinnerCnt ; ++nIdx )
 			{
 				uint8_t nWinIdx = pRet->vWinnerIdx[nIdx] ;
+				if ( nWinIdx == getRobotControl()->getSeatIdx() )
+				{
+					bRobotWin = true ;
+				}
+
 				auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(nWinIdx) ;
 				if ( pPlayer == nullptr || pPlayer->isValid() == false )
 				{
@@ -260,6 +265,16 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 				}
 				pPlayer->nCoin += pRet->nCoinPerWinner ;
 				printf("winer idx = %d , winCoin = %d, final Coin = %d\n",nWinIdx,pRet->nCoinPerWinner,pPlayer->nCoin);
+			}
+
+			if ( pRet->bIsLastOne )
+			{
+				auto pPlayer = (stTaxasPlayer*)getPlayerByIdx(getRobotControl()->getSeatIdx()) ;
+				if ( pPlayer && pPlayer->isHaveState(eRoomPeer_StayThisRound) )
+				{
+					getRobotControl()->onGameResult(bRobotWin) ;
+					printf("uid = %u taxas robot result = %d\n",getRobotControl()->getUserUID(),bRobotWin) ;
+				}
 			}
 		}
 		break;
@@ -276,6 +291,7 @@ void CTaxasPokerData::onGameBegin()
 	nCurMainBetPool = 0 ;
 	nMostBetCoinThisRound = 0 ;
 	memset(vPublicCardNums,0,sizeof(vPublicCardNums));
+	bRobotWin = false ;
 }
 
 uint32_t CTaxasPokerData::getPlayerAddCoinLowLimit( uint8_t nPlayerSvrIdx )

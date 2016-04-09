@@ -110,6 +110,10 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 			{
 				getRobotControl()->informRobotAction(CRobotControlNiuNiu::eAct_Bet) ;
 			}
+			else if ( eRoomState_NN_CaculateCard == pRet->nNewState )
+			{
+				getRobotControl()->informRobotAction(CRobotControlNiuNiu::eAct_CaculateCards) ;
+			}
 		}
 		break;
 	case MSG_NN_DISTRIBUTE_4_CARD:
@@ -171,7 +175,7 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 			nBankerIdx = jCont["bankIdx"].asInt();
 			nBottomBet = jCont["baseBet"].asInt();
 			nBankerBetTimes = jCont["bankerTimes"].asInt();
-			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState);
+			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState,pInfo->nSubIdx);
 		}
 		break;
 	case MSG_NN_GAME_RESULT:
@@ -180,13 +184,25 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 			char* pBuffer = (char*)pmsg ;
 			pBuffer = pBuffer + sizeof(stMsgNNGameResult) ;
 			stNNGameResultItem* pItem = (stNNGameResultItem*)pBuffer ;
+			bool bWin = false ;
 			while ( pRet->nPlayerCnt-- )
 			{
 				stNiuNiuPlayer* pPlayer = (stNiuNiuPlayer*)getPlayerByIdx(pItem->nPlayerIdx) ;
+				if ( pItem->nPlayerIdx == getRobotControl()->getSeatIdx() )
+				{
+					bWin = pItem->nOffsetCoin > (int32_t)0  ;
+				}
+
 				if ( pPlayer )
 				{
 					pPlayer->nCoin = pItem->nFinalCoin ;
 				}
+			}
+
+			stNiuNiuPlayer* pPlayer = (stNiuNiuPlayer*)getPlayerByIdx(getRobotControl()->getSeatIdx()) ;
+			if ( pPlayer && pPlayer->isHaveState(eRoomPeer_StayThisRound) )
+			{
+				getRobotControl()->onGameResult(bWin);
 			}
 			onGameEnd();
 		}

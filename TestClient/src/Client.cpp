@@ -28,7 +28,7 @@ CClientRobot::~CClientRobot()
 
 bool CClientRobot::Init(const char* pIPString, unsigned short nPort )
 {
-	m_pNetWork.SetupNetwork();
+	m_pNetWork.SetupNetwork();  
 	m_pCurentScene = new CLoginScene(this);
 	m_pCurentScene->OnEnterScene();
 	m_pNetWork.ConnectToServer(pIPString,nPort,"123456") ;  // inner net ;-

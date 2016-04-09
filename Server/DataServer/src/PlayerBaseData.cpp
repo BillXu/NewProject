@@ -120,7 +120,7 @@ void CPlayerBaseData::onBeInviteBy(uint32_t nInviteUID )
 	auto player = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(nInviteUID) ;
 	if ( player )
 	{
-		player->GetBaseData()->AddMoney(COIN_INVITE_PRIZE) ;
+		player->GetBaseData()->addInvitePrize(COIN_INVITE_PRIZE);
 
 		//stMsgDlgNotice msg;
 		//msg.nNoticeType = eNotice_InvitePrize ;
@@ -136,9 +136,9 @@ void CPlayerBaseData::onBeInviteBy(uint32_t nInviteUID )
 	else
 	{
 		Json::Value jconArg;
-		jconArg["comment"] = "invite player to game" ;
+		jconArg["comment"] = "invitePrize" ;
 		jconArg["addCoin"] = COIN_INVITE_PRIZE ;
-		CPlayerMailComponent::PostOfflineEvent(CPlayerMailComponent::Event_AddCoin,jNotice,nInviteUID) ;
+		CPlayerMailComponent::PostOfflineEvent(CPlayerMailComponent::Event_AddCoin,jconArg,nInviteUID) ;
 		CLogMgr::SharedLogMgr()->PrintLog("invite id = %d not online just post a mail",nInviteUID) ;
 	}
 
@@ -1035,6 +1035,12 @@ bool CPlayerBaseData::AddMoney(int64_t nOffset,bool bDiamond  )
 	}
 	m_bMoneyDataDirty = true ;
 	return true ;
+}
+
+void CPlayerBaseData::addInvitePrize(uint32_t nCoinPrize )
+{
+	AddMoney(nCoinPrize);
+	m_stBaseData.nTotalInvitePrizeCoin += nCoinPrize ;
 }
 
 bool CPlayerBaseData::decressMoney(int64_t nOffset,bool bDiamond )

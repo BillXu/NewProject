@@ -61,6 +61,7 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	pRoomConfig->bIsOmitNewPlayerHalo = refReaderRow["isOmitNewPlayerHalo"]->IntValue();
 	pRoomConfig->nMaxLose = refReaderRow["MaxLose"]->IntValue() ;
 	refReaderRow["Reward"]->VecInt(pRoomConfig->vRewardID);
+	pRoomConfig->fDividFeeRate = pRoomConfig->fDividFeeRate / 100.00f ;
 	if ( pRoomConfig->vRewardID.empty() )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("room config id = %d reward is null",pRoomConfig->nConfigID) ;

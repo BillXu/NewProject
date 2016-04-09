@@ -800,13 +800,14 @@ void CTaxasRoom::didCaculateGameResult()
 		}
 		CLogMgr::SharedLogMgr()->ErrorLog("game end update offset");
 		int32_t nTaxFee = (int32_t)(pPlayer->getCoinOffsetThisGame() * getChouShuiRate());
-		if ( nTaxFee > 0 )
+		if ( nTaxFee > (int32_t)0 )
 		{
-			pPlayer->setCoin(pPlayer->getCoin() - (uint64_t)nTaxFee );
+			pPlayer->setCoin(pPlayer->getCoin() - nTaxFee );
 			if ( getDelegate() )
 			{
 				getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),pPlayer->getCoinOffsetThisGame() - nTaxFee );
 			}
+			addTotoalProfit((uint32_t)nTaxFee);
 			CLogMgr::SharedLogMgr()->PrintLog("room id = %u uid = %u , give tax = %d coin = %u",getRoomID(),nTaxFee,pPlayer->getCoin()) ;
 		}
 		else
@@ -911,25 +912,7 @@ void CTaxasRoom::writePlayerResultLogToJson(CTaxasPlayer* pWritePlayer)
 	CLogMgr::SharedLogMgr()->PrintLog("write player uid = %d result log to json",pWritePlayer->getUserUID());
 }
 
-uint8_t CTaxasRoom::GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate )
-{
-	auto seatCnt = getSeatCount() ;
-	for ( uint8_t nIdx = nIdxFromInclude ; nIdx < seatCnt * 2 ; ++nIdx )
-	{
-		uint8_t nRealIdx = nIdx % seatCnt ;
-		if ( getPlayerByIdx(nRealIdx) == nullptr )
-		{
-			continue;
-		}
 
-		if ( getPlayerByIdx(nRealIdx)->isHaveState(estate) )
-		{
-			return nRealIdx ;
-		}
-	}
-	CLogMgr::SharedLogMgr()->ErrorLog("why don't have peer with state = %d",estate ) ;
-	return 0 ;
-}
 
 stVicePool& CTaxasRoom::GetFirstCanUseVicePool()
 {

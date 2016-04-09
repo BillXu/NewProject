@@ -28,6 +28,7 @@ uint32_t CRobotControlTaxas::getTakeInCoinWhenSitDown()
 
 void CRobotControlTaxas::doDelayAction(uint8_t nActType,void* pUserData )
 {
+	
 	CTaxasPokerData* pData = (CTaxasPokerData*)getRoomData();
 	uint8_t vPublicCard[5] = {0};
 	uint8_t vHoldCard[2] = {0} ;
@@ -51,6 +52,12 @@ void CRobotControlTaxas::doDelayAction(uint8_t nActType,void* pUserData )
 	else if ( vPublicCard[2] )
 	{
 		nRound = 1 ;
+	}
+
+	if ( vHoldCard[0] == 0 )
+	{
+		printf("uid = %u hold card is null round = %u \n",playerData->nUserUID,nRound);
+		return ;
 	}
 
 	uint8_t nCardType = 0 ;
@@ -104,6 +111,11 @@ void CRobotControlTaxas::doDelayAction(uint8_t nActType,void* pUserData )
 	msg.nRoomID = pData->getRoomID() ;
 	msg.nValue = nOutAddTimesBlindBet*pData->nLittleBlind*2 + pData->getPlayerAddCoinLowLimit(getSeatIdx()) ;
 
+	if ( eAiAct == CTaxasAINode::eAIAct_Pass && getTempHalo() > 70 )
+	{
+		eAiAct = CTaxasAINode::eAIAct_Follow ;
+	}
+
 	switch (eAiAct)
 	{
 	case CTaxasAINode::eAIAct_Follow:
@@ -143,9 +155,16 @@ void CRobotControlTaxas::doDelayAction(uint8_t nActType,void* pUserData )
 		}
 		break;
 	default:
-		break;
+		CRobotControl::doDelayAction(nActType,pUserData);
+		return;
 	}
 
-	printf("do my act = %d , value = %lld uid = %d\n",msg.nPlayerAct,msg.nValue,getUserUID()) ;
+	printf("do my act = %d , value = %d uid = %d,curMost = %lld, i betCoin = %d\n",msg.nPlayerAct,msg.nValue,getUserUID(),pData->nMostBetCoinThisRound,playerData->nBetCoinThisRound) ;
 	sendMsg(&msg,sizeof(msg)) ;
+
+	if ( msg.nPlayerAct == eRoomPeerAction_GiveUp && playerData->nCoin > pData->nMaxTakeIn * 2 )
+	{
+		printf("win too many coin , should stand up uid = %u\n",playerData->nUserUID) ;
+		standUp();
+	}
 }

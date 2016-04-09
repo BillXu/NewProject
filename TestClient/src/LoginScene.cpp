@@ -9,8 +9,8 @@
 #include "TaxasMessageDefine.h"
 #include "Client.h"
 #include "NiuNiuScene.h"
-#define  TIME_DELAY_ENTER_ROOM (40 )
-#define  TIME_DELAY_LOGIN (45)
+#define  TIME_DELAY_ENTER_ROOM (15 )
+#define  TIME_DELAY_LOGIN (30)
 CLoginScene::CLoginScene(CClientRobot* pNetWork ):IScene(pNetWork)
 { 
 	m_eSceneType = eScene_Login ;
@@ -22,7 +22,14 @@ void CLoginScene::OnEnterScene()
 {
 	IScene::OnEnterScene();
 	//InformIdle();
-	m_eCurState = els_Normal ;
+	if ( m_pClient->GetPlayerData()->isLogined() )
+	{
+		m_eCurState = els_Normal ;
+		stMsgPlayerUpdateMoney msgUpdate ;
+		msgUpdate.cSysIdentifer = ID_MSG_PORT_DATA ;
+		SendMsg(&msgUpdate,sizeof(msgUpdate));
+	}
+
 	if ( m_pClient->GetPlayerData()->isLackOfCoin() )
 	{
 		m_eCurState = els_WaitCoin ;
@@ -125,6 +132,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 		break;
 	case MSG_PLAYER_BASE_DATA:
 		{
+			stMsgPlayerBaseData* pRet = (stMsgPlayerBaseData*)pMsg;
 			// get room list ;
 			//stMsgRequestRoomList msgRoomList ;
 			//msgRoomList.cRoomType = m_pClient->GetPlayerData()->GetEnterRoomType() ;
@@ -135,34 +143,19 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			msg.nPlayerType = ePlayer_Robot ;
 			SendMsg(&msg, sizeof(msg)) ;
 
-			//uint8_t nCnt = 6 ;
-			//while ( nCnt )
-			//{
-			//	stMsgCreateRoom msgCreate ;
-			//	msgCreate.nConfigID = 29 ;
-			//	msgCreate.nMinites = 30 ;
-			//	msgCreate.nRoomType = nCnt % 2 == 0 ? eRoom_TexasPoker : eRoom_NiuNiu;
-			//	if ( eRoom_TexasPoker == msgCreate.nRoomType )
-			//	{
-			//		msgCreate.nConfigID = 2 ;
-			//	}
-			//	memset(msgCreate.vRoomName,0,sizeof(msgCreate.vRoomName)) ;
-			//	sprintf_s(msgCreate.vRoomName,"roname = %d",nCnt);
-			//	SendMsg(&msgCreate, sizeof(msgCreate)) ;
-			//	--nCnt ;
-			//}
-			//CLogMgr::SharedLogMgr()->PrintLog("create room ok");
-			//return true ;
-			////uint8_t nCnt = 30 ;
-			////while ( nCnt)
-			////{
-			////	stMsgDeleteRoom msgDel ;
-			////	msgDel.nRoomType = eRoom_TexasPoker;
-			////	msgDel.nRoomID = nCnt-- ;
-			////	SendMsg(&msgDel, sizeof(msgDel)) ;
-			////}
-			////CLogMgr::SharedLogMgr()->PrintLog("delete room ok");
-			doEnterGame();
+			auto pConfigItem = m_pClient->GetPlayerData()->getConfigItem();
+			if ( pRet->stBaseData.nCoin <= pConfigItem->fMostLeftCoin && pRet->stBaseData.nCoin >= pConfigItem->nMinLeftCoin )
+			{
+				// do nothing 
+				printf("recived base data coin all right do go enter game !\n") ;
+				delayEnterRoom();
+			}
+			else
+			{
+				stMsgRobotAddMoney msgAddCoin ; 
+				msgAddCoin.nWantCoin = (pConfigItem->fMostLeftCoin + pConfigItem->nMinLeftCoin) * 0.8 - pRet->stBaseData.nCoin;
+				SendMsg(&msgAddCoin,sizeof(msgAddCoin)) ;
+			}
 		}
 		break; ;
 	case MSG_PLAYER_ENTER_ROOM:
@@ -170,12 +163,12 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			stMsgPlayerEnterRoomRet* pRet = (stMsgPlayerEnterRoomRet*)pMsg ;
 			if ( pRet->nRet )
 			{
-				printf("enter niuniu room failed ret = %d\n",pRet->nRet) ;
+				printf("enter room failed ret = %d\n",pRet->nRet) ;
 				delayEnterRoom() ;
 			}
 			else
 			{
-				printf("enter niuniu room success\n") ;
+				printf("enter room success\n") ;
 			}
 		}
 		break;
@@ -219,6 +212,24 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			return true;
 		}
 		break;
+	case MSG_PLAYER_UPDATE_MONEY:
+		{
+			stMsgPlayerUpdateMoney* pRet = (stMsgPlayerUpdateMoney*)pMsg;
+			auto pConfigItem = m_pClient->GetPlayerData()->getConfigItem();
+			if ( pRet->nFinalCoin <= pConfigItem->fMostLeftCoin && pRet->nFinalCoin >= pConfigItem->nMinLeftCoin )
+			{
+				// do nothing 
+				printf("update coin all right do go enter game !\n") ;
+				delayEnterRoom();
+			}
+			else
+			{
+				stMsgRobotAddMoney msgAddCoin ; 
+				msgAddCoin.nWantCoin = (pConfigItem->fMostLeftCoin + pConfigItem->nMinLeftCoin) * 0.8 - pRet->nFinalCoin;
+				SendMsg(&msgAddCoin,sizeof(msgAddCoin)) ;
+			}
+		}
+		break ;
 	default:
 		{
 			CLogMgr::SharedLogMgr()->SystemLog("%s Unknown message CLoginScene msg = %d!",m_pClient->GetPlayerData()->GetName(),pMsg->usMsgType ) ;
@@ -233,8 +244,9 @@ void CLoginScene::doEnterGame()
 	stMsgPlayerEnterRoom msg ;
 	msg.nRoomGameType = m_pClient->GetPlayerData()->getDstGameType() ;
 	msg.nRoomID = m_pClient->GetPlayerData()->getDstRoomID() ;
+	msg.nSubIdx = m_pClient->GetPlayerData()->getConfigItem()->nDstSubIdx ;
 	SendMsg(&msg,sizeof(msg));
-	printf("enter room type = %d id = %d...\n",msg.nRoomGameType,msg.nRoomID);
+	printf("enter room type = %d id = %d, subRoomIdx = %u...\n",msg.nRoomGameType,msg.nRoomID,msg.nSubIdx);
 	
 	m_eCurState = els_Normal ;
 }
@@ -243,6 +255,7 @@ void CLoginScene::delayEnterRoom()
 {
 	m_fDelyTick = TIME_DELAY_ENTER_ROOM ;
 	m_eCurState = els_WaitEnterRoom ;
+	printf("delayer enter room uid = %u\n ",getClient()->GetPlayerData()->getUserUID());
 }
 
 void CLoginScene::Verifyed()

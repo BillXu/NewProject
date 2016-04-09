@@ -157,7 +157,6 @@ public:
 protected:
 	void writeGameResultLog();
 	void writePlayerResultLogToJson(CTaxasPlayer* pWritePlayer);
-	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 	stVicePool& GetFirstCanUseVicePool();
 	void CaculateVicePool(stVicePool& pPool );
 	//void syncPlayerDataToDataSvr( stTaxasPeerData& pPlayerData );

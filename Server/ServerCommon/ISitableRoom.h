@@ -39,6 +39,8 @@ public:
 	void onGameDidEnd()override ;
 	void onGameWillBegin()override ;
 	void doProcessNewPlayerHalo();
+protected:
+	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 private:
 	time_t m_tTimeCheckRank ;
 	uint16_t m_nSeatCnt ;

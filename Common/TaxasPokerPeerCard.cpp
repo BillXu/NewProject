@@ -14,9 +14,29 @@ bool CompFunction(CCard* left , CCard* right )
 	return false;
 }
 
-void CTaxasPokerPeerCard::AddCardByCompsiteNum(unsigned char nCardNum )
+CTaxasPokerPeerCard::~CTaxasPokerPeerCard()
 {
-	CCard* pCard = new CCard(nCardNum) ;
+	Reset();
+	for ( auto ptr : m_vReservs )
+	{
+		delete ptr ;
+		ptr = nullptr ;
+	}
+	m_vReservs.clear() ;
+}
+
+CCard* CTaxasPokerPeerCard::AddCardByCompsiteNum(unsigned char nCardNum )
+{
+	CCard* pCard = getReseveCardPtr();
+	if ( pCard == nullptr )
+	{
+		 pCard = new CCard(nCardNum) ;
+	}
+	else
+	{
+		pCard->RsetCardByCompositeNum(nCardNum) ;
+	}
+
 	if ( m_vDefaul.size() < 2 )
 	{
 		m_vDefaul.push_back(pCard) ;
@@ -27,6 +47,7 @@ void CTaxasPokerPeerCard::AddCardByCompsiteNum(unsigned char nCardNum )
 	}
 
 	m_vAllCard.push_back(pCard) ;
+	return pCard ;
 }
 
 const char* CTaxasPokerPeerCard::GetTypeName()
@@ -650,8 +671,7 @@ void CTaxasPokerPeerCard::ClearVecCard(VEC_CARD& vCards )
 	VEC_CARD::iterator iter = vCards.begin() ;
 	for ( ;iter != vCards.end() ; ++iter )
 	{
-		delete *iter ;
-		*iter = NULL ;
+		m_vReservs.push_back(*iter) ;
 	}
 	vCards.clear() ;
 }
@@ -806,17 +826,24 @@ bool CTaxasPokerPeerCard::checkIsSelected(unsigned char nCardNum){
 
 CTaxasPokerPeerCard& CTaxasPokerPeerCard::operator = (CTaxasPokerPeerCard& peerCard )
 {
-	m_vDefaul.clear() ;
-	m_vAllCard.clear();
-	m_vPairs[0].clear() ;
-	m_vPairs[1].clear() ;
-	m_vDefaul.assign(peerCard.m_vDefaul.begin(),peerCard.m_vDefaul.end()) ;
-	m_vAllCard.assign(peerCard.m_vAllCard.begin(),peerCard.m_vAllCard.end()) ;
-	m_vFinalCard.assign(peerCard.m_vFinalCard.begin(),peerCard.m_vFinalCard.end()) ;
-	m_vPairs[0].assign(peerCard.m_vPairs[0].begin(),peerCard.m_vPairs[0].end()) ;
-	m_vPairs[1].assign(peerCard.m_vPairs[1].begin(),peerCard.m_vPairs[1].end()) ;
-	m_strCardName = peerCard.m_strCardName; 
-	m_eType = peerCard.m_eType;
-	nCardCountWhenCaculate = peerCard.nCardCountWhenCaculate;
+	Reset();
+	for ( auto ptr : peerCard.m_vAllCard )
+	{
+		AddCardByCompsiteNum(ptr->GetCardCompositeNum()) ;
+	}
+	CaculateFinalCard();
 	return *this ;
+}
+
+CCard* CTaxasPokerPeerCard::getReseveCardPtr()
+{
+	if ( m_vReservs.empty() )
+	{
+		return nullptr ;
+	}
+
+	auto iter = m_vReservs.begin();
+	auto ptr = *iter ;
+	m_vReservs.erase(iter) ;
+	return ptr ;
 }

@@ -20,12 +20,13 @@ public:
 		std::string strPassword ;
 		std::string strAiFileName;
 		unsigned int  nMinLeftCoin ;
-		float fMustWinRate ; // 100 percent ;
+		unsigned int fMostLeftCoin ; // 100 percent ;
 		unsigned char nApplyLeaveWhenPeerCount ;
 		float fActDelayBegin;
 		float fActDelayEnd ;
 		unsigned int nDstRoomID ;
 		unsigned int nDstGameType ;
+		unsigned short nDstSubIdx ;
 		VEC_WORK_POINT vWorkPoints ;
 	};
 public:

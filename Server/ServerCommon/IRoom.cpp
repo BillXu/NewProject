@@ -23,9 +23,6 @@ IRoom::IRoom()
 	m_vRoomStates.clear();
 	m_pCurRoomState = nullptr ;
 
-
-	m_nCreateTime = 0 ;
-
 	m_nTotalProfit = 0;
 	m_nChatRoomID = 0;
 
@@ -94,7 +91,6 @@ bool IRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, u
 	m_nDeskFree = pConfig->nDeskFee ;
 	m_fDividFeeRate = pConfig->fDividFeeRate ;
 
-	m_nCreateTime = (uint32_t)time(nullptr) ;
 	m_nChatRoomID = 0;
 	m_nTotalProfit = 0 ;
 	prepareState();
@@ -118,9 +114,7 @@ void IRoom::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig
 {
 	m_pRoomMgr = pRoomMgr ;
 	m_nRoomID = nRoomID ;
-	//m_strRewardDesc = vJsValue["rewardDesc"].asCString();
-	m_nCreateTime = 0;
-	m_nTotalProfit = 0;
+	m_nTotalProfit = vJsValue["profit"].asUInt() ;;
 	m_nChatRoomID = vJsValue["chatId"].asUInt() ;
 
 	m_nDeskFree = pConfig->nDeskFee;
@@ -154,6 +148,7 @@ void IRoom::serializationToDB()
 void IRoom::willSerializtionToDB(Json::Value& vOutJsValue)
 {
 	vOutJsValue["chatId"] = m_nChatRoomID ;
+	vOutJsValue["profit"] = m_nTotalProfit ;
 }
 
 uint8_t IRoom::canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer )  // return 0 means ok ;

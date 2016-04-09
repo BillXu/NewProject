@@ -1,9 +1,13 @@
 #include "robotControl.h"
 #include <ctime>
 #include "SitableRoomData.h"
+#include "IScene.h"
+#include "LoginScene.h"
+#include "ClientRobot.h"
 //#define  TIME_CHECK_MODE 2*60
 #define  TIME_CHECK_MODE 5
-#define  TIME_WORK_TIME_HOUR 4
+#define  TIME_WORK_TIME_HOUR 1
+#define  TEMP_HALO_OFFSET 5 
 bool CRobotControl::init( CRobotConfigFile::stRobotItem* pRobot,CSitableRoomData* pRoomData, uint32_t nUserUID )
 {
 	m_bHaveDelayActionTask = false ;
@@ -19,6 +23,7 @@ bool CRobotControl::init( CRobotConfigFile::stRobotItem* pRobot,CSitableRoomData
 	m_pRobotItem = pRobot ;
 	m_pRoomData = pRoomData ;
 	m_nUserUID = nUserUID ;
+	m_nTempHalo = 0 ;
 	printf("robot init uid = %d\n",nUserUID);
 	return true ;
 }
@@ -289,6 +294,7 @@ void CRobotControl::fireDelayAction(uint8_t nActType ,float fDelay,void* pUserDa
 	if ( m_fDelayActionTicket <= 0.00001f )
 	{
 		m_fDelayActionTicket = m_pRobotItem->fActDelayBegin + (rand() % int(m_pRobotItem->fActDelayEnd - m_pRobotItem->fActDelayBegin + 1) ) ;
+		printf("uid = %u rand actTime = %.3f, begin = %.3f end = %.3f\n",getUserUID(),m_fDelayActionTicket,m_pRobotItem->fActDelayBegin,m_pRobotItem->fActDelayEnd);
 	}
 
 	m_pDelayActionUserData = pUserData ;
@@ -297,7 +303,15 @@ void CRobotControl::fireDelayAction(uint8_t nActType ,float fDelay,void* pUserDa
 
 void CRobotControl::doDelayAction(uint8_t nActType ,void* pUserData )
 {
-
+	if ( nActType == (uint8_t)-1 )
+	{
+		// change scene ;
+		auto pScene = getRoomData()->getScene();
+		auto pLogin = new CLoginScene(pScene->getClient());
+		pScene->getClient()->ChangeScene(pLogin) ;
+		printf("change to scene") ;
+		return ;
+	}
 }
 
 bool CRobotControl::onMsg(stMsg* pmsg)
@@ -323,10 +337,18 @@ bool CRobotControl::onMsg(stMsg* pmsg)
 			{
 				// must leave , coin not enough ;
 				printf("coin error , must leave room to take coin \n") ;
+				stMsgPlayerLeaveRoom msgLeaveRoom ;
+				msgLeaveRoom.nRoomID = getRoomData()->getRoomID() ;
+				msgLeaveRoom.nSubRoomIdx = getRoomData()->getSubRoomIdx();
+				msgLeaveRoom.cSysIdentifer = getRoomData()->getTargetSvrPort() ;
+				sendMsg(&msgLeaveRoom,sizeof(msgLeaveRoom));
+				fireDelayAction(-1,4,nullptr) ;
 			}
 			else if ( 4 == pRet->nRet )
 			{
 				printf("uid = %u alreayd sit down ? , i should leave room",getUserUID());
+				m_eState = eRs_StandUp ;
+				m_fCheckStateTicket = 0 ;
 			}
 			else
 			{
@@ -361,4 +383,41 @@ bool CRobotControl::onMsg(stMsg* pmsg)
 		break;
 	}
 	return false ;
+}
+
+void CRobotControl::onGameResult(bool bWin )
+{
+	if ( m_eState != eRs_SitDown )
+	{
+		printf("uid = %u not sit down , why get result inform ?",getUserUID() ) ;
+		return  ;
+	}
+
+	if ( bWin )
+	{
+		m_nTempHalo += TEMP_HALO_OFFSET ;
+	}
+	else
+	{
+		if ( m_nTempHalo <= TEMP_HALO_OFFSET )
+		{
+			m_nTempHalo = 0 ;
+		}
+		else
+		{
+			m_nTempHalo -= TEMP_HALO_OFFSET ;
+		}
+	}
+
+	if ( m_nTempHalo != 0 )
+	{
+		stMsgAddTempHalo msgAddHalo ;
+		msgAddHalo.cSysIdentifer = getRoomData()->getTargetSvrPort() ;
+		msgAddHalo.nRoomID = getRoomData()->getRoomID();
+		msgAddHalo.nSubRoomIdx = getRoomData()->getSubRoomIdx() ;
+		msgAddHalo.nTargetUID = getUserUID() ;
+		msgAddHalo.nTempHalo = m_nTempHalo ;
+		sendMsg(&msgAddHalo,sizeof(msgAddHalo)) ;
+		printf("uid = %u set temp halo = %u gameType = %u",getUserUID(),msgAddHalo.nTempHalo,getRoomData()->getRoomType()) ;
+	}
 }

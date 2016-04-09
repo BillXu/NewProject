@@ -731,6 +731,8 @@ struct stMsgRoomInfo
 	//taxas js {"litBlind":20,"minTakIn":200,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] }	
 
 	// niu niu js {"bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2 };
+	
+	// golden js { "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 };
 };
 
 // enter and leave 

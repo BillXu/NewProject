@@ -193,6 +193,7 @@ void CPlayerMailComponent::SendMailListToClient()
 		--nSize ;
 		msgRet.isFinal = nSize == 0 ;
 		msgRet.tMail.eType = pMail.eType ;
+		msgRet.tMail.nPostTime = pMail.nRecvTime ;
 		msgRet.tMail.nContentLen = pMail.strContent.size() ;
 		if ( pMail.eType <= eMail_RealMail_Begin )
 		{
@@ -465,7 +466,15 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 		break;
 	case Event_AddCoin:
 		{
-			GetPlayer()->GetBaseData()->AddMoney(jArg["addCoin"].asInt());
+			if ( strcmp(jArg["comment"].asCString(),"invitePrize") == 0 )
+			{
+				GetPlayer()->GetBaseData()->addInvitePrize(jArg["addCoin"].asInt());
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %u add invite prize = %u",GetPlayer()->GetUserUID(),jArg["addCoin"].asInt()) ;
+			}
+			else
+			{
+				GetPlayer()->GetBaseData()->AddMoney(jArg["addCoin"].asInt());
+			}
 			CLogMgr::SharedLogMgr()->PrintLog("do give coin uid = %d , coin = %d comment = %s",GetPlayer()->GetUserUID(),jArg["addCoin"].asInt(),jArg["comment"].asCString()) ;
 		}
 		break;

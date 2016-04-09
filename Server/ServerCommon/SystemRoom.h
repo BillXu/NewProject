@@ -44,6 +44,7 @@ public:
 protected:
 	void onRoomOpen();
 	void onRoomClose();
+	void resetProfit();
 	bool isSubRoomClosed();
 	void refreshLastGameRank();
 	REAL_ROOM* getRoomBySession(uint32_t nSessionID );
@@ -514,10 +515,22 @@ void CSystemRoom<TR>::onTimeSave()
 		CLogMgr::SharedLogMgr()->PrintLog("update rank uid = %u , offset = %d",pp->nUserUID,pp->nGameOffset) ;
 	}
 
+	for ( auto pR : m_vRooms )
+	{
+		if ( pR->isRoomInfoDirty() )
+		{
+			m_bRoomInfoDiry = true ;
+		}
+	}
+
 	if ( m_bRoomInfoDiry )
 	{
 		serializationToDB();
 		m_bRoomInfoDiry = false ;
+		for ( auto pR : m_vRooms )
+		{
+			pR->setRoomInfoDirty(false);
+		}
 	}
 }
 
@@ -856,6 +869,15 @@ void CSystemRoom<TR>::onRoomOpen()
 }
 
 template<class TR >
+void CSystemRoom<TR>::resetProfit()
+{
+	for ( auto pr : m_vRooms )
+	{
+		pr->setTotalProfit(0);
+	}
+}
+
+template<class TR >
 void CSystemRoom<TR>::onRoomClose()
 {
 	m_eState = eRoomState_Close ;
@@ -868,6 +890,17 @@ void CSystemRoom<TR>::onRoomClose()
 	// tong ji guanjun 
 	if ( m_vSortedRankItems.empty() )
 	{
+		// save log ;
+		stMsgSaveLog msgLog ;
+		msgLog.nJsonExtnerLen = 0 ;
+		msgLog.nLogType = eLog_MatchResult ;
+		msgLog.nTargetID = getRoomID() ;
+		memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
+		msgLog.vArg[0] = getRoomType() ;
+		msgLog.vArg[1] = m_nTermNumber ;
+		msgLog.vArg[2] = getProfit();
+		m_pRoomMgr->sendMsg(&msgLog,sizeof(msgLog),0);
+		resetProfit();
 		onTimeSave();
 		return  ;
 	}
@@ -916,7 +949,9 @@ void CSystemRoom<TR>::onRoomClose()
 	msgLog.nTargetID = getRoomID() ;
 	memset(msgLog.vArg,0,sizeof(msgLog.vArg)) ;
 	msgLog.vArg[0] = getRoomType() ;
-	msgLog.vArg[1] = getProfit();
+	msgLog.vArg[1] = m_nTermNumber ;
+	msgLog.vArg[2] = getProfit();
+	resetProfit();
 
 	Json::Value arrayLog ;
 	uint8_t logIdx = 0 ;
@@ -1040,7 +1075,7 @@ typename CSystemRoom<TR>::REAL_ROOM_PTR CSystemRoom<TR>::getRoomForPlayerToEnter
 {
 	for ( auto pRoom : m_vRooms )
 	{
-		if ( pRoom->getPlayerCount() < pRoom->getSeatCount() )
+		if ( pRoom->getSitDownPlayerCount() < pRoom->getSeatCount() )
 		{
 			return pRoom ;
 		}

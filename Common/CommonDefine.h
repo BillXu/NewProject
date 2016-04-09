@@ -54,6 +54,7 @@ enum eRoomType
 	eRoom_None,
 	eRoom_TexasPoker = eRoom_None,
 	eRoom_NiuNiu,
+	eRoom_Golden,
 	eRoom_Max ,
 };
 
@@ -112,6 +113,11 @@ enum eRoomState
 	eRoomState_NN_FinalCard,
 	eRoomState_NN_CaculateCard,
 	eRoomState_NN_GameResult,
+
+	// state for golden
+	eRoomState_Golden_Bet,
+	eRoomState_Golden_PK,
+	eRoomState_Golden_GameResult,
 	eRoomState_Max,
 };
 
@@ -170,7 +176,8 @@ enum eRoomPeerState
 	// peer state for taxas poker peer
 	eRoomPeer_SitDown = 1,
 	eRoomPeer_StandUp = 1 << 1,
-	eRoomPeer_StayThisRound = ((1 << 2)|eRoomPeer_SitDown) ,
+	eRoomPeer_Ready =  (1<<12)|eRoomPeer_SitDown ,
+	eRoomPeer_StayThisRound = ((1 << 2)|eRoomPeer_SitDown)| eRoomPeer_Ready ,
 	eRoomPeer_WaitCaculate = ((1 << 7)|eRoomPeer_StayThisRound ),
 	eRoomPeer_AllIn = ((1 << 3)|eRoomPeer_WaitCaculate) ,
 	eRoomPeer_GiveUp = ((1 << 4)|eRoomPeer_StayThisRound),
@@ -180,6 +187,8 @@ enum eRoomPeerState
 	eRoomPeer_LackOfCoin = (1<<9)|eRoomPeer_SitDown,
 	eRoomPeer_WillLeave = (1<<10)|eRoomPeer_StandUp ,
 	eRoomPeer_WillStandUp = (1<<11),
+	eRoomPeer_Looked =  (1<<13)|eRoomPeer_CanAct ,
+	eRoomPeer_PK_Failed = (1<<14)|eRoomPeer_StayThisRound ,
 	eRoomPeer_Max,
 };
 
@@ -324,6 +333,9 @@ enum eRoomLevel
 #define TIME_NIUNIU_PLAYER_CACULATE_CARD 8.0f
 #define TIME_NIUNIU_GAME_RESULT_PER_PLAYER 0.8f
 #define TIME_NIUNIU_GAME_RESULT_EXT 2.2f
+
+// time for golden
+#define TIME_GOLDEN_DISTRIBUTE_CARD_PER_PLAYER 1.0f 
 
 // baccarat define 
 enum eBaccaratBetPort

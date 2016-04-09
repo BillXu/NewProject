@@ -1,6 +1,7 @@
 #include "NiuNiuScene.h"
 #include "Client.h"
 #include "PlayerData.h"
+#include "LoginScene.h"
 CNiuNiuScene::CNiuNiuScene(CClientRobot* pClient)
 	:IScene(pClient)
 {
@@ -20,6 +21,13 @@ bool CNiuNiuScene::OnMessage( Packet* pPacket )
 		return true ;
 	}	
 	stMsg* pMsg = (stMsg*)pPacket->_orgdata ;
+	if ( MSG_PLAYER_LEAVE_ROOM == pMsg->usMsgType )
+	{
+		auto pLogin = new CLoginScene(getClient());
+		getClient()->ChangeScene(pLogin) ;
+		printf("change to login scene") ;
+		return true;
+	}
 	m_tData.onMsg(pMsg);
 	return true ;
 }

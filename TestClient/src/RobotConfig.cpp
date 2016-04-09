@@ -27,9 +27,15 @@ bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
 	}
 	stRobotItem* pItem = new stRobotItem ;
 	pItem->nRobotID = refReaderRow["RobotID"]->IntValue();
-	pItem->fMustWinRate = refReaderRow["MustWinRate"]->FloatValue();
+	pItem->fMostLeftCoin = refReaderRow["MostLeftCoin"]->IntValue();
 	pItem->nApplyLeaveWhenPeerCount = refReaderRow["LeaveWhenPlayerCount"]->IntValue();
 	pItem->nMinLeftCoin = refReaderRow["MinLeftCoin"]->IntValue();
+
+	if ( pItem->nMinLeftCoin >= pItem->fMostLeftCoin )
+	{
+		printf("robot coin range error , robot id = %u\n",pItem->nRobotID) ;
+		pItem->fMostLeftCoin = pItem->nMinLeftCoin + 10000; 
+	}
 	pItem->strAccount = refReaderRow["RobotAccount"]->StringValue();
 	pItem->strPassword = refReaderRow["RobotPassword"]->StringValue();
 	pItem->strAiFileName = refReaderRow["AiFileName"]->StringValue();
@@ -37,6 +43,7 @@ bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
 	pItem->fActDelayEnd = refReaderRow["ActDelayEnd"]->FloatValue() ;
 	pItem->nDstRoomID = refReaderRow["dstRoomID"]->IntValue();
 	pItem->nDstGameType = refReaderRow["nDstGameType"]->IntValue() ;
+	pItem->nDstSubIdx = refReaderRow["dstSubRoomIdx"]->IntValue() ;
 	pItem->fActDelayBegin = pItem->fActDelayBegin < pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
 	pItem->fActDelayEnd = pItem->fActDelayBegin > pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
 

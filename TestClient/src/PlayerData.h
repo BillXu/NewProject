@@ -27,6 +27,7 @@ public:
 	bool isLackOfCoin(){ return m_bIsLackOfCoin ; }
 	void setIsLackOfCoin( bool isLack ){ m_bIsLackOfCoin = isLack ;}
 	CRobotConfigFile::stRobotItem* getConfigItem(){ return pRobotItem ;}
+	bool isLogined(){ return stBaseData.nUserUID > 0 ;}
 public:
 	unsigned int nSessionID ;
 	stCommonBaseData stBaseData ;

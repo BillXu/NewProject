@@ -427,7 +427,10 @@ void CNiuNiuRoom::caculateGameResult()
 
 		nBankerOffset -= nBankerLoseCoin ;
 		pBanker->setCoin(pBanker->getCoin() - nBankerLoseCoin ) ;
-		float nWithoutTaxWin = nBankerLoseCoin * (1-getChouShuiRate()) ;
+		float fTaxFee = (float)nBankerLoseCoin * getChouShuiRate();
+		addTotoalProfit(fTaxFee);
+		float nWithoutTaxWin = nBankerLoseCoin - fTaxFee ;
+
 		pNNP->setCoin(pNNP->getCoin() + (int32_t)nWithoutTaxWin ) ;
 		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , uid = %u without tax win = %0.3f",getRoomID(),pNNP->getUserUID(),nWithoutTaxWin) ;
 
@@ -443,9 +446,11 @@ void CNiuNiuRoom::caculateGameResult()
 		pNNP->increaseWinTimes();
 	}
 
-	if ( nBankerOffset > 0 )
+	if ( nBankerOffset > (int32_t)0 )
 	{
-		nBankerOffset = (int32_t)(nBankerOffset * ( 1 - getChouShuiRate() ));
+		float fTaxFee = (float)nBankerOffset * getChouShuiRate();
+		addTotoalProfit((uint32_t)fTaxFee);
+		nBankerOffset = nBankerOffset - (int32_t)fTaxFee ;
 		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , banker uid = %u without tax win = %d",getRoomID(),pBanker->getUserUID(),nBankerOffset) ;
 	}
 
@@ -458,7 +463,7 @@ void CNiuNiuRoom::caculateGameResult()
 	{
 		getDelegate()->onUpdatePlayerGameResult(this,pBanker->getUserUID(),item.nOffsetCoin);
 	}
-	if ( item.nOffsetCoin > 0 )
+	if ( item.nOffsetCoin > (int32_t)0 )
 	{
 		pBanker->increaseWinTimes();
 	}

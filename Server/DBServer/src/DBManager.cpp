@@ -224,7 +224,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			uint16_t nRandID = rand() % 10000 ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"call CreateNewRegisterPlayerData(%d,'guest%d','%d')",pCreate->nUserUID,nRandID,pCreate->isRegister) ;
+				"call CreateNewRegisterPlayerDataNew(%d,'guest%d','%d')",pCreate->nUserUID,nRandID,pCreate->isRegister) ;
 		}
 		break;
 	case MSG_DB_CHECK_INVITER:

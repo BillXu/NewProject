@@ -135,12 +135,6 @@ struct stRoomGoldenDataOnly
 	bool bCanDoublePK ;
 };
 
-struct stGoldenHoldPeerCard
-{
-	unsigned char nIdx ;
-	unsigned char vCard[GOLDEN_PEER_CARD];
-};
-
 // taxpoker peer 
 //struct stTaxasPeerData
 //	:public stPeerBaseData

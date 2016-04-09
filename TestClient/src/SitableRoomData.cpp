@@ -38,12 +38,13 @@ void CSitableRoomData::init(IScene* pScene )
 	m_pRobot->init( pScene->getClient()->GetPlayerData()->getConfigItem(),this,pScene->getClient()->GetPlayerData()->getUserUID()) ;
 }
 
-void CSitableRoomData::setBaseInfo(uint32_t nRoomID, uint8_t nSeatCnt, uint32_t nDeskFee, uint8_t nRoomState)
+void CSitableRoomData::setBaseInfo(uint32_t nRoomID, uint8_t nSeatCnt, uint32_t nDeskFee, uint8_t nRoomState,uint8_t nSubRoomIdx)
 {
 	m_nDeskFee = nDeskFee ;
 	m_nRoomID = nRoomID ;
 	m_nSeatCount = nSeatCnt ;
 	m_nRoomState = nRoomState ;
+	m_nSubRoomIdx = nSubRoomIdx ;
 	memset(m_vSitDownPlayer,0,sizeof(m_vSitDownPlayer)) ;
 	getRobotControl()->onReicvedRoomData();
 }
@@ -102,6 +103,13 @@ bool CSitableRoomData::onMsg(stMsg* pmsg )
 			if ( pRet->nNewState == eRoomState_Close )
 			{
 				m_isActive = false ;
+
+				stMsgPlayerLeaveRoom msgLeave ;
+				msgLeave.cSysIdentifer = getTargetSvrPort() ;
+				msgLeave.nRoomID = getRoomID() ;
+				msgLeave.nSubRoomIdx = getSubRoomIdx() ;
+				sendMsg(&msgLeave,sizeof(msgLeave)) ;
+				printf("room closed just leave this room\n") ;
 			}
 			else if ( eRoomState_WaitJoin == pRet->nNewState )
 			{

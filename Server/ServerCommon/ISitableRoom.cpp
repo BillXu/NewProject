@@ -510,3 +510,23 @@ void ISitableRoom::doProcessNewPlayerHalo()
 #endif // !NDEBUG
 
 }
+
+uint8_t ISitableRoom::GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate )
+{
+	auto seatCnt = getSeatCount() ;
+	for ( uint8_t nIdx = nIdxFromInclude ; nIdx < seatCnt * 2 ; ++nIdx )
+	{
+		uint8_t nRealIdx = nIdx % seatCnt ;
+		if ( getPlayerByIdx(nRealIdx) == nullptr )
+		{
+			continue;
+		}
+
+		if ( getPlayerByIdx(nRealIdx)->isHaveState(estate) )
+		{
+			return nRealIdx ;
+		}
+	}
+	CLogMgr::SharedLogMgr()->ErrorLog("why don't have peer with state = %d",estate ) ;
+	return 0 ;
+}

@@ -41,7 +41,7 @@ CTaxasAINode* CTaxasAINode::getNodeFromMap(MAP_TAXASAINODE& vMap, int nKey )
 
 	for ( ; iter != vMap.end(); ++iter  )
 	{
-		if ( iter->first <= nKey )
+		if ( iter->first >= nKey )
 		{
 			pNodeFind = iter->second ;
 			MAP_TAXASAINODE::iterator iterForward = iter;
@@ -58,6 +58,7 @@ CTaxasAINode* CTaxasAINode::getNodeFromMap(MAP_TAXASAINODE& vMap, int nKey )
 		}
 	}
 	--iter ;
+	printf("can not find proper strage too big times = %u\n",nKey);
 	return iter->second ;
 }
 

@@ -1,1291 +1,336 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--ActionType = Follow, Add ,Pass,ALLIn-->
-<!--控制参数说明：
-  cardType：表示牌型，如同花顺，顺子，两对，三条
-  KeyCard: faceValue表示当前牌型的最终牌型中，玩家手牌起到最大作用的牌（如：手牌为A，8. 最终牌型是 8，8，a，3，2. 此时faceValue = 8. 因为这个牌型中8的作用更大），如果为0，说明最终牌型里面，没有玩家的手牌。
-  HoldCardContribute： 形成所处牌型的过程中，手牌贡献了多少张牌，贡献越多，说明优势越大。当贡献牌 = 0 ，那么faceValue中表示的手牌提供的非关键牌，（如：手牌为3，A. 最终牌型是 8，8，a，3，2. 此时faceValue = A. 因为这个牌型中手牌贡献为0，A 是最大贡献牌）。
-  BetTimes： 表示当前最大下注额是大盲注的倍数，倍数越高，说明大家拼的情绪比较高。
-  addLowLimit， addTopLimit： 当时加注的时候，在最低加注额之上，上浮多少个盲注倍数。
-  
- 执行流程：调用者提供，牌型（cardType），手牌对牌型的贡献值张数(contributeCnt)，对最终牌型影响最大的牌面值（faceValue），当前本轮最大下注额是盲注的多少倍（timesBlind）。
- 第一步：找到相应的Round，第二步：锁定相应的 cardType。 第三步：寻找所有faceValue配置中，比faceValue参数小的里面，最大的配置，应用之。（如：配置里只配置了，2，8。 那么 [2,8) 都取2，[8,14] 都去14）
- 第四步：根据timesBlind参数从小到大，从左到右的排序配置，选择自己或者其最左边第一个。第三步同样的意思。 
- 备注：如果第三和第四不的选择配置里只有一个，那么默认那一样。如果为空就报错。
-  -->
-<root version ="1.0">
-  <!--round1 config, zhi you liang zhang pai-->
-  <Round nCount = "0">
-    <!--yi dui -->
-    <CardType caType ="8" cardname ="yi dui" >
-        <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-          <!--hold card contribute card count for fianl key cardType,  14 means A -->
-          <HoldCardContribute count ="2">
-            <!--BetTimes curMostBetCoin times bigBlindCoin -->
-            <BetTimes nTimes ="0" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit ="1" addTopLimit ="20"/>
-            <BetTimes nTimes ="10" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          </HoldCardContribute>
-        </KeyCard>
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-            <BetTimes nTimes ="0" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit ="1" addTopLimit ="20"/>
-            <BetTimes nTimes ="10" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+<root version="1.0">
+  <Round nCount="0">
+    <CardType caType="9">
+      <KeyCard faceValue="8">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="80" Follow="15" Pass="85" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="20" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="40" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+        </HoldCardContribute>
+      </KeyCard>
+      <KeyCard faceValue="12">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="30" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="55" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="80" Follow="20" Pass="80" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
-
-    <!--tong hua -->
-    <CardType caType ="4" cardname ="tong hua" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="5">
+      <KeyCard faceValue="6">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="85" Follow="20" Pass="80" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="55" Follow="60" Pass="40" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="35" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
         </HoldCardContribute>
       </KeyCard>
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-    </CardType>
-
-    <!--liang zhang lei si shun zi  -->
-    <CardType caType ="5" cardname ="shun zi" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="12">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="50" Follow="65" Pass="30" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="20" Follow="87" Pass="8" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="10" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="40" Follow="90" Pass="5" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="80" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
-
-    <!--gao pai  -->
-    <CardType caType ="9" cardname ="pu tong gao pai" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="4">
+      <KeyCard faceValue="8">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="40" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="20" Follow="92" Pass="0" ALLIn="0" Add="8" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="10" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="80" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
         </HoldCardContribute>
       </KeyCard>
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="80" Follow="75" Pass="25" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="60" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="6" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
-    
-  </Round>
-  <!--round2 config 3 public card-->
-  <Round nCount = "1">
-    <!--yi dui -->
-    <CardType caType ="8" cardname ="yi dui" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="8">
+      <KeyCard faceValue="8">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="30" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="50" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="99" Follow="80" Pass="20" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="100" Follow="60" Pass="40" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="40" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="100" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
       </KeyCard>
-      
-    </CardType>
-    <!--liang dui -->
-    <CardType caType ="7" cardname ="liang dui" >
-      <!--如果是两对，至少有一张牌，来自于手牌，这里展示的faceValue ，来自于玩家贡献的那对，例如，22，44，5。玩家手牌，是2，6 那么这里的值就是2 ， 而不是4，因为决策主因是自己的牌 -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="0" Pass="80" ALLIn="0" Add="20" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="20" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--3 tiao -->
-    <CardType caType ="6" cardname ="3 tiao" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--hu lu -->
-    <CardType caType ="3" cardname ="hu lu" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--si tiao -->
-    <CardType caType ="2" cardname ="si tiao" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--shun zi -->
-    <CardType caType ="5" cardname ="shun zi" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--tong hua -->
-    <CardType caType ="4" cardname ="tong hua" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--tong hua shun -->
-    <CardType caType ="1" cardname ="tong hua shun" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--gao pai, 4 tong hua -->
-    <CardType caType ="10" cardname ="gao pai 4 tong hua" >
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--gao pai, 4 shun zi -->
-    <CardType caType ="11" cardname ="gao pai 4 shun zi" >
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--gao pai, pu tong -->
-    <CardType caType ="9" cardname ="gao pai" >
-      <KeyCard faceValue ="2">
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
     </CardType>
   </Round>
-  <!--round3 config 4 public -->
-  <Round nCount = "2">
-    <!--yi dui -->
-    <CardType caType ="8" cardname ="yi dui" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+  <Round nCount="1">
+    <CardType caType="9">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="50" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="30" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="10" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="30" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="40" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="80" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
         </HoldCardContribute>
       </KeyCard>
-
     </CardType>
-    <!--liang dui -->
-    <CardType caType ="7" cardname ="liang dui" >
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="10">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="40" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="50" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="100" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="1">
+          <BetTimes nTimes="80" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="50" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="35" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="0">
+          <BetTimes nTimes="10" Follow="99" Pass="0" ALLIn="0" Add="1" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="20" Follow="89" Pass="10" ALLIn="0" Add="1" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="50" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="1">
+          <BetTimes nTimes="20" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="50" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="65" Pass="35" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="70" Follow="60" Pass="40" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
     </CardType>
-    <!--3 tiao -->
-    <CardType caType ="6" cardname ="3 tiao" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="11">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="1">
+          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="20" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="40" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="30" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="45" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="60" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
     </CardType>
-    <!--hu lu -->
-    <CardType caType ="3" cardname ="hu lu" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="7">
+      <KeyCard faceValue="8">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="50" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="65" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
-        
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="1">
+          <BetTimes nTimes="100" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="40" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="100" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="60" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="6" />
         </HoldCardContribute>
-        
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="1">
+          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="80" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="100" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
         </HoldCardContribute>
       </KeyCard>
-
     </CardType>
-    <!--si tiao -->
-    <CardType caType ="2" cardname ="si tiao" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="5">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="50" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="70" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="100" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="1">
+          <BetTimes nTimes="100" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="92" Pass="8" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="55" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="100" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="40" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="60" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="6" />
         </HoldCardContribute>
       </KeyCard>
-
     </CardType>
-    <!--shun zi -->
-    <CardType caType ="5" cardname ="shun zi" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="1">
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="80" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="50" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--tong hua -->
-    <CardType caType ="4" cardname ="tong hua" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--tong hua shun -->
-    <CardType caType ="1" cardname ="tong hua shun" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--gao pai, 4 tong hua -->
-    <CardType caType ="10" cardname ="gao pai 4 tong hua" >
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--gao pai, 4 shun zi -->
-    <CardType caType ="11" cardname ="gao pai 4 shun zi" >
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-    </CardType>
-    <!--gao pai, pu tong -->
-    <CardType caType ="9" cardname ="gao pai" >
-      <KeyCard faceValue ="2">
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
     </CardType>
   </Round>
-  <!--round4 config 5 public-->
-  <Round nCount = "3">
-    <!--yi dui -->
-    <CardType caType ="8" cardname ="yi dui" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+  <Round nCount="2">
+    <CardType caType="9">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="20" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="10" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="25" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="40" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="50" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
         </HoldCardContribute>
       </KeyCard>
-
     </CardType>
-    <!--liang dui -->
-    <CardType caType ="7" cardname ="liang dui" >
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="6">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="40" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="25" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="0">
+          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="40" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="60" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="50" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="20" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
     </CardType>
-    <!--3 tiao -->
-    <CardType caType ="6" cardname ="3 tiao" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="1">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="40" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="100" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="1">
+          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
     </CardType>
-    <!--hu lu -->
-    <CardType caType ="3" cardname ="hu lu" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="10">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="20" Follow="75" Pass="25" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="35" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="40" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
     </CardType>
-    <!--si tiao -->
-    <CardType caType ="2" cardname ="si tiao" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="11">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="26" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="10" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="15" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="50" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
     </CardType>
-    <!--shun zi -->
-    <CardType caType ="5" cardname ="shun zi" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+  </Round>
+  <Round nCount="3">
+    <CardType caType="9">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="20" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="10" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="25" Follow="1" Pass="99" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="20" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="30" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="40" Follow="15" Pass="85" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="50" Follow="0" Pass="100" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="0">
+          <BetTimes nTimes="10" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
         </HoldCardContribute>
       </KeyCard>
-
     </CardType>
-    <!--tong hua -->
-    <CardType caType ="4" cardname ="tong hua" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="6">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="85" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="70" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="40" Follow="85" Pass="0" ALLIn="5" Add="10" addLowLimit="2" addTopLimit="6" />
         </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="0">
+          <BetTimes nTimes="50" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="60" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="40" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="2" Add="3" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="70" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
     </CardType>
-    <!--tong hua shun -->
-    <CardType caType ="1" cardname ="tong hua shun" >
-      <!--means yi dui 2 ,  14 means A -->
-      <KeyCard faceValue ="2">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+    <CardType caType="1">
+      <KeyCard faceValue="9">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="40" Follow="80" Pass="0" ALLIn="5" Add="15" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="60" Follow="88" Pass="0" ALLIn="2" Add="10" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="0">
+          <BetTimes nTimes="15" Follow="90" Pass="0" ALLIn="5" Add="5" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="30" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="50" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="6" />
         </HoldCardContribute>
       </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <!--hold card contribute card count for fianl key cardType,  14 means A -->
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+      <KeyCard faceValue="14">
+        <HoldCardContribute count="2">
+          <BetTimes nTimes="35" Follow="70" Pass="0" ALLIn="0" Add="30" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="55" Follow="70" Pass="0" ALLIn="10" Add="20" addLowLimit="2" addTopLimit="7" />
         </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
+        <HoldCardContribute count="0">
+          <BetTimes nTimes="50" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="25" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="7" />
         </HoldCardContribute>
       </KeyCard>
-
-    </CardType>
-    <!--gao pai, pu tong -->
-    <CardType caType ="9" cardname ="gao pai" >
-      <KeyCard faceValue ="2">
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
-      <!--means yi dui 8 ,  14 means A -->
-      <KeyCard faceValue ="8">
-        <HoldCardContribute count ="0">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="1">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-        <HoldCardContribute count ="2">
-          <!--BetTimes curMostBetCoin times bigBlindCoin -->
-          <BetTimes nTimes ="0" Follow="80" Pass="10" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-          <BetTimes nTimes ="10" Follow="60" Pass="30" ALLIn="0" Add="10" addLowLimit ="1" addTopLimit ="20"/>
-        </HoldCardContribute>
-      </KeyCard>
-
     </CardType>
   </Round>
 </root>

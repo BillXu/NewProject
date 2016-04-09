@@ -43,12 +43,15 @@ public:
 	virtual uint32_t getTakeInCoinWhenSitDown() = 0 ;
 	uint32_t getUserUID(){ return m_nUserUID ;}
 	CSitableRoomData* getRoomData(){ return m_pRoomData ; }
-private:
+	virtual void onGameResult(bool bWin );
+protected:
 	void standUp();
+private:
 	void sitDown();
 	void updateCheckState( float fdeta );
 protected:
 	void checkMode( float fdeta );
+	uint8_t getTempHalo(){ return m_nTempHalo ;}
 private:
 	uint32_t m_nUserUID ;
 	CSitableRoomData* m_pRoomData ;
@@ -70,4 +73,6 @@ private:
 
 	// idle mode 
 	time_t m_nStartWorkTime ;
+
+	uint8_t m_nTempHalo ;
 };

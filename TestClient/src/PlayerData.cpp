@@ -10,6 +10,13 @@ bool CPlayerData::OnMessage( Packet* pMsg )
 		memcpy(&stBaseData,&pRet->stBaseData,sizeof(stBaseData));
 
 	}
+
+	if ( pmsg->usMsgType == MSG_PLAYER_UPDATE_MONEY )
+	{
+		stMsgPlayerUpdateMoney* pRet = (stMsgPlayerUpdateMoney*)pMsg;
+		stBaseData.nCoin = pRet->nFinalCoin ;
+	}
+ 
 	return false ;
 }
 

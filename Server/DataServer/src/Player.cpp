@@ -347,6 +347,16 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 			msgBack.cRet = 0 ;
 			msgBack.nFinalCoin = GetBaseData()->GetAllCoin();
 			SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
+
+			// save log 
+			stMsgSaveLog msgLog ;
+			memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+			msgLog.nJsonExtnerLen = 0 ;
+			msgLog.nLogType = eLog_RobotAddCoin ;
+			msgLog.nTargetID = GetUserUID() ;
+			memset(msgLog.vArg,0,sizeof(msgLog.vArg));
+			msgLog.vArg[0] = pAdd->nWantCoin ;
+			SendMsgToClient((char*)&msgLog,sizeof(msgLog));
 		}
 		break;
 // 	case MSG_REQUEST_RANK:

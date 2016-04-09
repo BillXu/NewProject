@@ -25,9 +25,9 @@ public:
 public:
 	typedef std::vector<CCard*> VEC_CARD ;
 public:
-	CTaxasPokerPeerCard(){Reset();}
-	~CTaxasPokerPeerCard(){Reset();}
-	void AddCardByCompsiteNum(unsigned char nCardNum );
+	CTaxasPokerPeerCard(){Reset(); m_vReservs.clear() ;}
+	~CTaxasPokerPeerCard();
+	CCard* AddCardByCompsiteNum(unsigned char nCardNum );
 	char PK(CTaxasPokerPeerCard* pPeerCard );  // -1 failed 0 same , 1 win ;
 	const char* GetTypeName();
 	eCardType GetCardType();
@@ -47,6 +47,7 @@ protected:
 	void CheckShunZi(VEC_CARD& AllCard , bool bSpecailA, VEC_CARD& vResultChardOut );
 	void robotCheck4ShunZi( VEC_CARD& AllCard , bool bSpecailA, VEC_CARD& vResultChardOut );
 	unsigned char robotGetContribute(VEC_CARD& vFinalCard, VEC_CARD& vCheckCard, unsigned char& vOutKeyCardFaceNum );
+	CCard* getReseveCardPtr();
 protected:
 	VEC_CARD m_vDefaul ;
 	VEC_CARD m_vAllCard ;
@@ -55,4 +56,6 @@ protected:
 	std::string m_strCardName ; 
 	eCardType m_eType ;
 	unsigned char nCardCountWhenCaculate ;
+
+	VEC_CARD m_vReservs;
 };

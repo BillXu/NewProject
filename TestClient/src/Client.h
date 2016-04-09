@@ -11,7 +11,7 @@ class CClientRobot
 public:
 	CClientRobot();
 	~CClientRobot();
-	bool Init(const char* pIPString, unsigned short nPort = 50001 );
+	bool Init(const char* pIPString, unsigned short nPort = 50002 );
 	virtual void __run(){ Run();delete this ;}
 	void Run();
 	CPlayerData* GetPlayerData(){return m_pPlayerData ;}

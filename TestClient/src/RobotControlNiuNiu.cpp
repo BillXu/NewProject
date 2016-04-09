@@ -47,7 +47,9 @@ void CRobotControlNiuNiu::informRobotAction(uint8_t nActType)
 		break;
 	case eAct_CaculateCards:
 		{
-
+			float nRate = (float)rand() / float(RAND_MAX);
+			nRate = 2.3f + nRate * 4.0f ;
+			fireDelayAction(nActType,nRate,nullptr);
 		}
 		break;
 	default:
@@ -125,10 +127,11 @@ void CRobotControlNiuNiu::doDelayAction(uint8_t nActType,void* pUserData )
 		stMsgNNPlayerTryBanker msgTryBanker ;
 		msgTryBanker.nRoomID = getRoomData()->getRoomID() ;
 		msgTryBanker.nTryBankerBetTimes = nTryTimes ;
+		msgTryBanker.nSubRoomIdx = getRoomData()->getSubRoomIdx() ;
 		sendMsg(&msgTryBanker,sizeof(msgTryBanker)) ;
 		printf("i do try banker times = %d \n",nTryTimes) ;
 	}
-	else if ( nActType = eAct_Bet ) // bet 
+	else if ( nActType == eAct_Bet ) // bet 
 	{
 		bool bHaveNiu = ((stNiuNiuData*)getRoomData())->isHaveNiu(getSeatIdx());
 		// 5 , 10 , 15 , 20, 25 
@@ -166,9 +169,19 @@ void CRobotControlNiuNiu::doDelayAction(uint8_t nActType,void* pUserData )
 		stMsgNNPlayerBet msgBet ;
 		msgBet.nRoomID = getRoomData()->getRoomID() ;
 		msgBet.nBetTimes = nBetTimes ;
+		msgBet.nSubRoomIdx = getRoomData()->getSubRoomIdx() ;
 		sendMsg(&msgBet,sizeof(msgBet)) ;
 		printf("i do bet , times = %d\n",nBetTimes) ;
 	}
+	else if ( eAct_CaculateCards == nActType )
+	{
+		stMsgNNPlayerCaculateCardOk msg ;
+		msg.nRoomID = getRoomData()->getRoomID() ;
+		msg.nSubRoomIdx = getRoomData()->getSubRoomIdx() ;
+		sendMsg(&msg,sizeof(msg)) ;
+		printf("i do caculate card ok\n");
+	}
+	CRobotControl::doDelayAction(nActType,pUserData);
 }
 
 

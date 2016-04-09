@@ -42,4 +42,7 @@ public:
 	uint64_t  nCurMainBetPool ;
 	uint64_t  nMostBetCoinThisRound;
 	uint8_t vPublicCardNums[TAXAS_PUBLIC_CARD] ;
+
+	// 
+	bool bRobotWin ;
 };

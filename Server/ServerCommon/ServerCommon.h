@@ -17,13 +17,14 @@ enum  eLogType
 	eLog_DeductionMoney,  // nTargetID = userUID , var[0] = isCoin , var[1] = DeductionCnt, var[2] final coin, var[3] finalDiamond, var[4] subType, var[5] subarg ;
 	eLog_ResetPassword,
 	eLog_NiuNiuGameResult, // nTargetID = room id , vArg[0] = bankerUID , vArg[1] = banker Times, vArg[2] = finalBottomBet, externString: {[ {uid:234,idx:2,betTimes:4456,card0:23,card1:23,card2:23,card3:23,card4:23,offset:-32,coin:23334 },{ ... },{ ... }] } 
-	eLog_MatchResult, // nTargetID = room id , var[0] = room type , var[1] room profit;
+	eLog_MatchResult, // nTargetID = room id , var[0] = room type ,var[1] = termNumber, var[2] room profit;
 	eLog_PlayerSitDown, // nTargetID = playerUID , var[0] = room type , var[1] = roomID  , var[2] = coin;
 	eLog_PlayerStandUp, // nTargetID = playerUID , var[0] = room type , var[1] = roomID  , var[2] = coin; 
 	eLog_GetCharity,   // nTargetID = playerUID , var[0] = final coin ;
 	eLog_PlayerLogOut, // nTargetID = playerUID , var[0] = final Coin ;
 	eLog_Purchase, // nTargetID = playerUID , var[0] = final Coin ; var[1] = shop item id ;
 	eLog_ExchangeOrder, // nTargetID = playerUID , var[0] exchange configID {playerName : "guest1145", excDesc : "this is fee card", remark : "my phone number is xxxxx" }
+	eLog_RobotAddCoin, // nTargetID = robotUID , var[0] offset coin ; < 0  means save coin to banker, > 0 means add coin to robot ; 
 	eLog_Max,
 };
 
@@ -51,6 +52,7 @@ enum eServerType
 	eSvrType_Data,
 	eSvrType_Taxas,
 	eSvrType_NiuNiu,
+	eSvrType_Golden,
 	eSvrType_Max,
 };
 
