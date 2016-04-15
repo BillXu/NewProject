@@ -16,7 +16,9 @@ public:
 	virtual void addCompositCardNum( uint8_t nCardCompositNum ) = 0 ;
 	virtual  const char* getNameString() = 0 ;
 	virtual  uint32_t getWeight() = 0 ;
-	PK_RESULT pk( IPeerCard* pTarget )
+	virtual IPeerCard* swap(IPeerCard* pTarget) = 0;
+	virtual uint8_t getCardByIdx(uint8_t nidx ) = 0 ;
+	virtual PK_RESULT pk( IPeerCard* pTarget )
 	{
 		assert(pTarget && "pk target is null" );
 		if ( getWeight() > pTarget->getWeight() )
@@ -32,16 +34,16 @@ public:
 
 	bool operator < (IPeerCard& refTarget )
 	{
-		return getWeight() < refTarget.getWeight() ;
+		return pk(&refTarget) == PK_RESULT_FAILED ;
 	}
 
 	bool operator > (IPeerCard& refTarget)
 	{
-		return getWeight() > refTarget.getWeight() ;
+		return pk(&refTarget) == PK_RESULT_WIN ;
 	}
 
 	bool operator == (IPeerCard& refTarget)
 	{
-		return getWeight() == refTarget.getWeight() ;
+		return pk(&refTarget) == PK_RESULT_EQUAL ;
 	}
 };

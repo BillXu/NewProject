@@ -172,6 +172,17 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			CLogMgr::SharedLogMgr()->SystemLog("Data server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
+	case MSG_VERIFY_GOLDEN:
+		{
+			if ( m_vTargetServers[eSvrType_Golden] != INVALID_CONNECT_ID )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Taxas close pre connect ") ;
+				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Golden]);
+			}
+			m_vTargetServers[eSvrType_Golden] = pData->_connectID;
+			CLogMgr::SharedLogMgr()->SystemLog("Golden server connected ip = %s",strIP.c_str()) ;
+		}
+		break;
 	case MSG_VERIFY_TAXAS:
 		{
 			if ( m_vTargetServers[eSvrType_Taxas] != INVALID_CONNECT_ID )
@@ -420,6 +431,7 @@ const char* CCenterServerApp::GetServerDescByType(eServerType eType )
 		"eSvrType_Data",
 		"eSvrType_Taxas",
 		"eSvrType_NiuNiu",
+		"eSvrType_Golden",
 		"eSvrType_Max",
 	} ;
 	
@@ -517,6 +529,11 @@ eServerType CCenterServerApp::GetServerTypeByMsgTarget(uint16_t nTarget)
 	case ID_MSG_PORT_NIU_NIU:
 		{
 			return eSvrType_NiuNiu;
+		}
+		break;
+	case ID_MSG_PORT_GOLDEN:
+		{
+			return eSvrType_Golden;
 		}
 		break;
 	default:

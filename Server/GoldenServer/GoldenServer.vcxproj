@@ -125,7 +125,9 @@
     <ClInclude Include="..\..\Common\CommonDefine.h" />
     <ClInclude Include="..\..\Common\ConfigReader.h" />
     <ClInclude Include="..\..\Common\GoldenMessageDefine.h" />
+    <ClInclude Include="..\..\Common\GoldenPeerCardAdapter.h" />
     <ClInclude Include="..\..\Common\IConfigFile.h" />
+    <ClInclude Include="..\..\Common\IPeerCard.h" />
     <ClInclude Include="..\..\Common\LogManager.h" />
     <ClInclude Include="..\..\Common\MessageDefine.h" />
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />

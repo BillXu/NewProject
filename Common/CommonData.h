@@ -51,7 +51,7 @@ struct stCommonBaseData
 	:public stPlayerDetailData
 {
 	int64_t nYesterdayCoinOffset ;
-	int64_t nTodayCoinOffset ;
+	int64_t nTodayGameCoinOffset ;
 	uint32_t nInviteUID ;
 	uint8_t nCardType ;  // eVipCardType 
 	uint32_t nCardEndTime ;
@@ -63,6 +63,7 @@ struct stServerBaseData
 {
 	uint32_t nContinueDays ;
 	uint32_t tLastLoginTime;
+	int32_t  nTotalGameCoinOffset ;
 	uint32_t tLastTakeCharityCoinTime ;
 	uint8_t nTakeCharityTimes ;
 	bool isRegister ;

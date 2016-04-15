@@ -11,6 +11,8 @@
 #include "SeverUtility.h"
 #include <time.h>
 #include "IRoomDelegate.h"
+#include <algorithm>
+#include "IPeerCard.h"
 ISitableRoom::~ISitableRoom()
 {
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
@@ -118,6 +120,13 @@ void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 	pPlayer->willStandUp();
 	m_vSitdownPlayers[pPlayer->getIdx()] = nullptr ;
 	auto standPlayer = getPlayerByUserUID(pPlayer->getUserUID()) ;
+	
+	if ( pPlayer->isHaveState(eRoomPeer_StayThisRound) )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d invoke game end , before stand up",pPlayer->getUserUID()) ;
+		pPlayer->onGameEnd();
+	}
+
 	if ( standPlayer == nullptr )
 	{
 		if ( pPlayer->getCoin() > 0 )
@@ -131,6 +140,7 @@ void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 			msgdoLeave.nPlayerTimes = pPlayer->getPlayTimes() ;
 			msgdoLeave.nSingleWinMost = pPlayer->getSingleWinMost() ;
 			msgdoLeave.nUserUID = pPlayer->getUserUID() ;
+			msgdoLeave.nGameOffset = pPlayer->getTotalGameOffset() ;
 			sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pPlayer->getSessionID()) ;
 			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d game end stand up sys coin = %d to data svr ",pPlayer->getUserUID(),pPlayer->getCoin()) ;
 		}
@@ -145,6 +155,7 @@ void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 		standPlayer->nNewPlayerHaloWeight = pPlayer->getHaloWeight() ;
 		standPlayer->nPlayerTimes += pPlayer->getPlayTimes();
 		standPlayer->nWinTimes += pPlayer->getWinTimes();
+		standPlayer->nGameOffset += pPlayer->getTotalGameOffset() ;
 		if ( pPlayer->getSingleWinMost() > standPlayer->nSingleWinMost )
 		{
 			standPlayer->nSingleWinMost = pPlayer->getSingleWinMost() ;
@@ -307,11 +318,11 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 				break;
 			}
 
-			if ( pPlayer->nPlayerType == ePlayer_Normal )
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("normal can not add temp halo");
-				break;
-			}
+			//if ( pPlayer->nPlayerType == ePlayer_Normal )
+			//{
+			//	CLogMgr::SharedLogMgr()->ErrorLog("normal can not add temp halo");
+			//	break;
+			//}
 
 			stMsgAddTempHalo* pRet = (stMsgAddTempHalo*)prealMsg ;
 			if ( 0 == pRet->nTargetUID )
@@ -418,14 +429,25 @@ void ISitableRoom::onGameDidEnd()
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
 	{
 		auto pPlayer = m_vSitdownPlayers[nIdx] ;
-		if ( pPlayer && (pPlayer->isDelayStandUp() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
+		if ( pPlayer == nullptr )
+		{
+			continue;
+		}
+
+		if ( pPlayer->isHaveState(eRoomPeer_StayThisRound) && getDelegate() )
+		{
+			getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),pPlayer->getGameOffset()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("update room peer offset uid = %u, offset = %d",pPlayer->getUserUID(),pPlayer->getGameOffset());
+		}
+
+		if ( (pPlayer->isDelayStandUp() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
 		{
 			playerDoStandUp(pPlayer);	
 			pPlayer = nullptr ;
 			m_vSitdownPlayers[nIdx] = nullptr ;
 		}
 
-		if ( pPlayer && pPlayer->getCoin() < coinNeededToSitDown() )
+		if ( pPlayer->getCoin() < coinNeededToSitDown() )
 		{
 			playerDoStandUp(pPlayer);	
 			pPlayer = nullptr ;
@@ -455,23 +477,44 @@ void ISitableRoom::onGameWillBegin()
 			pp->onGameBegin();
 		}
 	}
-	prepareCards();
+}
+
+bool sortPlayerByCard(ISitableRoomPlayer* pLeft , ISitableRoomPlayer* pRight )
+{
+	if ( pLeft->getPeerCard()->pk(pRight->getPeerCard()) == IPeerCard::PK_RESULT_FAILED )
+	{
+		return true ;
+	}
+	return false ;
 }
 
 void ISitableRoom::doProcessNewPlayerHalo()
 {
+	// add peer 
+	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
+	{
+		auto pPlayer = m_vSitdownPlayers[nIdx] ;
+		if ( pPlayer && (pPlayer->isHaveState(eRoomPeer_CanAct)) )
+		{
+			m_vSortByPeerCardsAsc.push_back(pPlayer) ;
+		}
+	}
+
 	if ( m_vSortByPeerCardsAsc.size() < 2 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why this room sort cards is null ? ");
+		CLogMgr::SharedLogMgr()->ErrorLog("why can act player count not bigger than 2 room id = %u",getRoomID()) ;
 		return ;
 	}
 
+	// sort by peer card 
+	std::sort(m_vSortByPeerCardsAsc.begin(),m_vSortByPeerCardsAsc.end(),sortPlayerByCard);
 	//if ( isOmitNewPlayerHalo() )
 	//{
 	//	return ;
 	//}
 
-	uint8_t nHalfCnt = m_vSortByPeerCardsAsc.size() / 2 ;
+	// process halo 
+	uint8_t nHalfCnt = m_vSortByPeerCardsAsc.size() ;
 	uint8_t nSwitchTargetIdx = m_vSortByPeerCardsAsc.size() - 1 ;
 	for ( uint8_t nIdx = 0 ; nIdx < nHalfCnt; ++nIdx)
 	{

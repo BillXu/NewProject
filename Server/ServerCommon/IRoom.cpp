@@ -234,6 +234,7 @@ void IRoom::playerDoLeaveRoom( stStandPlayer* pp )
 		msgdoLeave.nWinTimes = pp->nWinTimes ;
 		msgdoLeave.nPlayerTimes = pp->nPlayerTimes ;
 		msgdoLeave.nSingleWinMost = pp->nSingleWinMost ;
+		msgdoLeave.nGameOffset = pp->nGameOffset ;
 		sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pp->nUserSessionID) ;
 
 		removePlayer(pp);
@@ -365,6 +366,20 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 
 	switch ( prealMsg->usMsgType )
 	{
+	case MSG_MODIFY_ROOM_RANK:
+		{
+			stMsgRobotModifyRoomRank* pRet = (stMsgRobotModifyRoomRank*)prealMsg ;
+			if ( getDelegate() && getPlayerByUserUID(pRet->nTargetUID) )
+			{
+				getDelegate()->onUpdatePlayerGameResult(this,pRet->nTargetUID,pRet->nOffset);
+				CLogMgr::SharedLogMgr()->SystemLog("modify uid = %u offset = %d",pRet->nTargetUID,pRet->nOffset) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("modify room rank uid = %u not in room ", pRet->nTargetUID);
+			}
+		}
+		break;
 	case MSG_PLAYER_LEAVE_ROOM:
 		{
 			stMsgPlayerLeaveRoomRet msg ;
@@ -389,6 +404,7 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 
 	return true ;
 }
+
 
 void IRoom::onTimeSave( )
 {

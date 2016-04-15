@@ -10,8 +10,12 @@
 #define JSON_DLL
 #include <json/json.h>
 #pragma comment(lib,"JsonDll.lib")
-#define GATE_IP "139.196.56.147"
-//#define GATE_IP "127.0.0.1"
+#ifdef DEBUG
+	#define GATE_IP "127.0.0.1"
+#else
+	#define GATE_IP "139.196.56.147"
+#endif // DEBUG
+//
 BOOL WINAPI ConsoleHandler(DWORD msgType)
 {    
 

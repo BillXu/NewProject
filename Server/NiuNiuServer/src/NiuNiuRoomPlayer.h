@@ -13,16 +13,17 @@ public:
 	void doSitdown(uint8_t nIdx ) override;
 	void willStandUp() override;
 	void onGetCard( uint8_t nIdx , uint8_t nCard );
-	CNiuNiuPeerCard* getPeerCard(){ return &m_tPeerCard ;}
 	uint8_t getCardByIdx(uint8_t nIdx );
 	uint8_t getTryBankerTimes();
 	void setTryBankerTimes(uint8_t nTimes );
 	uint8_t getBetTimes();
 	void setBetTimes(uint8_t nTimes);
-	void switchPeerCard(ISitableRoomPlayer* pPlayer )override;
+	int32_t getGameOffset()override { return m_nGameOffset ; } ;
+	IPeerCard* getPeerCard()override{ return &m_tPeerCard ;};
+	void setGameOffset( int32_t nGameOffset ){ m_nGameOffset = nGameOffset ; }
 protected:
 	uint8_t m_nTryBankerTimes ;
 	uint8_t m_nBetTimes ;
-	uint8_t m_vCards[NIUNIU_HOLD_CARD_COUNT];
+	int32_t m_nGameOffset ;
 	CNiuNiuPeerCard m_tPeerCard ;
 };

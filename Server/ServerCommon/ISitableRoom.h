@@ -35,10 +35,19 @@ public:
 	ISitableRoomPlayer* getSitdownPlayerByUID(uint32_t nUserUID );
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
 	virtual  uint32_t coinNeededToSitDown() = 0;
-	virtual void prepareCards() = 0 ;
 	void onGameDidEnd()override ;
 	void onGameWillBegin()override ;
-	void doProcessNewPlayerHalo();
+	void doProcessNewPlayerHalo()final;
+	size_t getSortedPlayerCnt(){ return m_vSortByPeerCardsAsc.size() ; }
+	ISitableRoomPlayer* getSortedPlayerByIdx( uint8_t nIdx )
+	{
+		if ( nIdx < m_vSortByPeerCardsAsc.size() )
+		{
+			return m_vSortByPeerCardsAsc[nIdx] ;
+		}
+		return nullptr ;
+	}
+	VEC_SITDOWN_PLAYERS::iterator getSortedPlayerEndIter(){ return m_vSortByPeerCardsAsc.end() ; }
 protected:
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 private:
@@ -47,6 +56,5 @@ private:
 	ISitableRoomPlayer** m_vSitdownPlayers ;
 private:
 	LIST_SITDOWN_PLAYERS m_vReserveSitDownObject ;
-protected:
 	VEC_SITDOWN_PLAYERS m_vSortByPeerCardsAsc ;
 };

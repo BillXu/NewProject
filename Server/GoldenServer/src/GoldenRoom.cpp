@@ -1,7 +1,7 @@
 #include "GoldenRoom.h"
 #include "RoomConfig.h"
 #include "GoldenRoomPlayer.h"
-#include <algorithm>
+
 #include <json/json.h>
 #include "GoldenMessageDefine.h"
 #include "AutoBuffer.h"
@@ -57,7 +57,48 @@ bool CGoldenRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 		return true ;
 	}
 	
+	switch ( prealMsg->usMsgType )
+	{
+	case MSG_GOLDEN_PLAYER_ACT:
+		{
+			stMsgGoldenPlayerActRet msgBack ;
+			stMsgGoldenPlayerAct* ppmsg = (stMsgGoldenPlayerAct*)prealMsg ;
+			if ( ppmsg->nPlayerAct == eRoomPeerAction_Ready )
+			{
+				auto pp = getSitdownPlayerBySessionID(nPlayerSessionID) ;
+				if ( pp )
+				{
+					if ( pp->isHaveState(eRoomPeer_CanAct) == false )
+					{
+						pp->setState(eRoomPeer_Ready) ;
+						stMsgGoldenRoomAct msgR ;
+						msgR.nPlayerAct = ppmsg->nPlayerAct ;
+						msgR.nValue = 0 ;
+						msgR.nPlayerIdx = pp->getIdx() ;
+						sendRoomMsg(&msgR,sizeof(msgR)) ;
+					}
+					else
+					{
+						CLogMgr::SharedLogMgr()->ErrorLog("you are playing game , why set ready sate ?");
+						msgBack.nRet = 3 ;
+						sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+					}
+				}
+				else
+				{
+					msgBack.nRet = 3 ;
+					CLogMgr::SharedLogMgr()->ErrorLog("you are not sit down can not ready session id = %u",nPlayerSessionID);
+					sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 
+				}
+				return true ;
+			}
+			return false ;
+		}
+		break;
+	default:
+		break;
+	}
 	return false ;
 }
 
@@ -68,6 +109,8 @@ void CGoldenRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["curBet"] = getCurBet();
 	vOutJsValue["mainPool"] = m_nMailPool;
 	vOutJsValue["curActIdx"] = m_nCurActIdx ;
+	vOutJsValue["betRound"] = 0 ;
+	CLogMgr::SharedLogMgr()->ErrorLog("temp set bet round = 0 ") ;
 }
 
 void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
@@ -96,6 +139,7 @@ void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 				item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx) ;
 			}
 			auBuffer.addContent(&item,sizeof(item)) ;
+			CLogMgr::SharedLogMgr()->PrintLog("send players uid = %u, state = %u",item.nUserUID,item.nStateFlag);
 		}
 	}
 
@@ -111,6 +155,9 @@ uint32_t CGoldenRoom::getBaseBet() // ji chu di zhu ;
 void CGoldenRoom::onGameWillBegin()
 {
 	IRoom::onGameWillBegin() ;
+	m_nCurBet = getBaseBet();
+	m_nMailPool = 0;
+
 	uint16_t nSeatCnt = getSeatCount() ;
 	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
 	{
@@ -120,17 +167,19 @@ void CGoldenRoom::onGameWillBegin()
 			pp->setCoin(pp->getCoin() - getDeskFee() ) ;
 			addTotoalProfit(getDeskFee());
 			pp->onGameBegin();
+
+			// xia di zhu 
+			CGoldenRoomPlayer*pRG = (CGoldenRoomPlayer*)pp ;
+			pRG->betCoin(getCurBet());
+			m_nMailPool += getCurBet() ;
 		}
 	}
 
-	m_nCurBet = getBaseBet();
-	m_nMailPool = 0;
+
 	getPoker()->RestAllPoker() ;
 
-	m_nBankerIdx = GetFirstInvalidIdxWithState(m_nBankerIdx + 1 ,eRoomPeer_Ready );
+	m_nBankerIdx = GetFirstInvalidIdxWithState(m_nBankerIdx ,eRoomPeer_Ready );
 	m_nCurActIdx = m_nBankerIdx ;
-
-	prepareCards();
 }
 
 void CGoldenRoom::onGameDidEnd()
@@ -155,17 +204,6 @@ uint32_t CGoldenRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp
 	return 0 ;
 }
 
-bool sortPlayerByCardGolden(ISitableRoomPlayer* pLeft , ISitableRoomPlayer* pRight )
-{
-	CGoldenRoomPlayer* pNLeft = (CGoldenRoomPlayer*)pLeft ;
-	CGoldenRoomPlayer* pNRight = (CGoldenRoomPlayer*)pRight ;
-	if ( pNLeft->getPeerCard()->PKPeerCard(pNRight->getPeerCard()) == false )
-	{
-		return true ;
-	}
-	return false ;
-}
-
 void CGoldenRoom::prepareCards()
 {
 	uint8_t nSeatCnt = (uint8_t)getSeatCount() ;
@@ -181,13 +219,8 @@ void CGoldenRoom::prepareCards()
 				pRoomPlayer->onGetCard(nCardIdx,getPoker()->GetCardWithCompositeNum()) ;
 				++nCardIdx ;
 			}
-			m_vSortByPeerCardsAsc.push_back(pRoomPlayer) ;
 		}
 	}
-
-	std::sort(m_vSortByPeerCardsAsc.begin(),m_vSortByPeerCardsAsc.end(),sortPlayerByCardGolden);
-
-	doProcessNewPlayerHalo();
 }
 
 uint32_t CGoldenRoom::coinNeededToSitDown()
@@ -211,32 +244,12 @@ void CGoldenRoom::caculateGameResult()
 	msgResult.nWinCoin = m_nMailPool - pPlayer->getBetCoin() ;
 	uint32_t nTax = (uint32_t)(float(msgResult.nWinCoin) * getChouShuiRate() + 0.5f);
 	pPlayer->setCoin(m_nMailPool + pPlayer->getCoin() - nTax );
+	pPlayer->addWinCoin(m_nMailPool - nTax );
+	setBankerIdx(pPlayer->getIdx());  // winner is next banker 
 	msgResult.nFinalCoin = pPlayer->getCoin();
 	CLogMgr::SharedLogMgr()->PrintLog("room id = %u uid = %u win game , tax = %u , win = %u , final = %u",getRoomID(),pPlayer->getUserUID(),nTax,msgResult.nWinCoin,msgResult.nFinalCoin);
 
 	sendRoomMsg(&msgResult,sizeof(msgResult)) ;
-
-	// update offset 
-	if ( getDelegate() )
-	{
-		// update winner ;
-		getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),msgResult.nWinCoin );
-
-		// update other players ;
-		uint16_t nCnt = getSeatCount() ;
-		for ( uint16_t nIdx = 0 ; nIdx < nCnt ; ++nIdx )
-		{
-			if ( nIdx == msgResult.cWinnerIdx )
-			{
-				continue;
-			}
-			auto pPlayer = (CGoldenRoomPlayer*)getPlayerByIdx(nIdx) ;
-			if ( pPlayer && pPlayer->isHaveState(eRoomPeer_StayThisRound) )
-			{
-				getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),(int32_t)pPlayer->getBetCoin() * -1 );
-			}
-		}
-	}
 }
 
 uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoomPlayer* pPlayer )
@@ -249,16 +262,49 @@ uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoo
 		}
 	}
 
+	if ( pPlayer->isHaveState(eRoomPeer_CanAct) == false )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("can not do act , you are not can act uid = %u",pPlayer->getUserUID()) ;
+		return 3 ;
+	}
+
 	switch (nAct)
 	{
 	case eRoomPeerAction_Add:
 		{
+			uint32_t nNeedCoin = nValue + m_nCurBet ;
+			if ( pPlayer->isHaveState(eRoomPeer_Looked) )
+			{
+				nNeedCoin *= 2 ;
+			}
 
+			if ( nNeedCoin > pPlayer->getCoin() )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("coin not enough can not add , uid = %u",pPlayer->getUserUID()) ;
+				return 6 ; 
+			}
+
+			m_nCurBet += nValue ;
+			((CGoldenRoomPlayer*)pPlayer)->betCoin(nNeedCoin);
+			m_nMailPool += nNeedCoin ;
 		}
 		break;
 	case eRoomPeerAction_Follow:
 		{
+			uint32_t nNeedCoin = m_nCurBet ;
+			if ( pPlayer->isHaveState(eRoomPeer_Looked) )
+			{
+				nNeedCoin *= 2 ;
+			}
 
+			if ( nNeedCoin > pPlayer->getCoin() )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("coin not enough can not Follow , uid = %u",pPlayer->getUserUID()) ;
+				return 6 ; 
+			}
+
+			((CGoldenRoomPlayer*)pPlayer)->betCoin(nNeedCoin);
+			m_nMailPool += nNeedCoin ;
 		}
 		break;
 	case eRoomPeerAction_ViewCard:
@@ -268,7 +314,7 @@ uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoo
 		break;
 	case eRoomPeerAction_GiveUp:
 		{
-			if ( pPlayer->isHaveState(eRoomPeer_WillStandUp) )
+			if ( pPlayer->isDelayStandUp() )
 			{
 				if ( getDelegate() )
 				{
@@ -284,7 +330,7 @@ uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoo
 		}
 		break;
 	default:
-		break;
+		return 4;
 	}
 	return 0 ;
 }
@@ -303,7 +349,32 @@ uint8_t CGoldenRoom::informPlayerAct( bool bStepNext )
 
 bool CGoldenRoom::onPlayerPK(ISitableRoomPlayer* pActPlayer , ISitableRoomPlayer* pTargetPlayer )
 {
-	return false ;
+	CGoldenRoomPlayer* pP = (CGoldenRoomPlayer*)pActPlayer;
+	CGoldenRoomPlayer* pT = (CGoldenRoomPlayer*)pTargetPlayer ;
+	uint32_t nNeedCoin = m_nCurBet * 2 ;
+	if ( pP->isHaveState(eRoomPeer_Looked) )
+	{
+		nNeedCoin *= 2 ;
+	}
+
+	if ( nNeedCoin > pP->getCoin() )
+	{
+		nNeedCoin = pP->getCoin();
+	}
+
+	pP->betCoin(nNeedCoin);
+	m_nMailPool += nNeedCoin ;
+
+	bool bWin = pP->getPeerCard()->pk(pT->getPeerCard()) == IPeerCard::PK_RESULT_WIN;
+	if ( bWin )
+	{
+		pT->setState(eRoomPeer_PK_Failed);
+	}
+	else
+	{
+		pP->setState(eRoomPeer_PK_Failed) ;
+	}
+	return bWin ;
 }
 
 ISitableRoomPlayer* CGoldenRoom::doCreateSitableRoomPlayer()

@@ -9,7 +9,7 @@ void IRoomStateWaitReadyState::update(float fDelta )
 		return ;
 	}
 
-	uint8_t nSitPlayerCnt = m_pRoom->getSitDownPlayerCount();
+	uint8_t nSitPlayerCnt = (uint8_t)m_pRoom->getSitDownPlayerCount();
 	if ( nSitPlayerCnt < 2 )
 	{
 		return ;
@@ -36,6 +36,8 @@ void IRoomStateWaitReadyState::update(float fDelta )
 	if ( bStartGame )
 	{
 		m_pRoom->onGameWillBegin();
+		m_pRoom->prepareCards();
+		m_pRoom->doProcessNewPlayerHalo();
 		m_pRoom->goToState(eRoomState_StartGame) ;
 		return ;
 	}

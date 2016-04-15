@@ -170,7 +170,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 		{
 			stMsgTellPlayerType* pRet = (stMsgTellPlayerType*)pMsg ;
 			m_ePlayerType = (ePlayerType)pRet->nPlayerType ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %u , tell player type = %u",m_ePlayerType);
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %u , tell player type = %u",GetPlayer()->GetUserUID(),m_ePlayerType);
 		}
 		break;
 	case MSG_GET_VIP_CARD_GIFT:
@@ -223,11 +223,20 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			stMsgCheckInviterRet msgBack ;
 			stMsgCheckInviter* pRet = (stMsgCheckInviter*)pMsg ;
 			msgBack.nInviterUID = pRet->nInviterUID ;
+
+			if ( m_stBaseData.nUserUID == pRet->nInviterUID )
+			{
+				msgBack.nRet = 1 ;
+				CLogMgr::SharedLogMgr()->ErrorLog("can not invite self , uid = %d",GetPlayer()->GetUserUID()) ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				break; 
+			}
+
 			if ( m_stBaseData.nInviteUID )
 			{
 				msgBack.nRet = 2 ;
 				CLogMgr::SharedLogMgr()->PrintLog("you already have invite = %d , uid = %d",m_stBaseData.nInviteUID,GetPlayer()->GetUserUID()) ;
-				SendMsg(&msgBack,sizeof(msgBack)) ;
+				SendMsg(&msgBack,sizeof(msgBack)) ; 
 				break; 
 			}
 
@@ -482,6 +491,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			stMsgPLayerModifyName* pMsgRet = (stMsgPLayerModifyName*)pMsg ;
 			stMsgPlayerModifyNameRet ret ;
 			ret.nRet = 0 ;
+			memcpy(ret.pName,pMsgRet->pNewName,sizeof(ret.pName));
 			if ( pMsgRet->pNewName[sizeof(pMsgRet->pNewName) -1 ] != 0 )
 			{
 				ret.nRet = 1 ;
@@ -834,7 +844,7 @@ void CPlayerBaseData::SendBaseDatToClient()
 		msg.nSessionID = GetPlayer()->GetSessionID() ;
 		SendMsg(&msg,sizeof(msg)) ;
 		CLogMgr::SharedLogMgr()->PrintLog("send base data to session id = %d ",GetPlayer()->GetSessionID() );
-		CLogMgr::SharedLogMgr()->SystemLog("send data uid = %d , final coin = %I64d, sex = %d",GetPlayer()->GetUserUID(),GetAllCoin(),msg.stBaseData.nSex);
+		CLogMgr::SharedLogMgr()->SystemLog("send data uid = %d , final coin = %d, sex = %d",GetPlayer()->GetUserUID(),GetAllCoin(),msg.stBaseData.nSex);
 	}
 	else
 	{
@@ -842,12 +852,11 @@ void CPlayerBaseData::SendBaseDatToClient()
 	}
 }
 
-void CPlayerBaseData::OnProcessContinueLogin()
+void CPlayerBaseData::OnProcessContinueLogin( bool bNewDay, time_t nLastLogin)
 {
- 	if ( m_stBaseData.tLastLoginTime == 0 )
+ 	if ( nLastLogin == 0 )
  	{
  		m_stBaseData.nContinueDays = 1 ;
- 		m_stBaseData.tLastLoginTime = (unsigned int)time(NULL) ; 
  	}
  	else
  	{
@@ -897,14 +906,26 @@ void CPlayerBaseData::OnProcessContinueLogin()
  
  		m_stBaseData.tLastLoginTime = (unsigned int)nCur ;
  	}
-// 
-// 	stMsgShowContinueLoginDlg msg ;
-// 	msg.nContinueIdx = m_stBaseData.nContinueDays ;
-// 	SendMsgToClient((char*)&msg,sizeof(msg)) ;
-// 	// first login event ;
-// 	stPlayerEvetArg evet ;
-// 	evet.eEventType = ePlayerEvent_FirstLogin ;
-// 	GetPlayer()->PostPlayerEvent(&evet);
+}
+
+void CPlayerBaseData::onRecivedLoginData()
+{
+	time_t nCur = time(NULL) ;
+	time_t nLastLogin = m_stBaseData.tLastLoginTime;
+	struct tm pTimeCur = *localtime(&nCur);
+	struct tm pTimeLastLogin = *localtime(&nLastLogin);
+
+	bool bSameDay = (pTimeCur.tm_year == pTimeLastLogin.tm_year && pTimeCur.tm_mon == pTimeLastLogin.tm_mon && pTimeCur.tm_yday == pTimeLastLogin.tm_yday ) ;
+	// process yesterday win ;
+	OnProcessContinueLogin(bSameDay,nLastLogin);
+
+	// process yesterday win coin 
+	if ( bSameDay == false )
+	{
+		m_stBaseData.nTodayGameCoinOffset = 0 ;
+	}
+	m_stBaseData.tLastLoginTime = nCur ;
+	m_bCommonLogicDataDirty = true ;
 }
 
 void CPlayerBaseData::TimerSave()
@@ -940,7 +961,8 @@ void CPlayerBaseData::TimerSave()
 		msgLogicData.nNewPlayerHaloWeight = m_stBaseData.nNewPlayerHaloWeight ;
 		//msgLogicData.nExp = m_stBaseData.nExp ;
 		msgLogicData.nMostCoinEver = m_stBaseData.nMostCoinEver;
-		msgLogicData.nTodayCoinOffset = m_stBaseData.nTodayCoinOffset ;
+		msgLogicData.nTodayCoinOffset = m_stBaseData.nTodayGameCoinOffset ;
+		msgLogicData.nTotalGameCoinOffset = m_stBaseData.nTotalGameCoinOffset ;
 		msgLogicData.nYesterdayCoinOffset = m_stBaseData.nYesterdayCoinOffset ;
 		msgLogicData.nUserUID = GetPlayer()->GetUserUID() ;
 		msgLogicData.nCardType = m_stBaseData.nCardType ;
@@ -966,7 +988,7 @@ void CPlayerBaseData::TimerSave()
 		msgSaveInfo.nIsRegister = m_stBaseData.isRegister ;
 		msgSaveInfo.nSex = m_stBaseData.nSex ;
 		msgSaveInfo.nUserUID = GetPlayer()->GetUserUID() ;
-		msgSaveInfo.nInviterUID = m_stBaseData.nUserUID ;
+		msgSaveInfo.nInviterUID = m_stBaseData.nInviteUID ;
 		memcpy(msgSaveInfo.vName,m_stBaseData.cName,sizeof(msgSaveInfo.vName));
 		memcpy(msgSaveInfo.vSigure,m_stBaseData.cSignature,sizeof(msgSaveInfo.vSigure));
 		memcpy(msgSaveInfo.vUploadedPic,m_stBaseData.vUploadedPic,sizeof(msgSaveInfo.vUploadedPic));
@@ -1032,6 +1054,12 @@ bool CPlayerBaseData::AddMoney(int64_t nOffset,bool bDiamond  )
 		{
 			m_nTempCoin += nOffset ;
 		}
+
+		if ( m_stBaseData.nCoin > m_stBaseData.nMostCoinEver )
+		{
+			m_stBaseData.nMostCoinEver = m_stBaseData.nCoin ;
+			m_bCommonLogicDataDirty = true ;
+		}
 	}
 	m_bMoneyDataDirty = true ;
 	return true ;
@@ -1041,6 +1069,7 @@ void CPlayerBaseData::addInvitePrize(uint32_t nCoinPrize )
 {
 	AddMoney(nCoinPrize);
 	m_stBaseData.nTotalInvitePrizeCoin += nCoinPrize ;
+	m_bCommonLogicDataDirty = true ;
 }
 
 bool CPlayerBaseData::decressMoney(int64_t nOffset,bool bDiamond )
@@ -1092,15 +1121,15 @@ void CPlayerBaseData::GetPlayerDetailData(stPlayerDetailData* pData )
 
 bool CPlayerBaseData::EventFunc(void* pUserData,stEventArg* pArg)
 {
+	auto pp = (CPlayerBaseData*)pUserData ;
+	pp->OnNewDay(pArg);
 	return false ;
 }
 
 void CPlayerBaseData::OnNewDay(stEventArg* pArg)
 {
-// 	m_stBaseData.nYesterdayPlayTimes = m_stBaseData.nTodayPlayTimes ;
-// 	m_stBaseData.nTodayPlayTimes = 0 ;
-// 	m_stBaseData.nYesterdayWinCoin = m_stBaseData.nTodayWinCoin ;
-// 	m_stBaseData.nTodayWinCoin = 0 ;
+	m_stBaseData.nTodayGameCoinOffset = 0 ;
+	m_bCommonLogicDataDirty = true ;
 }
 
 void CPlayerBaseData::OnReactive(uint32_t nSessionID )
@@ -1119,7 +1148,7 @@ void CPlayerBaseData::OnReactive(uint32_t nSessionID )
 	else
 	{
 		SendBaseDatToClient();
-		OnProcessContinueLogin();
+		onRecivedLoginData();
 	}
 
 	stMsgRequestClientIp msgReq ;
@@ -1144,7 +1173,7 @@ void CPlayerBaseData::OnOtherDoLogined()
 	else
 	{
 		SendBaseDatToClient();
-		OnProcessContinueLogin();
+		onRecivedLoginData();
 	}
 }
 
@@ -1229,4 +1258,35 @@ void CPlayerBaseData::onGetReward( uint8_t nIdx ,uint16_t nRewardID, uint16_t nG
 	std::string strContent = writers.write(jValue);
 	CPlayerMailComponent::PostMailToPlayer(eMail_WinMatch,strContent.c_str(),strContent.size(),GetPlayer()->GetUserUID()) ;
 }
+
+void CPlayerBaseData::setCoin(int64_t nCoin )
+{ 
+	if (m_stBaseData.nCoin != nCoin)
+	{
+		m_bMoneyDataDirty =  true;
+	}
+	m_stBaseData.nCoin = nCoin ; 
+}
+
+void CPlayerBaseData::setTempCoin( uint32_t nTempCoin )
+{ 
+	if ( m_nTempCoin != nTempCoin )
+	{
+		m_bMoneyDataDirty = true ;
+	}
+	m_nTempCoin = nTempCoin ;
+}
+
+void CPlayerBaseData::addTodayGameCoinOffset(int32_t nOffset )
+{
+	if ( nOffset == (int32_t)0 )
+	{
+		return ;
+	}
+	m_stBaseData.nTotalGameCoinOffset += nOffset ;
+	m_stBaseData.nTodayGameCoinOffset += nOffset ; 
+	this->m_bCommonLogicDataDirty = true ; 
+	CLogMgr::SharedLogMgr()->PrintLog("update game coin offset uid = %u , today offset = %I64d, total = %d , offset = %d",GetPlayer()->GetUserUID(),m_stBaseData.nTodayGameCoinOffset,m_stBaseData.nTotalGameCoinOffset,nOffset);
+}
+
 

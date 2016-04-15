@@ -732,7 +732,7 @@ struct stMsgRoomInfo
 
 	// niu niu js {"bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2 };
 	
-	// golden js { "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 };
+	// golden js { "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 };
 };
 
 // enter and leave 
@@ -972,6 +972,14 @@ struct stMsgRobotAddMoneyRet
 	uint64_t nFinalCoin ;
 };
 
+struct stMsgRobotModifyRoomRank
+	:public stMsgToRoom
+{
+	stMsgRobotModifyRoomRank(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_MODIFY_ROOM_RANK ; }
+	uint32_t nTargetUID ;
+	int32_t nOffset ;
+};
+
 // apns 
 struct stMsgPushAPNSToken
 	:public stMsg
@@ -989,6 +997,33 @@ struct stMsgPushAPNSTokenRet
 	stMsgPushAPNSTokenRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PUSH_APNS_TOKEN ; }
 	unsigned char nReqTokenRet ; // 0 success ; 1 use disabled notification ;
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -7,7 +7,7 @@
 //#define  TIME_CHECK_MODE 2*60
 #define  TIME_CHECK_MODE 5
 #define  TIME_WORK_TIME_HOUR 1
-#define  TEMP_HALO_OFFSET 5 
+#define  TEMP_HALO_OFFSET 8 
 bool CRobotControl::init( CRobotConfigFile::stRobotItem* pRobot,CSitableRoomData* pRoomData, uint32_t nUserUID )
 {
 	m_bHaveDelayActionTask = false ;
@@ -226,7 +226,7 @@ void CRobotControl::onGameEnd()
 
 void CRobotControl::onReicvedRoomData()
 {
-	enterIdleMode();
+	enterIdleMode(); 
 }
 
 uint8_t CRobotControl::getSeatIdx()
@@ -393,7 +393,7 @@ void CRobotControl::onGameResult(bool bWin )
 		return  ;
 	}
 
-	if ( bWin )
+	if ( !bWin )
 	{
 		m_nTempHalo += TEMP_HALO_OFFSET ;
 	}
@@ -405,11 +405,11 @@ void CRobotControl::onGameResult(bool bWin )
 		}
 		else
 		{
-			m_nTempHalo -= TEMP_HALO_OFFSET ;
+			m_nTempHalo -= (TEMP_HALO_OFFSET  ) ;
 		}
 	}
 
-	if ( m_nTempHalo != 0 )
+	//if ( m_nTempHalo != 0 )
 	{
 		stMsgAddTempHalo msgAddHalo ;
 		msgAddHalo.cSysIdentifer = getRoomData()->getTargetSvrPort() ;
@@ -417,6 +417,7 @@ void CRobotControl::onGameResult(bool bWin )
 		msgAddHalo.nSubRoomIdx = getRoomData()->getSubRoomIdx() ;
 		msgAddHalo.nTargetUID = getUserUID() ;
 		msgAddHalo.nTempHalo = m_nTempHalo ;
+		//msgAddHalo.nTempHalo = 120 ;
 		sendMsg(&msgAddHalo,sizeof(msgAddHalo)) ;
 		printf("uid = %u set temp halo = %u gameType = %u",getUserUID(),msgAddHalo.nTempHalo,getRoomData()->getRoomType()) ;
 	}

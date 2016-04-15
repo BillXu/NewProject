@@ -59,6 +59,26 @@ public:
 		m_nWeight = pRight.m_nWeight ;
 		return *this ;
 	}
+
+	uint8_t getCardByIdx(uint8_t nidx ) override
+	{
+		if ( nidx < NIUNIU_HOLD_CARD_COUNT )
+		{
+			return m_vHoldCards[nidx].GetCardCompositeNum() ;
+		}
+		return 0 ;
+	}
+
+	IPeerCard* swap(IPeerCard* pTarget)override
+	{
+		auto pT = dynamic_cast<CNiuNiuPeerCard*>(pTarget);
+		assert(pT && "why target niuniu card is null?");
+		CNiuNiuPeerCard tTemp ;
+		tTemp = *this ;
+		*this = *pT ;
+		*pT = tTemp ;
+		return this ;
+	}
 protected:
 	bool isCaculated();
 	void caculateCards();

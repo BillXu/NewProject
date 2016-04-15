@@ -15,13 +15,13 @@ public:
 	void removeState(uint32_t nState );
 	void setSessionID(uint32_t nSessionID );
 	void setUserUID( uint32_t nUserUID );
-	void setCoin( int64_t nCoin ){ if ( nCoin < 0 ) nCoin = 0 ; m_nCoin = nCoin ;}
-	int64_t getCoin(){ return m_nCoin ;}
+	void setCoin( int32_t nCoin ){ if ( nCoin < 0 ) nCoin = 0 ; m_nCoin = nCoin ;}
+	int32_t getCoin(){ return m_nCoin ;}
 	uint32_t getUserUID(){ return m_nUserUID ; }
 	uint32_t getSessionID(){ return m_nSessionID ; }
 private:
 	uint32_t m_nUserUID ;
 	uint32_t m_nSessionID ;
 	uint32_t m_nStateFlag ;
-	int64_t m_nCoin ;
+	int32_t m_nCoin ;
 };

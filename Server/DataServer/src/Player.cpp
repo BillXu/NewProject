@@ -267,6 +267,7 @@ void CPlayer::OnPlayerDisconnect()
 	msgLog.nTargetID = GetUserUID() ;
 	memset(msgLog.vArg,0,sizeof(msgLog.vArg));
 	msgLog.vArg[0] = GetBaseData()->getCoin() ;
+	msgLog.vArg[1] = GetBaseData()->GetAllDiamoned();
 	SendMsgToClient((char*)&msgLog,sizeof(msgLog));
 }
 
@@ -642,6 +643,8 @@ uint8_t CPlayer::getMsgPortByRoomType(uint8_t nType )
 		return ID_MSG_PORT_NIU_NIU ;
 	case eRoom_TexasPoker:
 		return ID_MSG_PORT_TAXAS ;
+	case eRoom_Golden:
+		return ID_MSG_PORT_GOLDEN;
 	default:
 		return ID_MSG_PORT_NONE ;
 	}

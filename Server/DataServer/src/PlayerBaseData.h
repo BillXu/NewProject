@@ -23,12 +23,13 @@ public:
 	void OnPlayerDisconnect() override ;
 	void OnOtherWillLogined()override ;
 	void SaveCoin();
-	void OnProcessContinueLogin();
+	void onRecivedLoginData();
+	void OnProcessContinueLogin( bool bNewDay, time_t nLastLogin );
 	void TimerSave()override;
 	uint32_t GetAllCoin(){ return m_stBaseData.nCoin;}
 	uint32_t getCoin(){ return m_stBaseData.nCoin ; }
 	uint32_t GetAllDiamoned(){ return m_stBaseData.nDiamoned;}
-	void setCoin(int64_t nCoin ){ m_bMoneyDataDirty = m_stBaseData.nCoin != nCoin ; m_stBaseData.nCoin = nCoin ; }
+	void setCoin(int64_t nCoin );
 	bool AddMoney(int64_t nOffset,bool bDiamond = false );
 	void addInvitePrize(uint32_t nCoinPrize );
 	bool decressMoney(int64_t nOffset,bool bDiamond = false );
@@ -47,9 +48,10 @@ public:
 	uint8_t getNewPlayerHaloWeight();
 	void setNewPlayerHalo(uint8_t nPlayHalo );
 	uint32_t getTempCoin(){ return m_nTempCoin ; }
-	void setTempCoin( uint32_t nTempCoin ){ m_bMoneyDataDirty = m_nTempCoin != nTempCoin ; m_nTempCoin = nTempCoin ; }
+	void setTempCoin( uint32_t nTempCoin );
 	void onGetReward( uint8_t nIdx ,uint16_t nRewardID, uint16_t nGameType , const char* nRoomName );
 	ePlayerType getPlayerType(){ return m_ePlayerType ;}
+	void addTodayGameCoinOffset(int32_t nOffset );
 protected:
 	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
 	void onBeInviteBy(uint32_t nInviteUID );

@@ -293,6 +293,8 @@ uint16_t IServerApp::getVerifyType()
 		return MSG_VERIFY_DB ;
 	case ID_MSG_PORT_NIU_NIU:
 		return MSG_VERIFY_NIU_NIU ;
+	case ID_MSG_PORT_GOLDEN:
+		return MSG_VERIFY_GOLDEN;
 	default:
 		assert(0 && "what verify type for the svr ? " ) ;
 		break;

@@ -88,7 +88,7 @@ bool CExchangeCenter::onMsg(stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSessi
 			// get remarks 
 			Json::Reader reader;
 			Json::Value rootValue ;
-			char* pstr = ((char*)&pRet->nJsonLen) + sizeof(pRet->nJsonLen) ;
+			char* pstr = ((char*)pRet) + sizeof(stMsgPlayerExchange) ;
 			reader.parse(pstr,pstr + pRet->nJsonLen,rootValue,false);
 			// give order 
 			stMsgSaveLog msgLog ;
@@ -100,7 +100,8 @@ bool CExchangeCenter::onMsg(stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSessi
 			Json::Value jValue ;
 			jValue["playerName"] = pPlayer->GetBaseData()->GetPlayerName() ;
 			jValue["excDesc"] = pExchangeItem->strDesc ;
-			jValue["remark"] = rootValue["remark"].asString() ;
+			jValue["address"] = rootValue["address"].asString() ;
+			jValue["phoneNumber"] = rootValue["phoneNumber"].asString() ;
 
 			Json::StyledWriter jWriter ;
 			std::string  strArg = jWriter.write(jValue) ;
@@ -110,7 +111,7 @@ bool CExchangeCenter::onMsg(stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSessi
 			auBuffer.addContent(&msgLog,sizeof(msgLog)) ;
 			auBuffer.addContent(strArg.c_str(),msgLog.nJsonExtnerLen) ;
 			getSvrApp()->sendMsg(nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do exchange item id = %d",pPlayer->GetUserUID(),pExchangeItem->nConfigID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do exchange item id = %d, remark = %s",pPlayer->GetUserUID(),pExchangeItem->nConfigID,rootValue["address"].asString()) ;
 
 			// update recorder ;
 			auto pRec = vExchangeEntrys.find(pRet->nExchangeID);

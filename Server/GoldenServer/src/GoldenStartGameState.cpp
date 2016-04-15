@@ -13,6 +13,7 @@ void CGoldenStartGameState::enterState(IRoom* pRoom)
 	// send msg ;
 	stMsgGoldenDistribute msgForCard ;
 	msgForCard.nCnt = nPlayerCnt;
+	msgForCard.nBankIdx = ((CGoldenRoom*)m_pRoom)->getBankerIdx() ;
 	CAutoBuffer buffer(sizeof(msgForCard) + msgForCard.nCnt * sizeof(stGoldenHoldPeerCard)) ;
 	buffer.addContent(&msgForCard,sizeof(msgForCard)) ;
 	for ( uint8_t nIdx = 0 ; nIdx < m_pRoom->getSeatCount() ; ++nIdx )
@@ -22,9 +23,11 @@ void CGoldenStartGameState::enterState(IRoom* pRoom)
 		{
 			stGoldenHoldPeerCard item ;
 			item.nIdx = pRoomPlayer->getIdx();
+			CLogMgr::SharedLogMgr()->PrintLog("send player card :idx = %d",item.nIdx);
 			for ( uint8_t nIdx = 0 ; nIdx < GOLDEN_PEER_CARD ; ++nIdx )
 			{
 				item.vCard[nIdx] = pRoomPlayer->getCardByIdx(nIdx);
+				CLogMgr::SharedLogMgr()->PrintLog("idx = % u , card = %u",nIdx,item.vCard[nIdx]);
 			}
 			buffer.addContent(&item,sizeof(item)) ;
 		}

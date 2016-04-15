@@ -38,7 +38,7 @@ class CGetInput
 
 LONG WINAPI MyUnhandledExceptionFilter( struct _EXCEPTION_POINTERS* ExceptionInfo )
 {
-	HANDLE lhDumpFile = CreateFile(L"DumpFileForDB.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL ,NULL);
+	HANDLE lhDumpFile = CreateFile(L"DumpFileForlog.dmp", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL ,NULL);
 
 	MINIDUMP_EXCEPTION_INFORMATION loExceptionInfo;
 	loExceptionInfo.ExceptionPointers = ExceptionInfo;

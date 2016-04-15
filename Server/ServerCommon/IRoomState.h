@@ -45,6 +45,8 @@ public:
 		if ( m_pRoom->canStartGame() )
 		{
 			m_pRoom->onGameWillBegin();
+			m_pRoom->prepareCards();
+			m_pRoom->doProcessNewPlayerHalo();
 			m_pRoom->goToState(eRoomState_StartGame) ;
 			return ;
 		}

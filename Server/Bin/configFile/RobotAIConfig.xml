@@ -4,15 +4,15 @@
       <KeyCard faceValue="8">
         <HoldCardContribute count="2">
           <BetTimes nTimes="80" Follow="15" Pass="85" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
-          <BetTimes nTimes="20" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="3" />
           <BetTimes nTimes="40" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
-          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="10" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="12">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
-          <BetTimes nTimes="30" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
+          <BetTimes nTimes="10" Follow="70" Pass="0" ALLIn="0" Add="30" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="35" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
           <BetTimes nTimes="55" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
           <BetTimes nTimes="80" Follow="20" Pass="80" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
         </HoldCardContribute>
@@ -23,54 +23,50 @@
         <HoldCardContribute count="2">
           <BetTimes nTimes="85" Follow="20" Pass="80" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
           <BetTimes nTimes="55" Follow="60" Pass="40" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
-          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="10" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
           <BetTimes nTimes="35" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="0" addTopLimit="0" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="12">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="50" Follow="65" Pass="30" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
-          <BetTimes nTimes="20" Follow="87" Pass="8" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
-          <BetTimes nTimes="10" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
-          <BetTimes nTimes="40" Follow="90" Pass="5" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="80" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="50" Follow="80" Pass="5" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="25" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="15" Follow="65" Pass="0" ALLIn="0" Add="35" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="4">
       <KeyCard faceValue="8">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="40" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="20" Follow="92" Pass="0" ALLIn="0" Add="8" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="10" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
-          <BetTimes nTimes="80" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="30" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="50" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="15" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="80" Follow="75" Pass="25" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
-          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="6" />
-          <BetTimes nTimes="5" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
-          <BetTimes nTimes="60" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="80" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="30" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="10" Follow="60" Pass="0" ALLIn="0" Add="40" addLowLimit="4" addTopLimit="7" />
+          <BetTimes nTimes="50" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="8">
       <KeyCard faceValue="8">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="30" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="50" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="99" Follow="80" Pass="20" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="100" Follow="60" Pass="40" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="30" Follow="65" Pass="0" ALLIn="0" Add="35" addLowLimit="3" addTopLimit="9" />
+          <BetTimes nTimes="45" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="80" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="40" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="100" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="30" Follow="65" Pass="0" ALLIn="0" Add="35" addLowLimit="3" addTopLimit="9" />
+          <BetTimes nTimes="80" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="50" Follow="75" Pass="0" ALLIn="0" Add="25" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
@@ -79,16 +75,15 @@
     <CardType caType="9">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="50" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="30" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="60" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="30" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="10" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="1" addTopLimit="1" />
-          <BetTimes nTimes="30" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="40" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="15" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="30" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
           <BetTimes nTimes="80" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
         </HoldCardContribute>
       </KeyCard>
@@ -96,104 +91,102 @@
     <CardType caType="10">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="40" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="50" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="80" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="100" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="40" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="50" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="80" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="100" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
         <HoldCardContribute count="1">
-          <BetTimes nTimes="80" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="50" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="35" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="50" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="35" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
         <HoldCardContribute count="0">
-          <BetTimes nTimes="10" Follow="99" Pass="0" ALLIn="0" Add="1" addLowLimit="1" addTopLimit="1" />
+          <BetTimes nTimes="10" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
           <BetTimes nTimes="20" Follow="89" Pass="10" ALLIn="0" Add="1" addLowLimit="1" addTopLimit="1" />
           <BetTimes nTimes="50" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="1">
-          <BetTimes nTimes="20" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="50" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="80" Follow="65" Pass="35" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="20" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="50" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="80" Follow="65" Pass="35" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
         <HoldCardContribute count="2">
-          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="70" Follow="60" Pass="40" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="50" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="30" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="80" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="11">
       <KeyCard faceValue="9">
         <HoldCardContribute count="1">
-          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="20" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="40" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="30" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="60" Follow="75" Pass="25" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
         </HoldCardContribute>
         <HoldCardContribute count="2">
-          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="30" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="45" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="60" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="40" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="60" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="7">
       <KeyCard faceValue="8">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="50" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="65" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="50" Follow="50" Pass="0" ALLIn="0" Add="50" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="30" Follow="30" Pass="0" ALLIn="0" Add="70" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="80" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="6" />
         </HoldCardContribute>
         <HoldCardContribute count="1">
-          <BetTimes nTimes="100" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="40" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="40" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="3" addTopLimit="6" />
+          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="20" Follow="60" Pass="0" ALLIn="0" Add="40" addLowLimit="3" addTopLimit="10" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="100" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="60" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="100" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="60" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="30" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
         <HoldCardContribute count="1">
-          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="80" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="100" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="5" />
+          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="80" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="100" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="5">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="50" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="70" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="100" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="30" Follow="40" Pass="0" ALLIn="0" Add="60" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="70" Follow="60" Pass="0" ALLIn="0" Add="40" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="100" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
         <HoldCardContribute count="1">
-          <BetTimes nTimes="100" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="80" Follow="92" Pass="8" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="55" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="80" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="60" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="30" Follow="70" Pass="0" ALLIn="0" Add="30" addLowLimit="2" addTopLimit="6" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="100" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="40" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="60" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="90" Follow="70" Pass="0" ALLIn="0" Add="30" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="40" Follow="30" Pass="0" ALLIn="0" Add="70" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="70" Follow="70" Pass="0" ALLIn="0" Add="30" addLowLimit="4" addTopLimit="10" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="1">
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="80" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="10" />
-          <BetTimes nTimes="50" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="50" Follow="20" Pass="0" ALLIn="20" Add="60" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="20" Follow="20" Pass="0" ALLIn="0" Add="80" addLowLimit="4" addTopLimit="7" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
@@ -202,70 +195,67 @@
     <CardType caType="9">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="20" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
-          <BetTimes nTimes="10" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="20" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="10" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="25" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
-          <BetTimes nTimes="40" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
-          <BetTimes nTimes="50" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
-          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="25" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="40" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="50" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="6">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="40" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="25" Follow="85" Pass="0" ALLIn="0" Add="15" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="35" Follow="40" Pass="0" ALLIn="10" Add="50" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="60" Follow="60" Pass="0" ALLIn="0" Add="40" addLowLimit="4" addTopLimit="10" />
         </HoldCardContribute>
         <HoldCardContribute count="0">
-          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
-          <BetTimes nTimes="40" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
-          <BetTimes nTimes="60" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="20" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="40" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="60" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="50" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="20" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="30" Follow="50" Pass="0" ALLIn="10" Add="40" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="55" Follow="75" Pass="0" ALLIn="0" Add="25" addLowLimit="4" addTopLimit="10" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="1">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="40" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="80" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="100" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="40" Follow="40" Pass="0" ALLIn="10" Add="50" addLowLimit="4" addTopLimit="6" />
+          <BetTimes nTimes="80" Follow="75" Pass="0" ALLIn="0" Add="25" addLowLimit="4" addTopLimit="7" />
+          <BetTimes nTimes="100" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
         <HoldCardContribute count="1">
-          <BetTimes nTimes="60" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="60" Follow="70" Pass="0" ALLIn="0" Add="30" addLowLimit="4" addTopLimit="6" />
+          <BetTimes nTimes="33" Follow="50" Pass="0" ALLIn="0" Add="50" addLowLimit="4" addTopLimit="10" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="10">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="20" Follow="75" Pass="25" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="35" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="40" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="35" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="4" addTopLimit="7" />
+          <BetTimes nTimes="50" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="4" addTopLimit="7" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="11">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="26" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="10" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="15" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="50" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="26" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="10" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="15" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="50" Follow="30" Pass="70" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
@@ -274,18 +264,18 @@
     <CardType caType="9">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="20" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="10" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="25" Follow="1" Pass="99" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="20" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="10" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="25" Follow="1" Pass="99" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="20" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="30" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="40" Follow="15" Pass="85" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="50" Follow="0" Pass="100" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="20" Follow="70" Pass="30" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="15" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="30" Follow="40" Pass="60" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="40" Follow="15" Pass="85" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="50" Follow="0" Pass="100" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
         <HoldCardContribute count="0">
           <BetTimes nTimes="10" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="1" addTopLimit="1" />
@@ -295,40 +285,37 @@
     <CardType caType="6">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="85" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="70" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="40" Follow="85" Pass="0" ALLIn="5" Add="10" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="80" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="55" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="30" Follow="50" Pass="0" ALLIn="0" Add="50" addLowLimit="4" addTopLimit="10" />
         </HoldCardContribute>
         <HoldCardContribute count="0">
-          <BetTimes nTimes="50" Follow="95" Pass="5" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="60" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="40" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="2" Add="3" addLowLimit="2" addTopLimit="3" />
-          <BetTimes nTimes="70" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="3" />
+          <BetTimes nTimes="60" Follow="90" Pass="10" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="40" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="70" Follow="50" Pass="50" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>
     <CardType caType="1">
       <KeyCard faceValue="9">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="40" Follow="80" Pass="0" ALLIn="5" Add="15" addLowLimit="2" addTopLimit="5" />
-          <BetTimes nTimes="60" Follow="88" Pass="0" ALLIn="2" Add="10" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="80" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="4" />
+          <BetTimes nTimes="40" Follow="40" Pass="0" ALLIn="10" Add="50" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="70" Follow="70" Pass="0" ALLIn="10" Add="20" addLowLimit="4" addTopLimit="10" />
+          <BetTimes nTimes="90" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="4" addTopLimit="10" />
         </HoldCardContribute>
         <HoldCardContribute count="0">
-          <BetTimes nTimes="15" Follow="90" Pass="0" ALLIn="5" Add="5" addLowLimit="2" addTopLimit="6" />
-          <BetTimes nTimes="30" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="6" />
-          <BetTimes nTimes="50" Follow="85" Pass="15" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="6" />
+          <BetTimes nTimes="50" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="4" addTopLimit="5" />
+          <BetTimes nTimes="30" Follow="80" Pass="0" ALLIn="0" Add="20" addLowLimit="4" addTopLimit="5" />
         </HoldCardContribute>
       </KeyCard>
       <KeyCard faceValue="14">
         <HoldCardContribute count="2">
-          <BetTimes nTimes="35" Follow="70" Pass="0" ALLIn="0" Add="30" addLowLimit="2" addTopLimit="4" />
-          <BetTimes nTimes="55" Follow="70" Pass="0" ALLIn="10" Add="20" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="30" Follow="40" Pass="0" ALLIn="10" Add="50" addLowLimit="2" addTopLimit="10" />
+          <BetTimes nTimes="50" Follow="70" Pass="0" ALLIn="0" Add="30" addLowLimit="2" addTopLimit="10" />
         </HoldCardContribute>
         <HoldCardContribute count="0">
-          <BetTimes nTimes="50" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="7" />
-          <BetTimes nTimes="25" Follow="90" Pass="0" ALLIn="0" Add="10" addLowLimit="2" addTopLimit="7" />
+          <BetTimes nTimes="50" Follow="100" Pass="0" ALLIn="0" Add="0" addLowLimit="2" addTopLimit="2" />
+          <BetTimes nTimes="30" Follow="95" Pass="0" ALLIn="0" Add="5" addLowLimit="4" addTopLimit="5" />
         </HoldCardContribute>
       </KeyCard>
     </CardType>

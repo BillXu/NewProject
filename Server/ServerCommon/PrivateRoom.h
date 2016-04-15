@@ -261,7 +261,7 @@ uint8_t CPrivateRoom<T>::getRoomType()
 {
 	if ( m_pRoom )
 	{
-		m_pRoom->getRoomType();
+		return m_pRoom->getRoomType();
 	}
 	return eRoom_None ;
 }

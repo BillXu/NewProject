@@ -4,10 +4,10 @@
 #include "ServerCommon.h"
 void IRoomState::update(float fDeta)
 { 
-	if ( m_fStateDuring >= 0 )
+	if ( m_fStateDuring >= 0.0f )
 	{ 
 		m_fStateDuring -= fDeta ; 
-		if ( m_fStateDuring <= 0 )
+		if ( m_fStateDuring <= 0.0f )
 		{ 
 			onStateDuringTimeUp();
 		} 

@@ -254,5 +254,11 @@
     <ClInclude Include="src\GoldenGameResultState.h">
       <Filter>src\Room\state</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Common\IPeerCard.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\GoldenPeerCardAdapter.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

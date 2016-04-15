@@ -323,17 +323,6 @@ void CNiuNiuRoom::onGameDidEnd()
 	CLogMgr::SharedLogMgr()->PrintLog("room game End");
 }
 
-bool sortPlayerByCard(ISitableRoomPlayer* pLeft , ISitableRoomPlayer* pRight )
-{
-	CNiuNiuRoomPlayer* pNLeft = (CNiuNiuRoomPlayer*)pLeft ;
-	CNiuNiuRoomPlayer* pNRight = (CNiuNiuRoomPlayer*)pRight ;
-	if ( pNLeft->getPeerCard()->pk(pNRight->getPeerCard()) == IPeerCard::PK_RESULT_FAILED )
-	{
-		return true ;
-	}
-	return false ;
-}
-
 void CNiuNiuRoom::prepareCards()
 {
 	// parepare cards for all player ;
@@ -350,13 +339,8 @@ void CNiuNiuRoom::prepareCards()
 				pRoomPlayer->onGetCard(nCardIdx,getPoker()->GetCardWithCompositeNum()) ;
 				++nCardIdx ;
 			}
-			m_vSortByPeerCardsAsc.push_back(pRoomPlayer) ;
 		}
 	}
-
-	std::sort(m_vSortByPeerCardsAsc.begin(),m_vSortByPeerCardsAsc.end(),sortPlayerByCard);
-
-	doProcessNewPlayerHalo();
 }
 
 uint32_t CNiuNiuRoom::coinNeededToSitDown()
@@ -373,16 +357,17 @@ void CNiuNiuRoom::caculateGameResult()
 
 	// send result msg ;
 	stMsgNNGameResult msgResult ;
-	msgResult.nPlayerCnt = m_vSortByPeerCardsAsc.size() ;
+	msgResult.nPlayerCnt = getSortedPlayerCnt() ;
 
 	CAutoBuffer auBuffer(sizeof(msgResult) + msgResult.nPlayerCnt * sizeof(stNNGameResultItem));
 	auBuffer.addContent(&msgResult,sizeof(msgResult)) ;
 
 	int32_t nBankerOffset = 0 ;
 	// caclulate banker win ;
-	for ( ISitableRoomPlayer* pPlayer : m_vSortByPeerCardsAsc )
+	for ( uint8_t nIdx = 0 ; nIdx < msgResult.nPlayerCnt ; ++nIdx )
 	{
-		CNiuNiuRoomPlayer* pNNP = (CNiuNiuRoomPlayer*)pPlayer ;
+		CNiuNiuRoomPlayer* pNNP = (CNiuNiuRoomPlayer*)getSortedPlayerByIdx(nIdx) ;
+		assert(pNNP && "why have null player in sorted player list" );
 		if ( pNNP == pBanker )
 		{
 			break;
@@ -404,16 +389,13 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nOffsetCoin = -1* nLoseCoin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
-		if ( getDelegate() )
-		{
-			getDelegate()->onUpdatePlayerGameResult(this,pNNP->getUserUID(),item.nOffsetCoin);
-		}
+		pNNP->setGameOffset(item.nOffsetCoin);
 	}
 
 	// caculate banker lose 
-	for ( uint8_t nIdx = m_vSortByPeerCardsAsc.size() -1 ; nIdx >= 0 ; --nIdx )
+	for ( uint8_t nIdx = 0 ; nIdx < msgResult.nPlayerCnt ; ++nIdx )
 	{
-		CNiuNiuRoomPlayer* pNNP = (CNiuNiuRoomPlayer*)m_vSortByPeerCardsAsc[nIdx] ;
+		CNiuNiuRoomPlayer* pNNP = (CNiuNiuRoomPlayer*)getSortedPlayerByIdx(nIdx) ;
 		if ( pNNP == pBanker )
 		{
 			break;
@@ -439,11 +421,7 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nOffsetCoin = (int32_t)nWithoutTaxWin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
- ;		if ( getDelegate() )
-		{
-			getDelegate()->onUpdatePlayerGameResult(this,pNNP->getUserUID(),item.nOffsetCoin);
-		}
-		pNNP->increaseWinTimes();
+		pNNP->setGameOffset(item.nOffsetCoin);
 	}
 
 	if ( nBankerOffset > (int32_t)0 )
@@ -459,15 +437,7 @@ void CNiuNiuRoom::caculateGameResult()
 	item.nOffsetCoin = nBankerOffset ;
 	item.nPlayerIdx = pBanker->getIdx() ;
 	auBuffer.addContent(&item,sizeof(item)) ;
-	if ( getDelegate() )
-	{
-		getDelegate()->onUpdatePlayerGameResult(this,pBanker->getUserUID(),item.nOffsetCoin);
-	}
-	if ( item.nOffsetCoin > (int32_t)0 )
-	{
-		pBanker->increaseWinTimes();
-	}
-
+	pBanker->setGameOffset(item.nOffsetCoin);
 	CLogMgr::SharedLogMgr()->PrintLog("result player idx = %d , finalCoin = %d, offset coin = %d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
 
 	sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;

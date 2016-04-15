@@ -347,6 +347,7 @@ struct stMsgSavePlayerCommonLoginData
 	uint8_t nVipLevel ;
 	int64_t nYesterdayCoinOffset ;
 	int64_t nTodayCoinOffset ;
+	int32_t nTotalGameCoinOffset ;
 	uint32_t tOfflineTime ;  // last offline time ;
 	uint32_t nContinueDays ;
 	uint32_t tLastLoginTime;
@@ -545,6 +546,7 @@ struct stMsgSvrDoLeaveRoom
 	uint32_t nPlayerTimes ;
 	uint32_t nWinTimes ;
 	uint32_t nSingleWinMost ;
+	int32_t nGameOffset ;
 };
 
 struct stMsgSvrDelayedLeaveRoom

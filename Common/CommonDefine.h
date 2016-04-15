@@ -134,7 +134,7 @@ enum eRoomState
 #define TIME_GOLDEN_ROOM_DISTRIBUTY 3
 #define TIME_GOLDEN_ROOM_WAIT_ACT 10
 #define TIME_GOLDEN_ROOM_PK 4
-#define TIME_GOLDEN_ROOM_RESULT 5
+#define TIME_GOLDEN_ROOM_RESULT 2
 
 static unsigned char s_vChangeCardDimonedNeed[GOLDEN_PEER_CARD] = {0,4,8} ;
 
@@ -164,15 +164,6 @@ enum eRoomSeat
 enum eRoomPeerState
 {
 	eRoomPeer_None,
-	// peer state for golden peer 
-	eRoomPeer_Golden_Playing = 1 ,
-	eRoomPeer_Golden_WaitNextPlay = 1 << 1 ,
-	eRoomPeer_Golden_WaitToReady = 1 << 2 ,
-	eRoomPeer_Golden_Ready  = (1 << 3) | eRoomPeer_Golden_Playing  ,
-    eRoomPeer_Golden_Look = (1 << 4) | eRoomPeer_Golden_Playing ,
-	eRoomPeer_Golden_GiveUp = 1 << 5,
-	eRoomPeer_Golden_PK_Failed = 1 << 6 ,
-
 	// peer state for taxas poker peer
 	eRoomPeer_SitDown = 1,
 	eRoomPeer_StandUp = 1 << 1,
@@ -186,7 +177,6 @@ enum eRoomPeerState
 	eRoomPeer_WithdrawingCoin = (1 << 8),  // when invoke drawing coin , must be sitdown , but when staup up , maybe in drawingCoin state 
 	eRoomPeer_LackOfCoin = (1<<9)|eRoomPeer_SitDown,
 	eRoomPeer_WillLeave = (1<<10)|eRoomPeer_StandUp ,
-	eRoomPeer_WillStandUp = (1<<11),
 	eRoomPeer_Looked =  (1<<13)|eRoomPeer_CanAct ,
 	eRoomPeer_PK_Failed = (1<<14)|eRoomPeer_StayThisRound ,
 	eRoomPeer_Max,

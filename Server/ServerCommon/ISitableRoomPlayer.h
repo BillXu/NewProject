@@ -1,6 +1,7 @@
 #pragma once
 #include "ServerCommon.h"
 #include "IRoom.h"
+class IPeerCard ;
 class ISitableRoomPlayer
 {
 public:
@@ -10,10 +11,17 @@ public:
 	virtual void willStandUp(){}
 	virtual void onGameEnd() ;
 	virtual void onGameBegin(){ ++nPlayTimes ;}
-	bool isHaveState( uint32_t nStateFlag ){ return ( m_nState & nStateFlag ) == nStateFlag ;}
-	void removeState( uint32_t nStateFlag ) { m_nState &=(~nStateFlag); }
-	void addState( uint32_t nStateFlag ){ m_nState |=(nStateFlag); }
-	void setState( uint32_t nStateFlag ){ m_nState = nStateFlag ;}
+	bool isHaveState( uint32_t nStateFlag )
+	{
+		return ( m_nState & nStateFlag ) == nStateFlag ;
+	}
+
+	void removeState( uint32_t nStateFlag );
+
+	void addState( uint32_t nStateFlag ) ;
+
+	void setState( uint32_t nStateFlag );
+
 	uint32_t getState(){ return m_nState ; }
 	uint32_t getCoin(){ return nCoin ;}
 	void setCoin( int32_t nNewCoin ){ nCoin = nNewCoin ;}
@@ -21,17 +29,20 @@ public:
 	uint32_t getSessionID(){ return nSessionID ; }
 	virtual void reset(IRoom::stStandPlayer* pPlayer);
 	bool isHaveHalo();
-	virtual void switchPeerCard(ISitableRoomPlayer* pPlayer ) = 0;
+	void switchPeerCard(ISitableRoomPlayer* pPlayer );
 	bool isDelayStandUp(){ return m_isDelayStandUp ;}
 	void delayStandUp(){ m_isDelayStandUp = true ; }
 	uint32_t getWinTimes(){ return nWinTimes ; }
 	uint32_t getPlayTimes(){ return nPlayTimes ;}
 	uint32_t getSingleWinMost(){ return nSingleWinMost ;}
-	void increaseWinTimes(){ ++nWinTimes ;}
 	void setTempHaloWeight( uint16_t nTempHalo ){ nTempHaloWeight = nTempHalo ; }
 	uint8_t getHaloWeight(){ return nNewPlayerHaloWeight; }
+	virtual int32_t getGameOffset() = 0 ;
+	virtual IPeerCard* getPeerCard() = 0 ;
+	int32_t getTotalGameOffset(){ return nTotalGameOffset ;}
 private:
 	uint16_t getTotalHaloWeight(){ return nNewPlayerHaloWeight + nTempHaloWeight; }
+	void increaseWinTimes(){ ++nWinTimes ;}
 private:
 	bool m_isDelayStandUp;
 	uint8_t m_nIdx ;
@@ -46,4 +57,5 @@ private:
 	uint32_t nPlayTimes ;
 	uint32_t nWinTimes ;
 	uint32_t nSingleWinMost ;
+	int32_t nTotalGameOffset ;
 };

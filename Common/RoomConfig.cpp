@@ -57,8 +57,8 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	pRoomConfig->fDividFeeRate = refReaderRow["DividFeeRate"]->FloatValue() ;
 	pRoomConfig->nCoinLowLimit = refReaderRow["CoinLowLimit"]->IntValue();
 	pRoomConfig->nCoinTopLimit = refReaderRow["CoinTopLimit"]->IntValue();
-	pRoomConfig->bIsNeedRegistered = refReaderRow["NeedRegister"]->IntValue();
-	pRoomConfig->bIsOmitNewPlayerHalo = refReaderRow["isOmitNewPlayerHalo"]->IntValue();
+	pRoomConfig->bIsNeedRegistered = (bool)(refReaderRow["NeedRegister"]->IntValue());
+	pRoomConfig->bIsOmitNewPlayerHalo = (bool)(refReaderRow["isOmitNewPlayerHalo"]->IntValue());
 	pRoomConfig->nMaxLose = refReaderRow["MaxLose"]->IntValue() ;
 	refReaderRow["Reward"]->VecInt(pRoomConfig->vRewardID);
 	pRoomConfig->fDividFeeRate = pRoomConfig->fDividFeeRate / 100.00f ;

@@ -15,7 +15,7 @@ void CGoldenBetState::onStateDuringTimeUp()
 {
 	// time out 
 	stMsgGoldenPlayerAct act ;
-	act.nPlayerAct = (uint8_t)eRoomPeer_GiveUp ;
+	act.nPlayerAct = (uint8_t)eRoomPeerAction_GiveUp ;
 	act.nValue = 0 ;
 	auto pp = m_pRoom->getPlayerByIdx(m_pRoom->getCurActIdx()) ;
 	assert(pp && "why current act player is null ?" );
@@ -76,9 +76,8 @@ bool CGoldenBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 				break ;
 			}
 
-			bool bNeedWaitNext = pPlayer->getIdx() == m_pRoom->getCurActIdx() ;
-
 			stMsgGoldenPlayerAct* pRet = (stMsgGoldenPlayerAct*)prealMsg ;
+			bool bNeedWaitNext = pPlayer->getIdx() == m_pRoom->getCurActIdx() && (eRoomPeerAction_ViewCard != pRet->nPlayerAct) ;
 			msgBack.nRet = m_pRoom->onPlayerAction(pRet->nPlayerAct,pRet->nValue,pPlayer);
 			m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 
@@ -91,18 +90,17 @@ bool CGoldenBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 				msgAct.nValue = pRet->nValue ;
 				m_pRoom->sendRoomMsg(&msgAct,sizeof(msgAct)) ;
 
-				// game over ?
-				if ( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) == 1 )
-				{
-					m_pRoom->goToState(eRoomState_Golden_GameResult) ;
-					break ;
-				}
-
-				if ( bNeedWaitNext )
+				if ( bNeedWaitNext && m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) > 1 )
 				{
 					m_pRoom->informPlayerAct(true);
 					setStateDuringTime(TIME_GOLDEN_ROOM_WAIT_ACT);
 				}
+			}
+			// game over ?
+			if ( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) <= 1 )
+			{
+				m_pRoom->goToState(eRoomState_Golden_GameResult) ;
+				break ;
 			}
 		}
 		break;

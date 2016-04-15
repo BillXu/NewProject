@@ -98,6 +98,7 @@
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
     <ClInclude Include="..\..\Common\TaxasMessageDefine.h" />
+    <ClInclude Include="..\..\Common\TaxasPeerCardAdapter.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />

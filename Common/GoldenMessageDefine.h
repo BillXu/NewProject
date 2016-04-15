@@ -33,6 +33,7 @@ struct stMsgGoldenDistribute
 {
 	stMsgGoldenDistribute(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_GOLDEN_ROOM_DISTRIBUTE ; }
 	uint8_t nCnt ;
+	uint8_t nBankIdx ;
 	PLACE_HOLDER(stGoldenHoldPeerCard* peerCards );
 };
 
@@ -46,7 +47,7 @@ struct stMsgGoldenRoomWaitPlayerAct
 struct stMsgGoldenPlayerAct
 	:public stMsgToRoom
 {
-	stMsgGoldenPlayerAct(){ cSysIdentifer = ID_MSG_PORT_GOLDEN; usMsgType = MSG_GOLDEN_PLAYER_ACT ; }
+    stMsgGoldenPlayerAct(){ cSysIdentifer = ID_MSG_PORT_GOLDEN; usMsgType = MSG_GOLDEN_PLAYER_ACT ; }
 	uint8_t nPlayerAct ; // eRoomPeerAction ;   add, give up , follow , add , look 
 	uint32_t nValue ;    // used when add act , add offset 
 };
@@ -68,7 +69,7 @@ struct stMsgGoldenRoomAct
 };
 
 struct stMsgGoldenPlayerPK
-	:public stMsg
+	:public stMsgToRoom
 {
 	stMsgGoldenPlayerPK(){ cSysIdentifer = ID_MSG_PORT_GOLDEN ;usMsgType = MSG_GOLDEN_PLAYER_PK ; }
 	unsigned char nPkTargetIdx ;

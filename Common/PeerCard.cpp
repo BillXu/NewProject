@@ -2,6 +2,9 @@
 #include <memory>
 #include <assert.h>
 #include "LogManager.h"
+#ifndef SERVER
+#include "Language.h"
+#endif
 CPeerCard::CPeerCard()
 {
 	for ( int i = 0 ; i < PEER_CARD_COUNT ; ++i )
@@ -11,6 +14,7 @@ CPeerCard::CPeerCard()
 	 m_eCardType = ePeerCard_None ;
 	 m_vRepacedCard.clear();
 	 m_vShowedCard.clear() ;
+	 m_pPairCardNum = 0 ;
 }
 
 CPeerCard::~CPeerCard()
@@ -23,7 +27,7 @@ CPeerCard::~CPeerCard()
 	}
 }
 
-void CPeerCard::SetPeerCardByNumber( unsigned char nNumber , unsigned char nNum, unsigned nNum2 )
+void CPeerCard::SetPeerCardByNumber( unsigned char nNumber , unsigned char nNum, unsigned char nNum2 )
 {
 	unsigned char vNum[] = {nNumber,nNum,nNum2 };
 	for ( int i = 0 ; i < PEER_CARD_COUNT ; ++i )
@@ -42,11 +46,30 @@ void CPeerCard::SetPeerCardByNumber( unsigned char nNumber , unsigned char nNum,
 	m_vShowedCard.clear() ;
 }
 
-bool CPeerCard::PKPeerCard(CPeerCard* pPeerCard)
+int8_t CPeerCard::PKPeerCard(CPeerCard* pPeerCard)
 {
 	if ( GetType() != pPeerCard->GetType() )
 	{
-		return GetType() > pPeerCard->GetType() ;
+		if ( GetType() > pPeerCard->GetType() )
+		{
+			return 1 ;
+		}
+		else
+		{
+			return -1 ;
+		}
+	}
+
+	if ( GetType() == ePeerCard_Pair )
+	{
+		if ( m_pPairCardNum > pPeerCard->m_pPairCardNum )
+		{
+			return 1 ;
+		}
+		else
+		{
+			return -1 ;
+		}
 	}
 
 	int myBig = 0 ;
@@ -55,10 +78,16 @@ bool CPeerCard::PKPeerCard(CPeerCard* pPeerCard)
 	{
 		myBig = m_vCard[i]->GetCardFaceNum() == 1 ? 14 : m_vCard[i]->GetCardFaceNum() ;
 		nOtherBig = pPeerCard->m_vCard[i]->GetCardFaceNum() == 1 ? 14 : pPeerCard->m_vCard[i]->GetCardFaceNum() ;
-		if ( myBig != nOtherBig )
-			return myBig > nOtherBig ;
+		if ( myBig > nOtherBig )
+		{
+			return 1 ;
+		}
+		else if ( myBig < nOtherBig )
+		{
+			return -1 ;
+		}
 	}
-	return false ;	
+	return 0 ;	
 }
 
 void CPeerCard::ReplaceCardByNumber( unsigned char nOld , unsigned char nNew )
@@ -94,46 +123,26 @@ void CPeerCard::ShowCardByNumber(unsigned char nCardNum)
 
 void CPeerCard::ArrangeCard()
 {
+	for ( uint8_t nIdx = 0 ; nIdx < PEER_CARD_COUNT - 1 ; ++nIdx )
+	{
+		uint8_t nPosNum = m_vCard[nIdx]->GetCardFaceNum(true) ;
+		for ( uint8_t nSIdx = nIdx + 1 ; nSIdx < PEER_CARD_COUNT ; ++nSIdx )
+		{
+			uint8_t nSNum = m_vCard[nSIdx]->GetCardFaceNum(true) ;
+			if ( nSNum < nPosNum ) // switch ;
+			{
+				nPosNum = nSNum ;
+				CCard* pCard = m_vCard[nSIdx] ;
+				m_vCard[nSIdx]= m_vCard[nIdx] ;
+				m_vCard[nIdx]=pCard ;
+			}
+		}
+	}
+
 	int iNum[PEER_CARD_COUNT] = { 0 } ;
 	for ( int i = 0 ; i < PEER_CARD_COUNT ; ++i )
 	{
-		iNum[i] = m_vCard[i]->GetCardFaceNum() == 1 ? 14 : m_vCard[i]->GetCardFaceNum() ;
-	}
-
-	// 0 and 1 
-	if ( iNum[0] > iNum[1] ) // switch 
-	{
-		CCard* pCard = m_vCard[1] ;
-		m_vCard[1]= m_vCard[0] ;
-		m_vCard[0]=pCard ;
-
-		iNum[0] = iNum[0] + iNum[1] ;
-		iNum[1] = iNum[0] - iNum[1] ;
-		iNum[0] = iNum[0] - iNum[1];
-	}
-
-	// 1 and 2 
-	if ( iNum[1] > iNum[2] )
-	{
-		CCard* pCard = m_vCard[2] ;
-		m_vCard[2]= m_vCard[1] ;
-		m_vCard[1]=pCard ;
-
-		iNum[1] = iNum[1] + iNum[2] ;
-		iNum[2] = iNum[1] - iNum[2] ;
-		iNum[1] = iNum[1] - iNum[2];
-	}
-
-	// 0 and 1 
-	if ( iNum[0] > iNum[1] ) // switch 
-	{
-		CCard* pCard = m_vCard[1] ;
-		m_vCard[1]= m_vCard[0] ;
-		m_vCard[0]=pCard ;
-
-		iNum[0] = iNum[0] + iNum[1] ;
-		iNum[1] = iNum[0] - iNum[1] ;
-		iNum[0] = iNum[0] - iNum[1];
+		iNum[i] = m_vCard[i]->GetCardFaceNum(true);
 	}
 
 	// decide type ;
@@ -148,14 +157,20 @@ void CPeerCard::ArrangeCard()
 		{
 			m_eCardType =  ePeerCard_SameColorSequence ;
 		}
+
+		if ( iNum[0] == 2 && iNum[1] == 3 && 14 == iNum[2] )
+		{
+			m_eCardType =  ePeerCard_SameColorSequence ;
+		}
 	}
-	else if ( iNum[0] +1 == iNum[1] && iNum[1] + 1 == iNum[2] )
+	else if ( (iNum[0] +1 == iNum[1] && iNum[1] + 1 == iNum[2]) || ( iNum[0] == 2 && iNum[1] == 3 && 14 == iNum[2] ) )
 	{
 		m_eCardType = ePeerCard_Sequence ;
 	}
-	else if ( iNum[0] == iNum[1] || iNum[0] == iNum[2] || iNum[2] == iNum[1]) 
+	else if ( iNum[0] == iNum[1] || iNum[2] == iNum[1]) 
 	{
 		m_eCardType = ePeerCard_Pair ;
+		m_pPairCardNum = iNum[1];
 	}
 	else
 	{
@@ -216,6 +231,7 @@ void CPeerCard::Reset()
 	m_eCardType = ePeerCard_None ;
 	m_vRepacedCard.clear();
 	m_vShowedCard.clear() ;
+	m_pPairCardNum = 0 ;
 }
 
 void CPeerCard::GetCompositeCardRepresent(char* vCard )
@@ -225,3 +241,34 @@ void CPeerCard::GetCompositeCardRepresent(char* vCard )
 		vCard[i] = m_vCard[i]->GetCardCompositeNum() ;
 	}
 }
+
+#ifndef SERVER
+const char*  CPeerCard::getNameString(){
+    std::string str = "niuniu_meiniu";
+    switch (m_eCardType) {
+        case ePeerCard_None:
+            str = "paixing_danzhang";
+            break;
+        case ePeerCard_Pair:
+            str = "paixing_duizi";
+            break;
+        case ePeerCard_Sequence:
+            str = "paixing_shunzi";
+            break;
+        case ePeerCard_SameColor:
+            str = "paixing_tonghua";
+            break;
+        case ePeerCard_SameColorSequence:
+            str = "paixing_tonghuashun";
+            break;
+        case ePeerCard_Bomb:
+            str = "paixing_baozi";
+            break;
+        default:
+            str = "paixing_danzhang";
+            break;
+    }
+    return Language::getInstance()->get(str);
+
+}
+#endif

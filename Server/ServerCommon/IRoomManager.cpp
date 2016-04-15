@@ -220,13 +220,12 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 
 			msgBack.nRet = pRoom->canPlayerEnterRoom(&pRet->tPlayerData) ;
 			msgBack.nRoomID = pRoom->getRoomID() ;
-			msgBack.nSubIdx = (uint8_t)pRet->nSubIdx ;
-			sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
-
 			if ( msgBack.nRet == 0 )
 			{
-				pRoom->onPlayerEnterRoom(&pRet->tPlayerData,msgBack.nSubIdx);
+				pRoom->onPlayerEnterRoom(&pRet->tPlayerData,pRet->nSubIdx);
 			}
+			msgBack.nSubIdx = (uint8_t)pRet->nSubIdx ;
+			sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
 		}
 		break;
 	case MSG_REQUEST_ROOM_LIST:
@@ -530,6 +529,10 @@ bool IRoomManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,J
 
 bool IRoomManager::reqeustChatRoomID(IRoom* pRoom)
 {
+#ifdef _DEBUG
+	return true ;
+#endif // _DEBUG
+
 	Json::Value cValue ;
 	cValue["email"] = "378569952@qq.com" ;
 	cValue["devpwd"] = "bill007" ;
@@ -634,6 +637,9 @@ void IRoomManager::removeRoom( IRoomInterface* pRoom )
 
 void IRoomManager::deleteRoomChatID( uint32_t nChatID )
 {
+#ifdef _DEBUG
+	return ;
+#endif // _DEBUG
 	// delete chat room id ;
 	Json::Value cValue ;
 	cValue["email"] = "378569952@qq.com" ;

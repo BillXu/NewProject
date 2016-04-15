@@ -26,6 +26,7 @@ public:
 		uint32_t nWinTimes ;
 		uint32_t nPlayerTimes ;
 		uint32_t nSingleWinMost ;
+		int32_t nGameOffset ;
 	};
 
 public:
@@ -54,6 +55,8 @@ public:
 	void onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t& nSubIdx )override;;
 	virtual void onPlayerWillLeaveRoom(stStandPlayer* pPlayer );
 	virtual bool canStartGame() ;
+	virtual void prepareCards() = 0 ;
+	virtual void doProcessNewPlayerHalo() = 0 ;
 	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
 	void playerDoLeaveRoom(stStandPlayer* pp );
 	void setDeskFee(uint32_t nDeskFee){ m_nDeskFree = nDeskFee ;}

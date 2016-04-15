@@ -166,17 +166,6 @@ uint32_t CTaxasRoom::coinNeededToSitDown()
 	return m_nMinTakeIn ;
 }
 
-bool sortPlayerByCard(ISitableRoomPlayer* pLeft , ISitableRoomPlayer* pRight )
-{
-	CTaxasPlayer* pNLeft = (CTaxasPlayer*)pLeft ;
-	CTaxasPlayer* pNRight = (CTaxasPlayer*)pRight ;
-	if ( pNLeft->getPeerCard()->PK(pNRight->getPeerCard()) == -1 )
-	{
-		return true ;
-	}
-	return false ;
-}
-
 void CTaxasRoom::prepareCards()
 {
 	// parepare cards for all player ;
@@ -201,13 +190,8 @@ void CTaxasRoom::prepareCards()
 
 			// add public cards
 			pRoomPlayer->addPublicCard(m_vPublicCardNums) ;
-			m_vSortByPeerCardsAsc.push_back(pRoomPlayer) ;
 		}
 	}
-
-	std::sort(m_vSortByPeerCardsAsc.begin(),m_vSortByPeerCardsAsc.end(),sortPlayerByCard);
-
-	doProcessNewPlayerHalo();
 }
 
 void CTaxasRoom::onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )
@@ -227,7 +211,7 @@ void CTaxasRoom::onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )
 
 			if ( getDelegate() )
 			{
-				getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),p->getCoinOffsetThisGame());
+				getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),p->getGameOffset());
 			}
 		}
 		else
@@ -357,7 +341,7 @@ uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint
 		CLogMgr::SharedLogMgr()->PrintLog("uid = %d have delay standup , give up act , right standup and update offset ",pData->getUserUID());
 		if ( getDelegate() )
 		{
-			getDelegate()->onUpdatePlayerGameResult(this,pData->getUserUID(),pData->getCoinOffsetThisGame());
+			getDelegate()->onUpdatePlayerGameResult(this,pData->getUserUID(),pData->getGameOffset());
 		}
 		playerDoStandUp(pData);	
 	}
@@ -764,22 +748,6 @@ uint8_t CTaxasRoom::CaculateGameResult()
 	return GetFirstCanUseVicePool().nIdx ;
 }
 
-//uint64_t CTaxasRoom::GetAllBetCoinThisRound()
-//{
-//	uint64_t nCoinThis = 0 ;
-//	for ( uint8_t nIdx = 0 ; nIdx < m_stRoomConfig.nMaxSeat ; ++nIdx)
-//	{
-//		if ( m_vSitDownPlayers[nIdx].IsInvalid() || ( m_vSitDownPlayers[nIdx].IsHaveState(eRoomPeer_StayThisRound) == false ) )
-//		{
-//			continue; 
-//		}
-//
-//		stTaxasPeerData& pData = m_vSitDownPlayers[nIdx] ;
-//		nCoinThis += pData.nBetCoinThisRound;
-//	}
-//	return nCoinThis ;
-//}
-
 bool CTaxasRoom::IsPublicDistributeFinish()
 {
 	return (m_nPublicCardRound >= 3 );
@@ -790,74 +758,20 @@ void CTaxasRoom::didCaculateGameResult()
 	// save serve log 
 	writeGameResultLog();
 	
-	// update coin offset ;
+	// update coin Tax ;
 	for ( uint8_t nIdx = 0 ; nIdx < getSeatCount(); ++nIdx )
 	{
 		CTaxasPlayer* pPlayer = (CTaxasPlayer*)getPlayerByIdx(nIdx);
-		if ( pPlayer == nullptr || pPlayer->isHaveState(eRoomPeer_StayThisRound) == false ) 
+		if ( pPlayer == nullptr || pPlayer->isHaveState(eRoomPeer_StayThisRound) == false || pPlayer->getGameOffset() < (int)0 ) 
 		{
 			continue;
 		}
 		CLogMgr::SharedLogMgr()->ErrorLog("game end update offset");
-		int32_t nTaxFee = (int32_t)(pPlayer->getCoinOffsetThisGame() * getChouShuiRate());
-		if ( nTaxFee > (int32_t)0 )
-		{
-			pPlayer->setCoin(pPlayer->getCoin() - nTaxFee );
-			if ( getDelegate() )
-			{
-				getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),pPlayer->getCoinOffsetThisGame() - nTaxFee );
-			}
-			addTotoalProfit((uint32_t)nTaxFee);
-			CLogMgr::SharedLogMgr()->PrintLog("room id = %u uid = %u , give tax = %d coin = %u",getRoomID(),nTaxFee,pPlayer->getCoin()) ;
-		}
-		else
-		{
-			if ( getDelegate() )
-			{
-				getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),pPlayer->getCoinOffsetThisGame() );
-			}
-		}
+		int32_t nTaxFee = (int32_t)(pPlayer->getGameOffset() * getChouShuiRate());
+		pPlayer->setCoin(pPlayer->getCoin() - nTaxFee );
+		addTotoalProfit((uint32_t)nTaxFee);
+		CLogMgr::SharedLogMgr()->PrintLog("room id = %u uid = %u , give tax = %d coin = %u",getRoomID(),nTaxFee,pPlayer->getCoin()) ;
 	}
-
-	//// update best card ;
-	//if ( IsPublicDistributeFinish() )
-	//{
-	//	CTaxasPokerPeerCard peerCur , peerBest;
-	//	for ( stTaxasPeerData& peer : m_vSitDownPlayers )
-	//	{
-	//		if ( peer.IsInvalid() || peer.IsHaveState(eRoomPeer_StayThisRound) == false || peer.IsHaveState(eRoomPeer_GiveUp) )
-	//		{
-	//			continue;
-	//		}
-
-	//		peerCur.Reset();
-	//		peerBest.Reset() ;
-	//		for ( uint8_t& comN : m_vPublicCardNums )
-	//		{
-	//			peerCur.AddCardByCompsiteNum(comN);
-	//		}
-	//		peerCur.AddCardByCompsiteNum(peer.vHoldCard[0]) ;
-	//		peerCur.AddCardByCompsiteNum(peer.vHoldCard[1]) ;
-
-	//		if ( peer.vBestCards[0] == 0 )
-	//		{
-	//			peerCur.GetCardType() ;
-	//			peerCur.GetFinalCard(peer.vBestCards);
-	//			continue;
-	//		}
-
-	//		for ( uint8_t& c : peer.vBestCards )
-	//		{
-	//			peerBest.AddCardByCompsiteNum(c);
-	//		}
-
-	//		if ( peerCur.PK(&peerBest) == 1 )
-	//		{
-	//			peerCur.GetFinalCard(peer.vBestCards);
-	//		}
-	//	}
-	//}
-
 }
 
 void CTaxasRoom::writeGameResultLog()
@@ -905,7 +819,7 @@ void CTaxasRoom::writePlayerResultLogToJson(CTaxasPlayer* pWritePlayer)
 	refPlayer["card0"] = pWritePlayer->getPeerCardByIdx(0);
 	refPlayer["card1"] = pWritePlayer->getPeerCardByIdx(1);
 	refPlayer["betCoin"] = (uint32_t)pWritePlayer->getAllBetCoin();
-	refPlayer["offset"] = int32_t(pWritePlayer->getCoinOffsetThisGame()) ;
+	refPlayer["offset"] = int32_t(pWritePlayer->getGameOffset()) ;
 	refPlayer["coin"] = (int32_t)pWritePlayer->getCoin() ;
 	refPlayer["state"] = pWritePlayer->getState();
 	m_arrPlayers[pWritePlayer->getIdx()] = refPlayer ;
@@ -962,16 +876,16 @@ void CTaxasRoom::CaculateVicePool(stVicePool& pPool )
 	}
 
 	// pk card
-	if ( IsPublicDistributeFinish() == false || m_vSortByPeerCardsAsc.empty() )
+	if ( IsPublicDistributeFinish() == false )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("public is not finish how to pk card ? error room id = %d",getRoomID());
 		return ;
 	}
 
 	CTaxasPlayer* pWiner = nullptr ;
-	for ( int8_t nIdx = m_vSortByPeerCardsAsc.size() - 1 ; nIdx >= 0; --nIdx )
+	for ( int8_t nIdx = getSortedPlayerCnt() - 1 ; nIdx >= 0; --nIdx )
 	{
-		CTaxasPlayer* pData = (CTaxasPlayer*)m_vSortByPeerCardsAsc[nIdx];
+		CTaxasPlayer* pData = (CTaxasPlayer*)getSortedPlayerByIdx(nIdx);
 		if ( pData == nullptr || pData->isHaveState( eRoomPeer_WaitCaculate ) == false )
 		{
 			continue; ;
@@ -989,7 +903,7 @@ void CTaxasRoom::CaculateVicePool(stVicePool& pPool )
 			continue;
 		}
 
-		if ( pWiner->getPeerCard()->PK(pData->getPeerCard()) != 0 ) // not the same , means small 
+		if ( pWiner->getPeerCard()->pk(pData->getPeerCard()) != IPeerCard::PK_RESULT_EQUAL ) // not the same , means small 
 		{
 			break ;
 		}

@@ -149,6 +149,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d leave room coin = %u , back coin = %lld, temp coin = %u",GetPlayer()->GetUserUID(),GetPlayer()->GetBaseData()->getCoin(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin() ) ;
 			GetPlayer()->GetBaseData()->setCoin(pRet->nCoin + GetPlayer()->GetBaseData()->getTempCoin()) ;
 			GetPlayer()->GetBaseData()->setTempCoin(0) ;
+			GetPlayer()->GetBaseData()->addTodayGameCoinOffset(pRet->nGameOffset);
 			
 			m_vData[pRet->nGameType].nPlayTimes += pRet->nPlayerTimes ;
 			m_vData[pRet->nGameType].nWinTimes += pRet->nWinTimes ;
@@ -172,7 +173,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				GetPlayer()->GetBaseData()->setNewPlayerHalo(0);
 			}
 
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room final coin = %u",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room final coin = %u, playertimes = %u , wintimes = %u ,offset = %d",GetPlayer()->GetUserUID(), GetPlayer()->GetBaseData()->getCoin(),pRet->nPlayerTimes,pRet->nWinTimes,pRet->nGameOffset) ;
 			stMsg msg ;
 			msg.usMsgType = MSG_PLAYER_UPDATE_MONEY ;
 			GetPlayer()->GetBaseData()->OnMessage(&msg,ID_MSG_PORT_CLIENT) ;
@@ -191,6 +192,8 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				GetPlayer()->GetBaseData()->setTempCoin(GetPlayer()->GetBaseData()->getTempCoin() + pRet->nCoin) ;
 				CLogMgr::SharedLogMgr()->PrintLog("player enter other room so uid = %d add temp = %lld, final = %u,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin(),GetPlayer()->GetBaseData()->getCoin() ) ;
 			}
+
+			GetPlayer()->GetBaseData()->addTodayGameCoinOffset(pRet->nGameOffset);
 
 			m_vData[pRet->nGameType].nPlayTimes += pRet->nPlayerTimes ;
 			m_vData[pRet->nGameType].nWinTimes += pRet->nWinTimes ;

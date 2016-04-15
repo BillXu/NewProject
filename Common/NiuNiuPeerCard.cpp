@@ -69,8 +69,7 @@ const char*  CNiuNiuPeerCard::getNameString()
         case Niu_None:
             break;
         case Niu_Single:
-            str = Language::getInstance()->get(StringUtils::format("niuniu_niu_%d",m_nPoint));
-            return str.c_str();
+            str = StringUtils::format("niuniu_niu_%d",m_nPoint);
             break;
         case Niu_Niu:
             str = "niuniu_niuniu";
