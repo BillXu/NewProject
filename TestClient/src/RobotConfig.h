@@ -21,13 +21,10 @@ public:
 		std::string strAiFileName;
 		unsigned int  nMinLeftCoin ;
 		unsigned int fMostLeftCoin ; // 100 percent ;
-		unsigned char nApplyLeaveWhenPeerCount ;
+		unsigned int nMaxCanLoseCoin ; // 100 percent ;
 		float fActDelayBegin;
 		float fActDelayEnd ;
-		unsigned int nDstRoomID ;
-		unsigned int nDstGameType ;
-		unsigned short nDstSubIdx ;
-		VEC_WORK_POINT vWorkPoints ;
+		short nLevel ;
 	};
 public:
 	typedef std::list<stRobotItem*> LIST_ROBOT_ITEM ;

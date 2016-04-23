@@ -17,7 +17,7 @@ class IScene
 	:public CNetMessageDelegate
 {
 public:
-	IScene( CClientRobot* pClient ):m_eSceneType(eScene_None),m_pClient(pClient),m_bServerConnected(false),m_bRunning(false){}
+	IScene( CClientRobot* pClient ):m_eSceneType(eScene_None),m_pClient(pClient),m_bRunning(false){}
 	virtual ~IScene(){}
 	virtual void OnEnterScene();
 	virtual void OnEixtScene();
@@ -34,6 +34,5 @@ public:
 protected:
 	eSceneType m_eSceneType ;
 	CClientRobot* m_pClient ;
-	bool m_bServerConnected ;
 	bool m_bRunning ;
 };

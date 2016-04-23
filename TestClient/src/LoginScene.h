@@ -21,7 +21,7 @@ public:
 	virtual void OnEixtScene();
 	void OnUpdate(float fDeltaTime )override ;
 	void CLoginScene::Verifyed();
-	void InformIdle();
+	void InformIdle(unsigned int nUID = 0 );
 	void CLoginScene::Register( const char* pName ,const char* pAccound , const char* pPassword , int nType );
 	void doEnterGame();
 	void delayEnterRoom();

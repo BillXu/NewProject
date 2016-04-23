@@ -166,6 +166,14 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 	switch( pMsg->usMsgType )
 	{
+	case MSG_REQ_TOTAL_GAME_OFFSET:
+		{
+			stMsgReqRobotTotalGameOffsetRet msgBack ;
+			msgBack.nTotalGameOffset = m_stBaseData.nTotalGameCoinOffset ;
+			SendMsg(&msgBack,sizeof(msgBack)) ;
+			CLogMgr::SharedLogMgr()->PrintLog("robot uid = %u req total offset = %d",GetPlayer()->GetUserUID(),msgBack.nTotalGameOffset) ;
+ 		}
+		break;
 	case MSG_TELL_PLAYER_TYPE:
 		{
 			stMsgTellPlayerType* pRet = (stMsgTellPlayerType*)pMsg ;

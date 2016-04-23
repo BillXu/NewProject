@@ -16,6 +16,12 @@ bool CPlayerData::OnMessage( Packet* pMsg )
 		stMsgPlayerUpdateMoney* pRet = (stMsgPlayerUpdateMoney*)pMsg;
 		stBaseData.nCoin = pRet->nFinalCoin ;
 	}
+
+	if ( MSG_REQ_TOTAL_GAME_OFFSET == pmsg->usMsgType )
+	{
+		stMsgReqRobotTotalGameOffsetRet* pRet = (stMsgReqRobotTotalGameOffsetRet*)pMsg ;
+		m_nTotalOffset = pRet->nTotalGameOffset ;
+	}
  
 	return false ;
 }

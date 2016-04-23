@@ -120,6 +120,9 @@
     <ClCompile Include="src\GoldenGameResultState.cpp">
       <Filter>src\Room\state</Filter>
     </ClCompile>
+    <ClCompile Include="..\ServerCommon\RobotDispatchStrategy.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\CardPoker.h">
@@ -259,6 +262,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Common\GoldenPeerCardAdapter.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\RobotDispatchStrategy.h">
+      <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

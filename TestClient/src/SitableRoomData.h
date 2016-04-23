@@ -41,6 +41,7 @@ public:
 	virtual CRobotControl* doCreateRobotControl() = 0 ;
 	uint8_t getSubRoomIdx(){ return m_nSubRoomIdx ;}
 	IScene* getScene(){ return m_pScene ; }
+	int32_t getGameOffset();
 protected:
 	CRobotControl* m_pRobot ;
 	IScene* m_pScene ;
@@ -50,5 +51,6 @@ protected:
 	uint32_t m_nDeskFee ;
 	uint8_t m_nRoomState ;
 	uint8_t m_nSubRoomIdx ;
+	int32_t m_nCurGameOffset ; 
 	stSitableRoomPlayer* m_vSitDownPlayer[10] ;
 };

@@ -3,6 +3,7 @@
 #include <vector>
 struct stSitableRoomConfig ;
 class ISitableRoomPlayer ;
+class CRobotDispatchStrategy ;
 class ISitableRoom
 	:public IRoom
 {
@@ -16,6 +17,7 @@ public:
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
 	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
 	bool canStartGame()override ;
+	void update(float fDelta)override;
 	// event function 
 	virtual void onPlayerSitDown( ISitableRoomPlayer* pPlayer ){}
 	virtual void onPlayerWillStandUp(ISitableRoomPlayer* pPlayer );
@@ -54,6 +56,7 @@ private:
 	time_t m_tTimeCheckRank ;
 	uint16_t m_nSeatCnt ;
 	ISitableRoomPlayer** m_vSitdownPlayers ;
+	CRobotDispatchStrategy* m_pRobotDispatchStrage ;
 private:
 	LIST_SITDOWN_PLAYERS m_vReserveSitDownObject ;
 	VEC_SITDOWN_PLAYERS m_vSortByPeerCardsAsc ;

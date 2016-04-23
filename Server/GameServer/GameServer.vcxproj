@@ -105,7 +105,6 @@
     <ClInclude Include="..\..\Common\PeerCard.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
     <ClInclude Include="..\..\Common\ShopConfg.h" />
-    <ClInclude Include="..\..\Common\TaxasMessageDefine.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\TitleLevelConfig.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
@@ -124,6 +123,7 @@
     <ClInclude Include="..\DataServer\src\PlayerManager.h" />
     <ClInclude Include="..\DataServer\src\PlayerMission.h" />
     <ClInclude Include="..\DataServer\src\PokerCircle.h" />
+    <ClInclude Include="..\DataServer\src\RobotCenter.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\IGlobalModule.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
@@ -165,6 +165,7 @@
     <ClCompile Include="..\DataServer\src\PlayerManager.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerMission.cpp" />
     <ClCompile Include="..\DataServer\src\PokerCircle.cpp" />
+    <ClCompile Include="..\DataServer\src\RobotCenter.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\RewardConfig.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />

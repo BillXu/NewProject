@@ -113,6 +113,7 @@
     <ClInclude Include="..\ServerCommon\ISitableRoomPlayer.h" />
     <ClInclude Include="..\ServerCommon\PrivateRoom.h" />
     <ClInclude Include="..\ServerCommon\RewardConfig.h" />
+    <ClInclude Include="..\ServerCommon\RobotDispatchStrategy.h" />
     <ClInclude Include="..\ServerCommon\ServerCommon.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
@@ -145,6 +146,7 @@
     <ClCompile Include="..\ServerCommon\ISitableRoom.cpp" />
     <ClCompile Include="..\ServerCommon\ISitableRoomPlayer.cpp" />
     <ClCompile Include="..\ServerCommon\RewardConfig.cpp" />
+    <ClCompile Include="..\ServerCommon\RobotDispatchStrategy.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\ServerStringTable.cpp" />
     <ClCompile Include="..\ServerCommon\SeverUtility.cpp" />

@@ -13,6 +13,7 @@
 #include "IRoomDelegate.h"
 #include <algorithm>
 #include "IPeerCard.h"
+#include "RobotDispatchStrategy.h"
 ISitableRoom::~ISitableRoom()
 {
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
@@ -31,6 +32,9 @@ ISitableRoom::~ISitableRoom()
 		pPlayer = nullptr ;
 	}
 	m_vReserveSitDownObject.clear() ;
+
+	delete m_pRobotDispatchStrage ;
+	m_pRobotDispatchStrage = nullptr ;
 }
 
 bool ISitableRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue ) 
@@ -43,6 +47,10 @@ bool ISitableRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pCo
 	{
 		m_vSitdownPlayers[nIdx] = nullptr ;
 	}
+
+	m_pRobotDispatchStrage = new CRobotDispatchStrategy ;
+
+	m_pRobotDispatchStrage->init(this,pConfig->nNeedRobotLevel,vJsValue["parentRoomID"].asUInt(),nRoomID);
 	return true ;
 }
 
@@ -56,6 +64,9 @@ void ISitableRoom::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* 
 	{
 		m_vSitdownPlayers[nIdx] = nullptr ;
 	}
+
+	m_pRobotDispatchStrage = new CRobotDispatchStrategy ;
+	m_pRobotDispatchStrage->init(this,pConfig->nNeedRobotLevel,vJsValue["parentRoomID"].asUInt(),nRoomID);
 }
 
 void ISitableRoom::willSerializtionToDB(Json::Value& vOutJsValue)
@@ -79,6 +90,11 @@ bool ISitableRoom::canStartGame()
 	return getPlayerCntWithState(eRoomPeer_WaitNextGame) >= 2 ;
 }
 
+void ISitableRoom::update(float fDelta)
+{
+	IRoom::update(fDelta);
+	m_pRobotDispatchStrage->update(fDelta) ;
+}
 //bool ISitableRoom::onPlayerSitDown(ISitableRoomPlayer* pPlayer , uint8_t nIdx )
 //{
 //	if ( isSeatIdxEmpty(nIdx) )
@@ -104,6 +120,7 @@ bool ISitableRoom::canStartGame()
 
 void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 {
+	m_pRobotDispatchStrage->onRobotLeave(pPlayer->getSessionID()) ;
 	// remove from m_vSortByPeerCardsAsc ;
 	auto iterSort = m_vSortByPeerCardsAsc.begin() ;
 	for ( ; iterSort != m_vSortByPeerCardsAsc.end(); ++iterSort )
@@ -309,6 +326,18 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 
 	switch ( prealMsg->usMsgType )
 	{
+	case MSG_REQ_CUR_GAME_OFFSET:
+		{
+			auto pPlayer = getSitdownPlayerBySessionID(nPlayerSessionID) ;
+			if ( pPlayer )
+			{
+				stMsgReqRobotCurGameOffsetRet msgback ;
+				msgback.nCurGameOffset = pPlayer->getTotalGameOffset();
+				sendMsgToPlayer(&msgback,sizeof(msgback),nPlayerSessionID) ;
+				CLogMgr::SharedLogMgr()->PrintLog("robot req cur offset = %d , uid = %u",msgback.nCurGameOffset,pPlayer->getUserUID());
+			}
+		}
+		break;
 	case MSG_ADD_TEMP_HALO:
 		{
 			auto pPlayer = getPlayerBySessionID(nPlayerSessionID) ;
@@ -402,6 +431,12 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 			sendRoomMsg(&msgSitDown,sizeof(msgSitDown));
 
 			onPlayerSitDown(sitDownPlayer) ;
+
+			if ( pPlayer->nPlayerType == ePlayer_Robot )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("robot uid = %d enter room",sitDownPlayer->getUserUID()) ;
+				m_pRobotDispatchStrage->onRobotJoin(sitDownPlayer->getSessionID());
+			}
 		}
 		break;
 	case MSG_PLAYER_STANDUP:

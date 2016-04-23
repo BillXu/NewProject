@@ -980,6 +980,55 @@ struct stMsgRobotModifyRoomRank
 	int32_t nOffset ;
 };
 
+struct stMsgTellRobotIdle
+	:public stMsg
+{
+	stMsgTellRobotIdle(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_TELL_ROBOT_IDLE ; }
+	uint32_t nRobotUID ;
+	uint8_t nRobotLevel ;
+};
+
+struct stMsgTellRobotEnterRoom
+	:public stMsg
+{
+	stMsgTellRobotEnterRoom(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TELL_ROBOT_ENTER_ROOM ; }
+	uint8_t nRoomType ;
+	uint32_t nRoomID ;
+	uint8_t nSubRoomIdx ;
+};
+
+struct stMsgTellRobotLeaveRoom
+	:public stMsg
+{
+	stMsgTellRobotLeaveRoom(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_TELL_ROBOT_LEAVE_ROOM ; }
+};
+
+struct stMsgReqRobotTotalGameOffset
+	:public stMsg
+{
+	stMsgReqRobotTotalGameOffset(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_REQ_TOTAL_GAME_OFFSET ; }
+};
+
+struct stMsgReqRobotTotalGameOffsetRet
+	:public stMsg
+{
+	stMsgReqRobotTotalGameOffsetRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQ_TOTAL_GAME_OFFSET ; }
+	int32_t nTotalGameOffset ;
+};
+
+struct stMsgReqRobotCurGameOffset
+	:public stMsg
+{
+	stMsgReqRobotCurGameOffset(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_REQ_CUR_GAME_OFFSET ; }
+};
+
+struct stMsgReqRobotCurGameOffsetRet
+	:public stMsg
+{
+	stMsgReqRobotCurGameOffsetRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQ_CUR_GAME_OFFSET ; }
+	int32_t nCurGameOffset ;
+};
+
 // apns 
 struct stMsgPushAPNSToken
 	:public stMsg

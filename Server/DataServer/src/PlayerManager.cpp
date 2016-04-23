@@ -11,6 +11,7 @@
 #include "PlayerMail.h"
 #include "PlayerGameData.h"
 #include "RewardConfig.h"
+#include "RobotCenter.h"
 
 void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* pRecData)
 {
@@ -641,6 +642,13 @@ void CPlayerManager::OnPlayerOffline( CPlayer*pPlayer )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("Can not Remove NULL player !") ;
 		return ;
+	}
+
+	if ( pPlayer->GetBaseData()->getPlayerType() == ePlayer_Robot )
+	{
+		auto robotCenter = (CRobotCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(CRobotCenter::eModule_Type);
+		robotCenter->onRobotDisconnect(pPlayer->GetUserUID()) ;
+		CLogMgr::SharedLogMgr()->PrintLog("robot uid = %u disconnected",pPlayer->GetUserUID()) ;
 	}
 
 	CEventCenter::SharedEventCenter()->PostEvent(eEvent_PlayerOffline,pPlayer) ;

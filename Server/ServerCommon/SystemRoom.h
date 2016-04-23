@@ -182,6 +182,8 @@ bool CSystemRoom<TR>::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* 
 		}
 	}
 
+	vJsValue["parentRoomID"] = getRoomID() ;
+
 	for ( uint16_t nIdx = 0 ; nIdx < nSubRoomCnt ; ++nIdx )
 	{
 		auto * pRoom = new REAL_ROOM ;
@@ -206,6 +208,8 @@ void CSystemRoom<TR>::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfi
 	m_nDuringSeconds = vJsValue["duringT"].asUInt();
 	m_tCloseTime = (time_t)vJsValue["closeT"].asUInt();
 	m_strName = vJsValue["name"].asString();
+
+	vJsValue["parentRoomID"] = getRoomID() ;
 
 	Json::Value arraySubRoom = vJsValue["sub"];
 	for ( uint16_t nIdx = 0 ; nIdx < arraySubRoom.size(); ++nIdx )

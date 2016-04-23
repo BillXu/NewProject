@@ -65,63 +65,6 @@ ISitableRoomPlayer* CNiuNiuRoom::doCreateSitableRoomPlayer()
 	return new CNiuNiuRoomPlayer();
 }
 
-bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
-{
-	if ( ISitableRoom::onMessage(prealMsg,eSenderPort,nPlayerSessionID) )
-	{
-		return true ;
-	}
-
-	switch ( prealMsg->usMsgType )
-	{
-	//case MSG_REQUEST_ROOM_INFORM:
-	//	{
-	//		std::string strInform = getRewardDesc() ;
-	//		stMsgRequestNiuNiuRoomInformRet msg ;
-
-	//		msg.nLen = strlen(strInform.c_str() );
-	//		if ( msg.nLen == 0 )
-	//		{
-	//			sendMsgToPlayer(&msg,sizeof(msg),nPlayerSessionID) ;
-	//			return true ;
-	//		}
-
-	//		uint16_t nLen = sizeof(msg) + msg.nLen ;
-	//		char* pBuffer = new char[nLen];
-	//		memcpy(pBuffer,&msg,sizeof(msg));
-	//		memcpy(pBuffer + sizeof(msg),strInform.c_str(),msg.nLen);
-	//		sendMsgToPlayer((stMsg*)pBuffer,nLen,nPlayerSessionID) ;
-	//		delete[] pBuffer ;
-	//	}
-	//	break;
-	//case MSG_NN_MODIFY_ROOM_NAME:
-	//	{
-	//		stMsgModifyNiuNiuRoomNameRet msgBack ;
-	//		if ( isRoomAlive() == false )
-	//		{
-	//			msgBack.nRet = 2 ;
-	//			sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
-	//			return true;
-	//		}
-	//		stMsgModifyNiuNiuRoomName* pRet = (stMsgModifyNiuNiuRoomName*)prealMsg ;
-	//		msgBack.nRet = 0 ;
-	//		pRet->vNewRoomName[MAX_LEN_ROOM_NAME-1] = 0 ;
-	//		setRoomName(pRet->vNewRoomName);
-	//		sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
-	//		return true;
-	//	}
-	//	break;
-	//case MSG_NN_REQUEST_ROOM_INFO:
-	//	{
-	//		sendRoomInfoToPlayer(nPlayerSessionID);
-	//	}
-	//	break;
-	default:
-		return false;
-	}
-	return true ;
-}
-
 void CNiuNiuRoom::onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )
 {
 	if ( pPlayer->isHaveState(eRoomPeer_CanAct) )
@@ -410,7 +353,7 @@ void CNiuNiuRoom::caculateGameResult()
 		nBankerOffset -= nBankerLoseCoin ;
 		pBanker->setCoin(pBanker->getCoin() - nBankerLoseCoin ) ;
 		float fTaxFee = (float)nBankerLoseCoin * getChouShuiRate();
-		addTotoalProfit(fTaxFee);
+		addTotoalProfit((uint32_t)fTaxFee);
 		float nWithoutTaxWin = nBankerLoseCoin - fTaxFee ;
 
 		pNNP->setCoin(pNNP->getCoin() + (int32_t)nWithoutTaxWin ) ;

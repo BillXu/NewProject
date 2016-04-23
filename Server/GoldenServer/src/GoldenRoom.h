@@ -36,6 +36,7 @@ protected:
 	uint32_t m_nBaseBet ;
 	uint32_t m_nMailPool ;
 	uint8_t  m_nCurActIdx ;
+	uint16_t m_nBetRound ;
 
 	Json::Value m_arrPlayers ;
 };

@@ -44,6 +44,7 @@ public:
 	uint32_t getUserUID(){ return m_nUserUID ;}
 	CSitableRoomData* getRoomData(){ return m_pRoomData ; }
 	virtual void onGameResult(bool bWin );
+	void leaveRoom();
 protected:
 	void standUp();
 private:

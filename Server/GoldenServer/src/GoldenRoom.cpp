@@ -19,6 +19,7 @@ CGoldenRoom::CGoldenRoom()
 	m_nBaseBet = 0;
 	m_nMailPool = 0;
 	m_nCurActIdx = m_nBankerIdx ;
+	m_nBetRound = 0 ;
 	getPoker()->InitTaxasPoker() ;
 }
 
@@ -109,7 +110,7 @@ void CGoldenRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["curBet"] = getCurBet();
 	vOutJsValue["mainPool"] = m_nMailPool;
 	vOutJsValue["curActIdx"] = m_nCurActIdx ;
-	vOutJsValue["betRound"] = 0 ;
+	vOutJsValue["betRound"] = m_nBetRound ;
 	CLogMgr::SharedLogMgr()->ErrorLog("temp set bet round = 0 ") ;
 }
 
@@ -157,6 +158,7 @@ void CGoldenRoom::onGameWillBegin()
 	IRoom::onGameWillBegin() ;
 	m_nCurBet = getBaseBet();
 	m_nMailPool = 0;
+	m_nBetRound = 0 ;
 
 	uint16_t nSeatCnt = getSeatCount() ;
 	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
@@ -185,6 +187,7 @@ void CGoldenRoom::onGameWillBegin()
 void CGoldenRoom::onGameDidEnd()
 {
 	ISitableRoom::onGameDidEnd();
+	m_nBetRound = 0 ;
 }
 
 void CGoldenRoom::onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )
@@ -340,7 +343,23 @@ uint8_t CGoldenRoom::informPlayerAct( bool bStepNext )
 	stMsgGoldenRoomWaitPlayerAct msgAct ;
 	if ( bStepNext )
 	{
+		int8_t nPreIdx = m_nCurActIdx ;
 		m_nCurActIdx = GetFirstInvalidIdxWithState(m_nCurActIdx + 1 ,eRoomPeer_CanAct) ;
+		int8_t nNowIdx = m_nCurActIdx ;
+		if ( nPreIdx < nNowIdx )
+		{
+			if ( nPreIdx < m_nBankerIdx && m_nBankerIdx <= nNowIdx )
+			{
+				++m_nBetRound ;
+			}
+		}
+		else 
+		{
+			if ( m_nBankerIdx <= nNowIdx || m_nBankerIdx > nPreIdx )
+			{
+				++m_nBetRound ;
+			}
+		}
 	}
 	msgAct.nActPlayerIdx = m_nCurActIdx ;
 	sendRoomMsg(&msgAct,sizeof(msgAct)) ;

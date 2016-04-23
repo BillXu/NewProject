@@ -60,6 +60,10 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	pRoomConfig->bIsNeedRegistered = (bool)(refReaderRow["NeedRegister"]->IntValue());
 	pRoomConfig->bIsOmitNewPlayerHalo = (bool)(refReaderRow["isOmitNewPlayerHalo"]->IntValue());
 	pRoomConfig->nMaxLose = refReaderRow["MaxLose"]->IntValue() ;
+#ifdef SERVER
+	pRoomConfig->nNeedRobotLevel = refReaderRow["NeedRobotLevel"]->IntValue() ;
+#endif // SERVER
+
 	refReaderRow["Reward"]->VecInt(pRoomConfig->vRewardID);
 	pRoomConfig->fDividFeeRate = pRoomConfig->fDividFeeRate / 100.00f ;
 	if ( pRoomConfig->vRewardID.empty() )

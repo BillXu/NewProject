@@ -826,6 +826,18 @@ struct stMsgPushNotice
 	PLACE_HOLDER(char* jsonString); // { targets:[345,3455,355],flag : 23 ,content: "this is a message" }
 };
 
+
+// robot 
+struct stMsgRequestRobotToEnterRoom
+	:public stMsg
+{
+	stMsgRequestRobotToEnterRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_REQ_ROBOT_ENTER_ROOM ; }
+	uint8_t nRoomType ;
+	uint32_t nRoomID ; 
+	uint32_t nSubRoomIdx ;
+	uint8_t nReqRobotLevel ;
+};
+
 //----above is new , below is old---------
 
 

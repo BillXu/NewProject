@@ -61,6 +61,7 @@ public:
 	void playerDoLeaveRoom(stStandPlayer* pp );
 	void setDeskFee(uint32_t nDeskFee){ m_nDeskFree = nDeskFee ;}
 	uint32_t getDeskFee(){ return m_nDeskFree ;}
+	bool isHaveRealPlayer(); // not robot 
 private:
 	bool addRoomPlayer(stStandPlayer* pPlayer );
 	void removePlayer(stStandPlayer* pPlayer );

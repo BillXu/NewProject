@@ -135,6 +135,9 @@
     <ClInclude Include="..\..\Common\TaxasPeerCardAdapter.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\RobotDispatchStrategy.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -219,6 +222,9 @@
       <Filter>SvrCommon</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\SystemRoom.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\RobotDispatchStrategy.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>

@@ -69,75 +69,83 @@ void CRobotControl::checkMode( float fdeta )
 		return ;
 	}
 
-	m_fCheckModeTicket -= fdeta ;
-	bool isDoCheck = m_fCheckModeTicket < 0 ;
-	if ( !isDoCheck )
+// new code  always work mode , robot dispatch by server 
+	if ( eMode_Working == m_eMode )
 	{
 		return ;
 	}
-	m_fCheckModeTicket = TIME_CHECK_MODE ;
+	enterWorkMode();
+	return ;
+// new code 
+	//m_fCheckModeTicket -= fdeta ;
+	//bool isDoCheck = m_fCheckModeTicket < 0 ;
+	//if ( !isDoCheck )
+	//{
+	//	return ;
+	//}
+	//m_fCheckModeTicket = TIME_CHECK_MODE ;
 
-	time_t tNow = time(nullptr) ;
-	if ( eMode_Idle == m_eMode )
-	{
-		if ( m_nStartWorkTime == 0 )
-		{
-			struct tm* pTmNow = localtime(&tNow);
-			bool bFind = false ;
-			for ( auto& t : m_pRobotItem->vWorkPoints )
-			{
-				if ( pTmNow->tm_hour < t.nHour + TIME_WORK_TIME_HOUR )
-				{
-					pTmNow->tm_hour = t.nHour ;
-					pTmNow->tm_min = t.nMini ;
-					bFind = true ;
-					break;
-				}
+	//time_t tNow = time(nullptr) ;
+	//if ( eMode_Idle == m_eMode )
+	//{
+	//	if ( m_nStartWorkTime == 0 )
+	//	{
+	//		struct tm* pTmNow = localtime(&tNow);
+	//		bool bFind = false ;
+	//		for ( auto& t : m_pRobotItem->vWorkPoints )
+	//		{
+	//			if ( pTmNow->tm_hour < t.nHour + TIME_WORK_TIME_HOUR )
+	//			{
+	//				pTmNow->tm_hour = t.nHour ;
+	//				pTmNow->tm_min = t.nMini ;
+	//				bFind = true ;
+	//				break;
+	//			}
 
-				if ( pTmNow->tm_hour == t.nHour + TIME_WORK_TIME_HOUR )
-				{
-					if ( pTmNow->tm_min < t.nMini )
-					{
-						pTmNow->tm_hour = t.nHour ;
-						pTmNow->tm_min = t.nMini ;
-						bFind = true ;
-						break;
-					}
-				}
-			}
+	//			if ( pTmNow->tm_hour == t.nHour + TIME_WORK_TIME_HOUR )
+	//			{
+	//				if ( pTmNow->tm_min < t.nMini )
+	//				{
+	//					pTmNow->tm_hour = t.nHour ;
+	//					pTmNow->tm_min = t.nMini ;
+	//					bFind = true ;
+	//					break;
+	//				}
+	//			}
+	//		}
 
-			if ( !bFind ) // another day ;
-			{
-				time_t tTommorow = tNow + 60*60*24 ;
-				pTmNow = localtime(&tTommorow);
-				auto tp = m_pRobotItem->vWorkPoints.front();
-				pTmNow->tm_hour = tp.nHour ;
-				pTmNow->tm_min = tp.nMini ;
-			}
-			
-			m_nStartWorkTime = mktime(pTmNow);
-			printf("next starwork time : %s",ctime(&m_nStartWorkTime)) ;
-		}
+	//		if ( !bFind ) // another day ;
+	//		{
+	//			time_t tTommorow = tNow + 60*60*24 ;
+	//			pTmNow = localtime(&tTommorow);
+	//			auto tp = m_pRobotItem->vWorkPoints.front();
+	//			pTmNow->tm_hour = tp.nHour ;
+	//			pTmNow->tm_min = tp.nMini ;
+	//		}
+	//		
+	//		m_nStartWorkTime = mktime(pTmNow);
+	//		printf("next starwork time : %s",ctime(&m_nStartWorkTime)) ;
+	//	}
 
-		if ( tNow >= m_nStartWorkTime )
-		{
-			m_eMode = eMode_Working ;
-			m_nWorkEndTime = m_nStartWorkTime + TIME_WORK_TIME_HOUR * 60 * 60 ;
-			m_nStartWorkTime = 0 ;
-			printf("starwork end time : %s",ctime(&m_nWorkEndTime)) ;
-			enterWorkMode();
-		}
-	}
-	else if ( eMode_Working == m_eMode )
-	{
-		if ( tNow >= m_nWorkEndTime )
-		{
-			m_eMode = eMode_Idle ;
-			m_nStartWorkTime = 0 ;
-			printf("work end time \n") ;
-			enterIdleMode() ;
-		}
-	}
+	//	if ( tNow >= m_nStartWorkTime )
+	//	{
+	//		m_eMode = eMode_Working ;
+	//		m_nWorkEndTime = m_nStartWorkTime + TIME_WORK_TIME_HOUR * 60 * 60 ;
+	//		m_nStartWorkTime = 0 ;
+	//		printf("starwork end time : %s",ctime(&m_nWorkEndTime)) ;
+	//		enterWorkMode();
+	//	}
+	//}
+	//else if ( eMode_Working == m_eMode )
+	//{
+	//	if ( tNow >= m_nWorkEndTime )
+	//	{
+	//		m_eMode = eMode_Idle ;
+	//		m_nStartWorkTime = 0 ;
+	//		printf("work end time \n") ;
+	//		enterIdleMode() ;
+	//	}
+	//}
 }
 
 void CRobotControl::updateWorkMode(float fdeta )
@@ -162,19 +170,19 @@ void CRobotControl::updateCheckState( float fdeta )
 		{
 			if ( m_pRoomData->getRoomState() == eRoomState_Close )
 			{
-				standUp() ;
+				leaveRoom();
 				return ;
 			}
 
-			if ( m_pRoomData->getPlayerCnt() > m_pRobotItem->nApplyLeaveWhenPeerCount )
-			{
-				float fRate = (float)rand() / float(RAND_MAX);  
-				if ( fRate <= 0.3 )
-				{
-					printf("uid = %d ,too many player i try to stand up \n", getUserUID());
-					standUp() ;
-				}
-			}
+			//if ( m_pRoomData->getPlayerCnt() > m_pRobotItem->nApplyLeaveWhenPeerCount )
+			//{
+			//	float fRate = (float)rand() / float(RAND_MAX);  
+			//	if ( fRate <= 0.3 )
+			//	{
+			//		printf("uid = %d ,too many player i try to stand up \n", getUserUID());
+			//		standUp() ;
+			//	}
+			//}
 		}
 		break;
 	case CRobotControl::eRs_Leave:
@@ -185,13 +193,13 @@ void CRobotControl::updateCheckState( float fdeta )
 		break;
 	case CRobotControl::eRs_StandUp:                                             
 		{
-			if ( m_pRoomData->getRoomState() == eRoomState_Close )
-			{
-				printf("uid = %u keep standup room is closed\n",getUserUID());
-				return ;
-			}
+			//if ( m_pRoomData->getRoomState() == eRoomState_Close )
+			//{
+			//	printf("uid = %u keep standup room is closed\n",getUserUID());
+			//	return ;
+			//}
 
-			if ( m_pRoomData->getPlayerCnt() < m_pRobotItem->nApplyLeaveWhenPeerCount )
+			/*if ( m_pRoomData->getPlayerCnt() < m_pRobotItem->nApplyLeaveWhenPeerCount )*/
 			{
 				printf("uid = %d ,too few player i try to sit down \n", getUserUID());
 				sitDown();
@@ -318,6 +326,12 @@ bool CRobotControl::onMsg(stMsg* pmsg)
 {
 	switch (pmsg->usMsgType)
 	{
+	case MSG_TELL_ROBOT_LEAVE_ROOM:
+		{
+			printf("sever tell to leave room uid = %u\n",getUserUID()) ;
+			leaveRoom();
+		}
+		break;
 	case MSG_ROOM_SITDOWN:
 		{
 			stMsgRoomSitDown* p = (stMsgRoomSitDown*)pmsg ;
@@ -336,19 +350,13 @@ bool CRobotControl::onMsg(stMsg* pmsg)
 			if ( pRet->nRet == 1 || 3 == pRet->nRet )
 			{
 				// must leave , coin not enough ;
-				printf("coin error , must leave room to take coin \n") ;
-				stMsgPlayerLeaveRoom msgLeaveRoom ;
-				msgLeaveRoom.nRoomID = getRoomData()->getRoomID() ;
-				msgLeaveRoom.nSubRoomIdx = getRoomData()->getSubRoomIdx();
-				msgLeaveRoom.cSysIdentifer = getRoomData()->getTargetSvrPort() ;
-				sendMsg(&msgLeaveRoom,sizeof(msgLeaveRoom));
-				fireDelayAction(-1,4,nullptr) ;
+				printf("coin error , must leave room to take coin uid = %u\n",getUserUID()) ;
+				leaveRoom();
 			}
 			else if ( 4 == pRet->nRet )
 			{
 				printf("uid = %u alreayd sit down ? , i should leave room",getUserUID());
-				m_eState = eRs_StandUp ;
-				m_fCheckStateTicket = 0 ;
+				leaveRoom();
 			}
 			else
 			{
@@ -385,6 +393,21 @@ bool CRobotControl::onMsg(stMsg* pmsg)
 	return false ;
 }
 
+void CRobotControl::leaveRoom()
+{
+	if ( eRs_StandUp != m_eState )
+	{
+		standUp();
+	}
+
+	stMsgPlayerLeaveRoom msgLeaveRoom ;
+	msgLeaveRoom.nRoomID = getRoomData()->getRoomID() ;
+	msgLeaveRoom.nSubRoomIdx = getRoomData()->getSubRoomIdx();
+	msgLeaveRoom.cSysIdentifer = getRoomData()->getTargetSvrPort() ;
+	sendMsg(&msgLeaveRoom,sizeof(msgLeaveRoom));
+	fireDelayAction(-1,4,nullptr) ;
+}
+
 void CRobotControl::onGameResult(bool bWin )
 {
 	if ( m_eState != eRs_SitDown )
@@ -393,23 +416,26 @@ void CRobotControl::onGameResult(bool bWin )
 		return  ;
 	}
 
-	if ( !bWin )
+	int32_t nOffset = getRoomData()->getGameOffset() ;
+	if ( nOffset >= int32_t(0) )
 	{
-		m_nTempHalo += TEMP_HALO_OFFSET ;
+		printf("uid = %u offset = %d need not halo \n",getUserUID(),nOffset) ;
+		return ;
+	}
+
+	uint32_t nabsOffset = nOffset * -1 ;
+	float fRate = float( nabsOffset ) / float (getRoomData()->getScene()->getClient()->GetPlayerData()->getMaxCanLose());
+	fRate *= 1000 ; 
+	
+	if ( rand() % 1000 <= (uint32_t)fRate )
+	{
+		m_nTempHalo = 120 ;
 	}
 	else
 	{
-		if ( m_nTempHalo <= TEMP_HALO_OFFSET )
-		{
-			m_nTempHalo = 0 ;
-		}
-		else
-		{
-			m_nTempHalo -= (TEMP_HALO_OFFSET  ) ;
-		}
+		m_nTempHalo = 0 ;
 	}
-
-	//if ( m_nTempHalo != 0 )
+	if ( m_nTempHalo != 0 )
 	{
 		stMsgAddTempHalo msgAddHalo ;
 		msgAddHalo.cSysIdentifer = getRoomData()->getTargetSvrPort() ;

@@ -28,9 +28,9 @@ bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
 	stRobotItem* pItem = new stRobotItem ;
 	pItem->nRobotID = refReaderRow["RobotID"]->IntValue();
 	pItem->fMostLeftCoin = refReaderRow["MostLeftCoin"]->IntValue();
-	pItem->nApplyLeaveWhenPeerCount = refReaderRow["LeaveWhenPlayerCount"]->IntValue();
 	pItem->nMinLeftCoin = refReaderRow["MinLeftCoin"]->IntValue();
-
+	pItem->nMaxCanLoseCoin = refReaderRow["MaxCanLoseCoin"]->IntValue();
+	pItem->nLevel = refReaderRow["Level"]->IntValue();
 	if ( pItem->nMinLeftCoin >= pItem->fMostLeftCoin )
 	{
 		printf("robot coin range error , robot id = %u\n",pItem->nRobotID) ;
@@ -41,61 +41,8 @@ bool CRobotConfigFile::OnPaser(CReaderRow& refReaderRow )
 	pItem->strAiFileName = refReaderRow["AiFileName"]->StringValue();
 	pItem->fActDelayBegin = refReaderRow["ActDelayBegin"]->FloatValue();
 	pItem->fActDelayEnd = refReaderRow["ActDelayEnd"]->FloatValue() ;
-	pItem->nDstRoomID = refReaderRow["dstRoomID"]->IntValue();
-	pItem->nDstGameType = refReaderRow["nDstGameType"]->IntValue() ;
-	pItem->nDstSubIdx = refReaderRow["dstSubRoomIdx"]->IntValue() ;
 	pItem->fActDelayBegin = pItem->fActDelayBegin < pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
 	pItem->fActDelayEnd = pItem->fActDelayBegin > pItem->fActDelayEnd ? pItem->fActDelayBegin : pItem->fActDelayEnd ;
-
-	// parse work point ;
-	VEC_STRING vOutS ;
-	refReaderRow["workPoint"]->VecString(vOutS);
-	if ( vOutS.empty() )
-	{
-		printf("work point is empty  robot id = %d \n",pItem->nRobotID) ;
-		return true ;
-	}
-
-	for(auto str : vOutS )
-	{
-		CReaderCell t (str.c_str());
-		std::vector<int> vTime ;
-		t.VecInt(vTime,':');
-		if (vTime.size() != 2 )
-		{
-			printf("work point format error , robot id = %d\n",pItem->nRobotID) ;
-			continue;
-		}
-
-		stRobotItem::stWorkPoint pt ;
-		pt.nHour = vTime[0];
-		pt.nMini = vTime[1] ;
-
-		if ( pt.nHour > 24 )
-		{
-			pt.nHour = 24 ;
-			printf("work point hour big than 24 , robot id = %d\n",pItem->nRobotID) ;
-		}
-
-		if ( pt.nMini >= 60 )
-		{
-			pt.nMini = 59 ;
-			printf("work point minite big than 60 , robot id = %d\n",pItem->nRobotID) ;
-		}
-		pItem->vWorkPoints.push_back(pt) ;
-	}
-
-	if ( pItem->vWorkPoints.empty() )
-	{
-		printf("work point parse error , robot id = %d\n",pItem->nRobotID) ;
-		return true ;
-	}
-
-	if ( pItem->vWorkPoints.size() >= 2 )
-	{
-		pItem->vWorkPoints.sort(vSortWorkTime);
-	}
-	printf("robot id = %d , work point = %d\n",pItem->nRobotID,pItem->vWorkPoints.size()) ;
 	m_vListRobot.push_back(pItem) ;
 	return true ;
 }

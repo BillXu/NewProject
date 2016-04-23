@@ -34,7 +34,6 @@ bool IScene::OnMessage( Packet* pPacket )
 
 bool IScene::OnLostSever(Packet* pPacket )
 {
-	m_bServerConnected = false ;
 	CLogMgr::SharedLogMgr()->PrintLog("Server Disconnect!");
 	// reconnected to Server ;
 	return false ;

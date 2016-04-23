@@ -9,6 +9,7 @@ CSitableRoomData::CSitableRoomData()
 	memset(m_vSitDownPlayer,0,sizeof(m_vSitDownPlayer));
 	m_isActive = true ;
 	m_pScene = nullptr ;
+	m_nCurGameOffset = 0 ;
 }
 
 CSitableRoomData::~CSitableRoomData()
@@ -53,6 +54,13 @@ bool CSitableRoomData::onMsg(stMsg* pmsg )
 {
 	switch (pmsg->usMsgType)
 	{
+	case MSG_REQ_CUR_GAME_OFFSET:
+		{
+			stMsgReqRobotCurGameOffsetRet* pRet = (stMsgReqRobotCurGameOffsetRet*)pmsg ;
+			m_nCurGameOffset = pRet->nCurGameOffset ; 
+			printf("recieved game offset = %d uid = %u\n",m_nCurGameOffset,m_pScene->getClient()->GetPlayerData()->getUserUID()) ;
+		}
+		break;
 	case MSG_PLAYER_BE_ADDED_FRIEND:
 		{
 			stMsgPlayerBeAddedFriend* pret = (stMsgPlayerBeAddedFriend*)pmsg ;
@@ -165,6 +173,10 @@ void CSitableRoomData::onGameEnd()
 	{
 		getRobotControl()->onGameEnd();
 	}
+
+	stMsgReqRobotCurGameOffset msgMsg ;
+	msgMsg.cSysIdentifer = getTargetSvrPort();
+	sendMsg(&msgMsg,sizeof(msgMsg)) ;
 }
 
 uint8_t CSitableRoomData::getPlayerCntWithState(  uint32_t nState  )
@@ -210,4 +222,9 @@ void CSitableRoomData::sendMsg(stMsg* pmsg , uint16_t nLen )
 	{
 		m_pScene->SendMsg(pmsg,nLen) ;
 	}
+}
+
+int32_t CSitableRoomData::getGameOffset()
+{
+	return m_pScene->getClient()->GetPlayerData()->getTotalGameOffset() + m_nCurGameOffset ;
 }

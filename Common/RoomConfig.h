@@ -18,6 +18,9 @@ struct stBaseRoomConfig
 	bool bIsNeedRegistered ;
 	bool bIsOmitNewPlayerHalo ;
 	uint32_t nMaxLose ;
+#ifdef SERVER
+	uint8_t nNeedRobotLevel ;
+#endif
 };
 
 struct stSitableRoomConfig

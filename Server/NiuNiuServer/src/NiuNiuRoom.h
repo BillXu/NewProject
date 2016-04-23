@@ -11,7 +11,6 @@ public:
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
 	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
 	void prepareState()override ;
-	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID ) override;
 	void roomInfoVisitor(Json::Value& vOutJsValue)override ;
 	void sendRoomPlayersInfo(uint32_t nSessionID)override ;
 	void setBankerIdx(uint8_t nIdx ){ m_nBankerIdx = nIdx ;}

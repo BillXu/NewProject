@@ -133,6 +133,8 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* 
 	m_tCloseTime = tNow + (time_t)m_nDuringSeconds ;
 	m_nDeadTime = m_tCloseTime + 60*60*24 ; 
 
+	vJsValue["parentRoomID"] = getRoomID() ;
+
 	m_pRoom = new REAL_ROOM ;
 	m_pRoom->onFirstBeCreated(pRoomMgr,pConfig,0 ,vJsValue);
 	pRoomMgr->reqeustChatRoomID(m_pRoom);
@@ -155,6 +157,8 @@ void CPrivateRoom<T>::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfi
 	m_tCloseTime = (time_t)vJsValue["closeTime"].asUInt();
 	m_nOwnerUID = vJsValue["ownerUID"].asUInt();
 	m_tCreateTime = (time_t)vJsValue["createTime"].asUInt() ;
+
+	vJsValue["parentRoomID"] = getRoomID() ;
 
 	Json::Value subRoom = vJsValue["subRoom"];
 	m_pRoom = new REAL_ROOM ;

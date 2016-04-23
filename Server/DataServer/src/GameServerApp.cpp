@@ -7,6 +7,7 @@
 #include "RewardConfig.h"
 #include "ServerStringTable.h"
 #include "ExchangeCenter.h"
+#include "RobotCenter.h"
 #ifndef USHORT_MAX
 #define USHORT_MAX 65535 
 #endif
@@ -56,6 +57,9 @@ bool CGameServerApp::init()
 
 	auto pExc = new CExchangeCenter("../configFile/exchange.txt");
 	registerModule(pExc);
+
+	auto robotC = new CRobotCenter ;
+	registerModule(robotC) ;
 	
 	time_t tNow = time(NULL) ;
 	m_nCurDay = localtime(&tNow)->tm_mday ;

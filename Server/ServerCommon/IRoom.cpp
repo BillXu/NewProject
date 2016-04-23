@@ -205,6 +205,16 @@ bool IRoom::canStartGame()
 		return false ;
 	}
 	// if have any player not robot ?
+	if ( isHaveRealPlayer() )
+	{
+		return true ;
+	}
+	//CLogMgr::SharedLogMgr()->PrintLog("room = %u all player are robot so need not start game ",getRoomID());
+	return false ;
+}
+
+bool IRoom::isHaveRealPlayer()
+{
 	for ( auto pp : m_vInRoomPlayers )
 	{
 		if ( pp.second->nPlayerType != ePlayer_Robot )
@@ -212,7 +222,6 @@ bool IRoom::canStartGame()
 			return true ;
 		}
 	}
-	//CLogMgr::SharedLogMgr()->PrintLog("room = %u all player are robot so need not start game ",getRoomID());
 	return false ;
 }
 

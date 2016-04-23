@@ -25,6 +25,10 @@ void CLoginScene::OnEnterScene()
 	if ( m_pClient->GetPlayerData()->isLogined() )
 	{
 		m_eCurState = els_Normal ;
+
+		stMsgReqRobotTotalGameOffset msgReqOffset ;
+		SendMsg(&msgReqOffset,sizeof(msgReqOffset));
+		
 		stMsgPlayerUpdateMoney msgUpdate ;
 		msgUpdate.cSysIdentifer = ID_MSG_PORT_DATA ;
 		SendMsg(&msgUpdate,sizeof(msgUpdate));
@@ -147,8 +151,8 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			if ( pRet->stBaseData.nCoin <= pConfigItem->fMostLeftCoin && pRet->stBaseData.nCoin >= pConfigItem->nMinLeftCoin )
 			{
 				// do nothing 
-				printf("recived base data coin all right do go enter game !\n") ;
-				delayEnterRoom();
+				printf("recived base data coin all right do tell idle !\n") ;
+				InformIdle(pRet->stBaseData.nUserUID);
 			}
 			else
 			{
@@ -163,13 +167,25 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			stMsgPlayerEnterRoomRet* pRet = (stMsgPlayerEnterRoomRet*)pMsg ;
 			if ( pRet->nRet )
 			{
-				printf("enter room failed ret = %d\n",pRet->nRet) ;
-				delayEnterRoom() ;
+				printf("enter room failed ret = %d  , tell idle\n",pRet->nRet) ;
+				InformIdle();
 			}
 			else
 			{
 				printf("enter room success\n") ;
 			}
+		}
+		break;
+	case MSG_TELL_ROBOT_ENTER_ROOM:
+		{
+			stMsgTellRobotEnterRoom* pRet = (stMsgTellRobotEnterRoom*)pMsg ;
+			stMsgPlayerEnterRoom msg ;
+			msg.nRoomGameType = pRet->nRoomType ;
+			msg.nRoomID = pRet->nRoomID ;
+			msg.nSubIdx = pRet->nSubRoomIdx ;
+			SendMsg(&msg,sizeof(msg));
+			printf("enter room type = %d id = %d, subRoomIdx = %u...\n",msg.nRoomGameType,msg.nRoomID,msg.nSubIdx);
+			m_eCurState = els_Normal ;
 		}
 		break;
 	case MSG_ROOM_INFO:
@@ -207,7 +223,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			stMsgRobotAddMoneyRet* pRet = (stMsgRobotAddMoneyRet*)pMsg ;
 			m_pClient->GetPlayerData()->stBaseData.nCoin = pRet->nFinalCoin ;
 			printf("received add coin !\n") ;
-			delayEnterRoom();
+			InformIdle();
 			m_pClient->GetPlayerData()->setIsLackOfCoin(false) ;
 			return true;
 		}
@@ -219,8 +235,8 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			if ( pRet->nFinalCoin <= pConfigItem->fMostLeftCoin && pRet->nFinalCoin >= pConfigItem->nMinLeftCoin )
 			{
 				// do nothing 
-				printf("update coin all right do go enter game !\n") ;
-				delayEnterRoom();
+				printf("update coin all right do tell idle !\n") ;
+				InformIdle();
 			}
 			else
 			{
@@ -241,14 +257,14 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 
 void CLoginScene::doEnterGame()
 {
-	stMsgPlayerEnterRoom msg ;
-	msg.nRoomGameType = m_pClient->GetPlayerData()->getDstGameType() ;
-	msg.nRoomID = m_pClient->GetPlayerData()->getDstRoomID() ;
-	msg.nSubIdx = m_pClient->GetPlayerData()->getConfigItem()->nDstSubIdx ;
-	SendMsg(&msg,sizeof(msg));
-	printf("enter room type = %d id = %d, subRoomIdx = %u...\n",msg.nRoomGameType,msg.nRoomID,msg.nSubIdx);
-	
-	m_eCurState = els_Normal ;
+	//stMsgPlayerEnterRoom msg ;
+	//msg.nRoomGameType = m_pClient->GetPlayerData()->getDstGameType() ;
+	//msg.nRoomID = m_pClient->GetPlayerData()->getDstRoomID() ;
+	//msg.nSubIdx = m_pClient->GetPlayerData()->getConfigItem()->nDstSubIdx ;
+	//SendMsg(&msg,sizeof(msg));
+	//printf("enter room type = %d id = %d, subRoomIdx = %u...\n",msg.nRoomGameType,msg.nRoomID,msg.nSubIdx);
+	//
+	//m_eCurState = els_Normal ;
 }
 
 void CLoginScene::delayEnterRoom()
@@ -276,20 +292,18 @@ void CLoginScene::Login( const char* pAccound , const char* pPassword )
 	SendMsg((char*)&msg,sizeof(msg)) ;
 }
 
-void CLoginScene::InformIdle()
+void CLoginScene::InformIdle(uint32_t nUID)
 {
+	if ( nUID == 0 )
+	{
+		nUID = getClient()->GetPlayerData()->getUserUID() ;
+	}
+	stMsgTellRobotIdle msgRobot ;
+	msgRobot.nRobotUID = nUID ;
+	msgRobot.nRobotLevel = getClient()->GetPlayerData()->getConfigItem()->nLevel ;
+	SendMsg(&msgRobot,sizeof(msgRobot)) ;
+	printf("tell idle uid = %u",msgRobot.nRobotUID) ;
 	return ;
-	if ( m_pClient->GetPlayerData()->GetCoin(false) < 200000 )
-	{
-		stMsgRobotAddMoney msg ;
-		msg.nWantCoin = 5500000 ;
-		SendMsg((char*)&msg,sizeof(msg)) ;
-	}
-	else
-	{
-		stMsgRobotInformIdle msg ;
-		SendMsg((char*)&msg,sizeof(msg)) ;
-	}
 }
 
 void CLoginScene::Register( const char* pName ,const char* pAccound , const char* pPassword , int nType )
