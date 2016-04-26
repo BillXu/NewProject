@@ -9,6 +9,7 @@
 #include "TaxasMessageDefine.h"
 #include "Client.h"
 #include "NiuNiuScene.h"
+#include "GoldenScene.h"
 #define  TIME_DELAY_ENTER_ROOM (15 )
 #define  TIME_DELAY_LOGIN (30)
 CLoginScene::CLoginScene(CClientRobot* pNetWork ):IScene(pNetWork)
@@ -182,6 +183,9 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			stMsgPlayerEnterRoom msg ;
 			msg.nRoomGameType = pRet->nRoomType ;
 			msg.nRoomID = pRet->nRoomID ;
+#ifdef _DEBUG
+//			pRet->nSubRoomIdx = 0 ;
+#endif // _DEBUG
 			msg.nSubIdx = pRet->nSubRoomIdx ;
 			SendMsg(&msg,sizeof(msg));
 			printf("enter room type = %d id = %d, subRoomIdx = %u...\n",msg.nRoomGameType,msg.nRoomID,msg.nSubIdx);
@@ -194,7 +198,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			if ( pRet->nRoomType == eRoom_TexasPoker )
 			{
 				// change room scene and push this msg;
-				printf("recieved taxas room info...\n");
+				printf("robot enter eRoom_TexasPoker room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
 				CTaxasPokerScene* pScene = new CTaxasPokerScene(m_pClient) ;
 				//pScene->init("../ConfigFile/RobotAIConfig - new.xml");
 				char pBuffer[255] = { 0 };
@@ -202,10 +206,22 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 				pScene->init(pBuffer);
 				m_pClient->ChangeScene(pScene) ;
 				pScene->OnMessage(pPacket) ;
+				
 			}
 			else if ( eRoom_NiuNiu == pRet->nRoomType )
 			{
+				printf("robot enter eRoom_NiuNiu room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
 				CNiuNiuScene* pScene = new CNiuNiuScene(m_pClient) ;
+				pScene->init(nullptr) ;
+				m_pClient->ChangeScene(pScene) ;
+				pScene->OnMessage(pPacket) ;
+			}
+			else if ( eRoom_Golden == pRet->nRoomType )
+			{
+				printf("robot enter eRoom_Golden room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
+
+
+				CGoldenScene* pScene = new CGoldenScene(m_pClient) ;
 				pScene->init(nullptr) ;
 				m_pClient->ChangeScene(pScene) ;
 				pScene->OnMessage(pPacket) ;

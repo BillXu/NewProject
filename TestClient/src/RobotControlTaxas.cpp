@@ -167,4 +167,9 @@ void CRobotControlTaxas::doDelayAction(uint8_t nActType,void* pUserData )
 		printf("win too many coin , should stand up uid = %u\n",playerData->nUserUID) ;
 		standUp();
 	}
+
+	if ( msg.nPlayerAct == eRoomPeerAction_GiveUp && playerData->bDelayLeave )
+	{
+		leaveRoom();
+	}
 }

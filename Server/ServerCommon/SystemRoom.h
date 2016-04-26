@@ -209,12 +209,11 @@ void CSystemRoom<TR>::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfi
 	m_tCloseTime = (time_t)vJsValue["closeT"].asUInt();
 	m_strName = vJsValue["name"].asString();
 
-	vJsValue["parentRoomID"] = getRoomID() ;
-
 	Json::Value arraySubRoom = vJsValue["sub"];
 	for ( uint16_t nIdx = 0 ; nIdx < arraySubRoom.size(); ++nIdx )
 	{
 		Json::Value sbuRoom = arraySubRoom[nIdx] ;
+		sbuRoom["parentRoomID"] = getRoomID() ;
 		auto pRoom = new REAL_ROOM ;
 		pRoom->serializationFromDB(pRoomMgr,pConfig,nIdx,sbuRoom);
 		pRoom->setDelegate(this);

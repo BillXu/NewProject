@@ -8,7 +8,8 @@ struct stSitableRoomPlayer
 	uint32_t nUserUID ;
 	uint32_t nCoin ;
 	uint32_t nStateFlag ;
-	virtual void reset(){ nIdx = 0 ; nUserUID = 0 ; nCoin = 0 ; nStateFlag = 0 ;}
+	bool bDelayLeave ;
+	virtual void reset(){ nIdx = 0 ; nUserUID = 0 ; nCoin = 0 ; nStateFlag = 0 ; bDelayLeave = false ;}
 	bool isValid(){ return nUserUID > 0 ;}
 	bool isHaveState(uint32_t ns ){ return ((nStateFlag & ns) == ns );}
 	virtual void onGameBegin(){ nStateFlag = eRoomPeer_CanAct ;}

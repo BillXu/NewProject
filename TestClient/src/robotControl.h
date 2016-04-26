@@ -45,8 +45,10 @@ public:
 	CSitableRoomData* getRoomData(){ return m_pRoomData ; }
 	virtual void onGameResult(bool bWin );
 	void leaveRoom();
+	bool isSelfSitDown(){ return m_eState == eRs_SitDown ; }
 protected:
 	void standUp();
+	virtual void onSelfSitDown(){}
 private:
 	void sitDown();
 	void updateCheckState( float fdeta );

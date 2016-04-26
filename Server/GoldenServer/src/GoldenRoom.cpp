@@ -98,9 +98,9 @@ bool CGoldenRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 		}
 		break;
 	default:
-		break;
+		return false;
 	}
-	return false ;
+	return true ;
 }
 
 void CGoldenRoom::roomInfoVisitor(Json::Value& vOutJsValue)
@@ -187,6 +187,8 @@ void CGoldenRoom::onGameWillBegin()
 void CGoldenRoom::onGameDidEnd()
 {
 	ISitableRoom::onGameDidEnd();
+	m_nCurBet = getBaseBet();
+	m_nMailPool = 0;
 	m_nBetRound = 0 ;
 }
 

@@ -10,6 +10,7 @@ public:
 		time_t tLeaveTime ;
 	};
 	typedef std::list<stJoinRobot*> LIST_JOIN_ROBOT ;
+	typedef std::map<uint32_t,int> MAP_SESSSION_IDS ;
 public:
 	CRobotDispatchStrategy();
 	~CRobotDispatchStrategy();
@@ -26,4 +27,5 @@ protected:
 	uint8_t m_nReqRobotLevel ; 
 	LIST_JOIN_ROBOT m_vPlayingRobot ;
 	float m_fUpdateDispatchTick ;
+	MAP_SESSSION_IDS m_vMayDelayLeaveRobot;
 };

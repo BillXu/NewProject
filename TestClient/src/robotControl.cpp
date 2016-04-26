@@ -229,7 +229,15 @@ void CRobotControl::onGameBegin()
 
 void CRobotControl::onGameEnd()
 {
-
+	if ( isSelfSitDown() )
+	{
+		auto pp = getRoomData()->getPlayerByIdx(getSeatIdx()) ;
+		if ( pp && pp->bDelayLeave )
+		{
+			printf("sever tell to leave room uid = %u ,do delay leave \n",getUserUID()) ;
+			leaveRoom();
+		}
+	}
 }
 
 void CRobotControl::onReicvedRoomData()
@@ -328,8 +336,25 @@ bool CRobotControl::onMsg(stMsg* pmsg)
 	{
 	case MSG_TELL_ROBOT_LEAVE_ROOM:
 		{
-			printf("sever tell to leave room uid = %u\n",getUserUID()) ;
-			leaveRoom();
+			if ( isSelfSitDown() )
+			{
+				auto pp = getRoomData()->getPlayerByIdx(getSeatIdx()) ;
+				if ( pp && pp->isHaveState(eRoomPeer_CanAct) )
+				{
+					pp->bDelayLeave = true ;
+				}
+				else
+				{
+					printf("sever tell to leave room uid = %u , self is null \n",getUserUID()) ;
+					leaveRoom();
+				}
+ 
+			}
+			else
+			{
+				printf("sever tell to leave room uid = %u , self not sit down \n",getUserUID()) ;
+				leaveRoom();
+			}
 		}
 		break;
 	case MSG_ROOM_SITDOWN:
@@ -341,6 +366,7 @@ bool CRobotControl::onMsg(stMsg* pmsg)
 				m_eState = eRs_SitDown ;
 				m_fCheckStateTicket = 0 ;
 				printf("uid = %d , sit down ok \n", getUserUID());
+				onSelfSitDown();
 			}
 		}
 		break;

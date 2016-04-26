@@ -475,14 +475,7 @@ void ISitableRoom::onGameDidEnd()
 			CLogMgr::SharedLogMgr()->PrintLog("update room peer offset uid = %u, offset = %d",pPlayer->getUserUID(),pPlayer->getGameOffset());
 		}
 
-		if ( (pPlayer->isDelayStandUp() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
-		{
-			playerDoStandUp(pPlayer);	
-			pPlayer = nullptr ;
-			m_vSitdownPlayers[nIdx] = nullptr ;
-		}
-
-		if ( pPlayer->getCoin() < coinNeededToSitDown() )
+		if ( (pPlayer->isDelayStandUp() || pPlayer->getCoin() < coinNeededToSitDown() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
 		{
 			playerDoStandUp(pPlayer);	
 			pPlayer = nullptr ;

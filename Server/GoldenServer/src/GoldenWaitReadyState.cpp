@@ -15,8 +15,17 @@ void IRoomStateWaitReadyState::update(float fDelta )
 		return ;
 	}
 
+	if ( m_pRoom->isHaveRealPlayer() == false )
+	{
+		return ;
+	}
+
 	bool bStartGame = false ;
-	m_fWaitTicket -= fDelta ;
+	
+	if ( m_pRoom->getPlayerCntWithState(eRoomPeer_Ready) >= 2 )
+	{
+		m_fWaitTicket -= fDelta  ;
+	}
 
 	if ( m_pRoom->getPlayerCntWithState(eRoomPeer_Ready) == nSitPlayerCnt )
 	{

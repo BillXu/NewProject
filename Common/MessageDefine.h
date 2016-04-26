@@ -1017,7 +1017,7 @@ struct stMsgReqRobotTotalGameOffsetRet
 };
 
 struct stMsgReqRobotCurGameOffset
-	:public stMsg
+	:public stMsgToRoom
 {
 	stMsgReqRobotCurGameOffset(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_REQ_CUR_GAME_OFFSET ; }
 };

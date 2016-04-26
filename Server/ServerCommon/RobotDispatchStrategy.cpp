@@ -4,8 +4,8 @@
 #include "ServerMessageDefine.h"
 #include "IRoomState.h"
 #ifdef _DEBUG
-	#define TIME_ROBOT_STAY 3*60
-	#define  TIME_UPDATE_DISPATCH_TICK 1*60
+	#define TIME_ROBOT_STAY 1*60
+	#define  TIME_UPDATE_DISPATCH_TICK 1*30
 #else
 #define TIME_ROBOT_STAY 30*60
 #define  TIME_UPDATE_DISPATCH_TICK 5*60
@@ -29,6 +29,7 @@ CRobotDispatchStrategy::~CRobotDispatchStrategy()
 		delete ref ;
 	}
 	m_vPlayingRobot.clear() ;
+	m_vMayDelayLeaveRobot.clear() ;
 }
 
 bool CRobotDispatchStrategy::init(ISitableRoom* pRoom , uint8_t nReqRobotLevel, uint32_t nRoomID , uint8_t nsubRoomIdx )
@@ -55,6 +56,12 @@ void CRobotDispatchStrategy::onRobotJoin(uint32_t nSessionID )
 
 void CRobotDispatchStrategy::onRobotLeave(uint32_t nSessioID )
 {
+	auto doL = m_vMayDelayLeaveRobot.find(nSessioID) ;
+	if ( doL != m_vMayDelayLeaveRobot.end() )
+	{
+		m_vMayDelayLeaveRobot.erase(doL) ;
+	}
+
 	auto iter = m_vPlayingRobot.begin() ;
 	for ( ; iter != m_vPlayingRobot.end() ; ++iter )
 	{
@@ -81,40 +88,45 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 		return ;
 	}
 
-	if ( m_vPlayingRobot.empty() )
-	{
-		return ;
-	}
-
 	m_fUpdateDispatchTick = TIME_UPDATE_DISPATCH_TICK ;
 
 	uint8_t nSitDownCnt = (uint8_t)m_pRoom->getSitDownPlayerCount() ;
-	// check robot whethe time out ;
-	time_t tNow = time(nullptr) ;
-	auto pPlayer = m_vPlayingRobot.front() ;
-	bool bClosed = m_pRoom->getCurRoomState()->getStateID() == eRoomState_Close ;
-	if ( pPlayer && ( pPlayer->tLeaveTime <= tNow || bClosed )  )
+	if ( nSitDownCnt > m_vMayDelayLeaveRobot.size() )
 	{
-		if ( nSitDownCnt > 2 || bClosed )
+		nSitDownCnt -= m_vMayDelayLeaveRobot.size() ;
+	}
+
+	bool bClosed = m_pRoom->getCurRoomState()->getStateID() == eRoomState_Close ;
+	// check robot whethe time out ;
+	if ( m_vPlayingRobot.empty() == false )
+	{
+		time_t tNow = time(nullptr) ;
+		auto pPlayer = m_vPlayingRobot.front() ;
+		if ( pPlayer && ( pPlayer->tLeaveTime <= tNow || bClosed )  )
 		{
-			CLogMgr::SharedLogMgr()->PrintLog("robot session id = %u , time up shuld leave room" ) ;
-			stMsgTellRobotLeaveRoom msgLeave ;
-			m_pRoom->sendMsgToPlayer(&msgLeave,sizeof(msgLeave),pPlayer->nSessionID) ;
-			delete pPlayer ;
-			pPlayer = nullptr ;
-			m_vPlayingRobot.pop_front() ;
-		}
-		else
-		{
-			stMsgRequestRobotToEnterRoom msgreq ;
-			msgreq.nReqRobotLevel = m_nReqRobotLevel ;
-			msgreq.nRoomID = m_nRoomID ;
-			msgreq.nRoomType = m_pRoom->getRoomType() ;
-			msgreq.nSubRoomIdx = m_nSubRoomIdx ;
-			m_pRoom->sendMsgToPlayer(&msgreq,sizeof(msgreq),0) ;
-			CLogMgr::SharedLogMgr()->PrintLog("too few player robot session id = %u delay leave, and req new player to join than leave",pPlayer->nSessionID) ;
+			if ( nSitDownCnt > 2 || bClosed )
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("robot session id = %u , time up shuld leave room" ) ;
+				stMsgTellRobotLeaveRoom msgLeave ;
+				m_pRoom->sendMsgToPlayer(&msgLeave,sizeof(msgLeave),pPlayer->nSessionID) ;
+				m_vMayDelayLeaveRobot[pPlayer->nSessionID] = 1 ;
+				delete pPlayer ;
+				pPlayer = nullptr ;
+				m_vPlayingRobot.pop_front() ;
+			}
+			else
+			{
+				stMsgRequestRobotToEnterRoom msgreq ;
+				msgreq.nReqRobotLevel = m_nReqRobotLevel ;
+				msgreq.nRoomID = m_nRoomID ;
+				msgreq.nRoomType = m_pRoom->getRoomType() ;
+				msgreq.nSubRoomIdx = m_nSubRoomIdx ;
+				m_pRoom->sendMsgToPlayer(&msgreq,sizeof(msgreq),0) ;
+				CLogMgr::SharedLogMgr()->PrintLog("too few player robot session id = %u delay leave, and req new player to join than leave",pPlayer->nSessionID) ;
+			}
 		}
 	}
+
 
 
 	bool bHavePlayerAddRobt = false ;
@@ -144,15 +156,19 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 	// 3.  current room do not have real player , but have more than 2 player sit down
 	if ( nSitDownCnt > 5 || m_pRoom->getEmptySeatCount() < 1 || (nSitDownCnt > 2 && m_pRoom->isHaveRealPlayer() == false) )
 	{
-		auto pPlayerLeave = m_vPlayingRobot.front() ;
-		if ( pPlayerLeave )
+		if ( m_vPlayingRobot.empty() == false )
 		{
-			stMsgTellRobotLeaveRoom msgLeave ;
-			m_pRoom->sendMsgToPlayer(&msgLeave,sizeof(msgLeave),pPlayerLeave->nSessionID) ;
-			delete pPlayerLeave ;
-			pPlayerLeave = nullptr ;
-			m_vPlayingRobot.pop_front() ;
-			CLogMgr::SharedLogMgr()->PrintLog("no real player so just need 2 robot , other just leave room id = %u",m_nRoomID);
+			auto pPlayerLeave = m_vPlayingRobot.front() ;
+			if ( pPlayerLeave )
+			{
+				stMsgTellRobotLeaveRoom msgLeave ;
+				m_pRoom->sendMsgToPlayer(&msgLeave,sizeof(msgLeave),pPlayerLeave->nSessionID) ;
+				m_vMayDelayLeaveRobot[pPlayerLeave->nSessionID] = 1 ;
+				delete pPlayerLeave ;
+				pPlayerLeave = nullptr ;
+				m_vPlayingRobot.pop_front() ;
+				CLogMgr::SharedLogMgr()->PrintLog("no real player so just need 2 robot , other just leave room id = %u",m_nRoomID);
+			}
 		}
 	}
 }

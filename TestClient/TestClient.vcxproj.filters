@@ -122,6 +122,18 @@
     <ClCompile Include="src\SitableRoomData.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\RobotControlGolden.cpp">
+      <Filter>robot</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GoldenData.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\PeerCard.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GoldenScene.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\CommonDefine.h">
@@ -227,6 +239,21 @@
       <Filter>robot</Filter>
     </ClInclude>
     <ClInclude Include="src\SitableRoomData.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RobotControlGolden.h">
+      <Filter>robot</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GoldenData.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\GoldenMessageDefine.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\PeerCard.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GoldenScene.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

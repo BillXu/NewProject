@@ -67,7 +67,7 @@ bool CRobotCenter::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSess
 
 			if ( cmd == nullptr )
 			{
-				new stRequestRobotCmd ;
+				cmd = new stRequestRobotCmd ;
 				cmd->nReqRobotLevel = pRet->nReqRobotLevel ;
 				cmd->nRoomID = pRet->nRoomID ;
 				cmd->nRoomType = pRet->nRoomType ;
@@ -144,7 +144,7 @@ void CRobotCenter::processRobotReq()
 				msgBack.nRoomType = cmd->nRoomType ;
 				msgBack.nSubRoomIdx = cmd->nSubRoomIdx ;
 				getSvrApp()->sendMsg((*iter)->nSessionID,(char*)&msgBack,sizeof(msgBack));
-				CLogMgr::SharedLogMgr()->PrintLog("order robot uid = %u to enter room type = %u , room id = %u",(*iter)->nUserUID,cmd->nRoomType,cmd->nRoomID) ;
+				CLogMgr::SharedLogMgr()->PrintLog("order robot uid = %u to enter room type = %u , room id = %u, sbuIdx = %u",(*iter)->nUserUID,cmd->nRoomType,cmd->nRoomID,cmd->nSubRoomIdx) ;
 
 				delete (*iter) ;
 				(*iter) = nullptr ;

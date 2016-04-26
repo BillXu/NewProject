@@ -1,7 +1,7 @@
 #pragma once
 #include "IRoomState.h"
 #include "ServerCommon.h"
-#define TIME_GOLDE_WAIT_PLAYER_READY 60
+#define TIME_GOLDE_WAIT_PLAYER_READY 20
 class CGoldenRoom ;
 class IRoomStateWaitReadyState
 	: public IRoomState

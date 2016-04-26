@@ -175,6 +175,8 @@ void CSitableRoomData::onGameEnd()
 	}
 
 	stMsgReqRobotCurGameOffset msgMsg ;
+	msgMsg.nRoomID = getRoomID();
+	msgMsg.nSubRoomIdx = getSubRoomIdx();
 	msgMsg.cSysIdentifer = getTargetSvrPort();
 	sendMsg(&msgMsg,sizeof(msgMsg)) ;
 }
