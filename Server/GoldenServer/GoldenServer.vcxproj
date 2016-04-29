@@ -119,6 +119,9 @@
     <ClCompile Include="src\GoldenStartGameState.cpp" />
     <ClCompile Include="src\GoldenWaitReadyState.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MJBloodFanxing.cpp" />
+    <ClCompile Include="src\MJCard.cpp" />
+    <ClCompile Include="src\MJPeerCard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\CardPoker.h" />
@@ -168,6 +171,11 @@
     <ClInclude Include="src\GoldenServer.h" />
     <ClInclude Include="src\GoldenStartGameState.h" />
     <ClInclude Include="src\GoldenWaitReadyState.h" />
+    <ClInclude Include="src\MJBloodFanxing.h" />
+    <ClInclude Include="src\MJCard.h" />
+    <ClInclude Include="src\MJCardFanXing.h" />
+    <ClInclude Include="src\MJDefine.h" />
+    <ClInclude Include="src\MJPeerCard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

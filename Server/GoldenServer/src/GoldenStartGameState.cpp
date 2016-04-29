@@ -35,7 +35,7 @@ void CGoldenStartGameState::enterState(IRoom* pRoom)
 
 	m_pRoom->sendRoomMsg((stMsg*)buffer.getBufferPtr(),buffer.getContentSize()) ;
 
-	setStateDuringTime( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) * TIME_GOLDEN_DISTRIBUTE_CARD_PER_PLAYER );
+	setStateDuringTime( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) * TIME_GOLDEN_DISTRIBUTE_CARD_PER_PLAYER + 1 );
 	CLogMgr::SharedLogMgr()->PrintLog("player cnt = %d room id = %d , distribute card",nPlayerCnt,m_pRoom->getRoomID());
 }
 

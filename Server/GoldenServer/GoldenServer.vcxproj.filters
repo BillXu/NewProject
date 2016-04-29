@@ -22,6 +22,9 @@
     <Filter Include="src\Room\state">
       <UniqueIdentifier>{7a9167fa-6f40-42ac-b1f8-81d35304e749}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\temp">
+      <UniqueIdentifier>{6908fab8-c514-4e81-a71d-fba3451a96f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\CardPoker.cpp">
@@ -81,9 +84,6 @@
     <ClCompile Include="..\ServerCommon\Timer.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
-    <ClCompile Include="src\main.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\GoldenServer.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -122,6 +122,18 @@
     </ClCompile>
     <ClCompile Include="..\ServerCommon\RobotDispatchStrategy.cpp">
       <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJCard.cpp">
+      <Filter>src\temp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJPeerCard.cpp">
+      <Filter>src\temp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJBloodFanxing.cpp">
+      <Filter>src\temp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -265,6 +277,21 @@
     </ClInclude>
     <ClInclude Include="..\ServerCommon\RobotDispatchStrategy.h">
       <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJDefine.h">
+      <Filter>src\temp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJCard.h">
+      <Filter>src\temp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJCardFanXing.h">
+      <Filter>src\temp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJPeerCard.h">
+      <Filter>src\temp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJBloodFanxing.h">
+      <Filter>src\temp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
