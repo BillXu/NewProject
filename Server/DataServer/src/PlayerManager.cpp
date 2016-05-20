@@ -369,6 +369,31 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			}
 		}
 		break;
+	case MSG_SYNC_PRIVATE_ROOM_RESULT:
+		{
+			stMsgSyncPrivateRoomResult* pRet = (stMsgSyncPrivateRoomResult*)prealMsg ;
+			CPlayer* pp = GetPlayerByUserUID(pRet->nTargetPlayerUID) ;
+			if (!pp)
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not process MSG_SYNC_PRIVATE_ROOM_RESULT ",pRet->nTargetPlayerUID);
+				Json::Value jsArg ;
+				jsArg["createUID"] = pRet->nCreatorUID ;
+				jsArg["duiringTime"] = pRet->nDuringTimeSeconds ;
+				jsArg["finalCoin"] = pRet->nFinalCoin ;
+				jsArg["offset"] = pRet->nOffset ;
+				jsArg["roomID"] = pRet->nRoomID ;
+				jsArg["roomType"] = pRet->nRoomType ;
+				jsArg["finishTime"] = (uint32_t)time(nullptr);
+				jsArg["buyIn"] = pRet->nBuyIn ;
+				jsArg["configID"] = pRet->nConfigID ;
+				CPlayerMailComponent::PostOfflineEvent(CPlayerMailComponent::Event_SyncGameResult,jsArg,pRet->nTargetPlayerUID);
+			}
+			else
+			{
+				pp->OnMessage(prealMsg,eSenderPort);
+			}
+		}
+		break ;
 	case MSG_REQUEST_PLAYER_DATA:
 		{
 			stMsgRequestPlayerData* pRet = (stMsgRequestPlayerData*)prealMsg ;

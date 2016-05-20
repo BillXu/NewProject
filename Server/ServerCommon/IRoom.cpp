@@ -235,19 +235,12 @@ void IRoom::playerDoLeaveRoom( stStandPlayer* pp )
 	// send msg to data svr tell player leave room ;
 	if ( pp )
 	{
-		stMsgSvrDoLeaveRoom msgdoLeave ;
-		msgdoLeave.nCoin = pp->nCoin ;
-		msgdoLeave.nGameType = getRoomType() ;
-		msgdoLeave.nRoomID = getRoomID() ;
-		msgdoLeave.nUserUID = pp->nUserUID ;
-		msgdoLeave.nWinTimes = pp->nWinTimes ;
-		msgdoLeave.nPlayerTimes = pp->nPlayerTimes ;
-		msgdoLeave.nSingleWinMost = pp->nSingleWinMost ;
-		msgdoLeave.nGameOffset = pp->nGameOffset ;
-		sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pp->nUserSessionID) ;
-
+		if ( getDelegate() )
+		{
+			getDelegate()->onPlayerWillDoLeaveRoom(this,pp) ;
+		}
+		CLogMgr::SharedLogMgr()->PrintLog("uid = %d , do leave this room ",pp->nUserUID) ;
 		removePlayer(pp);
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d , do leave this room ",msgdoLeave.nUserUID ) ;
 	}
 	else
 	{

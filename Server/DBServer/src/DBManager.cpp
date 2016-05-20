@@ -6,6 +6,7 @@
 #include "DBApp.h"
 #include "DataBaseThread.h"
 #include "AutoBuffer.h"
+#include "json/json.h"
 #define PLAYER_BRIF_DATA "playerName,userUID,sex,vipLevel,photoID,coin,diamond"
 #define PLAYER_BRIF_DATA_DETAIL_EXT ",signature,singleWinMost,mostCoinEver,vUploadedPic,winTimes,loseTimes,longitude,latitude,offlineTime,maxCard,vJoinedClubID"
 CDBManager::CDBManager(CDBServerApp* theApp )
@@ -62,6 +63,79 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	CLogMgr::SharedLogMgr()->PrintLog("recive db req = %d",pmsg->usMsgType);
 	switch( pmsg->usMsgType )
 	{
+	case MSG_SAVE_PRIVATE_ROOM_PLAYER:
+		{
+			stMsgSavePrivateRoomPlayer* pRet = (stMsgSavePrivateRoomPlayer*)pmsg ;
+			char* pBuffer = (char*)pRet ;
+			pBuffer += sizeof(stMsgSavePrivateRoomPlayer);
+
+			CAutoBuffer auBuffer (pRet->nJsonLen + 1 );
+			auBuffer.addContent(pBuffer,pRet->nJsonLen) ;
+
+			pRequest->eType = eRequestType_Add ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"INSERT INTO privateroomplayer (roomID, roomType,userUID,content) VALUES ('%u', '%u','%u','%s') ON DUPLICATE KEY UPDATE content = '%s';",pRet->nRoomID,pRet->nRoomType,pRet->nUserUID,auBuffer.getBufferPtr(),auBuffer.getBufferPtr()) ;
+		}
+		break ;
+	case MSG_READ_PRIVATE_ROOM_PLAYER:
+		{
+			stMsgReadPrivateRoomPlayer* pRet = (stMsgReadPrivateRoomPlayer*)pmsg ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM privateroomplayer WHERE roomID = '%u', roomType = '%u' limit 80",pRet->nRoomID,pRet->nRoomType ) ;
+		}
+		break ;
+	case MSG_SAVE_ENCRYPT_NUMBER:
+		{
+			stMsgSaveEncryptNumber* pRet = (stMsgSaveEncryptNumber*)pmsg ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"call saveEncryptNumber( '%llu','%u','%u','%u','%u')",pRet->nEncryptNumber,pRet->nCoin,pRet->nRMB,pRet->nNumberType,pRet->nCoinType) ;
+		}
+		break ;
+	case MSG_VERIFY_ENCRYPT_NUMBER:
+		{
+			stMsgVerifyEncryptNumber* pRet = (stMsgVerifyEncryptNumber*)pmsg ;
+			pdata->nExtenArg1 = pRet->nUserUID ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"call playerUseEncryptNumber( '%llu','%u')",pRet->nNumber,pRet->nUserUID) ;
+		}
+		break ;
+	case MSG_SAVE_GAME_RESULT:
+		{
+			stMsgSaveGameResult* pRet = (stMsgSaveGameResult*)pmsg ;
+			pRequest->eType = eRequestType_Add;
+			CAutoBuffer auBuffer(pRet->nJsLen + 1 );
+			auBuffer.addContent((char*)pmsg + sizeof(stMsgSaveGameResult),pRet->nJsLen) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameresult (roomID, roomType,createUID,configID,time,duiringSeconds,playerDetail) VALUES ('%u', '%u','%u','%u','%u','%u','%s')",
+				pRet->nRoomID,pRet->nRoomType,pRet->nCreaterUID,pRet->nConfigID,pRet->tTime,pRet->nDuringSeconds,auBuffer.getBufferPtr()) ;
+		}
+		break;
+	case MSG_SAVE_PLAYER_GAME_RECORDER:
+		{
+			stMsgSavePlayerGameRecorder* pRet = (stMsgSavePlayerGameRecorder*)pmsg ;
+			pRequest->eType = eRequestType_Add;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamerecorder (userUID,roomID, roomType,createUID,finishTime,duiringSeconds,offset,buyIn,configID ) VALUES ('%u', '%u','%u','%u','%u','%u','%d','%u','%u')",
+				pRet->nUserUID,pRet->nRoomID,pRet->nRoomType,pRet->nCreateUID,pRet->nFinishTime,pRet->nDuiringSeconds,pRet->nOffset,pRet->nBuyIn,pRet->nConfigID) ;
+		}
+		break ;
+	case MSG_READ_GAME_RESULT:
+		{
+			stMsgReadGameResult* pRet = (stMsgReadGameResult*)pmsg ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM gameresult WHERE roomType = '%u' order by roomID desc limit 80",pRet->nRoomType ) ;
+		}
+		break ;
+	case MSG_READ_PLAYER_GAME_RECORDER:
+		{
+			stMsgReadPlayerGameRecorder* pRet = (stMsgReadPlayerGameRecorder*)pmsg ;
+			pRequest->eType = eRequestType_Select ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM playergamerecorder WHERE userUID = '%u'order by finishTime desc limit 35",pRet->nUserUID ) ;
+		}
+		break ;
 	case MSG_SAVE_NOTICE_PLAYER:
 		{
 			stMsgSaveNoticePlayer* pRet = (stMsgSaveNoticePlayer*)pmsg ;
@@ -216,17 +290,17 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				"SELECT * FROM playerfriend WHERE userUID = '%d'",pRet->nUserUID) ;
 		}
 		break;
-	case MSG_REQUEST_CREATE_PLAYER_DATA:
-		{
-			stMsgRequestDBCreatePlayerData* pCreate = (stMsgRequestDBCreatePlayerData*)pmsg ;
-			pdata->nExtenArg1 = pCreate->nUserUID ;
+	//case MSG_REQUEST_CREATE_PLAYER_DATA:
+	//	{
+	//		stMsgRequestDBCreatePlayerData* pCreate = (stMsgRequestDBCreatePlayerData*)pmsg ;
+	//		pdata->nExtenArg1 = pCreate->nUserUID ;
 
-			uint16_t nRandID = rand() % 10000 ;
-			pRequest->eType = eRequestType_Select ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
-				"call CreateNewRegisterPlayerDataNew(%d,'guest%d','%d')",pCreate->nUserUID,nRandID,pCreate->isRegister) ;
-		}
-		break;
+	//		uint16_t nRandID = rand() % 10000 ;
+	//		pRequest->eType = eRequestType_Select ;
+	//		pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,
+	//			"call CreateNewRegisterPlayerDataNew(%d,'guest%d','%d')",pCreate->nUserUID,nRandID,pCreate->isRegister) ;
+	//	}
+	//	break;
 	case MSG_DB_CHECK_INVITER:
 		{
 			stMsgDBCheckInvite* pRet = (stMsgDBCheckInvite*)pmsg ;
@@ -254,13 +328,13 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				"SELECT * FROM playertaxasdata WHERE userUID = '%d'",pRet->nUserUID) ;
 		}
 		break;
-	case MSG_READ_PLAYER_NIUNIU_DATA:
+	case MSG_READ_PLAYER_GAME_DATA:
 		{
-			stMsgReadPlayerNiuNiuData* pRet = (stMsgReadPlayerNiuNiuData*)pmsg ;
+			stMsgReadPlayerGameData* pRet = (stMsgReadPlayerGameData*)pmsg ;
 			pdata->nExtenArg1 = pRet->nUserUID ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM playerniuniudata WHERE userUID = '%d'",pRet->nUserUID) ;
+				"SELECT * FROM playergamedata WHERE userUID = '%u'",pRet->nUserUID) ;
 		}
 		break;
 	case MSG_PLAYER_SAVE_PLAYER_INFO:
@@ -284,34 +358,33 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	case MSG_SAVE_PLAYER_GAME_DATA:
 		{
 			stMsgSavePlayerGameData* pRet = (stMsgSavePlayerGameData*)pmsg ;
-			pRequest->eType = eRequestType_Update ;
-			std::string strMaxcard = stMysqlField::UnIntArraryToString(pRet->tData.vMaxCards,MAX_TAXAS_HOLD_CARD) ;
-			const char* pTableName = nullptr ;
+			CAutoBuffer auBufer(pRet->nJsonLen + 1 );
+			auBufer.addContent(((char*)pRet) + sizeof(stMsgSavePlayerGameData) , pRet->nJsonLen ) ;
+
+			pRequest->eType = eRequestType_Add;
 			switch ( pRet->nGameType )
 			{
 			case eRoom_NiuNiu:
 				{
-					pTableName = "playerniuniudata";
+					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamedata ( userUID,taxas,golden,niuniu ) VALUES ( '%u' ,'','','%s') ON DUPLICATE KEY UPDATE niuniu = '%s'",pRet->nUserUID,auBufer.getBufferPtr(),auBufer.getBufferPtr()) ;
 				}
 				break;
 			case eRoom_TexasPoker:
 				{
-					pTableName = "playertaxasdata";
+					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamedata ( userUID,niuniu,golden ,taxas) VALUES ( '%u' ,'','','%s') ON DUPLICATE KEY UPDATE taxas = '%s'",pRet->nUserUID,auBufer.getBufferPtr(),auBufer.getBufferPtr()) ;
 				}
 				break;
+			case eRoom_Golden:
+				{
+					pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamedata ( userUID,taxas,niuniu,golden ) VALUES ( '%u' ,'','','%s') ON DUPLICATE KEY UPDATE golden = '%s'",pRet->nUserUID,auBufer.getBufferPtr(),auBufer.getBufferPtr()) ;
+				}
+				break ;
 			default:
 				{
 					pRequest->nSqlBufferLen = 0 ;
 				}
 				break;
 			}
-
-			if ( pTableName == nullptr )
-			{
-				break; 
-			}
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE %s SET winTimes = '%d', playTimes = '%d', singleWinMost = '%I64d', maxCard = '%s',championTimes = '%u',run_upTimes = '%u',third_placeTimes = '%u' WHERE userUID = '%d'",pTableName,pRet->tData.nWinTimes,pRet->tData.nPlayTimes,pRet->tData.nSingleWinMost,strMaxcard.c_str(),pRet->tData.nChampionTimes,pRet->tData.nRun_upTimes,pRet->tData.nThird_placeTimes,pRet->nUserUID) ;
 		}
 		break;
 	case MSG_SAVE_COMMON_LOGIC_DATA:
@@ -864,6 +937,92 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	CLogMgr::SharedLogMgr()->PrintLog("processed db ret = %d",pResult->nRequestUID);
 	switch ( pResult->nRequestUID )
 	{
+	case MSG_READ_PRIVATE_ROOM_PLAYER:
+		{
+			stMsgReadPrivateRoomPlayerRet msgBack ;
+			CAutoBuffer auBuffer (sizeof(msgBack) + 200 );
+			for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow; ++nIdx )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
+				auBuffer.clearBuffer();
+				msgBack.nRoomID = pdata->nExtenArg1 ;
+				msgBack.nSubRoomIdx = 0 ;
+				msgBack.nJsonLen = pRow["content"]->nBufferLen; 
+				auBuffer.addContent(&msgBack,sizeof(msgBack));
+				auBuffer.addContent(pRow["content"]->BufferData(),msgBack.nJsonLen);
+				m_pTheApp->sendMsg(pdata->nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+			}
+		}
+		break;
+	case MSG_VERIFY_ENCRYPT_NUMBER:
+		{
+			stMsgVerifyEncryptNumberRet msgBack ;
+			msgBack.nUserUID = pdata->nExtenArg1 ;
+
+			CMysqlRow& pRow = *pResult->vResultRows.front();
+			msgBack.nAddCoin = pRow["nOutAddCoin"]->IntValue();
+			msgBack.nRet = pRow["nOutRet"]->IntValue() ;
+			msgBack.nCoinType = pRow["nOutCoinType"]->IntValue();
+			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+		}
+		break ;
+	case MSG_SAVE_ENCRYPT_NUMBER:
+		{
+			if ( pResult->nAffectRow > 0 )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows.front();
+				stMsgSaveEncryptNumberRet msgBack ;
+				msgBack.nRet = pRow["nRet"]->IntValue();
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("save encrypt number no respone") ;
+			}
+		}
+		break ;
+	case MSG_READ_GAME_RESULT:
+		{
+			stMsgReadGameResultRet msgBack ;
+			CAutoBuffer auBuffer (sizeof(msgBack) + 200 );
+			for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow; ++nIdx )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
+				auBuffer.clearBuffer();
+				msgBack.isFinal = nIdx + 1 == pResult->nAffectRow ;
+				msgBack.nConfigID = pRow["configID"]->IntValue();
+				msgBack.nCreaterUID = pRow["createUID"]->IntValue();
+				msgBack.nDuringSeconds = pRow["duiringSeconds"]->IntValue(); 
+				msgBack.nRoomID = pRow["roomID"]->IntValue();
+				msgBack.nRoomType = pRow["roomType"]->IntValue();
+				msgBack.tTime = pRow["time"]->IntValue(); 
+				msgBack.nJsLen = pRow["playerDetail"]->nBufferLen; 
+				auBuffer.addContent(&msgBack,sizeof(msgBack));
+				auBuffer.addContent(pRow["playerDetail"]->BufferData(),msgBack.nJsLen);
+				m_pTheApp->sendMsg(pdata->nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+			}
+		}
+		break ;
+	case MSG_READ_PLAYER_GAME_RECORDER:
+		{
+			stMsgReadPlayerGameRecorderRet msgBack ;
+			for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow; ++nIdx )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
+				msgBack.cSysIdentifer = pdata->eFromPort ;
+				msgBack.isFinal = nIdx + 1 == pResult->nAffectRow ;
+				msgBack.nCreateUID = pRow["createUID"]->IntValue();
+				msgBack.nDuiringSeconds = pRow["duiringSeconds"]->IntValue();
+				msgBack.nFinishTime = pRow["finishTime"]->IntValue();
+				msgBack.nOffset = pRow["offset"]->IntValue();
+				msgBack.nRoomID = pRow["roomID"]->IntValue();
+				msgBack.nRoomType = pRow["roomType"]->IntValue();
+				msgBack.nBuyIn = pRow["buyIn"]->IntValue() ;
+				msgBack.nConfigID = pRow["configID"]->IntValue() ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			}
+		}
+		break ;
 	case MSG_READ_EXCHANGE:
 		{
 			stMsgReadExchangesRet msgBack ;
@@ -878,7 +1037,6 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				item.nExchangeID = pRow["exchangeID"]->IntValue();
 				item.nExchangedCnt = pRow["count"]->nBufferLen;
 				auBuffer.addContent(&item,sizeof(item));
-
 			}
 			m_pTheApp->sendMsg(pdata->nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
 		}
@@ -1074,26 +1232,26 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d read friend list ok",pdata->nExtenArg1) ;
 		}
 		break;
-	case MSG_REQUEST_CREATE_PLAYER_DATA:
-		{
-			if ( pResult->nAffectRow != 1 )
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("create player data error uid = %d",pdata->nExtenArg1) ;
-			}
-			else
-			{
-				CMysqlRow& pRow = *pResult->vResultRows.front();
-				if ( pRow["nOutRet"]->IntValue() != 0 )
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("pp create player data error uid = %d ret = %d",pdata->nExtenArg1,pRow["nOutRet"]->IntValue() ) ;
-				}
-				else
-				{
-					CLogMgr::SharedLogMgr()->PrintLog("create player data success uid = %d",pdata->nExtenArg1 ) ;
-				}
-			}
-		}
-		break;
+	//case MSG_REQUEST_CREATE_PLAYER_DATA:
+	//	{
+	//		if ( pResult->nAffectRow != 1 )
+	//		{
+	//			CLogMgr::SharedLogMgr()->ErrorLog("create player data error uid = %d",pdata->nExtenArg1) ;
+	//		}
+	//		else
+	//		{
+	//			CMysqlRow& pRow = *pResult->vResultRows.front();
+	//			if ( pRow["nOutRet"]->IntValue() != 0 )
+	//			{
+	//				CLogMgr::SharedLogMgr()->ErrorLog("pp create player data error uid = %d ret = %d",pdata->nExtenArg1,pRow["nOutRet"]->IntValue() ) ;
+	//			}
+	//			else
+	//			{
+	//				CLogMgr::SharedLogMgr()->PrintLog("create player data success uid = %d",pdata->nExtenArg1 ) ;
+	//			}
+	//		}
+	//	}
+	//	break;
 	case MSG_READ_PLAYER_BASE_DATA:
 		{
 			stArgData* pdata = (stArgData*)pResult->pUserData ;
@@ -1176,29 +1334,42 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			}
 		}
 		break;
-	case MSG_READ_PLAYER_NIUNIU_DATA:
+	case MSG_READ_PLAYER_GAME_DATA:
 		{
 			stArgData* pdata = (stArgData*)pResult->pUserData ;
-			stMsgReadPlayerNiuNiuDataRet msg ;
+			stMsgReadPlayerGameDataRet msg ;
 			msg.nRet = 0 ;
 			msg.nUserUID = pdata->nExtenArg1 ;
-			memset(&msg.tData,0,sizeof(msg.tData)) ;
+			msg.nJsonLen = 0 ;
 			if ( pResult->nAffectRow <= 0 )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("can not find NIU NIU data with userUID = %d , session id = %d " , pdata->nExtenArg1,pdata->nSessionID ) ;
 				msg.nRet = 1 ;
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 			}
 			else
 			{
 				CMysqlRow& pRow = *pResult->vResultRows[0] ;
-				msg.tData.nPlayTimes = pRow["playTimes"]->IntValue();
-				msg.tData.nWinTimes = pRow["winTimes"]->IntValue();
-				msg.tData.nSingleWinMost = pRow["singleWinMost"]->IntValue64();
-				msg.tData.nRun_upTimes = pRow["run_upTimes"]->IntValue() ;
-				msg.tData.nChampionTimes = pRow["championTimes"]->IntValue() ;
-				msg.tData.nThird_placeTimes = pRow["third_placeTimes"]->IntValue();
+				Json::Value gameDatas ;
+				char* ptype[3] = {"taxas","niuniu","golden"};
+				for ( uint8_t nIdx = 0 ; nIdx < 3 ; ++nIdx )
+				{
+					Json::Value gDaata;
+					Json::Reader jsReader ;
+					jsReader.parse(pRow[ptype[nIdx]]->CStringValue(),gDaata);
+					gameDatas[(uint32_t)nIdx] = gDaata ;
+				}
+
+				Json::StyledWriter jsWrite ;
+				std::string strJs = jsWrite.write(gameDatas) ;
+				msg.nJsonLen = strJs.size() ;
+				CAutoBuffer auBuffer ( sizeof(msg) + msg.nJsonLen );
+				auBuffer.addContent(&msg,sizeof(msg)) ;
+				auBuffer.addContent(strJs.c_str(),msg.nJsonLen) ;
+				m_pTheApp->sendMsg(pdata->nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+
+				CLogMgr::SharedLogMgr()->PrintLog("read uid = %u game data js = %s",msg.nUserUID,strJs.c_str()) ;
 			}
-			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msg,sizeof(msg)) ;
 		}
 		break;
 	case MSG_READ_ROOM_INFO:
@@ -1361,6 +1532,9 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_CIRCLE_SAVE_ADD_TOPIC:
 	case MSG_SAVE_NOTICE_PLAYER:
 	case MSG_SAVE_EXCHANGE:
+	case MSG_SAVE_GAME_RESULT:
+	case MSG_SAVE_PLAYER_GAME_RECORDER:
+	case MSG_SAVE_PRIVATE_ROOM_PLAYER:
 		{
 			if ( pResult->nAffectRow <= 0 )
 			{

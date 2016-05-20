@@ -146,24 +146,9 @@ void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 
 	if ( standPlayer == nullptr )
 	{
-		if ( pPlayer->getCoin() > 0 )
+		if ( getDelegate() )
 		{
-			stMsgSvrDelayedLeaveRoom msgdoLeave ;
-			msgdoLeave.nCoin = pPlayer->getCoin() ;
-			msgdoLeave.nGameType = getRoomType() ;
-			msgdoLeave.nRoomID = getRoomID() ;
-			msgdoLeave.nUserUID = pPlayer->getUserUID() ;
-			msgdoLeave.nWinTimes = pPlayer->getWinTimes()  ;
-			msgdoLeave.nPlayerTimes = pPlayer->getPlayTimes() ;
-			msgdoLeave.nSingleWinMost = pPlayer->getSingleWinMost() ;
-			msgdoLeave.nUserUID = pPlayer->getUserUID() ;
-			msgdoLeave.nGameOffset = pPlayer->getTotalGameOffset() ;
-			sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pPlayer->getSessionID()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d game end stand up sys coin = %d to data svr ",pPlayer->getUserUID(),pPlayer->getCoin()) ;
-		}
-		else
-		{
-			CLogMgr::SharedLogMgr()->PrintLog("player uid = %d just stand up dely leave , but no coin",pPlayer->getUserUID() ) ;
+			getDelegate()->onDelayPlayerWillLeaveRoom(this,pPlayer) ;
 		}
 	}
 	else

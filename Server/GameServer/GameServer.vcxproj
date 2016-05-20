@@ -108,6 +108,7 @@
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\TitleLevelConfig.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\DataServer\src\encryptNumber.h" />
     <ClInclude Include="..\DataServer\src\EventCenter.h" />
     <ClInclude Include="..\DataServer\src\Events.h" />
     <ClInclude Include="..\DataServer\src\ExchangeCenter.h" />
@@ -151,6 +152,7 @@
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp" />
     <ClCompile Include="..\..\Common\TitleLevelConfig.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\DataServer\src\encryptNumber.cpp" />
     <ClCompile Include="..\DataServer\src\EventCenter.cpp" />
     <ClCompile Include="..\DataServer\src\ExchangeCenter.cpp" />
     <ClCompile Include="..\DataServer\src\ExchangeConfig.cpp" />

@@ -122,7 +122,7 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 				msgreq.nRoomType = m_pRoom->getRoomType() ;
 				msgreq.nSubRoomIdx = m_nSubRoomIdx ;
 				m_pRoom->sendMsgToPlayer(&msgreq,sizeof(msgreq),0) ;
-				CLogMgr::SharedLogMgr()->PrintLog("too few player robot session id = %u delay leave, and req new player to join than leave",pPlayer->nSessionID) ;
+				//CLogMgr::SharedLogMgr()->PrintLog("too few player robot session id = %u delay leave, and req new player to join than leave",pPlayer->nSessionID) ;
 			}
 		}
 	}
@@ -146,7 +146,7 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 		msgreq.nRoomType = m_pRoom->getRoomType() ;
 		msgreq.nSubRoomIdx = m_nSubRoomIdx ;
 		m_pRoom->sendMsgToPlayer(&msgreq,sizeof(msgreq),0) ;
-		CLogMgr::SharedLogMgr()->PrintLog("too few robot so req more , room id = %u",m_nRoomID) ;
+		//CLogMgr::SharedLogMgr()->PrintLog("too few robot so req more , room id = %u",m_nRoomID) ;
 		return ;
 	}
 

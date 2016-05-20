@@ -68,6 +68,100 @@ struct stMsgGetMaxRoomIDRet
 	stMsgGetMaxRoomIDRet(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_GET_MAX_ROOM_ID; }
 	uint32_t nMaxRoomID ; 
 };
+
+// sysn private room data 
+struct stMsgSyncPrivateRoomResult
+	:public stMsg
+{
+	stMsgSyncPrivateRoomResult(){ cSysIdentifer = ID_MSG_PORT_DATA ;  usMsgType = MSG_SYNC_PRIVATE_ROOM_RESULT ; }
+	uint32_t nTargetPlayerUID ;
+	uint32_t nRoomID ;
+	uint8_t nRoomType ;
+	uint32_t nFinalCoin ;
+	uint32_t nBuyIn ;
+	int32_t nOffset ;
+	uint32_t nDuringTimeSeconds ;
+	uint32_t nCreatorUID ;
+	uint16_t nConfigID ;
+};
+
+struct stMsgSaveGameResult
+	:public stMsg
+{
+public:
+	stMsgSaveGameResult(){ usMsgType = MSG_SAVE_GAME_RESULT ; cSysIdentifer = ID_MSG_PORT_DB ; }
+	uint32_t nRoomID ;
+	uint32_t nCreaterUID ;
+	uint16_t nConfigID ;
+	uint32_t tTime ;
+	uint32_t nDuringSeconds ;
+	uint8_t nRoomType ;
+	uint16_t nJsLen ;
+	PLACE_HOLDER(char* pJson);// [ { uid : 23 , buyIn : 234, offset : -30},{ uid : 23 , buyIn : 234, offset : -30}, .... ]
+};
+
+struct stMsgReadGameResult
+	:public stMsg
+{
+	stMsgReadGameResult(){ usMsgType = MSG_READ_GAME_RESULT ; cSysIdentifer = ID_MSG_PORT_DB ; }
+	uint8_t nRoomType ;
+};
+
+struct stMsgReadGameResultRet
+	:public stMsg
+{
+	stMsgReadGameResultRet(){ usMsgType = MSG_READ_GAME_RESULT ; cSysIdentifer = ID_MSG_PORT_NONE ; }
+	bool isFinal ;
+
+	uint32_t nRoomID ;
+	uint32_t nCreaterUID ;
+	uint16_t nConfigID ;
+	uint32_t tTime ;
+	uint8_t nRoomType ;
+	uint32_t nDuringSeconds ;
+	uint16_t nJsLen ;
+	PLACE_HOLDER(char* pJson);// [ { uid : 23 , buyIn : 234, offset : -30},{ uid : 23 , buyIn : 234, offset : -30}, .... ]
+};
+
+// save player recorder 
+struct stMsgSavePlayerGameRecorder
+	:public stMsg
+{
+	stMsgSavePlayerGameRecorder(){ usMsgType = MSG_SAVE_PLAYER_GAME_RECORDER ; cSysIdentifer = ID_MSG_PORT_DB ; }
+	uint32_t nRoomID ;
+	uint8_t nRoomType ;
+	uint32_t nCreateUID ;
+	uint32_t nFinishTime ;
+	uint32_t nDuiringSeconds ;
+	int32_t nOffset ;
+	uint32_t nUserUID ;
+	uint32_t nBuyIn ;
+	uint16_t nConfigID ;
+};
+
+struct stMsgReadPlayerGameRecorder
+	:public stMsg
+{
+	stMsgReadPlayerGameRecorder(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_PLAYER_GAME_RECORDER ; }
+	uint32_t nUserUID ;
+};
+
+struct stMsgReadPlayerGameRecorderRet 
+	:public stMsg
+{
+	stMsgReadPlayerGameRecorderRet() { cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_PLAYER_GAME_RECORDER ; }
+	bool isFinal ;
+	uint32_t nRoomID ;
+	uint32_t nCreateUID ;
+	uint8_t nRoomType ;
+	uint32_t nFinishTime ;
+	uint32_t nDuiringSeconds ;
+	int32_t nOffset ;
+	uint32_t nBuyIn ;
+	uint16_t nConfigID ;
+};
+
+
 // game and db 
 struct stMsgDataServerGetBaseData
 	:public stMsg
@@ -119,6 +213,34 @@ struct stMsgReadRoomPlayerRet
 	uint32_t nTermNumber ;
 	bool bIsLast ;
 	PLACE_HOLDER(stSaveRoomPlayerEntry*);
+};
+
+// private room player data ;
+struct stMsgSavePrivateRoomPlayer
+	:public stMsg
+{
+	stMsgSavePrivateRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_PRIVATE_ROOM_PLAYER ;}
+	uint32_t nRoomID ;
+	uint8_t nRoomType ;
+	uint32_t nUserUID ;
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* pJs) ; // stPrivateRoomPlayerItem  joson object ;
+};
+
+struct stMsgReadPrivateRoomPlayer
+	:public stMsg
+{
+	stMsgReadPrivateRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_PRIVATE_ROOM_PLAYER ; }
+	uint32_t nRoomID ;
+	uint8_t nRoomType ;
+};
+
+struct stMsgReadPrivateRoomPlayerRet
+	:public stMsgToRoom
+{
+	stMsgReadPrivateRoomPlayerRet(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_READ_PRIVATE_ROOM_PLAYER ; }
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* pJs) ; // stPrivateRoomPlayerItem  joson object ;
 };
 
 struct stMsgRemoveRoomPlayer
@@ -198,24 +320,26 @@ struct stMsgSavePlayerGameData
 {
 	stMsgSavePlayerGameData(){cSysIdentifer = ID_MSG_PORT_DB; usMsgType = MSG_SAVE_PLAYER_GAME_DATA ; }
 	uint32_t nUserUID ;
+	uint16_t nJsonLen ;
 	uint8_t nGameType ;
-	stPlayerGameData tData ;
+	PLACE_HOLDER(char* pJsonStr); // { gameType : eRoom_NiuNiu, data : { nWinTimes : 23 , nPlayTimes : 23, nSingleWinMost : 23400, nChampionTimes : 23 ,nRun_upTimes : 2, nThird_placeTimes : 23, vMaxCards : [23,455,345,634] } }
 };
 
-struct stMsgReadPlayerNiuNiuData
+struct stMsgReadPlayerGameData
 	:public stMsg
 {
-	stMsgReadPlayerNiuNiuData(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_PLAYER_NIUNIU_DATA ; }
+	stMsgReadPlayerGameData(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_PLAYER_GAME_DATA ; }
 	uint32_t nUserUID ;
 };
 
-struct stMsgReadPlayerNiuNiuDataRet
+struct stMsgReadPlayerGameDataRet
 	:public stMsg
 {
-	stMsgReadPlayerNiuNiuDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_PLAYER_NIUNIU_DATA ; }
+	stMsgReadPlayerGameDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_READ_PLAYER_GAME_DATA ; }
 	uint8_t nRet ;
 	uint32_t nUserUID ;
-	stPlayerGameData tData ;
+	uint16_t nJsonLen ;
+	PLACE_HOLDER(char* pJsonStr); // { [ { gameType : eRoom_NiuNiu, data : { nWinTimes : 23 , nPlayTimes : 23, nSingleWinMost : 23400, nChampionTimes : 23 ,nRun_upTimes : 2, nThird_placeTimes : 23, vMaxCards : [23,455,345,634] } } , ... ]  } 
 };
 
 //struct stMsgSaveCreateTaxasRoomInfo
@@ -838,7 +962,68 @@ struct stMsgRequestRobotToEnterRoom
 	uint8_t nReqRobotLevel ;
 };
 
+struct stMsgSaveEncryptNumber
+	:public stMsg
+{
+	stMsgSaveEncryptNumber(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_ENCRYPT_NUMBER ; }
+	uint64_t nEncryptNumber ;
+	uint32_t nCoin ;
+	uint16_t nRMB ;
+	uint8_t nNumberType ;   // 1 new player , 2 newMal ; 
+	uint8_t nCoinType ; // 1 coin£¬0 diamond
+};
+
+struct stMsgSaveEncryptNumberRet
+	:public stMsg
+{
+	stMsgSaveEncryptNumberRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_SAVE_ENCRYPT_NUMBER ; }
+	uint8_t nRet ; // 0 success , 1 duplicate number  
+};
+
+struct stMsgVerifyEncryptNumber
+	:public stMsg
+{
+	stMsgVerifyEncryptNumber(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_VERIFY_ENCRYPT_NUMBER ; }
+	uint64_t nNumber ;
+	uint32_t nUserUID ;
+};
+
+struct stMsgVerifyEncryptNumberRet
+	:public stMsg
+{
+	stMsgVerifyEncryptNumberRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_VERIFY_ENCRYPT_NUMBER ; }
+	uint8_t nRet ; // 0 success , 1 invalid number , 2 already used , 3 only can use one time ;
+	uint32_t nAddCoin ;
+	uint32_t nUserUID ;
+	uint8_t nCoinType ;   // 1 coin£¬0 diamond
+};
 //----above is new , below is old---------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

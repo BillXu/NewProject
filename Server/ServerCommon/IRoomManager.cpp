@@ -117,6 +117,59 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 {
 	switch ( prealMsg->usMsgType )
 	{
+	case MSG_READ_GAME_RESULT:
+		{
+			stMsgReadGameResultRet* pRet = (stMsgReadGameResultRet*)prealMsg ;
+			stPrivateRoomRecorder* pRecorder = new stPrivateRoomRecorder ;
+			pRecorder->nRoomID = pRet->nRoomID ;
+			pRecorder->nCreaterUID = pRet->nCreaterUID ;
+			pRecorder->nConfigID = pRet->nConfigID ;
+			pRecorder->nTime = pRet->tTime ;
+			pRecorder->nDuringSeconds = pRet->nDuringSeconds ;
+
+			char* pJsBuffer = (char*)prealMsg ;
+			pJsBuffer += sizeof(stMsgReadGameResultRet) ;
+
+			Json::Reader jsReader ;
+			jsReader.parse(pJsBuffer,pJsBuffer + pRet->nJsLen,pRecorder->playerDetail) ;
+			addPrivateRoomRecorder(pRecorder,false) ;
+			CLogMgr::SharedLogMgr()->PrintLog("read game result is room id = %u",pRet->nRoomID ) ;
+		}
+		break ;
+	case MSG_REQUEST_PRIVATE_ROOM_RECORDER:
+		{
+			stMsgRequestPrivateRoomRecorder* pRet = (stMsgRequestPrivateRoomRecorder*)prealMsg ;
+			auto iter = m_mapPrivateRecorder.find(pRet->nRoomID) ;
+			stMsgRequestPrivateRoomRecorderRet msgBack ;
+			if ( iter == m_mapPrivateRecorder.end() )
+			{
+				msgBack.nRet = 1 ;
+				msgBack.nRoomID = pRet->nRoomID ;
+				msgBack.nJsLen = 0 ;
+				sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
+				CLogMgr::SharedLogMgr()->PrintLog("can not find to send room record msg ") ;
+				break ;
+			}
+
+			msgBack.nRet = 0 ;
+			msgBack.nConfigID = iter->second->nConfigID ;
+			msgBack.nCreaterUID = iter->second->nCreaterUID ;
+			msgBack.nRoomID = iter->second->nRoomID ;
+			msgBack.tTime = (uint32_t)iter->second->nTime ;
+			msgBack.nRoomType = getMgrRoomType();
+
+			Json::StyledWriter jsWrite ;
+			std::string strJon = jsWrite.write(iter->second->playerDetail) ;
+
+			msgBack.nJsLen = strJon.size() ;
+
+			CAutoBuffer buBffer(sizeof(msgBack) + msgBack.nJsLen );
+			buBffer.addContent(&msgBack,sizeof(msgBack)) ;
+			buBffer.addContent(strJon.c_str(),msgBack.nJsLen) ;
+			sendMsg((stMsg*)buBffer.getBufferPtr(),buBffer.getContentSize(),nSessionID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("send room record msg ") ;
+		}
+		break ;
 	case MSG_GET_MAX_ROOM_ID:
 		{
 			stMsgGetMaxRoomIDRet* pRet = (stMsgGetMaxRoomIDRet*)prealMsg ;
@@ -559,6 +612,14 @@ void IRoomManager::onConnectedSvr()
 		//CLogMgr::SharedLogMgr()->ErrorLog("test stage do not read room info");
 		CLogMgr::SharedLogMgr()->PrintLog("read room info ") ;
 	}
+
+	if ( m_mapPrivateRecorder.empty() ) 
+	{
+		stMsgReadGameResult msg ;
+		msg.nRoomType = getMgrRoomType() ;
+		sendMsg(&msg,sizeof(msg),0) ;
+		CLogMgr::SharedLogMgr()->PrintLog("read game result ") ;
+	}
 }
 
 void IRoomManager::addRoomToCreator(uint32_t nOwnerUID ,IRoomInterface* pRoom)
@@ -589,6 +650,9 @@ bool IRoomManager::getRoomCreatorRooms(uint32_t nCreatorUID, LIST_ROOM& vInfo )
 
 void IRoomManager::onTimeSave()
 {
+#ifdef _DEBUG
+	return ;
+#endif
 	IGlobalModule::onTimeSave();
 	MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
 	for ( ; iter != m_vRooms.end() ; ++iter )
@@ -651,5 +715,35 @@ void IRoomManager::deleteRoomChatID( uint32_t nChatID )
 	m_pGoTyeAPI.performRequest("DeleteRoom",str.c_str(),str.size(),nullptr,eCrossSvrReq_DeleteRoom);
 
 	CLogMgr::SharedLogMgr()->PrintLog("delte chat room id = %u",nChatID) ;
+}
+
+void IRoomManager::addPrivateRoomRecorder(stPrivateRoomRecorder* pRecorder, bool isSaveDB )
+{
+	auto iter = m_mapPrivateRecorder.find(pRecorder->nRoomID) ;
+	assert(iter == m_mapPrivateRecorder.end() && "why have duplicate room recorder ?");
+	m_mapPrivateRecorder[pRecorder->nRoomID] = pRecorder ;
+
+	if ( isSaveDB == false )
+	{
+		return  ;
+	}
+	// save to db ;
+	stMsgSaveGameResult msgResult ;
+	msgResult.nConfigID = pRecorder->nConfigID ;
+	msgResult.nCreaterUID = pRecorder->nCreaterUID ;
+	msgResult.nRoomID = pRecorder->nRoomID ;
+	msgResult.nRoomType = getMgrRoomType() ;
+	msgResult.tTime = pRecorder->nTime ;
+	msgResult.nDuringSeconds = pRecorder->nDuringSeconds ;
+	
+	Json::StyledWriter jsWrite ;
+	std::string strJson = jsWrite.write(pRecorder->playerDetail) ;
+	msgResult.nJsLen = strJson.size() ;
+
+	CAutoBuffer refBuffer ( sizeof(msgResult) + msgResult.nJsLen );
+	refBuffer.addContent(&msgResult,sizeof(msgResult)) ;
+	refBuffer.addContent(strJson.c_str(),msgResult.nJsLen ) ;
+	
+	sendMsg((stMsg*)refBuffer.getBufferPtr(),refBuffer.getContentSize(),0) ;
 }
 

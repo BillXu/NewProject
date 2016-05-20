@@ -14,6 +14,7 @@ public:
 	{
 		Event_Reward, // {rankIdx : 2 rewardID: 23,gameType: 2 , roomName : 234 }
 		Event_AddCoin, // { comment: "why add coin" addCoin : 34556 }
+		Event_SyncGameResult, // { createUID : 2345 , roomID : 234 , roomType : 2 , finishTime : 234554, duiringTime : 2345 , offset : -234 , finalCoin : 23456 , buyIn : 2345 , configID : 23 } 
 		Event_Max,
 	};
 	struct stRecievedMail

@@ -1,9 +1,11 @@
-ShopItemID	ShopItemName	ItemID	Count	ShopItemIcon	ShopItemType	AppStroeIdentifer	Flag	PrizeType	OrigPrize	CurPrize	CanBuyTimes	BeginTime	EndTime
- 
-1	1Ç§³ïÂë	0	1000	icon_buychips1.png	1	TaxasPoker_1	0	0	0	1	0	0	0	   
-2	6Ç§8³ïÂë	0	6800	icon_buychips2.png	1	TaxasPoker_2	0	0	0	6	0	0	0	   
-3	8Íò³ïÂë	0	80000	icon_buychips3.png	1	TaxasPoker_3	0	0	0	68	0	0	0	   
-4	25Íò³ïÂë	0	250000	icon_buychips4.png	1	TaxasPoker_4	0	0	0	198	0	0	0	   
-5	85Íò³ïÂë	0	850000	icon_buychips5.png	1	TaxasPoker_5	0	0	0	648	0	0	0	   
-6	ÖÜ¿¨	0	1	weekcard.png	1	paiyouquan_zhouka	0	0	0	30	0	0	0	 
-
+ï»¿ShopItemID	ShopItemName	ItemID	Count	ShopItemIcon	ShopItemType	AppStroeIdentifer	Flag	PrizeType	OrigPrize	CurPrize	CanBuyTimes	BeginTime	EndTime
+1	60é¢—é’»çŸ³	0	60	0	0	diamond_1	0	0	0	6	0	0	0
+2	300é¢—é’»çŸ³	0	300	0	0	diamond_2	0	0	0	30	0	0	0
+3	1280é¢—é’»çŸ³	0	1280	0	0	diamond_3	0	0	0	128	0	0	0
+4	3280é¢—é’»çŸ³	0	3280	0	0	diamond_4	0	0	0	328	0	0	0
+5	6180é¢—é’»çŸ³	0	6180	0	0	diamond_5	0	0	0	618	0	0	0
+11	500é‡‘å¸	0	500	0	1	0	0	1	0	50	0	0	0
+12	3000é‡‘å¸	0	3000	0	1	0	0	1	0	300	0	0	0
+13	8000é‡‘å¸	0	8000	0	1	0	0	1	0	800	0	0	0
+14	20000é‡‘å¸	0	20000	0	1	0	0	1	0	2000	0	0	0
+15	60000é‡‘å¸	0	60000	0	1	0	0	1	0	6000	0	0	0

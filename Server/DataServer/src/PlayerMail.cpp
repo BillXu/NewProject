@@ -478,6 +478,22 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 			CLogMgr::SharedLogMgr()->PrintLog("do give coin uid = %d , coin = %d comment = %s",GetPlayer()->GetUserUID(),jArg["addCoin"].asInt(),jArg["comment"].asCString()) ;
 		}
 		break;
+	case Event_SyncGameResult:
+		{
+			stMsgSyncPrivateRoomResult msgSyn ;
+			msgSyn.nCreatorUID = jArg["createUID"].asUInt() ;
+			msgSyn.nDuringTimeSeconds = jArg["duiringTime"].asUInt() ;
+			msgSyn.nFinalCoin = jArg["finalCoin"].asUInt() ;
+			msgSyn.nOffset = jArg["offset"].asInt();
+			msgSyn.nRoomID = jArg["roomID"].asUInt() ;
+			msgSyn.nRoomType = jArg["roomType"].asUInt() ;
+			msgSyn.nBuyIn = jArg["buyIn"].asUInt() ;
+			msgSyn.nTargetPlayerUID = GetPlayer()->GetUserUID() ;
+			msgSyn.nConfigID = jArg["configID"].asUInt() ;
+			CLogMgr::SharedLogMgr()->PrintLog("do syn game result from offline event room id = %u, room type = %u , uid = %u",msgSyn.nRoomID,msgSyn.nRoomType,msgSyn.nTargetPlayerUID);
+			GetPlayer()->OnMessage(&msgSyn, (eMsgPort)GetPlayer()->getMsgPortByRoomType(msgSyn.nRoomType));
+		}
+		break; 
 	default:
 		CLogMgr::SharedLogMgr()->ErrorLog("unknown event type from offline , %d  uid = %d ",eEvent,GetPlayer()->GetUserUID()) ;
 		break;

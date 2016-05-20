@@ -4,17 +4,18 @@
 #include <iostream>
 #include "ThreadMod.h"
 #pragma comment( lib, "DbgHelp" )
+#pragma comment(lib,"JsonDll.lib")
 //#include "mutex.h"
 //#include <my_global.h>
 //#include "mysql.h"
 //#include "DataBaseThread.h"
+
 //#include "MySqlData.h"
 //#include "DBRequest.h"
 //#include "RakNetTypes.h"
 //#include "RakPeerInterface.h"
 //#include "ServerNetwork.h"
 //#include "DBPlayerManager.h"
-
 
 CDBServerApp theApp ;
 class CGetInput

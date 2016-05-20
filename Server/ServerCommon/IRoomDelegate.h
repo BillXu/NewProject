@@ -7,11 +7,12 @@
 #include "CommonDefine.h"
 #include "ServerDefine.h"
 #include <vector>
+#include "IRoom.h"
 struct stBaseRoomConfig;
 struct stMsgCrossServerRequest ;
 struct stMsgCrossServerRequestRet ;
 struct stMsg ;
-class IRoom;
+class ISitableRoomPlayer ;
 class IRoomDelegate
 {
 public:
@@ -35,6 +36,8 @@ public:
 	virtual bool isOmitNewPlayerHalo(IRoom* pRoom );
 	virtual void onRankPlayerChanged( uint32_t nUID , uint16_t nPreIdx , uint16_t nCurIdx );
 	virtual bool isPlayerLoseReachMax( IRoom* pRoom, uint32_t nUserUID );
+	virtual bool onPlayerWillDoLeaveRoom(IRoom* pRoom , IRoom::stStandPlayer* pPlayer );
+	virtual bool onDelayPlayerWillLeaveRoom(IRoom* pRoom , ISitableRoomPlayer* pPlayer );
 protected:
 	void removeAllRankItemPlayer();
 	void sortRoomRankItem();

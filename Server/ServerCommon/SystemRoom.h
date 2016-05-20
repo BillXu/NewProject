@@ -349,7 +349,7 @@ void CSystemRoom<TR>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer, int8_
 	
 	roomEnter->onPlayerEnterRoom(pEnterRoomPlayer,nSubIdx);
 	sendRoomInfo(pEnterRoomPlayer->nUserSessionID,roomEnter->getRoomID());
-	roomEnter->sendRoomPlayersInfo(pEnterRoomPlayer->nUserSessionID);
+	//roomEnter->sendRoomPlayersInfo(pEnterRoomPlayer->nUserSessionID);
 	CLogMgr::SharedLogMgr()->PrintLog("uid = %u , enter room id = %u , subIdx = %u",pEnterRoomPlayer->nUserUID, getRoomID(),roomEnter->getRoomID()) ;
 }
 
@@ -393,6 +393,8 @@ void CSystemRoom<TR>::sendRoomInfo(uint32_t nSessionID , int8_t nSubRoomIdx )
 	sBuf.addContent(str.c_str(),msgInfo.nJsonLen) ;
 	m_pRoomMgr->sendMsg((stMsg*)sBuf.getBufferPtr(),sBuf.getContentSize(),nSessionID) ;
 	CLogMgr::SharedLogMgr()->PrintLog("send room info to session id = %u js:%s",nSessionID, str.c_str()) ;
+
+	pRoom->sendRoomPlayersInfo(nSessionID);
 }
 
 template<class TR >

@@ -8,6 +8,7 @@
 #include "ServerStringTable.h"
 #include "ExchangeCenter.h"
 #include "RobotCenter.h"
+#include "encryptNumber.h"
 #ifndef USHORT_MAX
 #define USHORT_MAX 65535 
 #endif
@@ -60,6 +61,9 @@ bool CGameServerApp::init()
 
 	auto robotC = new CRobotCenter ;
 	registerModule(robotC) ;
+
+	auto pEncryptNumber = new CEncryptNumber();
+	registerModule(pEncryptNumber) ;
 	
 	time_t tNow = time(NULL) ;
 	m_nCurDay = localtime(&tNow)->tm_mday ;

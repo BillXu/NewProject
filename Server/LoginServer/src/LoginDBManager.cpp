@@ -56,12 +56,34 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			{
 				memset(pLoginRegister->cAccount,0,sizeof(pLoginRegister->cAccount)) ;
 				memset(pLoginRegister->cPassword,0,sizeof(pLoginRegister->cPassword)) ;
-				time_t tCur = time(NULL);
-				tm t ;
-				t = *localtime(&tCur);
-				uint16_t nRandN = rand()%10000 ;
-				uint16_t nRandN2 = rand() % 100 ;
-				sprintf_s(pLoginRegister->cAccount,"%d%d%d%d%d%d%d",nRandN2,t.tm_mon,t.tm_mday,t.tm_hour,t.tm_min,t.tm_sec,nRandN );
+				memset(pLoginRegister->cName,0,sizeof(pLoginRegister->cName)) ;
+
+				// rand a name and account 
+				for ( uint8_t nIdx  = 0 ; nIdx < 8 ; ++nIdx )
+				{
+					char acc , cName ;
+					acc = rand() % 50 ;
+					if ( acc <= 25 )
+					{
+						acc = 'a' + acc ;
+					}
+					else
+					{
+						acc = 'A' + (acc - 25 );
+					}
+
+					cName = rand() % 50 ;
+					if ( acc <= 25 )
+					{
+						cName = 'a' + cName ;
+					}
+					else
+					{
+						cName = 'A' + (cName - 25 );
+					}
+					pLoginRegister->cAccount[nIdx] = acc ;
+					pLoginRegister->cName[nIdx] = cName ;
+				}
 				sprintf_s(pLoginRegister->cPassword,"hello");
 			}
 			
@@ -209,10 +231,10 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			msgRet.nUserID = pRow["nOutUserUID"]->IntValue();
 
 			// request db to create new player data 
-			stMsgRequestDBCreatePlayerData msgCreateData ;
-			msgCreateData.nUserUID = msgRet.nUserID ;
-			msgCreateData.isRegister = msgRet.cRegisterType != 0 ;
-			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgCreateData,sizeof(msgCreateData)) ;
+			//stMsgRequestDBCreatePlayerData msgCreateData ;
+			//msgCreateData.nUserUID = msgRet.nUserID ;
+			//msgCreateData.isRegister = msgRet.cRegisterType != 0 ;
+			//m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgCreateData,sizeof(msgCreateData)) ;
 
 			// tell client the success register result ;
 			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgRet,sizeof(msgRet));
@@ -220,7 +242,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 
 			stMsgLoginSvrInformGateSaveLog msglog ;
 			msglog.nlogType = eLog_Register ;
-			msglog.nUserUID = msgCreateData.nUserUID ;
+			msglog.nUserUID = msgRet.nUserID  ;
 			m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msglog,sizeof(msglog)) ;
 		}
 		break;

@@ -392,7 +392,7 @@ int main()
 	CRobotConfigFile::stRobotItem* pitem = NULL ;
 	uint16_t nCnt = 100 ;
 #ifdef DEBUG
-	nCnt = 19 ;
+	nCnt = 1 ;
 #endif
 	while ( nCnt-- && (pitem = nRobotConfige.EnumConfigItem() ))
 	{

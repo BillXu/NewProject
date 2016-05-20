@@ -163,6 +163,9 @@
     <ClInclude Include="..\DataServer\src\RobotCenter.h">
       <Filter>src\App</Filter>
     </ClInclude>
+    <ClInclude Include="..\DataServer\src\encryptNumber.h">
+      <Filter>src\App</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
@@ -271,6 +274,9 @@
       <Filter>SvrCommon</Filter>
     </ClCompile>
     <ClCompile Include="..\DataServer\src\RobotCenter.cpp">
+      <Filter>src\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\encryptNumber.cpp">
       <Filter>src\App</Filter>
     </ClCompile>
   </ItemGroup>

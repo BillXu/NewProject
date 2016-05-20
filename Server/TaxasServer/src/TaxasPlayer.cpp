@@ -30,7 +30,7 @@ uint8_t CTaxasPlayer::getPeerCardByIdx(uint8_t nIdx )
 {
 	if ( nIdx < 2 )
 	{
-		m_tPeerCard.getCardByIdx(nIdx) ;
+		return m_tPeerCard.getCardByIdx(nIdx) ;
 	}
 	CLogMgr::SharedLogMgr()->ErrorLog("peer idx = %d must < 2" , nIdx ) ;
 	return 0 ;

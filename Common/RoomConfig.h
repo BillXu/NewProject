@@ -28,6 +28,7 @@ struct stSitableRoomConfig
 {
 	uint32_t nMiniTakeInCoin;
 	unsigned short nMaxSeat ;
+	uint32_t nBaseTakeIn ;
 };
 
 
@@ -45,15 +46,15 @@ struct stNiuNiuRoomConfig
 };
 
 struct stGoldenRoomConfig
-	:public stBaseRoomConfig
+	:public stNiuNiuRoomConfig
 {
-	unsigned int nMiniBet ; // di zhu 
-	unsigned short nTitleNeedToEnter ;
-	unsigned char nChangeCardRound; 
-	bool bCanDoublePK ;
-#ifndef SERVER
-	unsigned int vCoinLevels[GOLDEN_ROOM_COIN_LEVEL_CNT];
-#endif
+//	unsigned int nMiniBet ; // di zhu 
+//	unsigned short nTitleNeedToEnter ;
+//	unsigned char nChangeCardRound; 
+//	bool bCanDoublePK ;
+//#ifndef SERVER
+//	unsigned int vCoinLevels[GOLDEN_ROOM_COIN_LEVEL_CNT];
+//#endif
 };
 
 typedef std::vector<stTaxasRoomConfig*> VEC_BLIND_ROOM_CONFIG ;

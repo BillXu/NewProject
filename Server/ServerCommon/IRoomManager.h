@@ -8,6 +8,17 @@
 class CRoomConfigMgr ;
 class IRoomInterface ;
 class IRoom ;
+
+struct stPrivateRoomRecorder
+{
+	uint32_t nRoomID ;
+	uint32_t nCreaterUID ;
+	uint16_t nConfigID ;
+	time_t nTime ;
+	uint32_t nDuringSeconds ;
+	Json::Value playerDetail ;
+};
+
 class IRoomManager
 	:public CHttpRequestDelegate
 	,public IGlobalModule
@@ -36,6 +47,7 @@ public:
 	void onConnectedSvr()override;
 	bool reqeustChatRoomID(IRoom* pRoom);
 	void deleteRoomChatID(uint32_t nChatID );
+	void addPrivateRoomRecorder( stPrivateRoomRecorder* pRecorder, bool isSaveDB = true );
 protected:
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
 	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
@@ -52,4 +64,6 @@ protected:
 	uint32_t m_nMaxRoomID ;
 	MAP_UID_CR m_vCreatorAndRooms ;
 	CRoomConfigMgr* m_pConfigMgr ;
+
+	std::map<uint32_t,stPrivateRoomRecorder*> m_mapPrivateRecorder ;
 };

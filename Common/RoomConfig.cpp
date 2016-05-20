@@ -9,11 +9,18 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	switch ( cType )
 	{
 	case eRoom_NiuNiu:
+    case eRoom_Golden:
 		{
-			stNiuNiuRoomConfig* pConfig = new stNiuNiuRoomConfig ;
+			stNiuNiuRoomConfig* pConfig = NULL;
+            if (cType == eRoom_Golden) {
+                pConfig = new stGoldenRoomConfig();
+            }else{
+                pConfig = new stNiuNiuRoomConfig();
+            }
 			pConfig->nBaseBet = refReaderRow["BigBlind"]->IntValue();
 			pConfig->nMiniTakeInCoin = refReaderRow["miniTakeIn"]->IntValue() ;
 			pConfig->nMaxSeat = refReaderRow["MaxSeat"]->IntValue();
+			pConfig->nBaseTakeIn = refReaderRow["baseTakeIn"]->IntValue();
 			pRoomConfig = pConfig ;
 		}
 		break;
@@ -24,16 +31,17 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 			pConfig->nMaxTakeInCoin = refReaderRow["maxTakeIn"]->IntValue() ;
 			pConfig->nMiniTakeInCoin = refReaderRow["miniTakeIn"]->IntValue() ;
 			pConfig->nMaxSeat = refReaderRow["MaxSeat"]->IntValue();
+			pConfig->nBaseTakeIn = refReaderRow["baseTakeIn"]->IntValue();
 			pRoomConfig = pConfig ;
 		}
 		break;
-	//case eRoom_Gold:
-	//	{
-	//		stGoldenRoomConfig* pConfig = new stGoldenRoomConfig ;
-	//		pConfig->bCanDoublePK = (bool)refReaderRow["CanDoublePK"]->IntValue();
-	//		pConfig->nChangeCardRound = refReaderRow["ChangeCardRound"]->IntValue();
-	//		pConfig->nMiniBet = refReaderRow["MiniBet"]->IntValue();
-	//		pConfig->nTitleNeedToEnter = refReaderRow["TitleNeedToEnter"]->IntValue();
+//	case eRoom_Golden:
+//		{
+//			stGoldenRoomConfig* pConfig = new stGoldenRoomConfig ;
+//			pConfig->bCanDoublePK = (bool)refReaderRow["CanDoublePK"]->IntValue();
+//			pConfig->nChangeCardRound = refReaderRow["ChangeCardRound"]->IntValue();
+//			pConfig->nMiniBet = refReaderRow["MiniBet"]->IntValue();
+//			pConfig->nTitleNeedToEnter = refReaderRow["TitleNeedToEnter"]->IntValue();
 // #ifdef SERVER
 // 			char pBuffer[256] = {0};
 // 			for ( int i = 0 ; i < GOLDEN_ROOM_COIN_LEVEL_CNT ; ++i )
@@ -43,9 +51,9 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 // 				pConfig->vCoinLevels[i] = refReaderRow[pBuffer]->IntValue();
 // 			}
 // #endif
-			//pRoomConfig = pConfig ;
-		//}
-		break;
+//			pRoomConfig = pConfig ;
+//		}
+//		break;
 	default:
 		CLogMgr::SharedLogMgr()->ErrorLog( "unknown room config ,room type = %d",cType ) ;
 		return false;

@@ -1,6 +1,8 @@
 #include "IRoomDelegate.h"
 #include "LogManager.h"
 #include <ctime>
+#include "ISitableRoomPlayer.h"
+#include "ServerMessageDefine.h"
 IRoomDelegate::~IRoomDelegate()
 {
 	removeAllRankItemPlayer();
@@ -58,6 +60,46 @@ void IRoomDelegate::onRankPlayerChanged( uint32_t nUID , uint16_t nPreIdx , uint
 bool IRoomDelegate::isPlayerLoseReachMax( IRoom* pRoom, uint32_t nUserUID )
 {
 	return false ;
+}
+
+bool IRoomDelegate::onPlayerWillDoLeaveRoom(IRoom* pRoom , IRoom::stStandPlayer* pp )
+{
+	stMsgSvrDoLeaveRoom msgdoLeave ;
+	msgdoLeave.nCoin = pp->nCoin ;
+	msgdoLeave.nGameType = pRoom->getRoomType() ;
+	msgdoLeave.nRoomID = pRoom->getRoomID() ;
+	msgdoLeave.nUserUID = pp->nUserUID ;
+	msgdoLeave.nWinTimes = pp->nWinTimes ;
+	msgdoLeave.nPlayerTimes = pp->nPlayerTimes ;
+	msgdoLeave.nSingleWinMost = pp->nSingleWinMost ;
+	msgdoLeave.nGameOffset = pp->nGameOffset ;
+	pRoom->sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pp->nUserSessionID) ;
+	return true ;
+}
+
+bool IRoomDelegate::onDelayPlayerWillLeaveRoom(IRoom* pRoom , ISitableRoomPlayer* pPlayer )
+{
+	if ( pPlayer->getCoin() > 0 )
+	{
+		stMsgSvrDelayedLeaveRoom msgdoLeave ;
+		msgdoLeave.nCoin = pPlayer->getCoin() ;
+		msgdoLeave.nGameType = pRoom->getRoomType() ;
+		msgdoLeave.nRoomID = pRoom->getRoomID() ;
+		msgdoLeave.nUserUID = pPlayer->getUserUID() ;
+		msgdoLeave.nWinTimes = pPlayer->getWinTimes()  ;
+		msgdoLeave.nPlayerTimes = pPlayer->getPlayTimes() ;
+		msgdoLeave.nSingleWinMost = pPlayer->getSingleWinMost() ;
+		msgdoLeave.nUserUID = pPlayer->getUserUID() ;
+		msgdoLeave.nGameOffset = pPlayer->getTotalGameOffset() ;
+		pRoom->sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pPlayer->getSessionID()) ;
+		CLogMgr::SharedLogMgr()->PrintLog("player uid = %d game end stand up sys coin = %d to data svr ",pPlayer->getUserUID(),pPlayer->getCoin()) ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("player uid = %d just stand up dely leave , but no coin",pPlayer->getUserUID() ) ;
+	}
+
+	return true ;
 }
 
 void IRoomDelegate::removeAllRankItemPlayer()

@@ -148,6 +148,24 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			msg.nPlayerType = ePlayer_Robot ;
 			SendMsg(&msg, sizeof(msg)) ;
 
+
+			// Éú³É¼¤»îÂë
+			stMsgRobotGenerateEncryptNumber msgGenEntry;
+			msgGenEntry.nCoin = 1000 ;
+			msgGenEntry.nGenCount = 1000 ;
+			msgGenEntry.nNumberType = 0 ;
+			msgGenEntry.nRMB = 0 ;
+			msgGenEntry.nCoinType = 0 ;
+			SendMsg(&msgGenEntry, sizeof(msgGenEntry)) ;
+
+			msgGenEntry.nCoin = 3000 ;
+			msgGenEntry.nGenCount = 1000 ;
+			msgGenEntry.nNumberType = 1 ;
+			msgGenEntry.nRMB = 0 ;
+			msgGenEntry.nCoinType = 1 ;
+			SendMsg(&msgGenEntry, sizeof(msgGenEntry)) ;
+			break ;
+
 			auto pConfigItem = m_pClient->GetPlayerData()->getConfigItem();
 			if ( pRet->stBaseData.nCoin <= pConfigItem->fMostLeftCoin && pRet->stBaseData.nCoin >= pConfigItem->nMinLeftCoin )
 			{

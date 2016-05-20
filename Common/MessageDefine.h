@@ -66,6 +66,7 @@ struct stMsgRegister
 	char cAccount[MAX_LEN_ACCOUNT] ;
 	char cPassword[MAX_LEN_PASSWORD] ;
 	unsigned char nChannel; // «˛µ¿±Í æ£¨0. appstore  1. pp ÷˙ ÷£¨2.  91…Ãµ�?3. 360…Ãµ�?4.winphone store
+	char cName[MAX_LEN_CHARACTER_NAME] ;
 };
 
 struct stMsgRegisterRet
@@ -76,7 +77,7 @@ struct stMsgRegisterRet
 		cSysIdentifer = ID_MSG_PORT_CLIENT ;
 		usMsgType = MSG_PLAYER_REGISTER ;
 	}
-	char nRet ; // 0 success ;  1 . account have exsit ;
+	char nRet ; // 0 success ;  1 . account have exsit , 2 nick name already exsit;
 	unsigned char cRegisterType ; // 0 ±Ì æ”ŒøÕµ«¬º£�?±Ì æ’˝≥£◊¢≤· , 2 ∞Û∂®’À∫≈ 
 	char cAccount[MAX_LEN_ACCOUNT] ;
 	char cPassword[MAX_LEN_PASSWORD] ;
@@ -603,7 +604,7 @@ struct stMsgRequestRoomItemDetailRet
 	uint16_t nJsonLen ;
 	PLACE_HOLDER(char* pLen ); 
 	// public room : { configID : 23 ,name : "number 1 poker", openTime : 23345 , closeTime: 2345, state : 23  }
-	// private room:  { configID : 23 , closeTime: 2345, state : 23 ,createTime : 2345 };
+	// private room:  { configID : 23 , closeTime: 2345, state : 23 ,createTime : 2345 , curCnt : 3  };
 };
 
 struct stMsgRequestRoomRewardInfo
@@ -728,11 +729,11 @@ struct stMsgRoomInfo
 	uint8_t nSubIdx ; 
 	uint16_t nJsonLen ;
 	PLACE_HOLDER(char* jsonstr);
-	//taxas js {"litBlind":20,"minTakIn":200,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] }	
+	//taxas js { private : { selfCoin : 2345 , baseTakeIn : 200 },  "litBlind":20,"minTakIn":200,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] }	
 
-	// niu niu js {"bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2 };
+	// niu niu js { private : { selfCoin : 2345 , baseTakeIn : 200 }, "bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2 };
 	
-	// golden js { "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 };
+	// golden js { private : { selfCoin : 2345 , baseTakeIn : 200 }, "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 };
 };
 
 // enter and leave 
@@ -763,6 +764,84 @@ struct stMsgPlayerLeaveRoomRet
 {
 	stMsgPlayerLeaveRoomRet(){ usMsgType = MSG_PLAYER_LEAVE_ROOM ; cSysIdentifer = ID_MSG_PORT_CLIENT ; }
 	uint8_t nRet ; // 0 success , 1 you are not in room ;
+};
+
+// buy in 
+struct stMsgPlayerReBuyIn
+	:public stMsgToRoom
+{
+public:
+	stMsgPlayerReBuyIn(){ usMsgType = MSG_PLAYER_REBUY ;}
+	uint32_t nBuyInCoin ;
+};
+
+struct stMsgPlayerReBuyInRet
+	:public stMsg
+{
+public:
+	stMsgPlayerReBuyInRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_REBUY ;}
+	uint8_t nRet ; // 0 success , 1 coin not enough , 2 take in count error ;
+	uint32_t nBuyInCoin ;
+	uint32_t nFinalCoin ;
+};
+
+struct stMsgPrivateRoomReBuyIn
+	:public stMsg
+{
+public:
+	stMsgPrivateRoomReBuyIn(){ usMsgType = MSG_PRIVATE_ROOM_PLAYER_REBUY ; cSysIdentifer = ID_MSG_PORT_CLIENT ;}
+	uint8_t nIdx ;
+	uint32_t nBuyInCoin ;
+	uint32_t nFinalCoin ;
+};
+
+struct stMsgRequestPrivateRoomRecorder
+	:public stMsgToRoom
+{
+public:
+	stMsgRequestPrivateRoomRecorder(){ usMsgType = MSG_REQUEST_PRIVATE_ROOM_RECORDER ;}
+};
+
+
+struct stMsgRequestPrivateRoomRecorderRet
+	:public stMsg
+{
+public:
+	stMsgRequestPrivateRoomRecorderRet(){ usMsgType = MSG_REQUEST_PRIVATE_ROOM_RECORDER ; cSysIdentifer = ID_MSG_PORT_CLIENT ; }
+	uint8_t nRet ; // 0 success , 1 can not find recorder ;
+	uint32_t nRoomID ;
+	uint32_t nCreaterUID ;
+	uint16_t nConfigID ;
+	uint32_t tTime ;
+	uint8_t nRoomType ;
+	uint16_t nJsLen ;
+	PLACE_HOLDER(char* pJson);// [ { uid : 23 , buyIn : 234, offset : -30},{ uid : 23 , buyIn : 234, offset : -30}, .... ]
+};
+
+struct stMsgPlayerRequestGameRecorder
+	:public stMsg
+{
+	stMsgPlayerRequestGameRecorder(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_REQUEST_GAME_RECORDER ; }
+};
+
+struct stRecorderItem
+{
+	uint32_t nRoomID ;
+	uint8_t nRoomType ;
+	uint16_t nConfigID ;
+	uint32_t nCreateUID ;
+	uint32_t nFinishTime ;
+	uint32_t nDuiringSeconds ;
+	int32_t nOffset ;
+	uint32_t nBuyIn ;
+};
+
+struct stMsgPlayerRequestGameRecorderRet
+	:public stMsg
+{
+	stMsgPlayerRequestGameRecorderRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_REQUEST_GAME_RECORDER ; }
+	uint8_t nCnt ; 
+	PLACE_HOLDER(stRecorderItem*);
 };
 
 // sit down ;
@@ -817,7 +896,7 @@ struct stRoomRankEntry
 {
 	uint32_t nUserUID ;
 	int64_t nGameOffset ;
-	int64_t nOtherOffset ;
+	int64_t nOtherOffset ;  // total buy in when private room ;
 };
 
 struct stMsgRequestRoomRankRet
@@ -1046,6 +1125,73 @@ struct stMsgPushAPNSTokenRet
 	stMsgPushAPNSTokenRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PUSH_APNS_TOKEN ; }
 	unsigned char nReqTokenRet ; // 0 success ; 1 use disabled notification ;
 };
+
+// encrypt number 
+struct stMsgRobotGenerateEncryptNumber
+	:public stMsg
+{
+	stMsgRobotGenerateEncryptNumber(){ cSysIdentifer =  ID_MSG_PORT_DATA ; usMsgType = MSG_ROBOT_GENERATE_ENCRYPT_NUMBER ; }
+	uint32_t nCoin ;
+	uint16_t nRMB ;
+	uint32_t nGenCount ;
+	uint8_t nNumberType ;   // 1 new player , 2 newMal ; 
+	uint8_t nCoinType ; // 0 diamond , 1 coin 
+};
+
+struct  stMsgPlayerUseEncryptNumber
+	:public stMsg
+{
+	stMsgPlayerUseEncryptNumber(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_PLAYER_USE_ENCRYPT_NUMBER ; }
+	uint64_t nNumber ;
+};
+
+struct  stMsgPlayerUseEncryptNumberRet
+	:public stMsg
+{
+	stMsgPlayerUseEncryptNumberRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_USE_ENCRYPT_NUMBER ; }
+	uint8_t nRet ; // 0 success , 1 invalid number , 2 already used , 3 only can use one time ;
+	uint8_t nCoinType ;  // 0 diamond , 1 coin ;
+	uint32_t nAddCoin ;
+	uint32_t nFinalcoin ;
+	uint32_t nDiamond ;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

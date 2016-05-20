@@ -21,6 +21,7 @@
 #include <assert.h>
 #include "SeverUtility.h"
 #include "ServerStringTable.h"
+#include "encryptNumber.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
 #define COIN_BE_INVITED 588
@@ -166,6 +167,48 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 	switch( pMsg->usMsgType )
 	{
+	case MSG_PLAYER_USE_ENCRYPT_NUMBER:
+		{
+			stMsgPlayerUseEncryptNumberRet msgBack ;
+			stMsgPlayerUseEncryptNumber* pRet = (stMsgPlayerUseEncryptNumber*)pMsg ;
+			if ( CEncryptNumber::isNumberValid(pRet->nNumber) )
+			{
+				stMsgVerifyEncryptNumber msgVerifyEncrypt ;
+				msgVerifyEncrypt.nNumber = pRet->nNumber ;
+				msgVerifyEncrypt.nUserUID = GetPlayer()->GetUserUID() ;
+				SendMsg(&msgVerifyEncrypt,sizeof(msgVerifyEncrypt)) ;
+				break;
+			}
+
+			msgBack.nRet = 1 ;
+			msgBack.nAddCoin = 0 ;
+			msgBack.nFinalcoin = getCoin();
+			SendMsg(&msgBack,sizeof(msgBack)) ;
+			CLogMgr::SharedLogMgr()->PrintLog("invalid number uid = %u",GetPlayer()->GetUserUID());
+		}
+		break ;
+	case MSG_VERIFY_ENCRYPT_NUMBER:
+		{
+			stMsgPlayerUseEncryptNumberRet msgBack ;
+			stMsgVerifyEncryptNumberRet* pRet = (stMsgVerifyEncryptNumberRet*)pMsg ;
+			if ( pRet->nRet )
+			{
+				stMsgPlayerUseEncryptNumberRet msgBack ;
+				msgBack.nRet = pRet->nRet ;
+				msgBack.nFinalcoin = getCoin();
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				break;
+			}
+			msgBack.nRet = 0 ;
+			msgBack.nAddCoin = pRet->nAddCoin ;
+			msgBack.nCoinType = pRet->nCoinType ;
+			AddMoney(pRet->nAddCoin,pRet->nCoinType == 0 ) ;
+			msgBack.nFinalcoin = GetAllCoin();
+			msgBack.nDiamond = GetAllDiamoned() ;
+			SendMsg(&msgBack,sizeof(msgBack)) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %u add coin via encrypt number" , GetPlayer()->GetUserUID());
+		}
+		break;
 	case MSG_REQ_TOTAL_GAME_OFFSET:
 		{
 			stMsgReqRobotTotalGameOffsetRet msgBack ;
@@ -386,6 +429,50 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 	case MSG_BUY_SHOP_ITEM:
 		{
 			stMsgPlayerBuyShopItem* pRet = (stMsgPlayerBuyShopItem*)pMsg ;
+			CShopConfigMgr* pMgr = (CShopConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Shop);
+			stShopItem* pItem = pMgr->GetShopItem(pRet->nShopItemID);
+			
+			
+			stMsgPlayerBuyShopItemRet msgBack ;
+			msgBack.nBuyShopItemForUserUID = pRet->nBuyShopItemForUserUID ;
+			msgBack.nDiamoned = 0 ;
+			msgBack.nSavedMoneyForVip = 0 ;
+			msgBack.nShopItemID = pRet->nShopItemID ;
+			msgBack.nRet = 0 ;
+
+			if( pItem == nullptr )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %u buy shop id = %u not exsit",GetPlayer()->GetUserUID(),pRet->nShopItemID) ;
+				msgBack.nRet = 5 ;
+				msgBack.nDiamoned = GetAllDiamoned();
+				msgBack.nFinalyCoin = GetAllCoin() ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				break;
+			}
+
+			if ( pItem->nPrizeType == 1  ) // 0 RMB ,1 diamoned ,2 coin ;
+			{
+				if ( pItem->nPrize > GetAllDiamoned() )
+				{
+					msgBack.nRet = 1 ;
+					msgBack.nDiamoned = GetAllDiamoned();
+					msgBack.nFinalyCoin = GetAllCoin() ;
+					SendMsg(&msgBack,sizeof(msgBack)) ;
+					CLogMgr::SharedLogMgr()->PrintLog("uid = %u buy item diamond is not enough shop id = %u" , GetPlayer()->GetUserUID(),pItem->nShopItemID) ;
+					break;
+				}
+
+				AddMoney(pItem->nCount);
+				decressMoney(pItem->nPrize,true) ;
+
+				msgBack.nDiamoned = GetAllDiamoned();
+				msgBack.nFinalyCoin = GetAllCoin() ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %u buy item ok shop id = %u" , GetPlayer()->GetUserUID(),pItem->nShopItemID) ;
+				break;
+			}
+
+			// else RMB ;
 			stMsgToVerifyServer msgVerify ;
 			msgVerify.nBuyerPlayerUserUID = GetPlayer()->GetUserUID();
 			msgVerify.nBuyForPlayerUserUID = msgVerify.nBuyerPlayerUserUID ;
@@ -428,7 +515,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 					}
 					else
 					{
-						AddMoney(pItem->nCount) ;
+						AddMoney(pItem->nCount,true) ;
 						CLogMgr::SharedLogMgr()->SystemLog("add coin with shop id = %d for buyer uid = %d ",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
 					}
 				}
@@ -450,6 +537,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d ,shop id = %d , verify error ",pRet->nBuyerPlayerUserUID,pRet->nShopItemID) ;
 			}
 
+			msgBack.nDiamoned = GetAllDiamoned();
 			msgBack.nFinalyCoin = GetAllCoin() ;
 			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
@@ -504,6 +592,10 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			{
 				ret.nRet = 1 ;
 				CLogMgr::SharedLogMgr()->ErrorLog("name is too long uid = %d",GetPlayer()->GetUserUID());
+			}
+			else if ( strcmp(pMsgRet->pNewName,m_stBaseData.cName) == 0 )
+			{
+
 			}
 			else
 			{
