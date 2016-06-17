@@ -23,6 +23,7 @@ bool CEncryptNumber::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSe
 			pReq->nNeedCnt = pRet->nGenCount ;
 			pReq->nType = pRet->nNumberType ;
 			pReq->nRMB = pRet->nRMB ;
+			pReq->nChannelID = pRet->nChannelID ;
 			if ( m_pCurRequest == nullptr )
 			{
 				m_pCurRequest = pReq ;
@@ -75,9 +76,15 @@ void CEncryptNumber::doGenerateNumber(stEncryptRequest* pReq )
 	stMsgSaveEncryptNumber msgSave ;
 	msgSave.nCoin = pReq->nCoin ;
 	msgSave.nEncryptNumber = generateNumber() ;
+	while ( msgSave.nEncryptNumber <= 999999999999999 )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("number = %llu not 16 bit, try again",msgSave.nEncryptNumber);
+		msgSave.nEncryptNumber = generateNumber() ;
+	}
 	msgSave.nNumberType = pReq->nType ;
 	msgSave.nRMB = pReq->nRMB ;
 	msgSave.nCoinType = pReq->nCoinType ;
+	msgSave.nChannelID = pReq->nChannelID ;
 	getSvrApp()->sendMsg(0,(char*)&msgSave,sizeof(msgSave));
 #ifdef  _DEBUG
 	if ( isNumberValid(msgSave.nEncryptNumber) )

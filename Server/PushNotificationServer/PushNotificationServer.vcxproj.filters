@@ -60,6 +60,9 @@
     <ClCompile Include="..\ServerCommon\Timer.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
+    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\MessageDefine.h">
@@ -111,6 +114,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCommon\Timer.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>

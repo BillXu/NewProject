@@ -13,19 +13,19 @@ bool CGoldenData::onMsg(stMsg* pmsg )
 	{
 	case MSG_ROOM_INFO:
 		{
-			stMsgRoomInfo* pInfo = (stMsgRoomInfo*)pmsg ;
-			char* pBuffer = (char*)pmsg ;
-			pBuffer = pBuffer + sizeof(stMsgRoomInfo);
+			//stMsgRoomInfo* pInfo = (stMsgRoomInfo*)pmsg ;
+			//char* pBuffer = (char*)pmsg ;
+			//pBuffer = pBuffer + sizeof(stMsgRoomInfo);
 
-			Json::Reader rt ;
-			Json::Value jCont ;
-			rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
+			//Json::Reader rt ;
+			//Json::Value jCont ;
+			//rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
 
-			nBankerIdx = jCont["bankIdx"].asInt();
-			nRound = jCont["betRound"].asInt();
-			nBaseBet = jCont["baseBet"].asInt();
-			nCurBottomBet = jCont["curBet"].asInt();
-			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState,pInfo->nSubIdx);
+			//nBankerIdx = jCont["bankIdx"].asInt();
+			//nRound = jCont["betRound"].asInt();
+			//nBaseBet = jCont["baseBet"].asInt();
+			//nCurBottomBet = jCont["curBet"].asInt();
+			//setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState,pInfo->nSubIdx);
 		}
 		break;
 	case MSG_GOLDEN_ROOM_PLAYERS:

@@ -14,7 +14,7 @@ class IRoomInterface
 {
 public:
 	virtual ~IRoomInterface(){ }
-	virtual bool onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue ) = 0;
+	virtual bool onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue ) = 0;
 	virtual void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue ) = 0;
 	virtual void serializationToDB() = 0;
 
@@ -27,7 +27,10 @@ public:
 	virtual void update(float fDelta) = 0;
 	virtual void onTimeSave() = 0;
 	virtual bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID ) = 0;
+	virtual bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID ){ return false ;}
 	virtual bool isDeleteRoom() = 0;
 	virtual void deleteRoom() = 0 ;
 	virtual uint32_t getOwnerUID() = 0 ;
+	virtual int32_t getPlayerOffsetByUID( uint32_t nUserUID ) { return 0 ;}  ;
+	virtual bool isPlaying() = 0 ;
 };

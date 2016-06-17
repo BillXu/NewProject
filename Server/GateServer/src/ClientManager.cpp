@@ -60,8 +60,8 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 		CLogMgr::SharedLogMgr()->SystemLog("current online cnt = %d", m_vSessionGateClient.size() - m_vWaitToReconnect.size() ) ;
 
 		stMsgControlFlag msgFlag ;
-		msgFlag.nFlag = 0 ;
-		msgFlag.nVerfion = 1 ;
+		msgFlag.nFlag = 1 ;
+		msgFlag.nVerfion = 2 ;
 		CGateServer::SharedGateServer()->SendMsgToClient((char*)&msgFlag,sizeof(msgFlag),pData->_connectID,false) ;
 		return true;
 	}
@@ -73,13 +73,14 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 		CHECK_MSG_SIZE(stMsgReconnect,pData->_len);
 		MAP_SESSIONID_GATE_CLIENT::iterator iter = m_vWaitToReconnect.find(pRet->nSessionID);
 		bool bReconnectOk = iter != m_vWaitToReconnect.end() && iter->second != NULL ;
+		stGateClient* pNew = nullptr ;
 		if ( bReconnectOk )
 		{
 			// remove origin 
 			RemoveClientGate(iter->second);
 
 			// bind current Client to origin sesssion id ;
-			stGateClient* pNew = GetGateClientByNetWorkID(pData->_connectID);
+			pNew = GetGateClientByNetWorkID(pData->_connectID);
 			if ( pNew )
 			{
 				 MAP_SESSIONID_GATE_CLIENT::iterator iterS = m_vSessionGateClient.find(pNew->nSessionId);
@@ -103,6 +104,11 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 		if ( bReconnectOk )
 		{
 			CLogMgr::SharedLogMgr()->SystemLog("MSG¡¡reconnected ! session id = %d",pRet->nSessionID );
+
+			stMsgSyncClientNetState msgRet ;
+			msgRet.nState = 1 ;
+			CGateServer::SharedGateServer()->sendMsg(pRet->nSessionID,(char*)&msgRet,sizeof(msgRet)) ;
+			CLogMgr::SharedLogMgr()->PrintLog("tell data svr reconnected ok");
 		}
 		return true ;
 	}
@@ -211,6 +217,10 @@ void CGateClientMgr::OnPeerDisconnected(CONNECT_ID nPeerDisconnected, ConnectInf
 
 		pDstClient->tTimeForRemove = time(NULL) + TIME_WAIT_FOR_RECONNECTE ;
 		m_vWaitToReconnect[pDstClient->nSessionId] = pDstClient;
+
+		stMsgSyncClientNetState msgRet ;
+		msgRet.nState = 0 ;
+		CGateServer::SharedGateServer()->sendMsg(pDstClient->nSessionId,(char*)&msgRet,sizeof(msgRet)) ;
 
 		if ( IpInfo )
 		{

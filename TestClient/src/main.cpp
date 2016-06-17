@@ -6,6 +6,7 @@
 #include "RobotConfig.h"
 #include "LogManager.h"
 #include "RobotAIConfig.h"
+#include "cmdCenter.h"
 #include <crtdbg.h>
 #define JSON_DLL
 #include <json/json.h>
@@ -16,6 +17,42 @@
 	#define GATE_IP "139.196.56.147"
 #endif // DEBUG
 //
+
+DWORD WINAPI ThreadProc(LPVOID lpParam)
+{
+	bool bRunning = true;
+	char pBuffer[1024] ;
+	CCmdCenter* pAp = (CCmdCenter*)lpParam ;
+	while(pAp->isRunning())
+	{
+		memset(pBuffer,0,sizeof(pBuffer)) ;
+		//scanf_s("%[^\n|\r]$",pBuffer,sizeof(pBuffer)) ;
+		gets(pBuffer);
+		
+		if ( strcmp(pBuffer,"exit") == 0 || strcmp(pBuffer,"Q") == 0 )
+		{
+			bRunning = false ;
+			pAp->stop();
+			//pAp->stop();
+			printf("Closing!!!\n");
+		}
+		else
+		{
+			pAp->onGetUserInput(pBuffer);
+			//printf("Input exit or Q , to close the app , input help get more infor \n") ;
+		}
+	}
+	return 0;
+}
+
+void CreateThred(CCmdCenter * pApp)
+{
+	DWORD threadID;
+	HANDLE hThread;
+	hThread = CreateThread(NULL,0,ThreadProc,pApp,0,&threadID); // 创建线程
+}
+
+
 BOOL WINAPI ConsoleHandler(DWORD msgType)
 {    
 
@@ -269,8 +306,17 @@ int main()
 	//time_t t10_30 = t10_00 + 30*60 ;
 	//time_t t10_40 = t10_00 + 40*60 ;
 	//printf("%llu",ttNow);
-	//std::regex patern ("0{0,1}1[3-9]\\d{9}" );
-	//bool bmatch = std::regex_match("013920061456",patern);
+	//std:: match_results<std::string::const_iterator> result;
+	//const std::regex patern ("(\\w{1,3})([s]{0,2})(\\.|_)?(\\w*)@(\\w+)(\\.(\\w+))+" );
+	////const std::regex patern("(\\d{1,3}):(\\d{1,3}):(\\d{1,3}):(\\d{1,3})");
+	//const std::string str = "b_a_sss_@qq.com" ;
+	////const std::string str = "192:168:123:2" ;
+	//bool bmatch = std::regex_match(str,result,patern);
+	//for ( uint8_t nIdx = 1 ; nIdx < result.size() ; ++nIdx )
+	//{
+	//	std::cout << " idx = " << nIdx << "content = " << result[nIdx] << std::endl ;
+	//}
+	//return 0 ;
 	//char* p= "hello	s t";
 	//std::string st ;
 	//while (*p)
@@ -390,14 +436,15 @@ int main()
 	nRobotConfige.LoadFile("../ConfigFile/RobotConfig.txt");
 	CConfigReader::s_SkillRow = 0 ;
 	CRobotConfigFile::stRobotItem* pitem = NULL ;
-	uint16_t nCnt = 100 ;
+	uint16_t nCnt = 150 ;
 #ifdef DEBUG
 	nCnt = 1 ;
 #endif
+	CCmdCenter::getInstance()->init() ;
 	while ( nCnt-- && (pitem = nRobotConfige.EnumConfigItem() ))
 	{
 		pClient = new CClientRobot ;
-		bool bR = pClient->Init(GATE_IP,50002);
+		bool bR = pClient->Init(GATE_IP,50001);
 		pClient->GetPlayerData()->SetLoginConfig(pitem) ;
 		if ( !bR )
 		{
@@ -407,6 +454,12 @@ int main()
 		pClient->Start() ;
 		Sleep(10);
 	}
-	getchar();
+
+	CreateThred(CCmdCenter::getInstance());
+	while( CCmdCenter::getInstance()->isRunning() )
+	{
+		CCmdCenter::getInstance()->MainThreadUpdate(pClient) ;
+		Sleep(10) ;
+	}
 	return 0 ;
 }

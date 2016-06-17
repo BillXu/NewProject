@@ -66,9 +66,42 @@ void RunFunc ( CGameServerApp* pApp )
 	}
 }
 #include <time.h>
-
+//#include "PlayerGameData.h"
+//#include <cassert>
 int main()
 {
+	//uint8_t nCnt = 10 ;
+	//while ( nCnt-- )
+	//{
+	//	uint32_t nRID = CPlayerGameData::generateRoomID(eRoom_NiuNiu) ;
+	//	if ( CPlayerGameData::getRoomType(nRID) != eRoom_NiuNiu )
+	//	{
+	//		assert(0&&"error");
+	//	}
+	//	CLogMgr::SharedLogMgr()->PrintLog(" room id = %u" , nRID) ;
+	//}
+
+	//nCnt = 10 ;
+	//while ( nCnt-- )
+	//{
+	//	uint32_t nRID = CPlayerGameData::generateRoomID(eRoom_Golden) ;
+	//	if ( CPlayerGameData::getRoomType(nRID) != eRoom_Golden )
+	//	{
+	//		assert(0&&"error");
+	//	}
+	//	CLogMgr::SharedLogMgr()->PrintLog(" room id = %u" , nRID) ;
+	//}
+
+	//nCnt = 10 ;
+	//while ( nCnt-- )
+	//{
+	//	uint32_t nRID = CPlayerGameData::generateRoomID(eRoom_TexasPoker) ;
+	//	if ( CPlayerGameData::getRoomType(nRID) != eRoom_TexasPoker )
+	//	{
+	//		assert(0&&"error");
+	//	}
+	//	CLogMgr::SharedLogMgr()->PrintLog(" room id = %u" , nRID) ;
+	//}
 	//-----
 	//char p[20] = {0} ;
 	//sprintf_s(p,"12E44E54") ;
@@ -80,6 +113,18 @@ int main()
 	CGameServerApp theApp ;
 	bool bok = theApp.init() ;
 	CLogMgr::SharedLogMgr()->SetOutputFile("DataSvr");
+
+	//CTimer* pTimer1 = new CTimer ;
+	//pTimer1->setInterval( 1 );
+	//pTimer1->setIsAutoRepeat(true) ;
+	//pTimer1->setCallBack([](CTimer* pTimer , float fD){ CLogMgr::SharedLogMgr()->PrintLog("invoker timer 1") ;} ) ;
+
+	//CTimer tRimer ;
+	//tRimer.setInterval(2) ;
+	//tRimer.setIsAutoRepeat(true) ;
+	//tRimer.setCallBack([&pTimer1](CTimer* pTimer , float fD){ uint8_t nRand = rand() % 100 ;CLogMgr::SharedLogMgr()->PrintLog("invoker timer 2, %u",nRand ) ;  if (pTimer1)pTimer1->canncel(); delete pTimer1; pTimer1 = nullptr ;} ) ;
+	//tRimer.start() ;
+	//pTimer1->start() ;
 	if ( !bok )
 	{
 		printf("init data svr error , start up error\n");
@@ -87,7 +132,7 @@ int main()
 		scanf("%c",&c);
 		return 0 ;
 	}
-	CreateThred(&theApp);
-	RunFunc(&theApp);
+	CreateThred(CGameServerApp::SharedGameServerApp());
+	RunFunc(CGameServerApp::SharedGameServerApp());
 	return 0 ;
 }

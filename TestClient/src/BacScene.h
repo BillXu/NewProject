@@ -14,7 +14,7 @@ protected:
 	bool m_bCanMyAction ;
 	unsigned char nBetTimes ;
 
-	uint64_t m_vBetPort[eBC_BetPort_Max];
+	uint64_t m_vBetPort[2];
 	uint64_t m_nMaxBankerIdleDiff ;
 	uint64_t m_nMaxPairBet;   
 	uint64_t m_nMaxSameBet ;  

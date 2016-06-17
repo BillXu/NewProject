@@ -9,7 +9,7 @@ class CRobotCenter
 public:
 	enum 
 	{
-		eModule_Type = 3,
+		eModule_Type = 101,
 	};
 public:
 	struct stIdleRobot

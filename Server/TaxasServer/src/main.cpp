@@ -137,8 +137,9 @@ int main()
 	//char c = pPeerA.PK(&pPeerB) ;
 	//printf( "type A = %d ,robot Type A = %d, type B = %d ,result = %d\n",nType,pPeerA.GetCardTypeForRobot(),nTypeB ,c) ;
 	/////----test
-	CTaxasServerApp theApp ;
+	 
 	CLogMgr::SharedLogMgr()->SetOutputFile("taxasSvr");
+	CTaxasServerApp theApp ;
 	bool bok = theApp.init() ;
 	if ( !bok )
 	{
@@ -147,9 +148,9 @@ int main()
 		scanf_s("%c",&c,1);
 		return 0 ;
 	}
-	CreateThred(&theApp);
+	CreateThred(CTaxasServerApp::SharedGameServerApp());
 //#ifdef NDEBUG
-	RunFunc(&theApp);
+	RunFunc(CTaxasServerApp::SharedGameServerApp());
 //#endif // _DEBUG
 //#ifdef _DEBUG
 //	theApp.run();

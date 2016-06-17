@@ -49,8 +49,8 @@ bool CTaxasServerApp::init()
 	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
 	CRewardConfig::getInstance()->LoadFile("../configFile/rewardConfig.txt");
 
-	m_pRoomConfig = new CRoomConfigMgr ;
-	m_pRoomConfig->LoadFile("../configFile/RoomConfig.txt") ;
+	m_pRoomConfig = nullptr ;// new CRoomConfigMgr ;
+	//m_pRoomConfig->LoadFile("../configFile/RoomConfig.txt") ;
 	
 	auto pp = new CRoomManager(m_pRoomConfig) ;
 	registerModule(pp) ;

@@ -12,12 +12,12 @@ struct stBaseRoomConfig
 	uint32_t nDeskFee;
 	float fDividFeeRate;  // chou shui bi li
 	
-	std::vector<int32_t> vRewardID ;
-	uint32_t nCoinTopLimit ;
-	uint32_t nCoinLowLimit ;
-	bool bIsNeedRegistered ;
-	bool bIsOmitNewPlayerHalo ;
-	uint32_t nMaxLose ;
+	//std::vector<int32_t> vRewardID ;
+	//uint32_t nCoinTopLimit ;
+	//uint32_t nCoinLowLimit ;
+	//bool bIsNeedRegistered ;
+	//bool bIsOmitNewPlayerHalo ;
+	//uint32_t nMaxLose ;
 #ifdef SERVER
 	uint8_t nNeedRobotLevel ;
 #endif
@@ -26,7 +26,7 @@ struct stBaseRoomConfig
 struct stSitableRoomConfig
 	:public stBaseRoomConfig
 {
-	uint32_t nMiniTakeInCoin;
+	//uint32_t nMiniTakeInCoin;
 	unsigned short nMaxSeat ;
 	uint32_t nBaseTakeIn ;
 };
@@ -35,7 +35,7 @@ struct stSitableRoomConfig
 struct stTaxasRoomConfig
 	:public stSitableRoomConfig
 {
-	uint32_t nMaxTakeInCoin ;
+	//uint32_t nMaxTakeInCoin ;
 	uint32_t nBigBlind ;
 };
 

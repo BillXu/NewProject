@@ -24,6 +24,9 @@
     <Filter Include="robot">
       <UniqueIdentifier>{2ed534eb-e651-4d6f-b303-36b514090e07}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\cmd">
+      <UniqueIdentifier>{5d03fce9-3e61-4c84-9319-aa04ebf28ba8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\ConfigReader.cpp">
@@ -133,6 +136,12 @@
     </ClCompile>
     <ClCompile Include="src\GoldenScene.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmdCenter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\commonCmdScene.cpp">
+      <Filter>src\cmd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -255,6 +264,12 @@
     </ClInclude>
     <ClInclude Include="src\GoldenScene.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cmdCenter.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\commonCmdScene.h">
+      <Filter>src\cmd</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

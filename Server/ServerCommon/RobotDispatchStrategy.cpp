@@ -4,7 +4,7 @@
 #include "ServerMessageDefine.h"
 #include "IRoomState.h"
 #ifdef _DEBUG
-	#define TIME_ROBOT_STAY 1*60
+	#define TIME_ROBOT_STAY 2*60
 	#define  TIME_UPDATE_DISPATCH_TICK 1*30
 #else
 #define TIME_ROBOT_STAY 30*60
@@ -104,7 +104,7 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 		auto pPlayer = m_vPlayingRobot.front() ;
 		if ( pPlayer && ( pPlayer->tLeaveTime <= tNow || bClosed )  )
 		{
-			if ( nSitDownCnt > 2 || bClosed )
+			if ( nSitDownCnt > 4 || bClosed )
 			{
 				CLogMgr::SharedLogMgr()->PrintLog("robot session id = %u , time up shuld leave room" ) ;
 				stMsgTellRobotLeaveRoom msgLeave ;
@@ -128,17 +128,17 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 	}
 
 
-
+	uint8_t nSeatCnt = m_pRoom->getSeatCount() ;
 	bool bHavePlayerAddRobt = false ;
-	if ( m_pRoom->isHaveRealPlayer() && nSitDownCnt < 4 )
+	if ( m_pRoom->isHaveRealPlayer() && nSitDownCnt < ( nSeatCnt - 1 ) )
 	{
-		bHavePlayerAddRobt = ( rand() % 100 ) <= 25 ;
+		bHavePlayerAddRobt = ( rand() % 100 ) <= 65 ;
 	}
 
 	// situation need add robot ;
-	// 1. player cnt < 2 , must req robot 
-	// 2. when have player , and all sit down cnt < 4 , have 25% rate , req robot join;
-	if ( (nSitDownCnt < 2 || bHavePlayerAddRobt) && ( bClosed == false ) )
+	// 1. player cnt < 3 , must req robot 
+	// 2. when have player , and all sit down cnt < 4 , have 65% rate , req robot join;
+	if ( (/*nSitDownCnt < 4*/ m_pRoom->getEmptySeatCount() > 2 || bHavePlayerAddRobt) && ( bClosed == false ) )
 	{
 		stMsgRequestRobotToEnterRoom msgreq ;
 		msgreq.nReqRobotLevel = m_nReqRobotLevel ;
@@ -154,7 +154,7 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 	// 1. already have 5 player sitdown , so must leave player ;
 	// 2. room is full, robot must leave ;
 	// 3.  current room do not have real player , but have more than 2 player sit down
-	if ( nSitDownCnt > 5 || m_pRoom->getEmptySeatCount() < 1 || (nSitDownCnt > 2 && m_pRoom->isHaveRealPlayer() == false) )
+	if ( m_pRoom->getEmptySeatCount() < 1 /*|| (nSitDownCnt > 3 && m_pRoom->isHaveRealPlayer() == false)*/ )
 	{
 		if ( m_vPlayingRobot.empty() == false )
 		{

@@ -22,6 +22,9 @@
     <Filter Include="src\Room\state">
       <UniqueIdentifier>{796e4516-7b78-4635-80c6-e0b05eb283df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Room\stateNew">
+      <UniqueIdentifier>{d5749e3f-65fa-4f01-a882-03f50cc3ab7e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ServerCommon\AutoBuffer.h">
@@ -171,6 +174,15 @@
     <ClInclude Include="..\ServerCommon\RobotDispatchStrategy.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NiuNiuGrabBanker.h">
+      <Filter>src\Room\stateNew</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NiuNiuWaitStartGame.h">
+      <Filter>src\Room\stateNew</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
@@ -275,11 +287,17 @@
     <ClCompile Include="..\ServerCommon\IRoomDelegate.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
-    <ClCompile Include="..\ServerCommon\SystemRoom.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
     <ClCompile Include="..\ServerCommon\RobotDispatchStrategy.cpp">
       <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NiuNiuGrabBanker.cpp">
+      <Filter>src\Room\stateNew</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NiuNiuWaitStartGame.cpp">
+      <Filter>src\Room\stateNew</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

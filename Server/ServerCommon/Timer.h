@@ -1,27 +1,10 @@
 #pragma once
 #include <map>
 #include <vector>
-class CTimer ;
-class CTimerManager ;
-class CTimerDelegate
-{
-public:
-	typedef void (CTimerDelegate::*lpTimerSelector)(float fTimeElaps,unsigned int nTimerID );
-public:
-	CTimerDelegate();
-	virtual ~CTimerDelegate();
-	virtual void Update(float fTimeElpas, unsigned int nTimerID );
-	void SetEnableUpdate( bool bEnable );
-protected:
-	friend class CTimerManager;
-protected:
-	void SetTimerManager( CTimerManager* pMgr ) { m_pTimerMgr = pMgr ;}
-protected:
-	CTimer* m_pUpdateTimer ;
-	CTimerManager* m_pTimerMgr ;
-};
-#define cc_selector_timer(func) (CTimerDelegate::lpTimerSelector)&func
-
+#include <functional>  
+#include "Singleton.h"
+#include "NativeTypes.h"
+#define timer_bind_obj_func(obj,func ) std::bind(&func,obj,std::placeholders::_1,std::placeholders::_2)
 //warning : time merasuse by second ;
 class CTimer
 {
@@ -29,62 +12,63 @@ public:
 	enum eTimerState
 	{
 		eTimerState_None,
-		eTimerState_Stop,
-		eTimerState_Pause,
 		eTimerState_Runing,
-		//eTimerState_Delaying,
 		eTimerState_Max,
 	};
-public:
-	CTimer(CTimerDelegate* pDeleate,CTimerDelegate::lpTimerSelector pFunc , float fInterval );
-	~CTimer();
-	void Pause(){ m_eState = eTimerState_Pause ;}
-	void Resume(){ m_eState = eTimerState_Runing ;}
-	void Reset();
-	void Update( float fTimeElaps );
-	void SetDelayTime( float fTimerDelay ){ m_fDelay = fTimerDelay ;}
-	void SetInterval(float fNewInterval ){ m_fInterval = fNewInterval ;}
-	void Stop(){ m_eState = eTimerState_Stop ;}
-	bool IsStop(){ return m_eState == eTimerState_Stop ;} 
-	bool IsRuning(){ return eTimerState_Runing == m_eState ; }
-	unsigned int GetTimerID(){ return m_nTimerID ;}
-	void Start(){m_eState = eTimerState_Runing ;}
-	CTimerDelegate* GetDelegate(){ return m_pDelegate ;}
-protected:
-	CTimerDelegate* m_pDelegate ;
-	CTimerDelegate::lpTimerSelector m_pTimerFunc ;
+	typedef std::function<void (CTimer*, float fDelta )> time_func ;
 
-	float m_fDelay ;
+public:
+	CTimer();
+	~CTimer();
+	void reset();
+	void canncel();
+	void setIsAutoRepeat( bool isAutoRepeat );
+	void setCallBack( time_func lpfCallBackFunc );
+	void setInterval(float fNewInterval );
+	void start();
+protected:
+	void Update( float fTimeElaps );
+	uint32_t getTimerID();
+	friend class CTimerManager ;
+protected:
+	static uint32_t s_TimerCount ;
+	uint32_t m_nTimeID ;
+
+	float m_fIntervalKeeper ;
 	float m_fInterval ;
 
 	eTimerState m_eState ;
- 
-	float m_fDelayKeeper ;
-	float m_fIntervalKeeper ;
 
-	static unsigned int s_TimerCount ;
-	unsigned int m_nTimerID ;
+	time_func m_lpFunc ;
+
+	bool m_isAutoRepeat ;
 };
 
 class CTimerManager
+	:public CSingleton<CTimerManager>
 {
 public:
 	typedef std::map<unsigned int ,CTimer*> MAP_TIMERS ;
-	typedef std::vector<unsigned int> VEC_TIMER_WILL_REMOVE ;
-public:
-	//static CTimerManager* SharedTimerManager();
+	typedef std::vector<CTimer*> VEC_TIME ;
+	typedef std::vector<uint32_t> VEC_TIME_ID ;
+protected:
 	CTimerManager();
+public:
 	~CTimerManager();
-	CTimer* AddTimer(CTimer* pTimer );
-	CTimer* AddTimer( CTimerDelegate* pDelegate, CTimerDelegate::lpTimerSelector pFunc );
-	void Update();
+	void Update(float fDelta );
 	void SetTimeScale( float fScale ){ m_fTimerScale = fScale ;}
 	float GetTimeScale(){ return m_fTimerScale ;} 
-	void RemoveTimer(CTimer* pTimer ){ if ( pTimer)RemoveTimer(pTimer->GetTimerID());}
-	void RemoveTimer( unsigned int nTimerID ); 
-	CTimer* GetTimer(unsigned int nTimerID );
 protected:
-	MAP_TIMERS m_vAllTimers ;
-	VEC_TIMER_WILL_REMOVE m_vTimerWillRemove;
+	void startTimer( CTimer* pTimer ); 
+	void canncelTimer(CTimer* pTimer );
+	bool isLocked(){ return m_isLocked ;}
+protected:
+	friend class CTimer ;
+	friend class CSingleton<CTimerManager> ;
+protected:
+	MAP_TIMERS m_vRunningTimers ;
+	VEC_TIME_ID m_vWillCanncelTimer;
+	VEC_TIME m_vWillRunningTimers;
 	float m_fTimerScale ;
+	bool m_isLocked ;
 };

@@ -1,6 +1,7 @@
 #pragma once 
 #include "IScene.h"
 #include <string>
+#include "json/json.h"
 class CClientRobot;
 class CLoginScene
 	:public IScene

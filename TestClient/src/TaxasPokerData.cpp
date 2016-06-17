@@ -36,30 +36,30 @@ bool CTaxasPokerData::onMsg(stMsg* pmsg )
 	{
 	case MSG_ROOM_INFO:
 		{
-			stMsgRoomInfo* pInfo = (stMsgRoomInfo*)pmsg ;
-			char* pBuffer = (char*)pmsg ;
-			pBuffer = pBuffer + sizeof(stMsgRoomInfo);
+			//stMsgRoomInfo* pInfo = (stMsgRoomInfo*)pmsg ;
+			//char* pBuffer = (char*)pmsg ;
+			//pBuffer = pBuffer + sizeof(stMsgRoomInfo);
 
-			Json::Reader rt ;
-			Json::Value jCont ;
-			rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
-			setBaseInfo(pInfo->nRoomID,pInfo->nMaxSeat,pInfo->nDeskFee,pInfo->eCurRoomState,pInfo->nSubIdx);
+			//Json::Reader rt ;
+			//Json::Value jCont ;
+			//rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
+			//setBaseInfo(pInfo->nRoomID,pInfo->nMaxSeat,pInfo->nDeskFee,pInfo->eCurRoomState,pInfo->nSubIdx);
 
 
-			nLittleBlind = jCont["litBlind"].asUInt();
-			nMiniTakeIn = jCont["minTakIn"].asUInt();
-			nMaxTakeIn = jCont["maxTakIn"].asUInt();
-			// running members ;
-			nCurWaitPlayerActionIdx = jCont["curActIdx"].asInt();
-			nCurMainBetPool = jCont["curPool"].asUInt();
-			nMostBetCoinThisRound = jCont["mostBet"].asUInt();
+			//nLittleBlind = jCont["litBlind"].asUInt();
+			//nMiniTakeIn = jCont["minTakIn"].asUInt();
+			//nMaxTakeIn = jCont["maxTakIn"].asUInt();
+			//// running members ;
+			//nCurWaitPlayerActionIdx = jCont["curActIdx"].asInt();
+			//nCurMainBetPool = jCont["curPool"].asUInt();
+			//nMostBetCoinThisRound = jCont["mostBet"].asUInt();
 
-			Json::Value vPub = jCont["pubCards"];
-			memset(vPublicCardNums,0,sizeof(vPublicCardNums));
-			for ( uint8_t nIdx = 0 ; nIdx < (uint8_t)vPub.size(); ++nIdx )
-			{
-				vPublicCardNums[nIdx] = vPub[nIdx].asUInt();
-			}
+			//Json::Value vPub = jCont["pubCards"];
+			//memset(vPublicCardNums,0,sizeof(vPublicCardNums));
+			//for ( uint8_t nIdx = 0 ; nIdx < (uint8_t)vPub.size(); ++nIdx )
+			//{
+			//	vPublicCardNums[nIdx] = vPub[nIdx].asUInt();
+			//}
 		}
 		break;
 	case MSG_TP_ROOM_PLAYER_DATA:

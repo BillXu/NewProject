@@ -60,6 +60,8 @@ enum eMsgType
 	MSG_CONTROL_FLAG,
 	MSG_REQUEST_CLIENT_IP,
 	MSG_VERIFY_GOLDEN,
+	MSG_JSON_CONTENT,
+	MSG_CLIENT_NET_STATE,
 	MSG_TRANSER_DATA = 100, // tranfer data between servers ;
 	MSG_DISCONNECT_SERVER, 
 	MSG_DISCONNECT_CLIENT,
@@ -96,7 +98,6 @@ enum eMsgType
 	MSG_REQUEST_MY_FOLLOW_ROOMS,
 	//MSG_REQUEST_MY_OWN_ROOM_DETAIL,
 	MSG_REQUEST_ROOM_REWARD_INFO,
-	MSG_REQUEST_ROOM_ITEM_DETAIL,
 	MSG_REQUEST_PLAYER_DATA,
 	MSG_SELECT_DB_PLAYER_DATA,
 	MSG_PLAYER_BASE_DATA_TAXAS,
@@ -127,6 +128,8 @@ enum eMsgType
 	MSG_READ_EXCHANGE,
 	MSG_SAVE_EXCHANGE,
 	MSG_DB_PLAYER_MODIFY_NAME,
+	MSG_ASYNC_REQUEST,
+	MSG_ASYNC_REQUEST_RESULT,
 	MSG_PLAYER_BASE_DATA = 250,
 	MSG_READ_PLAYER_BASE_DATA,
 	MSG_PLAYER_SAVE_PLAYER_INFO,
@@ -151,9 +154,6 @@ enum eMsgType
 	MSG_REQUEST_ROOM_RANK,
 	MSG_REQUEST_LAST_TERM_ROOM_RANK,
 
-	// msg id for room 
-	MSG_CREATE_ROOM,
-	MSG_DELETE_ROOM,
 	// msg request math list ;
 	MSG_REQUEST_MATCH_ROOM_LIST,
 	// message id for taxas poker
@@ -169,9 +169,7 @@ enum eMsgType
 	MSG_SVR_ENTER_ROOM,
 	MSG_SVR_DO_LEAVE_ROOM,
 	MSG_SVR_DELAYED_LEAVE_ROOM,
-	MSG_ROOM_INFO,
 	MSG_GET_MAX_ROOM_ID,
-	MSG_PLAYER_REBUY,
 	MSG_PRIVATE_ROOM_PLAYER_REBUY,
 	MSG_SYNC_PRIVATE_ROOM_RESULT,
 	MSG_REQUEST_PRIVATE_ROOM_RECORDER,
@@ -286,7 +284,7 @@ enum eMsgType
 
 	MSG_PLAYER_USE_ENCRYPT_NUMBER,
 	MSG_VERIFY_ENCRYPT_NUMBER,
-	// robot specail msg 
+	// robot special msg 
 	MSG_ADD_MONEY = 1300, 
 	MSG_TELL_PLAYER_TYPE,
 	MSG_TELL_ROBOT_IDLE,
@@ -299,6 +297,85 @@ enum eMsgType
 	MSG_MODIFY_ROOM_RANK,
 	MSG_ROBOT_GENERATE_ENCRYPT_NUMBER,
 	MSG_SAVE_ENCRYPT_NUMBER,
+
+	// msg js content type 
+	MSG_CREATE_CLUB = 1511,  // ID_MSG_PORT_DATA ;
+	// client : { newClubID : 2345 , cityCode : 23 }
+	// svr : { ret : 0 ,newClubID : 234 }
+	// ret : 0 , means ok , 1 means  can not create more clubs ;
+	MSG_DISMISS_CLUB, // ID_MSG_PORT_DATA ;
+	// client : { clubID : 235 }
+	// svr : { ret : 0 }
+	// ret : 0 success , 1 you do not have that club , 2 club have room keep running .
+
+	MSG_REQ_CLUB_ROOM, // ID_MSG_PORT_DATA ;
+	// client : { clubID : 234 }
+	// svr : { ret : 0 , rooms : [21,23,45,23] } 
+	// ret : 0 success , 1 club not exist 
+
+	MSG_CREATE_ROOM, // ID_MSG_PORT_DATA ;
+	// client : { name : "this is room name" ,roomType : eRoomType , baseBet : 23 , duringMin : 2345 , clubID : 23 , baseTakeIn : 235, isControlTakeIn : 0 , seatCnt : 2 , opts : { ... } }
+	// roomType : means eRoomType . baseBet , for taxas , it represent small blind . duringMin : room keep running time , by minite . clubID : when equal 0 , means ,quick game , opts : depend on game type ;
+	// NIU NIU  opts : { unbankerType : 0 }  // 0 no niu leave banker , 1 lose to all  leave banker ;
+	// Taxas Poker opts : { maxTakeIn : 2345 }
+	// Golden opts : { maxSingleBet : 20 }
+	// svr : { ret : 0 , roomID : 235 , clubID : 23 } ;
+	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error 
+	MSG_DELETE_ROOM, // ID_MSG_PORT_DATA ;
+	// client : { roomID : 2345 , clubID : 23  }
+	// svr : { ret : 0 }
+	// ret : 0 means success , 1 you are not creator , 2 room is running, try later , 3 club do not have room with that id ;
+	MSG_REQUEST_ROOM_ITEM_DETAIL, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
+	// client : { roomID : 0 }
+	// svr : { ret : 0 , name: "fsg" , creatorUID : 235, baseBet : 2, playerCnt : 23, roomID : 235 , roomType : eRoomType , initTime : 20, playedTime : 2345 }
+	// ret : 0 success , 1 can not find room ;
+
+	MSG_ROOM_INFO,
+	// svr : { ownerUID : 234552 , roomID : 2345 , seatCnt : 4 , chatID : 23455 , curState : eRoomState , leftTimeSec : 235 , baseTakeIn : 2345 , selfCoin : 2345 , game : { ... } } 
+	// goldn :  game : { "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 }
+	// NiuNiu : game : { "bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2 }
+	// taxas :   game : { "litBlind":20,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] };
+
+	MSG_SET_GAME_STATE, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
+	// client : { roomID : 0 , state : 2 , uid : 2345 }  
+	// state : 2 start game , 3 pause game 
+	// svr : { ret : 0 }
+	// ret : 0 success , 1 can not find room , 2 you are not creator , 3 do not set the same state , 4 , you are not the creator , 5, invalid state value; 
+
+	MSG_ROOM_GAME_STATE_CHANGED,
+	// svr : { state : 2 }
+	// state : 2 start game , 3 pause game 
+
+	MSG_APPLY_TAKE_IN, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
+	// client : { roomID : 234 , takeIn : 2345 }
+	// svr : { ret : 0 , isApply : 1 , inRoomCoin : 23455 }
+	// ret : 0 success , 1 can not find room , 2 take in reached limit , 3 coin not enough , 4 already applying , do not do again;
+	// isApply , 0 means direct takeIn , 1 waiting creator check ;
+
+	MSG_REPLY_APPLY_TAKE_IN, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
+	// client : { roomID : 2445 , replyToUID : 2345, isAgree : 0 , coin : 2300 }
+	// isAgree : 1 agree, 0 refuse ;
+	// replyUID : the applyer uid ;
+
+	MSG_REQUEST_ROOM_AUDIENTS, // audients ;
+	// client : { roomID : 2345 }
+	// svr : { audients : [234, 235 ,2456 ] }  , audients player uid array ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

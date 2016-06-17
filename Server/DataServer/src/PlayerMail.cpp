@@ -11,6 +11,7 @@
 #include "ConfigManager.h"
 #include "PlayerEvent.h"
 #include "AutoBuffer.h"
+#include "PlayerGameData.h"
 #include <cassert>
 #define  MAX_KEEP_MAIL_CNT 20
 
@@ -215,7 +216,7 @@ void CPlayerMailComponent::PostMailToPlayer( eMailType eType ,const char* pConte
 	auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(nTargetUID) ;
 	if ( pPlayer )
 	{
-		if ( eType == eMail_SysOfflineEvent )
+		if ( eType == eMail_SysOfflineEvent && pPlayer->IsState(CPlayer::ePlayerState_Online) )
 		{
 			CLogMgr::SharedLogMgr()->ErrorLog("uid = %u online why send offline event",nTargetUID) ;
 			assert(eType != eMail_SysOfflineEvent && "player online why send offline event" );
@@ -256,7 +257,7 @@ void CPlayerMailComponent::PostOfflineEvent( eOfflineEvent eEvntType ,Json::Valu
 void CPlayerMailComponent::PostDlgNotice( eNoticeType eNotice ,Json::Value& pEventArg ,uint32_t nTargetUID )
 {
 	auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(nTargetUID) ;
-	if ( pPlayer )
+	if ( pPlayer && pPlayer->IsState(CPlayer::ePlayerState_Online) )
 	{
 		Json::StyledWriter jWrite ;
 		std::string strConetnt = jWrite.write(pEventArg) ;
@@ -429,7 +430,7 @@ bool CPlayerMailComponent::ProcessMail( stRecievedMail& pMail)
 			msgBuffer.addContent(&msg,sizeof(msg)) ;
 			msgBuffer.addContent(strConetnt.c_str(),msg.nJsonLen) ;
 			GetPlayer()->SendMsgToClient(msgBuffer.getBufferPtr(),msgBuffer.getContentSize()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %u login on show offline dlg notice",GetPlayer()->GetUserUID());
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %u login on show offline dlg notice content = %s",GetPlayer()->GetUserUID(),strConetnt.c_str());
 		}
 		break;
 	default:
@@ -486,12 +487,12 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 			msgSyn.nFinalCoin = jArg["finalCoin"].asUInt() ;
 			msgSyn.nOffset = jArg["offset"].asInt();
 			msgSyn.nRoomID = jArg["roomID"].asUInt() ;
-			msgSyn.nRoomType = jArg["roomType"].asUInt() ;
 			msgSyn.nBuyIn = jArg["buyIn"].asUInt() ;
 			msgSyn.nTargetPlayerUID = GetPlayer()->GetUserUID() ;
-			msgSyn.nConfigID = jArg["configID"].asUInt() ;
-			CLogMgr::SharedLogMgr()->PrintLog("do syn game result from offline event room id = %u, room type = %u , uid = %u",msgSyn.nRoomID,msgSyn.nRoomType,msgSyn.nTargetPlayerUID);
-			GetPlayer()->OnMessage(&msgSyn, (eMsgPort)GetPlayer()->getMsgPortByRoomType(msgSyn.nRoomType));
+			msgSyn.nBaseBet = jArg["baseBet"].asUInt() ;
+			uint16_t nType = CPlayerGameData::getRoomType(msgSyn.nRoomID);
+			CLogMgr::SharedLogMgr()->PrintLog("do syn game result from offline event room id = %u, room type = %u , uid = %u",msgSyn.nRoomID,nType,msgSyn.nTargetPlayerUID);
+			GetPlayer()->OnMessage(&msgSyn, (eMsgPort)GetPlayer()->getMsgPortByRoomType(nType));
 		}
 		break; 
 	default:
@@ -499,6 +500,13 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 		break;
 	}
 	CLogMgr::SharedLogMgr()->ErrorLog("process offline event here");
+}
+
+void CPlayerMailComponent::onPlayerReconnected()
+{
+	CLogMgr::SharedLogMgr()->PrintLog("player uid = %u reconnected ok process special event") ;
+	InformRecievedUnreadMails() ;
+	ProcessSpecailMail();
 }
 
 void CPlayerMailComponent::saveReadTimeTag()

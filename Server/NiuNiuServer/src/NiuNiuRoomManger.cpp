@@ -8,25 +8,19 @@
 #include "AutoBuffer.h"
 #include "SystemRoom.h"
 #include "PrivateRoom.h"
-IRoomInterface* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID,bool isPrivateRoom , uint16_t nRoomConfigID ,eRoomType reqSubRoomType, Json::Value& vJsValue ) 
+IRoomInterface* CNiuNiuRoomManager::doCreateInitedRoomObject(uint32_t nRoomID,const Json::Value& vJsValue ) 
 {
-	stSitableRoomConfig* pConfig = (stSitableRoomConfig*)CNiuNiuServerApp::getInstance()->getRoomConfigMgr()->GetConfigByConfigID(nRoomConfigID) ;
-	if ( pConfig == nullptr )
-	{
-		return nullptr ;
-	}
-
-	IRoomInterface* pRoom = doCreateRoomObject(reqSubRoomType,isPrivateRoom) ;
-	pRoom->onFirstBeCreated(this,pConfig,nRoomID,vJsValue);
+	IRoomInterface* pRoom = doCreateRoomObject(eRoomType::eRoom_NiuNiu,true) ;
+	pRoom->onFirstBeCreated(this,nRoomID,vJsValue);
 	return pRoom ;
 }
 
 IRoomInterface* CNiuNiuRoomManager::doCreateRoomObject(eRoomType reqSubRoomType,bool isPrivateRoom)
 {
 	IRoomInterface* pRoom = nullptr ;
-	if ( !isPrivateRoom )
+	if ( 0 )
 	{
-		pRoom = new CSystemRoom<CNiuNiuRoom> ;
+		//pRoom = new CSystemRoom<CNiuNiuRoom> ;
 	}
 	else
 	{

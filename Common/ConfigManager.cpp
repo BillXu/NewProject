@@ -43,7 +43,7 @@ void CConfigManager::LoadAllConfigFile( const char* pConfigRootPath )
 	pConfgiPath[eConfig_Mission] = strCL + "MissionConfig.txt" ;
 	pConfgiPath[eConfig_SlotMachine] = strCL + "SlotMachine.txt";
 	pConfgiPath[eConfig_Box] = strCL + "BoxConfig.txt";
-	pConfgiPath[eConfig_Room] = strCL + "RoomConfig.txt";
+	//pConfgiPath[eConfig_Room] = strCL + "RoomConfig.txt";
 	//pConfgiPath[eConfig_TitleLevel] = strCL + "TitleLevelConfig.txt";
 	// go on login 
 	m_vConfigs[eConfig_ContinueLogin] = new CContiuneLoginConfigMgr ;

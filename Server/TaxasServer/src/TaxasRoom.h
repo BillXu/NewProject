@@ -110,13 +110,14 @@ public:
 	CTaxasRoom();
 	virtual ~CTaxasRoom();
 	uint8_t getRoomType()override ;
-	bool onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )override;
+	bool onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )override;
 	void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
 	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
 	void prepareState();
 
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
+	bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID )override{ return ISitableRoom::onMessage(prealMsg,nMsgType,eSenderPort,nSessionID) ;};
 	
 	ISitableRoomPlayer* doCreateSitableRoomPlayer()override ;
 	uint32_t coinNeededToSitDown()override ;
@@ -149,7 +150,7 @@ public:
 	// debug info ;
 
 	uint32_t getLittleBlind(){ return m_nLittleBlind ;}
-	uint32_t getMaxTakeIn(){ return m_nMaxTakeIn ; }
+	uint32_t getMaxTakeIn()override{ return m_nMaxTakeIn ; }
 	uint32_t getMinTakeIn(){ return m_nMinTakeIn ; }
 	uint64_t getMostBetCoinThisRound(){ return m_nMostBetCoinThisRound ;}
 	void didCaculateGameResult();

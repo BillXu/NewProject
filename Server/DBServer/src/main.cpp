@@ -5,6 +5,7 @@
 #include "ThreadMod.h"
 #pragma comment( lib, "DbgHelp" )
 #pragma comment(lib,"JsonDll.lib")
+#include "LogManager.h"
 //#include "mutex.h"
 //#include <my_global.h>
 //#include "mysql.h"
@@ -70,6 +71,7 @@ int main()
 {
 	//SetConsoleCtrlHandler(ConsoleHandler, TRUE); 
 	CGetInput input ;
+	CLogMgr::SharedLogMgr()->SetOutputFile("DBSvr");
 	input.Start();
 	bool bok = theApp.init();
 	if ( !bok )

@@ -14,6 +14,8 @@
 #include "CardPoker.h"
 #include "NiuNiuRoomPlayerCaculateCardState.h"
 #include "ServerStringTable.h"
+#include "NiuNiuWaitStartGame.h"
+#include "NiuNiuGrabBanker.h"
 #include <algorithm>
 #include <json/json.h>
 CNiuNiuRoom::CNiuNiuRoom()
@@ -21,26 +23,31 @@ CNiuNiuRoom::CNiuNiuRoom()
 	getPoker()->InitTaxasPoker() ;
 }
 
-bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )
+bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )
 {
-	ISitableRoom::onFirstBeCreated(pRoomMgr,pConfig,nRoomID,vJsValue) ;
-	m_nBaseBet = ((stNiuNiuRoomConfig*)pConfig)->nBaseBet;
-
+	ISitableRoom::onFirstBeCreated(pRoomMgr,nRoomID,vJsValue) ;
+	m_nBaseBet = vJsValue["baseBet"].asUInt();
+	auto jsopt = vJsValue["opts"];
+	m_nResignBankerCtrl = jsopt["unbankerType"].asUInt() ;
+	m_nBankerIdx = -1;
+	m_nBetBottomTimes = 1 ;
+	m_nBankerCoinLimitForBet = 0 ;
 	return true ;
 }
 
 void CNiuNiuRoom::prepareState()
 {
-	ISitableRoom::prepareState();
+	//ISitableRoom::prepareState();
 	// create room state ;
 	IRoomState* vState[] = {
-		new CNiuNiuRoomDistribute4CardState(),new CNiuNiuRoomTryBanker(),new CNiuNiuRoomRandBankerState(),
-		new CNiuNiuRoomBetState(),new CNiuNiuRoomDistributeFinalCardState(),new CNiuNiuRoomStatePlayerCaculateCardState() ,new CNiuNiuRoomGameResultState()
+		new CNiuNiuWaitStartGame(),new CNiuNiuRoomGrabBanker(), new CNiuNiuRoomRandBankerState(),
+		new CNiuNiuRoomBetState(),new CNiuNiuRoomDistribute4CardState(),new CNiuNiuRoomDistributeFinalCardState(),new CNiuNiuRoomStatePlayerCaculateCardState() ,new CNiuNiuRoomGameResultState()
 	};
 	for ( uint8_t nIdx = 0 ; nIdx < sizeof(vState) / sizeof(IRoomState*); ++nIdx )
 	{
 		addRoomState(vState[nIdx]) ;
 	}
+	setInitState(vState[0]);
 }
 
 void CNiuNiuRoom::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )
@@ -80,37 +87,42 @@ void CNiuNiuRoom::onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )
 uint32_t CNiuNiuRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp)
 {
 	CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)pp ;
-	if ( getBankerIdx() == pPlayer->getIdx() )
-	{
-		uint8_t nCnt = getPlayerCntWithState(eRoomPeer_CanAct) - 1 ;
-		uint32_t nNeedCoin = ( getBaseBet() * m_nBetBottomTimes * getMaxRate() * 25 ) * nCnt ;
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup but is banker BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
-		return nNeedCoin ;
-	}
-	else
-	{
-		if ( m_nBetBottomTimes != 0 )
-		{
-			uint32_t nNeedCoin = getBaseBet() * m_nBetBottomTimes * getMaxRate() *( pPlayer->getBetTimes() > 5 ? pPlayer->getBetTimes() : 5 )  ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
-			return nNeedCoin ;
-		}
-		else
-		{
-			uint8_t nCnt = getPlayerCntWithState(eRoomPeer_CanAct) - 1 ;
-			uint32_t nWhenBankNeed = ( getBaseBet() * 1 * getMaxRate() * 25 ) * nCnt ;
-			uint32_t nWhenNotBanker = getBaseBet() * 4 * getMaxRate() * 5 ;
-			uint32_t nNeedCoin = nWhenNotBanker > nWhenBankNeed ? nWhenNotBanker : nWhenBankNeed ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup BankeTimes not decide , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
-			return nNeedCoin ;
-		}
- 
-	}
+	return pPlayer->getCoin();
+	//if ( getBankerIdx() == pPlayer->getIdx() )
+	//{
+	//	uint8_t nCnt = getPlayerCntWithState(eRoomPeer_CanAct) - 1 ;
+	//	uint32_t nNeedCoin = ( getBaseBet() * m_nBetBottomTimes * getMaxRate() * 25 ) * nCnt ;
+	//	CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup but is banker BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+	//	return nNeedCoin ;
+	//}
+	//else
+	//{
+	//	if ( m_nBetBottomTimes != 0 )
+	//	{
+	//		uint32_t nNeedCoin = getBaseBet() * m_nBetBottomTimes * getMaxRate() *( pPlayer->getBetTimes() > 5 ? pPlayer->getBetTimes() : 5 )  ;
+	//		CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+	//		return nNeedCoin ;
+	//	}
+	//	else
+	//	{
+	//		uint8_t nCnt = getPlayerCntWithState(eRoomPeer_CanAct) - 1 ;
+	//		uint32_t nWhenBankNeed = ( getBaseBet() * 1 * getMaxRate() * 25 ) * nCnt ;
+	//		uint32_t nWhenNotBanker = getBaseBet() * 4 * getMaxRate() * 5 ;
+	//		uint32_t nNeedCoin = nWhenNotBanker > nWhenBankNeed ? nWhenNotBanker : nWhenBankNeed ;
+	//		CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup BankeTimes not decide , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+	//		return nNeedCoin ;
+	//	}
+ //
+	//}
 }
 
 void CNiuNiuRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 {
 	vOutJsValue["bankIdx"] = m_nBankerIdx;
+	if ( m_nBankerIdx == (uint8_t)-1 )
+	{
+		vOutJsValue["bankIdx"] = 0;
+	}
 	vOutJsValue["baseBet"] = getBaseBet();
 	vOutJsValue["bankerTimes"] = m_nBetBottomTimes;
 }
@@ -148,6 +160,14 @@ void CNiuNiuRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 	CLogMgr::SharedLogMgr()->PrintLog("send room info to session id = %d, player cnt = %d ", nSessionID,msgInfo.nPlayerCnt) ;
 }
 
+void CNiuNiuRoom::setBankerIdx(uint8_t nIdx )
+{
+	m_nBankerIdx = nIdx ; 	
+	auto pp = getPlayerByIdx(m_nBankerIdx) ;
+	uint16_t nCnt = getPlayerCntWithState(eRoomPeer_CanAct) - 1 ;
+	setBankCoinLimitForBet( pp->getCoin() / nCnt ) ; 
+}
+
 uint8_t CNiuNiuRoom::getMaxRate()
 {
 	return getReateByNiNiuType(CNiuNiuPeerCard::NiuNiuType::Niu_FiveSmall,10);
@@ -159,9 +179,6 @@ uint8_t CNiuNiuRoom::getDistributeCardCnt()
 	switch (nState)
 	{
 	case eRoomState_NN_Disribute4Card:
-	case eRoomState_NN_TryBanker:
-	case eRoomState_NN_RandBanker:
-	case eRoomState_NN_StartBet:
 		return 4 ;
 	case eRoomState_NN_FinalCard:
 	case eRoomState_NN_CaculateCard:
@@ -178,7 +195,7 @@ uint32_t CNiuNiuRoom::getBaseBet()
 	return m_nBaseBet ;
 }
 
-uint64_t& CNiuNiuRoom::getBankCoinLimitForBet()
+uint32_t& CNiuNiuRoom::getBankCoinLimitForBet()
 {
 	return m_nBankerCoinLimitForBet;
 }
@@ -190,21 +207,31 @@ void CNiuNiuRoom::setBankCoinLimitForBet( uint64_t nCoin )
 
 uint8_t CNiuNiuRoom::getReateByNiNiuType(uint8_t nType , uint8_t nPoint )
 {
-	return 1 ;
+	if ( nPoint < 7 || nType == CNiuNiuPeerCard::Niu_None )
+	{
+		return 1 ;
+	}
+
+	return ( nPoint - 5 ) ;
 }
 
-uint64_t CNiuNiuRoom::getLeastCoinNeedForBeBanker( uint8_t nBankerTimes )
+uint32_t CNiuNiuRoom::getLeastCoinNeedForBeBanker( uint8_t nBankerTimes )
 {
-	return getBaseBet() * nBankerTimes * getMaxRate() * ( getPlayerCntWithState(eRoomPeer_CanAct) - 1 );
+	uint8_t n = getPlayerCntWithState(eRoomPeer_CanAct) ;
+	n += getPlayerCntWithState(eRoomPeer_WaitNextGame) ;
+	return getBaseBet() * nBankerTimes * getMaxRate() * ( n - 1 );
 }
 
 void CNiuNiuRoom::onGameWillBegin()
 {
 	ISitableRoom::onGameWillBegin();
-	m_nBankerIdx = 0 ;
 	m_nBankerCoinLimitForBet = 0 ;
-	m_nBetBottomTimes = 0 ;
+	m_nBetBottomTimes = 1 ;
 	getPoker()->RestAllPoker();
+	if ( isHaveBanker() )
+	{
+		setBankerIdx(m_nBankerIdx);
+	}
 	CLogMgr::SharedLogMgr()->PrintLog("room game begin");
 }
 
@@ -215,14 +242,14 @@ void CNiuNiuRoom::onGameDidEnd()
 	msgSaveLog.nTargetID = getRoomID() ;
 	msgSaveLog.nJsonExtnerLen = 0 ;
 	memset(msgSaveLog.vArg,0,sizeof(msgSaveLog.vArg));
-	msgSaveLog.vArg[0] = getPlayerByIdx(m_nBankerIdx)->getUserUID();
+	msgSaveLog.vArg[0] = 0;//getPlayerByIdx(m_nBankerIdx)->getUserUID();
 	msgSaveLog.vArg[1] = m_nBetBottomTimes ;
 	msgSaveLog.vArg[2] = getBaseBet() * m_nBetBottomTimes ;
 	m_arrPlayers.clear() ;
 
-	m_nBankerIdx = 0 ;
+	/*m_nBankerIdx = 0 ;
 	m_nBankerCoinLimitForBet = 0 ;
-	m_nBetBottomTimes = 0 ;
+	m_nBetBottomTimes = 0 ;*/
 
 	uint8_t nSeatCnt = (uint8_t)getSeatCount() ;
 	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
@@ -251,7 +278,7 @@ void CNiuNiuRoom::onGameDidEnd()
 			m_arrPlayers[pNiuPlayer->getIdx()] = refPlayer ;
 		}
 
-		pSitDown->removeState(eRoomPeer_CanAct);
+		//pSitDown->removeState(eRoomPeer_CanAct);
 	}
 
 	Json::StyledWriter write ;
@@ -288,7 +315,7 @@ void CNiuNiuRoom::prepareCards()
 
 uint32_t CNiuNiuRoom::coinNeededToSitDown()
 {
-	return getBaseBet()* 4 * getMaxRate() * 5 + getDeskFee() ;
+	return getBaseBet() * getMaxRate() + getDeskFee() ;
 }
 
 void CNiuNiuRoom::caculateGameResult()
@@ -297,7 +324,9 @@ void CNiuNiuRoom::caculateGameResult()
 	CNiuNiuRoomPlayer* pBanker = (CNiuNiuRoomPlayer*)getPlayerByIdx(getBankerIdx()) ;
 	assert(pBanker && "why banker is null ?");
 	CLogMgr::SharedLogMgr()->PrintLog("banker coin = %u",pBanker->getCoin()) ;
-
+	
+	bool isBankerHaveNiu = pBanker->isHaveNiu() ;
+	bool isLoseToAll = true ;
 	// send result msg ;
 	stMsgNNGameResult msgResult ;
 	msgResult.nPlayerCnt = getSortedPlayerCnt() ;
@@ -307,7 +336,9 @@ void CNiuNiuRoom::caculateGameResult()
 
 	int32_t nBankerOffset = 0 ;
 	// caclulate banker win ;
-	for ( uint8_t nIdx = 0 ; nIdx < msgResult.nPlayerCnt ; ++nIdx )
+	uint8_t nIdx = 0 ;
+	CNiuNiuPeerCard* perr = (CNiuNiuPeerCard*)pBanker->getPeerCard();
+	for (  ;nIdx < msgResult.nPlayerCnt ; ++nIdx )
 	{
 		CNiuNiuRoomPlayer* pNNP = (CNiuNiuRoomPlayer*)getSortedPlayerByIdx(nIdx) ;
 		assert(pNNP && "why have null player in sorted player list" );
@@ -316,7 +347,7 @@ void CNiuNiuRoom::caculateGameResult()
 			break;
 		}
 
-		uint32_t nLoseCoin = max(5,pNNP->getBetTimes()) * getBaseBet() * m_nBetBottomTimes ;
+		uint32_t nLoseCoin = min(5,pNNP->getBetTimes()) * getBaseBet() * m_nBetBottomTimes * getReateByNiNiuType(perr->getType(),perr->getPoint()) ;
 		if ( nLoseCoin > pNNP->getCoin() )
 		{
 			nLoseCoin = pNNP->getCoin() ;
@@ -332,11 +363,15 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nOffsetCoin = -1* nLoseCoin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
+		CLogMgr::SharedLogMgr()->PrintLog("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pNNP->getUserUID(),item.nOffsetCoin);
 		pNNP->setGameOffset(item.nOffsetCoin);
+
+		isLoseToAll = false ;
 	}
 
 	// caculate banker lose 
-	for ( uint8_t nIdx = 0 ; nIdx < msgResult.nPlayerCnt ; ++nIdx )
+	++nIdx ;
+	for (  ; nIdx < msgResult.nPlayerCnt ; ++nIdx )
 	{
 		CNiuNiuRoomPlayer* pNNP = (CNiuNiuRoomPlayer*)getSortedPlayerByIdx(nIdx) ;
 		if ( pNNP == pBanker )
@@ -344,7 +379,8 @@ void CNiuNiuRoom::caculateGameResult()
 			break;
 		}
 
-		uint32_t nBankerLoseCoin = max(5,pNNP->getBetTimes()) * getBaseBet() * m_nBetBottomTimes ;
+		CNiuNiuPeerCard* pc = (CNiuNiuPeerCard*)pNNP->getPeerCard();
+		uint32_t nBankerLoseCoin = min(5,pNNP->getBetTimes()) * getBaseBet() * m_nBetBottomTimes * getReateByNiNiuType(pc->getType(),pc->getPoint())  ;
 		if ( nBankerLoseCoin > pBanker->getCoin() )
 		{
 			nBankerLoseCoin = pBanker->getCoin() ;
@@ -364,6 +400,7 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nOffsetCoin = (int32_t)nWithoutTaxWin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
+		CLogMgr::SharedLogMgr()->PrintLog("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pNNP->getUserUID(),item.nOffsetCoin);
 		pNNP->setGameOffset(item.nOffsetCoin);
 	}
 
@@ -381,7 +418,85 @@ void CNiuNiuRoom::caculateGameResult()
 	item.nPlayerIdx = pBanker->getIdx() ;
 	auBuffer.addContent(&item,sizeof(item)) ;
 	pBanker->setGameOffset(item.nOffsetCoin);
+	CLogMgr::SharedLogMgr()->PrintLog("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pBanker->getUserUID(),item.nOffsetCoin);
 	CLogMgr::SharedLogMgr()->PrintLog("result player idx = %d , finalCoin = %d, offset coin = %d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
 
 	sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+
+	// decide banker ;
+	 // // 0 no niu leave banker , 1 lose to all  leave banker ;
+	if ( ( m_nResignBankerCtrl == 0 && isBankerHaveNiu == false ) || (m_nResignBankerCtrl == 1 && isLoseToAll ) )
+	{
+		m_nBankerIdx = -1 ;
+		CLogMgr::SharedLogMgr()->PrintLog("resign banker ctrl = %u , isBankerHaveNiu = %u , isLoseToAll = %u",m_nResignBankerCtrl,isBankerHaveNiu,isLoseToAll) ;
+	}
 }
+
+bool CNiuNiuRoom::getPlayersHaveGrabBankerPrivilege(std::vector<uint8_t>& vAllPrivilegeIdxs)
+{
+	uint32_t nBankerNeedCoin = getLeastCoinNeedForBeBanker(1) ;
+	uint8_t nSeatCnt = (uint8_t)getSeatCount() ;
+	for ( uint8_t nIdx = 0 ; nIdx < nSeatCnt ; ++nIdx )
+	{
+		CNiuNiuRoomPlayer* pRoomPlayer = (CNiuNiuRoomPlayer*)getPlayerByIdx(nIdx) ;
+		if ( pRoomPlayer && ( pRoomPlayer->isHaveState(eRoomPeer_CanAct) || pRoomPlayer->isHaveState(eRoomPeer_WaitNextGame)))
+		{
+			 if ( pRoomPlayer->getCoin() > nBankerNeedCoin )
+			 {
+				 vAllPrivilegeIdxs.push_back(pRoomPlayer->getIdx()) ;
+			 }
+		}
+	}
+	return vAllPrivilegeIdxs.empty() == false ;
+}
+
+bool CNiuNiuRoom::getPlayersWillBetPlayer(std::vector<uint8_t>& vWillBetIdx)
+{
+	auto seactCnt = getSeatCount() ;
+	for ( uint8_t nIdx = 0 ; nIdx < seactCnt ; ++nIdx )
+	{
+		if ( nIdx == getBankerIdx() )
+		{
+			continue; 
+		}
+
+		if ( getPlayerByIdx(nIdx) == nullptr )
+		{
+			continue; 
+		}
+
+		if ( getPlayerByIdx(nIdx)->isHaveState(eRoomPeer_CanAct) == false )
+		{
+			continue;
+		}
+		vWillBetIdx.push_back(nIdx) ;
+	}
+	return vWillBetIdx.empty() == false ;
+}
+
+bool CNiuNiuRoom::isHaveBanker()
+{
+	if ( m_nBankerIdx == (uint8_t)-1 )
+	{
+		return false ;
+	}
+
+	auto pBanker = getPlayerByIdx(m_nBankerIdx) ;
+	if ( pBanker == nullptr )
+	{
+		m_nBankerIdx = -1 ;
+		return false ;
+	}
+	return true ;
+}
+
+bool CNiuNiuRoom::canStartGame()
+{
+	if ( ISitableRoom::canStartGame() == false  )
+	{
+		return false ;
+	}
+
+	std::vector<uint8_t> v ;
+	return getPlayersHaveGrabBankerPrivilege(v) ;
+} 

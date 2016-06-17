@@ -6,6 +6,7 @@
 #include "CommonDefine.h"
 #include "ServerDefine.h"
 #include <vector>
+#include <functional>
 class IRoomState ;
 class IRoomPlayer ;
 struct stMsg ;
@@ -37,7 +38,7 @@ public:
 public:
 	IRoom();
 	virtual ~IRoom();
-	bool onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )override;
+	bool onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )override;
 	void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	virtual void willSerializtionToDB(Json::Value& vOutJsValue);
 	virtual void prepareState();
@@ -62,6 +63,7 @@ public:
 	void setDeskFee(uint32_t nDeskFee){ m_nDeskFree = nDeskFee ;}
 	uint32_t getDeskFee(){ return m_nDeskFree ;}
 	bool isHaveRealPlayer(); // not robot 
+	bool isPlaying()override ;
 private:
 	bool addRoomPlayer(stStandPlayer* pPlayer );
 	void removePlayer(stStandPlayer* pPlayer );
@@ -77,6 +79,9 @@ public:
 
 	void sendRoomMsg( stMsg* pmsg , uint16_t nLen );
 	void sendMsgToPlayer( stMsg* pmsg , uint16_t nLen , uint32_t nSessionID ) ;
+	void sendRoomMsg( Json::Value& recvValue, uint16_t nMsgID );
+	void sendMsgToPlayer( uint32_t nSessionID , Json::Value& recvValue, uint16_t nMsgID  ) ;
+
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
 	virtual void roomInfoVisitor(Json::Value& vOutJsValue) = 0 ;
 	virtual void sendRoomPlayersInfo(uint32_t nSessionID) = 0 ;
@@ -103,6 +108,7 @@ public:
 	void forcePlayersLeaveRoom();
 	float getChouShuiRate(){ return m_fDividFeeRate ;}
 	void setChouShuiRate(float fDividFeeRate ){ m_fDividFeeRate = fDividFeeRate ; }
+	void enumAudientsPlayer(std::function<void (stStandPlayer*)> lpFunc );
 protected:
 	bool addRoomState(IRoomState* pRoomState );
 private:

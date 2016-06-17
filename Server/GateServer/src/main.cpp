@@ -6,6 +6,7 @@
 #include <Dbghelp.h>
 #include "LogManager.h"
 #pragma comment( lib, "DbgHelp" )
+#pragma comment(lib,"JsonDll.lib")
 //#include <vld.h>
 
 DWORD WINAPI ThreadProc(LPVOID lpParam)
@@ -69,8 +70,8 @@ int main()
 {
 	//zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
 	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
-	CGateServer  theApp ;
 	CLogMgr::SharedLogMgr()->SetOutputFile("GateSvr");
+	CGateServer theApp ;
 	bool bok = theApp.init() ;
 	if (!bok )
 	{
@@ -79,11 +80,11 @@ int main()
 		scanf("%c",&c);
 		return 0 ;
 	}
-	CreateThred(&theApp);
+	CreateThred(CGateServer::SharedGateServer());
 #ifdef NDEBUG
-	RunFunc(&theApp);
+	RunFunc(CGateServer::SharedGateServer());
 #endif // _DEBUG
 #ifdef _DEBUG
-	theApp.run() ;
+	CGateServer::SharedGateServer()->run() ;
 #endif // _DEBUG
 }

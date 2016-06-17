@@ -164,18 +164,18 @@ bool stNiuNiuData::onMsg(stMsg* pmsg)
 		break;
 	case MSG_ROOM_INFO:
 		{
-			stMsgRoomInfo* pInfo = (stMsgRoomInfo*)pmsg ;
-			char* pBuffer = (char*)pmsg ;
-			pBuffer = pBuffer + sizeof(stMsgRoomInfo);
+			//stMsgRoomInfo* pInfo = (stMsgRoomInfo*)pmsg ;
+			//char* pBuffer = (char*)pmsg ;
+			//pBuffer = pBuffer + sizeof(stMsgRoomInfo);
 
-			Json::Reader rt ;
-			Json::Value jCont ;
-			rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
+			//Json::Reader rt ;
+			//Json::Value jCont ;
+			//rt.parse(pBuffer,pBuffer + pInfo->nJsonLen,jCont) ;
 
-			nBankerIdx = jCont["bankIdx"].asInt();
-			nBottomBet = jCont["baseBet"].asInt();
-			nBankerBetTimes = jCont["bankerTimes"].asInt();
-			setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState,pInfo->nSubIdx);
+			//nBankerIdx = jCont["bankIdx"].asInt();
+			//nBottomBet = jCont["baseBet"].asInt();
+			//nBankerBetTimes = jCont["bankerTimes"].asInt();
+			//setBaseInfo(pInfo->nRoomID,5,pInfo->nDeskFee,pInfo->eCurRoomState,pInfo->nSubIdx);
 		}
 		break;
 	case MSG_NN_GAME_RESULT:

@@ -13,7 +13,7 @@ public:
 	uint16_t getLocalSvrMsgPortType(){ return ID_MSG_PORT_DB ;}
 	bool onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
 	void update(float fdeta );
-	
+	bool OnMessage( Packet* pMsg )override ;
 	void onExit();
 	CDataBaseThread* GetDBThread(){ return m_pDBWorkThread ; }
 protected:

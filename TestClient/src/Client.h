@@ -24,6 +24,8 @@ public:
 	bool OnConnectStateChanged( eConnectState eSate, Packet* pMsg )override ;
 	void processReconnect( float fDelt );
 	bool OnMessage( Packet* pMsg );
+	void sendMsg(Json::Value& jsMsg , uint16_t nTargetPort );
+	void sendMsg(stMsg* pmsg ,uint16_t nLen );
 protected:
 	CNetWorkMgr m_pNetWork ;
 	CPlayerData* m_pPlayerData ;

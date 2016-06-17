@@ -285,7 +285,20 @@ stShopItem* CShopConfigMgr::GetAssetByIndex(unsigned int index)
     return  NULL;
 }
 
-
+stShopItem* CShopConfigMgr::GetCoinProductByIndex(unsigned int index){
+    int count = 0;
+    MAP_SHOP_ITEMS::iterator iter = m_vAllShopItems.begin();
+    for(iter=m_vAllShopItems.begin();iter!=m_vAllShopItems.end();++iter)
+    {
+        if (eShopItem_Coin == iter->second->nPrizeType) {
+            if (count == index) {
+                return iter->second;
+            }
+            count ++;
+        }
+    }
+    return  NULL;
+}
 stShopItem* CShopConfigMgr::GetAppStoreProductByIndex(unsigned int index)
 {
     int count = 0;

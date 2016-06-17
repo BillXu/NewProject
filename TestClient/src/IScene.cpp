@@ -5,7 +5,6 @@
 void IScene::OnEnterScene()
 {
 	if ( m_bRunning )return ;
-	m_pClient->GetNetWork()->AddMessageDelegate(this,1) ;
 	m_bRunning = true ;
 }
 
@@ -13,7 +12,6 @@ void IScene::OnEixtScene()
 {
 	if ( !m_bRunning )
 		return ;
-	m_pClient->GetNetWork()->RemoveMessageDelegate(this);
 	m_bRunning = false ;
 }
 
@@ -32,20 +30,13 @@ bool IScene::OnMessage( Packet* pPacket )
 	return false ;
 }
 
-bool IScene::OnLostSever(Packet* pPacket )
+bool IScene::onMessage(stMsg* pmsg)
 {
-	CLogMgr::SharedLogMgr()->PrintLog("Server Disconnect!");
-	// reconnected to Server ;
 	return false ;
 }
 
-bool IScene::OnConnectStateChanged( eConnectState eSate, Packet* pMsg )
+bool IScene::onMessage(Json::Value& jsContent )
 {
-	if ( eConnect_Accepted == eSate )
-	{
-		// send client verify ;
-		Verifyed();
-	}
 	return false ;
 }
 

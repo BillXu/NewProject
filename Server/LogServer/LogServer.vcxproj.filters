@@ -66,6 +66,9 @@
     <ClCompile Include="src\LogSvr.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\LogManager.h">
@@ -127,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="src\LogSvrApp.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
+      <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

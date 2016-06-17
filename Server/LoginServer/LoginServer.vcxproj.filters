@@ -87,6 +87,9 @@
     <ClInclude Include="..\ServerCommon\ISeverApp.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\Utility.cpp">
@@ -136,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
+      <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

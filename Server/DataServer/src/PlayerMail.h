@@ -28,6 +28,7 @@ public:
 	CPlayerMailComponent(CPlayer* pPlayer ):IPlayerComponent(pPlayer){ClearMails();}
 	~CPlayerMailComponent(){ ClearMails() ;}
 	virtual bool OnMessage( stMsg* pMessage , eMsgPort eSenderPort );
+	void onPlayerReconnected()override ;
 	virtual void Reset();
 	virtual void Init();
 	virtual void OnOtherDoLogined();

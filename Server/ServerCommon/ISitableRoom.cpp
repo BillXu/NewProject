@@ -37,11 +37,19 @@ ISitableRoom::~ISitableRoom()
 	m_pRobotDispatchStrage = nullptr ;
 }
 
-bool ISitableRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue ) 
+bool ISitableRoom::onFirstBeCreated(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue ) 
 {
-	IRoom::onFirstBeCreated(pRoomMgr,pConfig,nRoomID,vJsValue) ;
-	stSitableRoomConfig* pC = (stSitableRoomConfig*)pConfig;
-	m_nSeatCnt = pC->nMaxSeat ;
+	IRoom::onFirstBeCreated(pRoomMgr,nRoomID,vJsValue) ;
+	m_nSeatCnt = 4 ;
+	if ( vJsValue["seatCnt"].isNull() == true )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("create room seatCnt js key is null") ;
+	}
+	else
+	{
+		m_nSeatCnt = vJsValue["seatCnt"].asUInt() ;
+	}
+
 	m_vSitdownPlayers = new ISitableRoomPlayer*[m_nSeatCnt] ;
 	for ( uint8_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
 	{
@@ -50,7 +58,7 @@ bool ISitableRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pCo
 
 	m_pRobotDispatchStrage = new CRobotDispatchStrategy ;
 
-	m_pRobotDispatchStrage->init(this,pConfig->nNeedRobotLevel,vJsValue["parentRoomID"].asUInt(),nRoomID);
+	m_pRobotDispatchStrage->init(this,0,nRoomID,nRoomID);
 	return true ;
 }
 
@@ -300,6 +308,21 @@ ISitableRoomPlayer* ISitableRoom::getSitdownPlayerByUID(uint32_t nUserUID )
 		}
 	}
 	return nullptr ;
+}
+
+bool ISitableRoom::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID )
+{
+	if ( MSG_REQUEST_ROOM_AUDIENTS == nMsgType )
+	{
+		Json::Value jsmsg ;
+		enumAudientsPlayer([this,&jsmsg](IRoom::stStandPlayer* pPlayer){ if (pPlayer == nullptr)return ; auto ps = getSitdownPlayerByUID(pPlayer->nUserUID) ; if (ps) return ; jsmsg[jsmsg.size()] = pPlayer->nUserUID; });
+		Json::Value js ;
+		js["audients"] = jsmsg ;
+		sendMsgToPlayer(nSessionID,js,nMsgType) ;
+		return true ;
+	}
+
+	return false ;
 }
 
 bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )

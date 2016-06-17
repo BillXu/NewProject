@@ -129,6 +129,9 @@
     <ClCompile Include="src\Md5.cpp">
       <Filter>AppleVerify\MD5</Filter>
     </ClCompile>
+    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\LogManager.h">
@@ -241,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="src\Md5.h">
       <Filter>AppleVerify\MD5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
+      <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

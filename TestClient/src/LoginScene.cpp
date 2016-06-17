@@ -145,26 +145,33 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 
 			printf("recived base data donot tell robot type \n");
 			stMsgTellPlayerType msg ;
-			msg.nPlayerType = ePlayer_Robot ;
+			msg.nPlayerType = ePlayer_Robot ; 
 			SendMsg(&msg, sizeof(msg)) ;
 
 
-			// 生成激活码
-			stMsgRobotGenerateEncryptNumber msgGenEntry;
-			msgGenEntry.nCoin = 1000 ;
-			msgGenEntry.nGenCount = 1000 ;
-			msgGenEntry.nNumberType = 0 ;
-			msgGenEntry.nRMB = 0 ;
-			msgGenEntry.nCoinType = 0 ;
-			SendMsg(&msgGenEntry, sizeof(msgGenEntry)) ;
+			//// 生成激活码
+			//stMsgRobotGenerateEncryptNumber msgGenEntry;
+			////msgGenEntry.nCoin = 1000 ;
+			////msgGenEntry.nGenCount = 1000 ;
+			////msgGenEntry.nNumberType = 0 ;
+			////msgGenEntry.nRMB = 0 ;
+			////msgGenEntry.nCoinType = 0 ;
+			////SendMsg(&msgGenEntry, sizeof(msgGenEntry)) ;
 
-			msgGenEntry.nCoin = 3000 ;
-			msgGenEntry.nGenCount = 1000 ;
-			msgGenEntry.nNumberType = 1 ;
-			msgGenEntry.nRMB = 0 ;
-			msgGenEntry.nCoinType = 1 ;
-			SendMsg(&msgGenEntry, sizeof(msgGenEntry)) ;
-			break ;
+			//msgGenEntry.nCoin = 3000 ;
+			//msgGenEntry.nNumberType = 1 ;
+			//msgGenEntry.nRMB = 0 ;
+			//msgGenEntry.nCoinType = 1 ;
+			//msgGenEntry.nGenCount = 100 ;
+
+			//uint16_t nChannlID = 1000 ;
+			//while ( nChannlID < 1040 )
+			//{
+			//	msgGenEntry.nChannelID = nChannlID++ ;
+			//	SendMsg(&msgGenEntry, sizeof(msgGenEntry)) ;
+			//}
+			//
+			//break ;
 
 			auto pConfigItem = m_pClient->GetPlayerData()->getConfigItem();
 			if ( pRet->stBaseData.nCoin <= pConfigItem->fMostLeftCoin && pRet->stBaseData.nCoin >= pConfigItem->nMinLeftCoin )
@@ -212,42 +219,42 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 		break;
 	case MSG_ROOM_INFO:
 		{
-			stMsgRoomInfo* pRet = (stMsgRoomInfo*)pMsg ;
-			if ( pRet->nRoomType == eRoom_TexasPoker )
-			{
-				// change room scene and push this msg;
-				printf("robot enter eRoom_TexasPoker room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
-				CTaxasPokerScene* pScene = new CTaxasPokerScene(m_pClient) ;
-				//pScene->init("../ConfigFile/RobotAIConfig - new.xml");
-				char pBuffer[255] = { 0 };
-				sprintf_s(pBuffer,"../ConfigFile/%s",m_pClient->GetPlayerData()->pRobotItem->strAiFileName.c_str());
-				pScene->init(pBuffer);
-				m_pClient->ChangeScene(pScene) ;
-				pScene->OnMessage(pPacket) ;
-				
-			}
-			else if ( eRoom_NiuNiu == pRet->nRoomType )
-			{
-				printf("robot enter eRoom_NiuNiu room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
-				CNiuNiuScene* pScene = new CNiuNiuScene(m_pClient) ;
-				pScene->init(nullptr) ;
-				m_pClient->ChangeScene(pScene) ;
-				pScene->OnMessage(pPacket) ;
-			}
-			else if ( eRoom_Golden == pRet->nRoomType )
-			{
-				printf("robot enter eRoom_Golden room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
-
-
-				CGoldenScene* pScene = new CGoldenScene(m_pClient) ;
-				pScene->init(nullptr) ;
-				m_pClient->ChangeScene(pScene) ;
-				pScene->OnMessage(pPacket) ;
-			}
-			else
-			{
-				printf("unknown room type = %u\n",pRet->nRoomType) ;
-			}
+// 			stMsgRoomInfo* pRet = (stMsgRoomInfo*)pMsg ;
+// 			if ( pRet->nRoomType == eRoom_TexasPoker )
+// 			{
+// 				// change room scene and push this msg;
+// 				printf("robot enter eRoom_TexasPoker room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
+// 				CTaxasPokerScene* pScene = new CTaxasPokerScene(m_pClient) ;
+// 				//pScene->init("../ConfigFile/RobotAIConfig - new.xml");
+// 				char pBuffer[255] = { 0 };
+// 				sprintf_s(pBuffer,"../ConfigFile/%s",m_pClient->GetPlayerData()->pRobotItem->strAiFileName.c_str());
+// 				pScene->init(pBuffer);
+// 				m_pClient->ChangeScene(pScene) ;
+// 				pScene->OnMessage(pPacket) ;
+// 				
+// 			}
+// 			else if ( eRoom_NiuNiu == pRet->nRoomType )
+// 			{
+// 				printf("robot enter eRoom_NiuNiu room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
+// 				CNiuNiuScene* pScene = new CNiuNiuScene(m_pClient) ;
+// 				pScene->init(nullptr) ;
+ 				//m_pClient->ChangeScene(pScene) ;
+// 				pScene->OnMessage(pPacket) ;
+// 			}
+// 			else if ( eRoom_Golden == pRet->nRoomType )
+// 			{
+// 				printf("robot enter eRoom_Golden room id = %u subIdx = %d\n",pRet->nRoomID,pRet->nSubIdx) ;
+// 
+// 
+// 				CGoldenScene* pScene = new CGoldenScene(m_pClient) ;
+// 				pScene->init(nullptr) ;
+// 				m_pClient->ChangeScene(pScene) ;
+// 				pScene->OnMessage(pPacket) ;
+// 			}
+// 			else
+// 			{
+// 				printf("unknown room type = %u\n",pRet->nRoomType) ;
+// 			}
 
 			return true ;
 		}

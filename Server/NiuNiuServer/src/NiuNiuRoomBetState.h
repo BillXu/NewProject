@@ -13,5 +13,5 @@ public:
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID );
 protected:
 	CNiuNiuRoom* m_pRoom ;
-	int8_t m_nLeftBetPlayerCnt ;
+	std::vector<uint8_t> vWaitBetPlayerIdxs ;
 };

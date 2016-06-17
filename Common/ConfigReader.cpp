@@ -209,7 +209,7 @@ bool CConfigReader::LoadFile(const char *pFileName)
 //#ifdef POKER_CLIENT
 //    while (fscanf(pFile, "%[^\r]\n",pbuffer) != EOF )
 //#else
-	while (fscanf(pFile, "%[^\n]\n",pbuffer) != EOF )
+	while (fscanf(pFile, "%[^\n|\r]\n\r",pbuffer) != EOF )
 //#endif
     {
         if ( iLine < s_SkillRow )

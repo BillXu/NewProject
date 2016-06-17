@@ -170,12 +170,23 @@ bool CDataBaseThread::ProcessRequest()
 							case MYSQL_TYPE_SHORT: // short 
 							case MYSQL_TYPE_LONG: // int
 							case MYSQL_TYPE_LONGLONG: // 64 bit int 
-							case MYSQL_TYPE_FLOAT: // float 
-							case MYSQL_TYPE_DOUBLE: // double 
-							case MYSQL_TYPE_BLOB: // binary 
-							case MYSQL_TYPE_VAR_STRING:  // string 
 							case MYSQL_TYPE_INT24:
 								{
+									pField->nValueType = eValue_Int ;
+									bValide = true;
+								}
+								break;
+							case MYSQL_TYPE_FLOAT: // float 
+							case MYSQL_TYPE_DOUBLE: // double 
+								{
+									pField->nValueType = eValue_Float ;
+									bValide = true;
+								}
+								break;
+							case MYSQL_TYPE_BLOB: // binary 
+							case MYSQL_TYPE_VAR_STRING:  // string 
+								{
+									pField->nValueType = eValue_String ;
 									bValide = true;
 								}
 								break;

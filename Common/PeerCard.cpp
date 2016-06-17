@@ -66,7 +66,7 @@ int8_t CPeerCard::PKPeerCard(CPeerCard* pPeerCard)
 		{
 			return 1 ;
 		}
-		else
+		else if ( m_pPairCardNum < pPeerCard->m_pPairCardNum ) 
 		{
 			return -1 ;
 		}

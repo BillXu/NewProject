@@ -18,7 +18,7 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
                 pConfig = new stNiuNiuRoomConfig();
             }
 			pConfig->nBaseBet = refReaderRow["BigBlind"]->IntValue();
-			pConfig->nMiniTakeInCoin = refReaderRow["miniTakeIn"]->IntValue() ;
+			//pConfig->nMiniTakeInCoin = refReaderRow["miniTakeIn"]->IntValue() ;
 			pConfig->nMaxSeat = refReaderRow["MaxSeat"]->IntValue();
 			pConfig->nBaseTakeIn = refReaderRow["baseTakeIn"]->IntValue();
 			pRoomConfig = pConfig ;
@@ -28,8 +28,8 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 		{
 			stTaxasRoomConfig* pConfig = new stTaxasRoomConfig ;
 			pConfig->nBigBlind = refReaderRow["BigBlind"]->IntValue();
-			pConfig->nMaxTakeInCoin = refReaderRow["maxTakeIn"]->IntValue() ;
-			pConfig->nMiniTakeInCoin = refReaderRow["miniTakeIn"]->IntValue() ;
+			//pConfig->nMaxTakeInCoin = refReaderRow["maxTakeIn"]->IntValue() ;
+			//pConfig->nMiniTakeInCoin = refReaderRow["miniTakeIn"]->IntValue() ;
 			pConfig->nMaxSeat = refReaderRow["MaxSeat"]->IntValue();
 			pConfig->nBaseTakeIn = refReaderRow["baseTakeIn"]->IntValue();
 			pRoomConfig = pConfig ;
@@ -63,21 +63,21 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	pRoomConfig->nRentFeePerDay = refReaderRow["RendFeePerDay"]->IntValue() ;
 	pRoomConfig->nDeskFee = refReaderRow["DeskFee"]->IntValue() ;
 	pRoomConfig->fDividFeeRate = refReaderRow["DividFeeRate"]->FloatValue() ;
-	pRoomConfig->nCoinLowLimit = refReaderRow["CoinLowLimit"]->IntValue();
-	pRoomConfig->nCoinTopLimit = refReaderRow["CoinTopLimit"]->IntValue();
-	pRoomConfig->bIsNeedRegistered = (bool)(refReaderRow["NeedRegister"]->IntValue());
-	pRoomConfig->bIsOmitNewPlayerHalo = (bool)(refReaderRow["isOmitNewPlayerHalo"]->IntValue());
-	pRoomConfig->nMaxLose = refReaderRow["MaxLose"]->IntValue() ;
+	//pRoomConfig->nCoinLowLimit = refReaderRow["CoinLowLimit"]->IntValue();
+	//pRoomConfig->nCoinTopLimit = refReaderRow["CoinTopLimit"]->IntValue();
+	//pRoomConfig->bIsNeedRegistered = (bool)(refReaderRow["NeedRegister"]->IntValue());
+	//pRoomConfig->bIsOmitNewPlayerHalo = (bool)(refReaderRow["isOmitNewPlayerHalo"]->IntValue());
+	//pRoomConfig->nMaxLose = refReaderRow["MaxLose"]->IntValue() ;
 #ifdef SERVER
 	pRoomConfig->nNeedRobotLevel = refReaderRow["NeedRobotLevel"]->IntValue() ;
 #endif // SERVER
 
-	refReaderRow["Reward"]->VecInt(pRoomConfig->vRewardID);
+	//refReaderRow["Reward"]->VecInt(pRoomConfig->vRewardID);
 	pRoomConfig->fDividFeeRate = pRoomConfig->fDividFeeRate / 100.00f ;
-	if ( pRoomConfig->vRewardID.empty() )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("room config id = %d reward is null",pRoomConfig->nConfigID) ;
-	}
+//	if ( pRoomConfig->vRewardID.empty() )
+//	{
+//		CLogMgr::SharedLogMgr()->ErrorLog("room config id = %d reward is null",pRoomConfig->nConfigID) ;
+//	}
 	m_vAllConfig.push_back(pRoomConfig) ;
 	return true ;
 }

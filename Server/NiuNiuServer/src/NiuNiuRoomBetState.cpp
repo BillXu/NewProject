@@ -8,13 +8,23 @@ void CNiuNiuRoomBetState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (CNiuNiuRoom*)pRoom ;	
 	setStateDuringTime(TIME_NIUNIU_PLAYER_BET) ;
-	m_nLeftBetPlayerCnt = m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) - 1;
+	vWaitBetPlayerIdxs.clear() ;
+	m_pRoom->getPlayersWillBetPlayer(vWaitBetPlayerIdxs) ;
 	CLogMgr::SharedLogMgr()->PrintLog("room id = %d start bet ",m_pRoom->getRoomID()) ;
 }
 
 void CNiuNiuRoomBetState::onStateDuringTimeUp()
 {
-	m_pRoom->goToState(CNiuNiuRoomDistributeFinalCardState::eStateID);
+	for ( auto idx : vWaitBetPlayerIdxs )
+	{
+		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getPlayerByIdx(idx);
+		if ( pPlayer )
+		{
+			pPlayer->setBetTimes(1) ;
+		}
+	}
+	vWaitBetPlayerIdxs.clear() ;
+	m_pRoom->goToState(eRoomState_NN_Disribute4Card);
 }
 
 bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
@@ -24,42 +34,54 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 		return true ;
 	}
 
-	if ( prealMsg->usMsgType == MSG_NN_PLAYER_BET )
+	if ( prealMsg->usMsgType != MSG_NN_PLAYER_BET )
 	{
-		stMsgNNPlayerBet* pBet = (stMsgNNPlayerBet*)prealMsg ;
-		stMsgNNPlayerBetRet msgBack ;
-		int64_t nBetCoin = m_pRoom->getBaseBet() * m_pRoom->getBetBottomTimes() * pBet->nBetTimes ;
-		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID);
-		if ( pPlayer == nullptr || pPlayer->isHaveState(eRoomPeer_CanAct) == false )
+		return false ;
+	}
+
+	stMsgNNPlayerBet* pBet = (stMsgNNPlayerBet*)prealMsg ;
+	stMsgNNPlayerBetRet msgBack ;
+	int32_t nBetCoin = m_pRoom->getBaseBet() * m_pRoom->getBetBottomTimes() * pBet->nBetTimes ;
+	CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID);
+	if ( pPlayer == nullptr || pPlayer->isHaveState(eRoomPeer_CanAct) == false )
+	{
+		msgBack.nRet = 3 ;
+	}
+	else if ( pPlayer->getCoin() < nBetCoin )
+	{
+		msgBack.nRet = 2 ;
+	}
+	else if ( m_pRoom->getBankCoinLimitForBet() < nBetCoin * m_pRoom->getMaxRate() )
+	{
+		msgBack.nRet = 1 ;
+	}
+	else 
+	{
+		auto iterF = std::find(vWaitBetPlayerIdxs.begin(),vWaitBetPlayerIdxs.end(),pPlayer->getIdx()) ;
+		if ( iterF == vWaitBetPlayerIdxs.end() )
 		{
-			msgBack.nRet = 3 ;
+			msgBack.nRet = 4 ;
+			CLogMgr::SharedLogMgr()->PrintLog("session id = %u , you already bet , don't bet twice",pPlayer->getSessionID()) ;
 		}
-		else if ( (int64_t)pPlayer->getCoin() < nBetCoin )
+		else
 		{
-			msgBack.nRet = 2 ;
-		}
-		else if ( (int64_t)m_pRoom->getBankCoinLimitForBet() < nBetCoin * m_pRoom->getMaxRate() )
-		{
-			msgBack.nRet = 1 ;
-		}
-		else 
-		{
+			vWaitBetPlayerIdxs.erase(iterF) ;
 			msgBack.nRet = 0 ;
 			pPlayer->setBetTimes(pBet->nBetTimes) ;
 			stMsgNNBet msgRoomBet ;
 			msgRoomBet.nBetTimes = pBet->nBetTimes ;
 			msgRoomBet.nPlayerIdx = pPlayer->getIdx() ;
 			m_pRoom->sendRoomMsg(&msgRoomBet,sizeof(msgRoomBet)) ;
-			m_pRoom->setBankCoinLimitForBet(m_pRoom->getBankCoinLimitForBet() - nBetCoin ) ;
+			//m_pRoom->setBankCoinLimitForBet(m_pRoom->getBankCoinLimitForBet() - nBetCoin ) ;
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %d bet times = %d, ret = %d",pPlayer->getUserUID(),pBet->nBetTimes,msgBack.nRet) ;
 		}
-		m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
-		if ( --m_nLeftBetPlayerCnt <= 0 )  // end bet state ;
-		{
-			onStateDuringTimeUp() ;
-		}
-		
-		return true ;
 	}
-	return false ;
+
+	m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+
+	if ( vWaitBetPlayerIdxs.empty() )
+	{
+		onStateDuringTimeUp();
+	}
+	return true ;
 }

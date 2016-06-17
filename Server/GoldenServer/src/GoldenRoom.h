@@ -6,10 +6,11 @@ class CGoldenRoom
 {
 public:
 	CGoldenRoom();
-	bool onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID , Json::Value& vJsValue)override;
+	bool onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID , const Json::Value& vJsValue)override;
 	void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	void prepareState()override ;
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID ) override;
+	bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID )override{ return ISitableRoom::onMessage(prealMsg,nMsgType,eSenderPort,nSessionID) ;};
 	void roomInfoVisitor(Json::Value& vOutJsValue)override ;
 	void sendRoomPlayersInfo(uint32_t nSessionID)override ;
 	void setBankerIdx(uint8_t nIdx ){ m_nBankerIdx = nIdx ;}

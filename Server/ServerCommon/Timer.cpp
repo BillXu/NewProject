@@ -1,80 +1,81 @@
 #include "Timer.h"
 #include "LogManager.h"
 #include <time.h>
-CTimerDelegate::CTimerDelegate()
-	:m_pUpdateTimer(NULL)
-{
-	m_pTimerMgr = NULL ;
-}
-
-CTimerDelegate::~CTimerDelegate()
-{
-	if ( m_pUpdateTimer)
-		m_pTimerMgr->RemoveTimer(m_pUpdateTimer) ;
-}
-
-void CTimerDelegate::Update(float fTimeElpas , unsigned int nTimerID )
-{
-
-}
-
-void CTimerDelegate::SetEnableUpdate( bool bEnable )
-{
-	if ( bEnable )
-	{
-		if ( m_pUpdateTimer == NULL )
-		{
-			m_pUpdateTimer = m_pTimerMgr->AddTimer(this,&CTimerDelegate::Update);
-		}
-		m_pUpdateTimer->Reset();
-		m_pUpdateTimer->Start();
-	}
-	else
-	{
-		if ( m_pUpdateTimer )
-		{
-			m_pUpdateTimer->Stop();
-			m_pTimerMgr->RemoveTimer(m_pUpdateTimer) ;
-			m_pUpdateTimer = NULL ;
-		}
-	}
-}
-
+#include <cassert>
 // timer
-unsigned int CTimer::s_TimerCount = 0 ;
-CTimer::CTimer(CTimerDelegate* pDeleate,CTimerDelegate::lpTimerSelector pFunc , float fInterval )
+uint32_t CTimer::s_TimerCount = 0 ;
+CTimer::CTimer()
 {
-	m_fDelay = 0 ;
-	m_fInterval = fInterval ;
+	m_nTimeID = ++s_TimerCount ;
+	m_fInterval = 0 ;
 	m_eState = eTimerState_None ;
-	m_fDelayKeeper = 0 ;
 	m_fIntervalKeeper = 0 ;
-	m_nTimerID = ++s_TimerCount ;
-	m_pDelegate = pDeleate ;
-	m_pTimerFunc = pFunc ;
+	m_lpFunc = nullptr ;
+	m_isAutoRepeat = false ;
 }
 
 CTimer::~CTimer()
 {
-
+	if ( eTimerState_Runing == m_eState )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("you should canncel the time , befor delete it") ;
+		canncel() ;
+	}
 }
 
-void CTimer::Reset()
+void CTimer::canncel()
 {
+	if ( eTimerState_Runing == m_eState )
+	{
+		m_eState = eTimerState_None ;
+		CTimerManager::getInstance()->canncelTimer(this) ;
+		return ;
+	}
+	CLogMgr::SharedLogMgr()->ErrorLog("timer is not running how to canncel !") ;
+}
+
+void CTimer::setIsAutoRepeat( bool isRepeat )
+{
+	m_isAutoRepeat = isRepeat ;
+}
+
+void CTimer::setCallBack( time_func lpfCallBackFunc )
+{
+	m_lpFunc = lpfCallBackFunc ;
+}
+
+void CTimer::setInterval(float fNewInterval )
+{
+	m_fInterval = fNewInterval ;
+}
+
+void CTimer::start()
+{
+	assert(m_eState != eTimerState_Runing && "timer already running , do not run again" );
+	assert( m_lpFunc != nullptr && "please set timer func first");
+	if ( m_eState == eTimerState_Runing )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("timer already running , don't runed it again") ;
+		return ;
+	}
+	m_eState = eTimerState_Runing ;
+	CTimerManager::getInstance()->startTimer(this) ;
+}
+
+void CTimer::reset()
+{
+	if ( eTimerState_Runing == m_eState )
+	{
+		canncel() ;
+	}
 	m_eState = eTimerState_None ;
-	m_fDelayKeeper = 0 ;
 	m_fIntervalKeeper = 0 ;
 }
 
 void CTimer::Update(float fTimeElaps)
 {
-	if ( eTimerState_Pause == m_eState || eTimerState_None == m_eState )
+	if ( eTimerState_Runing != m_eState )
 		return ;
-	// process delay 
-	if ( (m_fDelayKeeper += fTimeElaps) < m_fDelay )
-	{
-		return ;
-	}
 
 	// prcess interval ;
 	if ( (m_fIntervalKeeper += fTimeElaps) < m_fInterval )
@@ -83,96 +84,120 @@ void CTimer::Update(float fTimeElaps)
 	}
 
 	// invoke funcion ;
-	m_fIntervalKeeper -= m_fInterval ;
-    (m_pDelegate->*m_pTimerFunc)(fTimeElaps,GetTimerID());
+	assert(m_lpFunc != nullptr && "timer func can not be null" ) ;
+	if ( m_lpFunc )
+	{
+		m_lpFunc(this,m_fInterval <= 0.00001 ? fTimeElaps : m_fInterval ) ;
+	}
+
+	if ( m_isAutoRepeat )
+	{
+		m_fIntervalKeeper -= m_fInterval ;
+	}
+	else
+	{
+		canncel() ;
+	}
+}
+
+uint32_t CTimer::getTimerID()
+{
+	return m_nTimeID ;
 }
 
 // timer manager ;
-//CTimerManager* CTimerManager::SharedTimerManager()
-//{
-//	static CTimerManager g_sTimer ;
-//	return &g_sTimer ;
-//}
-
 CTimerManager::CTimerManager()
 {
-	m_vAllTimers.clear() ;
+	m_vRunningTimers.clear() ;
 	m_fTimerScale = 1.0 ;
-	m_vTimerWillRemove.clear() ;
+	m_vWillCanncelTimer.clear() ;
+	m_vWillRunningTimers.clear() ;
+	m_isLocked = false ;
 }
 
 CTimerManager::~CTimerManager()
 {
-	MAP_TIMERS::iterator iter = m_vAllTimers.begin();
-	for ( ; iter != m_vAllTimers.end(); ++iter )
-	{
-		delete iter->second ;
-	}
-	m_vAllTimers.clear() ;
+	m_vRunningTimers.clear() ;
+	m_fTimerScale = 1.0 ;
+	m_vWillCanncelTimer.clear() ;
+	m_vWillRunningTimers.clear() ;
 }
 
-CTimer* CTimerManager::AddTimer(CTimer* pTimer )
+void CTimerManager::startTimer(CTimer* pTimer )
 {
-	if ( pTimer == NULL )return NULL;
-	if ( GetTimer(pTimer->GetTimerID()) != NULL )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("One timer can not be add twice !");
-		return NULL;
-	}
-	if ( pTimer->GetDelegate() )
-	{
-		pTimer->GetDelegate()->SetTimerManager(this) ;
-	}
-	m_vAllTimers[pTimer->GetTimerID()] = pTimer ;
-	return pTimer ;
-}
+	if ( pTimer == nullptr )return;
 
-CTimer* CTimerManager::AddTimer( CTimerDelegate* pDelegate, CTimerDelegate::lpTimerSelector pFunc )
-{
-	CTimer* pTimer = new CTimer(pDelegate,pFunc,0);
-	return AddTimer(pTimer);
-}
-
-void CTimerManager::Update()
-{
-	static clock_t s_clock = clock();
-	unsigned int tClock = clock() - s_clock ;
-	float fSescond = m_fTimerScale * ( (float)tClock / (float)(CLOCKS_PER_SEC)) ;
-	s_clock = clock();
-	MAP_TIMERS::iterator iter = m_vAllTimers.begin();
-	for ( ; iter != m_vAllTimers.end(); ++iter )
+	if ( isLocked() )
 	{
-		CTimer* pTimer = iter->second ;
-		if ( !pTimer || pTimer->IsRuning() == false )
-			continue ;
-		pTimer->Update(fSescond) ;
+		m_vWillRunningTimers.push_back(pTimer) ;
 	}
-	
-	for ( unsigned int i = 0 ; i < m_vTimerWillRemove.size(); ++i )
+	else
 	{
-		MAP_TIMERS::iterator iter = m_vAllTimers.find(m_vTimerWillRemove[i]) ;
-		if ( iter != m_vAllTimers.end() )
+		auto iter = m_vRunningTimers.find(pTimer->getTimerID()) ;
+		assert(iter == m_vRunningTimers.end() && "already running , why run it again why");
+		if ( iter == m_vRunningTimers.end() )
 		{
-			delete iter->second ;
-			m_vAllTimers.erase(iter) ;
+			m_vRunningTimers[pTimer->getTimerID()] = pTimer ;
 		}
 	}
-	m_vTimerWillRemove.clear();
 }
 
-void CTimerManager::RemoveTimer( unsigned int nTimerID )
+void CTimerManager::Update( float fDelta )
 {
-	CTimer* pTimer = GetTimer(nTimerID) ;
-	if ( !pTimer )
+	m_isLocked = true ;
+	for ( auto iter : m_vRunningTimers )
+	{
+		if ( iter.second )
+		{
+			iter.second->Update(fDelta * m_fTimerScale );
+		}
+	}
+	m_isLocked = false ;
+
+	// do remove timers ;
+	for ( auto pCanneclID : m_vWillCanncelTimer )
+	{
+		auto iter = m_vRunningTimers.find(pCanneclID) ;
+		assert(iter != m_vRunningTimers.end() && "not running why , canncel");
+		if ( iter != m_vRunningTimers.end() )
+		{
+			m_vRunningTimers.erase(iter) ;
+		}
+	}
+	m_vWillCanncelTimer.clear() ;
+
+	// do add running 
+	for ( auto prun : m_vWillRunningTimers )
+	{
+		auto iter = m_vRunningTimers.find(prun->getTimerID()) ;
+		assert(iter == m_vRunningTimers.end() && "already running , why run it again");
+		if ( iter == m_vRunningTimers.end() )
+		{
+			m_vRunningTimers[prun->getTimerID()] = prun ;
+		}
+	}
+
+	m_vWillRunningTimers.clear() ;
+}
+
+void CTimerManager::canncelTimer( CTimer* pTimer )
+{
+	if ( pTimer == nullptr )return;
+	auto iter = m_vRunningTimers.find(pTimer->getTimerID()) ;
+	assert(iter != m_vRunningTimers.end() && "not running why , canncel, why ");
+	if ( iter == m_vRunningTimers.end() )
+	{
 		return ;
-	pTimer->Stop();
-	m_vTimerWillRemove.push_back(nTimerID) ;
-}
+	}
 
-CTimer* CTimerManager::GetTimer(unsigned int nTimerID )
-{
-	MAP_TIMERS::iterator iter = m_vAllTimers.find(nTimerID) ;
-	if ( iter != m_vAllTimers.end())
-		return iter->second ;
-	return NULL ;
+	if ( isLocked() )
+	{
+		iter->second = nullptr ;
+		m_vWillCanncelTimer.push_back(pTimer->getTimerID()) ;
+	}
+	else
+	{
+		m_vRunningTimers.erase(iter) ;
+	}
+	
 }

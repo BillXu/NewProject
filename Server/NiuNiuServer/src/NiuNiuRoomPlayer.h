@@ -21,6 +21,7 @@ public:
 	int32_t getGameOffset()override { return m_nGameOffset ; } ;
 	IPeerCard* getPeerCard()override{ return &m_tPeerCard ;};
 	void setGameOffset( int32_t nGameOffset ){ m_nGameOffset = nGameOffset ; }
+	bool isHaveNiu();
 protected:
 	uint8_t m_nTryBankerTimes ;
 	uint8_t m_nBetTimes ;

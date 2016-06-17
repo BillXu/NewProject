@@ -102,6 +102,8 @@
     <ClCompile Include="..\Server\ServerCommon\Sem.cpp" />
     <ClCompile Include="..\Server\ServerCommon\ThreadMod.cpp" />
     <ClCompile Include="src\Client.cpp" />
+    <ClCompile Include="src\cmdCenter.cpp" />
+    <ClCompile Include="src\commonCmdScene.cpp" />
     <ClCompile Include="src\GoldenData.cpp" />
     <ClCompile Include="src\GoldenScene.cpp" />
     <ClCompile Include="src\IScene.cpp" />
@@ -146,6 +148,8 @@
     <ClInclude Include="..\Server\ServerCommon\Sem.h" />
     <ClInclude Include="..\Server\ServerCommon\ThreadMod.h" />
     <ClInclude Include="src\Client.h" />
+    <ClInclude Include="src\cmdCenter.h" />
+    <ClInclude Include="src\commonCmdScene.h" />
     <ClInclude Include="src\GoldenData.h" />
     <ClInclude Include="src\GoldenScene.h" />
     <ClInclude Include="src\IScene.h" />

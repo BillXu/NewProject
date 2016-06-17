@@ -4,6 +4,7 @@
 #include "CommonDefine.h"
 #include "LoginScene.h"
 #include <synchapi.h>
+#include "commonCmdScene.h"
 #define  TIME_FOR_RECONNECT 5
 CClientRobot::CClientRobot()
 {
@@ -29,7 +30,7 @@ CClientRobot::~CClientRobot()
 bool CClientRobot::Init(const char* pIPString, unsigned short nPort )
 {
 	m_pNetWork.SetupNetwork();  
-	m_pCurentScene = new CLoginScene(this);
+	m_pCurentScene = new commonCmdScene(this) ;//new CLoginScene(this);
 	m_pCurentScene->OnEnterScene();
 	m_pNetWork.ConnectToServer(pIPString,nPort,"123456") ;  // inner net ;-
 	//m_pNetWork.ConnectToServer("203.186.75.136",50001,"123456") ;  // Out net ;
@@ -135,6 +136,25 @@ void CClientRobot::processReconnect( float fDelt )
 	}
 }
 
+void CClientRobot::sendMsg(Json::Value& jsMsg , uint16_t nTargetPort )
+{
+	stMsgJsonContent msg ;
+	msg.cSysIdentifer = nTargetPort ;
+	static char pBuffer[2048] ;
+	memset(pBuffer,0,sizeof(pBuffer));
+	Json::StyledWriter jsw ;
+	auto p = jsw.write(jsMsg) ;
+	msg.nJsLen = p.size() ;
+	memcpy(pBuffer,&msg,sizeof(msg));
+	memcpy(pBuffer + sizeof(msg),p.c_str(),msg.nJsLen);
+	sendMsg((stMsg*)pBuffer,sizeof(msg) + msg.nJsLen) ;
+}
+
+void CClientRobot::sendMsg(stMsg* pmsg ,uint16_t nLen )
+{
+	GetNetWork()->SendMsg((char*)pmsg,nLen) ;
+}
+
 bool CClientRobot::OnMessage( Packet* pMsg )
 {
 	stMsg* pmsg = (stMsg*)pMsg->_orgdata ;
@@ -149,6 +169,25 @@ bool CClientRobot::OnMessage( Packet* pMsg )
 		{
 			printf("robot reconnect success \n") ;
 		}
+		return true ;
 	}
-	return false ;
+
+	if ( MSG_JSON_CONTENT == pmsg->usMsgType )
+	{
+		stMsgJsonContent* pret = (stMsgJsonContent*)pmsg ;
+		char* pBuffer = (char*)pmsg ;
+		pBuffer += sizeof(stMsgJsonContent);
+		Json::Reader jsReaer ;
+		Json::Value js ;
+		jsReaer.parse(pBuffer,pBuffer + pret->nJsLen,js,false);
+		return m_pCurentScene->onMessage(js) ;
+	}
+	else
+	{
+		if ( m_pCurentScene->onMessage(pmsg) )
+		{
+			return true ;
+		}
+	}
+	return m_pCurentScene->OnMessage(pMsg) ;
 }

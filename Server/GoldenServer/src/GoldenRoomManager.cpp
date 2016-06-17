@@ -4,25 +4,19 @@
 #include "SystemRoom.h"
 #include "PrivateRoom.h"
 #include "GoldenRoom.h"
-IRoomInterface* CGoldenRoomManager::doCreateInitedRoomObject(uint32_t nRoomID,bool isPrivateRoom , uint16_t nRoomConfigID ,eRoomType reqSubRoomType, Json::Value& vJsValue ) 
+IRoomInterface* CGoldenRoomManager::doCreateInitedRoomObject(uint32_t nRoomID,const Json::Value& vJsValue ) 
 {
-	stSitableRoomConfig* pConfig = (stSitableRoomConfig*)CGoldenServerApp::getInstance()->getRoomConfigMgr()->GetConfigByConfigID(nRoomConfigID) ;
-	if ( pConfig == nullptr )
-	{
-		return nullptr ;
-	}
-
-	IRoomInterface* pRoom = doCreateRoomObject(reqSubRoomType,isPrivateRoom) ;
-	pRoom->onFirstBeCreated(this,pConfig,nRoomID,vJsValue);
+	IRoomInterface* pRoom = doCreateRoomObject(getMgrRoomType(),true) ;
+	pRoom->onFirstBeCreated(this,nRoomID,vJsValue);
 	return pRoom ;
 }
 
 IRoomInterface* CGoldenRoomManager::doCreateRoomObject(eRoomType reqSubRoomType,bool isPrivateRoom)
 {
 	IRoomInterface* pRoom = nullptr ;
-	if ( !isPrivateRoom )
+	if ( 0 )
 	{
-		pRoom = new CSystemRoom<CGoldenRoom> ;
+		//pRoom = new CSystemRoom<CGoldenRoom> ;
 	}
 	else
 	{

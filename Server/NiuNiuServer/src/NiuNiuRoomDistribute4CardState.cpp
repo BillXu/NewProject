@@ -39,5 +39,5 @@ void CNiuNiuRoomDistribute4CardState::enterState(IRoom* pRoom)
 
 void CNiuNiuRoomDistribute4CardState::onStateDuringTimeUp()
 {
-	m_pRoom->goToState(CNiuNiuRoomTryBanker::eStateID) ;
+	m_pRoom->goToState(eRoomState_NN_FinalCard) ;
 }

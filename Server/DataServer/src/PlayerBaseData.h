@@ -16,7 +16,8 @@ public:
 	void Init();
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest, eMsgPort eSenderPort,Json::Value* vJsValue = nullptr );
 	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
-	bool OnMessage( stMsg* pMessage , eMsgPort eSenderPort );
+	bool OnMessage( stMsg* pMessage , eMsgPort eSenderPort )override;
+	bool OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort )override ;
 	void SendBaseDatToClient();
 	void Reset();
 	virtual void OnOtherDoLogined();
@@ -52,9 +53,12 @@ public:
 	void onGetReward( uint8_t nIdx ,uint16_t nRewardID, uint16_t nGameType , const char* nRoomName );
 	ePlayerType getPlayerType(){ return m_ePlayerType ;}
 	void addTodayGameCoinOffset(int32_t nOffset );
+	uint16_t getMaxCanCreateClubCount();
+	uint16_t getMaxCanCreteRoomCount();
 protected:
 	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
 	void onBeInviteBy(uint32_t nInviteUID );
+	void updateCardLife();
 public:
 	friend class CPlayerOnlineBox ;
 protected:

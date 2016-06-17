@@ -9,6 +9,9 @@
 #include "ExchangeCenter.h"
 #include "RobotCenter.h"
 #include "encryptNumber.h"
+#include "Player.h"
+#include "PlayerGameData.h"
+#include "Group.h"
 #ifndef USHORT_MAX
 #define USHORT_MAX 65535 
 #endif
@@ -56,14 +59,17 @@ bool CGameServerApp::init()
 	// init component ;
 	m_pPlayerManager = new CPlayerManager ;
 
-	auto pExc = new CExchangeCenter("../configFile/exchange.txt");
-	registerModule(pExc);
+	//auto pExc = new CExchangeCenter("../configFile/exchange.txt");
+	//registerModule(pExc);
 
 	auto robotC = new CRobotCenter ;
 	registerModule(robotC) ;
 
 	auto pEncryptNumber = new CEncryptNumber();
 	registerModule(pEncryptNumber) ;
+
+	auto group = new CGroup();
+	registerModule(group);
 	
 	time_t tNow = time(NULL) ;
 	m_nCurDay = localtime(&tNow)->tm_mday ;
@@ -92,6 +98,76 @@ bool CGameServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 		return true ;
 	}
 	CLogMgr::SharedLogMgr()->ErrorLog("unprocess msg = %d , from port = %d , nsssionid = %d",prealMsg->usMsgType,eSenderPort,nSessionID ) ;
+	return true ;
+}
+
+bool CGameServerApp::onLogicMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID )
+{
+	if ( IServerApp::onLogicMsg(recvValue,nmsgType,eSenderPort,nSessionID) )
+	{
+		return true ;
+	}
+
+	if ( m_pPlayerManager->OnMessage(recvValue,nmsgType,eSenderPort,nSessionID ) )
+	{
+		return true ;
+	}
+	CLogMgr::SharedLogMgr()->ErrorLog("unprocess msg = %d , from port = %d , nsssionid = %d",nmsgType,eSenderPort,nSessionID ) ;
+	return false ;
+}
+
+bool CGameServerApp::onAsyncRequest(uint16_t nRequestType , const Json::Value& jsReqContent, Json::Value& jsResult )
+{
+	if ( IServerApp::onAsyncRequest(nRequestType,jsReqContent,jsResult) )
+	{
+		return true ;
+	}
+	switch ( nRequestType )
+	{
+	case eAsync_PostDlgNotice:
+		{
+			eNoticeType eType = (eNoticeType)jsReqContent["dlgType"].asUInt() ;
+			uint32_t nTargetUID = jsReqContent["targetUID"].asUInt() ;
+			auto jsArg = jsReqContent["arg"];
+			CPlayerMailComponent::PostDlgNotice(eType,jsArg,nTargetUID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("do async post dlg notice etype = %u ,targetUID = %u",eType,nTargetUID) ;
+		}
+		break ;
+	case eAsync_OnRoomDeleted:
+		{
+			uint32_t nRoomID = jsReqContent["roomID"].asUInt() ;
+			uint32_t nOwnerUID = jsReqContent["ownerUID"].asUInt() ;
+			uint32_t nClubID = jsReqContent["clubID"].asUInt() ;
+
+			if ( nClubID )
+			{
+				auto pg = (CGroup*)getModuleByType(IGlobalModule::eMod_Group );
+				auto pi = pg->getGroupByID(nClubID) ;
+				if ( pi == nullptr )
+				{
+					CLogMgr::SharedLogMgr()->ErrorLog("why clubid = %u is null ",nClubID);
+				}
+				else
+				{
+					pi->removeRoomID(nRoomID) ;
+				}
+			}
+
+			auto pPlayer = GetPlayerMgr()->GetPlayerByUserUID(nOwnerUID);
+			if ( pPlayer )
+			{
+				auto pGameData = (CPlayerGameData*)pPlayer->GetComponent(ePlayerComponent_PlayerGameData);
+				pGameData->deleteOwnRoom(nRoomID) ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("uid = %u not online  so how to do ?") ;
+			}
+		}
+		break ;
+	default:
+		return false ;
+	}
 	return true ;
 }
 

@@ -50,6 +50,7 @@ public:
 	CPlayerManager();
 	~CPlayerManager();
 	bool OnMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID  );
+	bool OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID  );
 	CPlayer* GetPlayerByUserUID( uint32_t nUserUID, bool bInclueOffline = true );
 	CPlayer* GetPlayerBySessionID(uint32_t nSessionID , bool bInclueOffline = false );
 	void Update(float fDeta );

@@ -17,7 +17,7 @@ public:
 public:
 	CSystemRoom();
 	~CSystemRoom();
-	bool onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )override;
+	bool onFirstBeCreated(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue )override;
 	void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	void serializationToDB()override;
 
@@ -39,6 +39,8 @@ public:
 	bool isOmitNewPlayerHalo(IRoom* pRoom )override;
 	void onRankPlayerChanged( uint32_t nUID , uint16_t nPreIdx , uint16_t nCurIdx )override;
 	bool isPlayerLoseReachMax( IRoom* pRoom, uint32_t nUserUID )override;
+
+	int32_t getPlayerOffsetByUID( uint32_t nUserUID )override  ;
 
 	// self method 
 protected:
@@ -133,8 +135,23 @@ CSystemRoom<TR>::~CSystemRoom()
 	}
 }
 
+
 template<class TR >
-bool CSystemRoom<TR>::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )
+int32_t CSystemRoom<TR>::getPlayerOffsetByUID( uint32_t nUserUID )
+{
+	for ( auto ri : m_vSortedRankItems )
+	{
+		if ( ri->nUserUID == nUserUID )
+		{
+			return ri->nGameOffset ;
+		}
+	}
+	return 0 ;
+}
+
+
+template<class TR >
+bool CSystemRoom<TR>::onFirstBeCreated(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue )
 {
 	time_t tNow = time(nullptr) ;
 	m_pConfig = pConfig ;
@@ -183,7 +200,8 @@ bool CSystemRoom<TR>::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* 
 	}
 
 	vJsValue["parentRoomID"] = getRoomID() ;
-
+	CLogMgr::SharedLogMgr()->ErrorLog("temp open 3 count room") ;
+	nSubRoomCnt = 1 ;
 	for ( uint16_t nIdx = 0 ; nIdx < nSubRoomCnt ; ++nIdx )
 	{
 		auto * pRoom = new REAL_ROOM ;
@@ -210,7 +228,9 @@ void CSystemRoom<TR>::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfi
 	m_strName = vJsValue["name"].asString();
 
 	Json::Value arraySubRoom = vJsValue["sub"];
-	for ( uint16_t nIdx = 0 ; nIdx < arraySubRoom.size(); ++nIdx )
+	CLogMgr::SharedLogMgr()->ErrorLog("temp open 3 count room") ;
+	uint8_t nSubRoomCnt = 1 ;
+	for ( uint16_t nIdx = 0 ; nIdx < arraySubRoom.size() && nIdx < nSubRoomCnt; ++nIdx )
 	{
 		Json::Value sbuRoom = arraySubRoom[nIdx] ;
 		sbuRoom["parentRoomID"] = getRoomID() ;
@@ -1078,14 +1098,15 @@ typename CSystemRoom<TR>::REAL_ROOM_PTR CSystemRoom<TR>::getRoomByUID(uint32_t n
 template<class TR >
 typename CSystemRoom<TR>::REAL_ROOM_PTR CSystemRoom<TR>::getRoomForPlayerToEnter(uint8_t nPlayerType )
 {
-	for ( auto pRoom : m_vRooms )
-	{
-		if ( pRoom->getSitDownPlayerCount() < pRoom->getSeatCount() )
-		{
-			return pRoom ;
-		}
-	}
-	return m_vRooms[0] ;
+
+	//for ( auto pRoom : m_vRooms )
+	//{
+	//	if ( pRoom->getSitDownPlayerCount() < pRoom->getSeatCount() )
+	//	{
+	//		return pRoom ;
+	//	}
+	//}
+	return m_vRooms[rand()%m_vRooms.size()] ;
 }
 
 template<class TR >

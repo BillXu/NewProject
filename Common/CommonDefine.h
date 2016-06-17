@@ -58,11 +58,12 @@ enum eRoomType
 	eRoom_Max ,
 };
 
-enum  eVipCardType
+enum eVipCardType
 {
 	eCard_None,
-	eCard_Week,
-	eCard_Month,
+	eCard_LV1,
+	eCard_LV2,
+	eCard_LV3,
 	eCard_Max,
 };
 
@@ -77,7 +78,9 @@ enum ePlayerType
 enum eRoomState
 {
 	eRoomState_None,
+	eRoomState_WaitOpen,
 	eRoomState_Opening,
+	eRoomState_Pasue,
 	eRoomState_Dead,
 	eRoomState_WillDead,
 	eRoomState_TP_Dead = eRoomState_Dead,
@@ -108,6 +111,7 @@ enum eRoomState
 
 	// state for NiuNiu
 	eRoomState_NN_TryBanker,
+	eRoomState_NN_GrabBanker = eRoomState_NN_TryBanker,
 	eRoomState_NN_RandBanker,
 	eRoomState_NN_StartBet,
 	eRoomState_NN_FinalCard,
@@ -139,6 +143,7 @@ enum eRoomState
 static unsigned char s_vChangeCardDimonedNeed[GOLDEN_PEER_CARD] = {0,4,8} ;
 
 
+#define JS_KEY_MSG_TYPE "msgID"
 
 enum eSpeed
 {
@@ -152,6 +157,8 @@ enum eNoticeType
 	eNotice_Text,
 	eNotice_BeInvite, // { targetUID : 2345 , addCoin : 34556 }
 	eNotice_InvitePrize, // { targetUID : 2345 addCoin : 3555 }
+	eNotice_ApplyTakeIn, // { roomID : 235 ,roomName : "hello", applyUID : 234 , takeIn : 23423 }
+	eNotice_ReplyTakeIn, // { roomID : 2345,roomName : "hello" , coin : 235 , isAgree : 0 }  // isAgree : 1 agree , 0 refuse ;
 };
 
 enum eRoomSeat
@@ -300,7 +307,7 @@ enum eRoomLevel
 #define TIME_TAXAS_FILP_CARD 0.2f
 #define TIME_PLAYER_BET_COIN_ANI 0.3f
 #define TIME_BLIND_BET_STATE (TIME_PLAYER_BET_COIN_ANI + 1) 
-#define TIME_TAXAS_BET 10
+#define TIME_TAXAS_BET 15
 #define TIME_TAXAS_WAIT_COIN_GOTO_MAIN_POOL 0.6f
 #define TIME_TAXAS_MAKE_VICE_POOLS 0.8f
 #define TIME_TAXAS_DISTRIBUTE_ONE_HOLD_CARD (TIME_TAXAS_FILP_CARD + 0.2f)
@@ -316,28 +323,16 @@ enum eRoomLevel
 
 // time for niuniu 
 #define TIME_NIUNIU_DISTRIBUTE_4_CARD_PER_PLAYER 1.0f 
-#define TIME_NIUNIU_TRY_BANKER 6.0f
+#define TIME_NIUNIU_TRY_BANKER 15.0f
 #define TIME_NIUNIU_RAND_BANKER_PER_WILL_BANKER 0.7f
 #define TIME_NIUNIU_PLAYER_BET 8.0f
 #define TIME_NIUNIU_DISTRIBUTE_FINAL_CARD_PER_PLAYER 0.3f
 #define TIME_NIUNIU_PLAYER_CACULATE_CARD 8.0f
 #define TIME_NIUNIU_GAME_RESULT_PER_PLAYER 1.0f  //0.8f
-#define TIME_NIUNIU_GAME_RESULT_EXT 2.2f
+#define TIME_NIUNIU_GAME_RESULT_EXT 8.0f
 
 // time for golden
 #define TIME_GOLDEN_DISTRIBUTE_CARD_PER_PLAYER 1.0f 
-
-// baccarat define 
-enum eBaccaratBetPort
-{
-	eBC_BetPort_One,
-	eBC_BetPort_BankerWin = eBC_BetPort_One,
-	eBC_BetPort_IdleWin,
-	eBC_BetPort_TheSame,
-	eBC_BetPort_BankerPair,
-	eBC_BetPort_IdlePair,
-	eBC_BetPort_Max,
-};
 
 #define SETTING_MUSIC_ON "MusicOn"
 #define SETTING_SOUND_ON "SoundOn"

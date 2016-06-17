@@ -1,5 +1,6 @@
 #pragma once
 #include "NetWorkManager.h"
+#include "json/json.h"
 class CClientRobot ;
 enum eSceneType
 {
@@ -22,10 +23,10 @@ public:
 	virtual void OnEnterScene();
 	virtual void OnEixtScene();
 	virtual bool OnMessage( Packet* pPacket ) ;
-	virtual bool OnLostSever(Packet* pPacket );
+	virtual bool onMessage(stMsg* pmsg);
+	virtual bool onMessage(Json::Value& jsContent );
 	virtual void OnUpdate(float fDeltaTime ){};
 	eSceneType GetSceneType(){return m_eSceneType ; }
-	virtual bool OnConnectStateChanged( eConnectState eSate, Packet* pMsg );
 	bool IsRunning(){ return m_bRunning ;}
 	void SendMsg(char* pBuffer , unsigned short nLen ) ;
 	void SendMsg(stMsg* pmsg , unsigned short nLen ){ SendMsg((char*)pmsg,nLen) ;}

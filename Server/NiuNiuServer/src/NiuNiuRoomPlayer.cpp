@@ -79,3 +79,12 @@ void CNiuNiuRoomPlayer::setBetTimes(uint8_t nTimes)
 {
 	m_nBetTimes = nTimes ;
 }
+
+bool CNiuNiuRoomPlayer::isHaveNiu()
+{
+	if ( m_tPeerCard.getType() != CNiuNiuPeerCard::Niu_None )
+	{
+		return true ;
+	}
+	return false ;
+}

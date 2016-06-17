@@ -12,6 +12,7 @@ public:
 		uint32_t nNeedCnt ;
 		uint16_t nRMB ;
 		uint8_t nCoinType ;
+		uint16_t nChannelID ;
 	};
 
 public:

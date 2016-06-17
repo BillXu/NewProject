@@ -136,7 +136,7 @@ bool CNiuNiuPeerCard::isCaculated()
 
 void CNiuNiuPeerCard::caculateCards()
 {
-	assert(m_nAddIdx == ( NIUNIU_HOLD_CARD_COUNT ) && "cards not enough" );
+	//assert(m_nAddIdx == ( NIUNIU_HOLD_CARD_COUNT ) && "cards not enough" );
 	m_eType = Niu_None ;
 	m_nPoint = 0 ;
 	if ( checkFiveSmall())

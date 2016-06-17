@@ -121,9 +121,6 @@
     <ClInclude Include="..\DataServer\src\PlayerMail.h">
       <Filter>src\Player</Filter>
     </ClInclude>
-    <ClInclude Include="..\DataServer\src\PlayerMission.h">
-      <Filter>src\Player</Filter>
-    </ClInclude>
     <ClInclude Include="..\ServerCommon\ISeverApp.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -164,6 +161,12 @@
       <Filter>src\App</Filter>
     </ClInclude>
     <ClInclude Include="..\DataServer\src\encryptNumber.h">
+      <Filter>src\App</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DataServer\src\Group.h">
       <Filter>src\App</Filter>
     </ClInclude>
   </ItemGroup>
@@ -243,9 +246,6 @@
     <ClCompile Include="..\DataServer\src\PlayerMail.cpp">
       <Filter>src\Player</Filter>
     </ClCompile>
-    <ClCompile Include="..\DataServer\src\PlayerMission.cpp">
-      <Filter>src\Player</Filter>
-    </ClCompile>
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -277,6 +277,12 @@
       <Filter>src\App</Filter>
     </ClCompile>
     <ClCompile Include="..\DataServer\src\encryptNumber.cpp">
+      <Filter>src\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\Group.cpp">
       <Filter>src\App</Filter>
     </ClCompile>
   </ItemGroup>

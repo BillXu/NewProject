@@ -1,6 +1,7 @@
 #pragma once
 #include "IRoom.h"
 #include <vector>
+#include "json/json.h"
 struct stSitableRoomConfig ;
 class ISitableRoomPlayer ;
 class CRobotDispatchStrategy ;
@@ -12,7 +13,7 @@ public:
 	typedef std::vector<ISitableRoomPlayer*> VEC_SITDOWN_PLAYERS;
 public:
 	~ISitableRoom();
-	bool onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID , Json::Value& vJsValue) override;
+	bool onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID , const Json::Value& vJsValue) override;
 	void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue )override;
 	void willSerializtionToDB(Json::Value& vOutJsValue)override;
 	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
@@ -35,6 +36,7 @@ public:
 	uint16_t getPlayerCntWithState( uint32_t nState );
 	ISitableRoomPlayer* getSitdownPlayerBySessionID(uint32_t nSessionID);
 	ISitableRoomPlayer* getSitdownPlayerByUID(uint32_t nUserUID );
+	bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID )override;
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
 	virtual  uint32_t coinNeededToSitDown() = 0;
 	void onGameDidEnd()override ;
@@ -50,6 +52,7 @@ public:
 		return nullptr ;
 	}
 	VEC_SITDOWN_PLAYERS::iterator getSortedPlayerEndIter(){ return m_vSortByPeerCardsAsc.end() ; }
+	virtual uint32_t getMaxTakeIn(){ return 999999999 ;};
 protected:
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 private:

@@ -2,7 +2,7 @@
 #include <list>
 #include "NativeTypes.h"
 //#include "RakNetTypes.h"
-#define MAX_VERIFY_STR_LEN 1024*4
+#define MAX_VERIFY_STR_LEN 1024*8
 #define MAX_MI_UID_LEN 30
 enum eVerifiy_Result
 {

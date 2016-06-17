@@ -84,12 +84,17 @@ void IRoom::forcePlayersLeaveRoom()
 	}
 }
 
-bool IRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )
+void IRoom::enumAudientsPlayer(std::function<void (stStandPlayer*)> lpFunc )
+{
+	std::find_if(m_vInRoomPlayers.begin(),m_vInRoomPlayers.end(),[lpFunc](MAP_UID_STAND_PLAYER::value_type& pV)->bool{ lpFunc(pV.second); return false ; }) ;
+}
+
+bool IRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )
 {
 	m_pRoomMgr = pRoomMgr ;
 	m_nRoomID = nRoomID ;
-	m_nDeskFree = pConfig->nDeskFee ;
-	m_fDividFeeRate = pConfig->fDividFeeRate ;
+	m_nDeskFree = 0 ;
+	m_fDividFeeRate = 0 ;
 
 	m_nChatRoomID = 0;
 	m_nTotalProfit = 0 ;
@@ -157,7 +162,7 @@ uint8_t IRoom::canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer )  // retur
 	if ( pp )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("player uid = %d , already in this room, can not enter twice",pEnterRoomPlayer->nUserUID) ;
-		return 1;
+		//return 0;
 	}
 
 	if ( getDelegate() )
@@ -175,6 +180,7 @@ void IRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer ,int8_t& nSubIdx
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("player uid = %d , already in this room, can not enter twice, data svr crashed ?",pEnterRoomPlayer->nUserUID) ;
 		pStandPlayer = pp ;
+		pStandPlayer->nUserSessionID = pEnterRoomPlayer->nUserSessionID;
 	}
 	else
 	{
@@ -205,12 +211,12 @@ bool IRoom::canStartGame()
 		return false ;
 	}
 	// if have any player not robot ?
-	if ( isHaveRealPlayer() )
-	{
-		return true ;
-	}
+	//if ( isHaveRealPlayer() )
+	//{
+	//	return true ;
+	//}
 	//CLogMgr::SharedLogMgr()->PrintLog("room = %u all player are robot so need not start game ",getRoomID());
-	return false ;
+	return true ;
 }
 
 bool IRoom::isHaveRealPlayer()
@@ -223,6 +229,13 @@ bool IRoom::isHaveRealPlayer()
 		}
 	}
 	return false ;
+}
+
+
+bool IRoom::isPlaying()
+{
+	uint32_t nStateID = getCurRoomState()->getStateID(); 
+	return nStateID != eRoomState_WaitJoin;
 }
 
 void IRoom::roomItemDetailVisitor(Json::Value& vOutJsValue)
@@ -359,6 +372,20 @@ void IRoom::sendMsgToPlayer( stMsg* pmsg , uint16_t nLen , uint32_t nSessionID )
 	m_pRoomMgr->sendMsg(pmsg,nLen,nSessionID);
 }
 
+void IRoom::sendRoomMsg( Json::Value& recvValue, uint16_t nMsgID )
+{
+	STAND_PLAYER_ITER iter = m_vInRoomPlayers.begin() ;
+	for ( ; iter != m_vInRoomPlayers.end() ; ++iter )
+	{
+		sendMsgToPlayer(iter->second->nUserSessionID,recvValue,nMsgID) ;
+	}
+}
+
+void IRoom::sendMsgToPlayer( uint32_t nSessionID , Json::Value& recvValue, uint16_t nMsgID  ) 
+{
+	m_pRoomMgr->sendMsg(nSessionID,recvValue,nMsgID) ;
+}
+
 bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
 {
 	if ( m_pCurRoomState && m_pCurRoomState->onMessage(prealMsg,eSenderPort,nPlayerSessionID) )
@@ -434,6 +461,7 @@ void IRoom::goToState(IRoomState* pTargetState )
 	stMsgRoomEnterNewState msgNewState ;
 	msgNewState.m_fStateDuring = m_pCurRoomState->getStateDuring();
 	msgNewState.nNewState = m_pCurRoomState->getStateID();
+	CLogMgr::SharedLogMgr()->PrintLog(" enter to state = %u room id = %u",msgNewState.nNewState,getRoomID()) ;
 	sendRoomMsg(&msgNewState,sizeof(msgNewState)) ;
 }
 

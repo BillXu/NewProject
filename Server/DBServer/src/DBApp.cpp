@@ -78,6 +78,50 @@ bool CDBServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 	return true ;
 }
 
+bool CDBServerApp::OnMessage( Packet* pMsg )
+{
+	CHECK_MSG_SIZE(stMsg,pMsg->_len) ;
+	stMsg* pmsg = (stMsg*)pMsg->_orgdata ;
+	if ( pmsg->cSysIdentifer == ID_MSG_VERIFY )
+	{
+		CLogMgr::SharedLogMgr()->SystemLog("no need recieve verify msg") ;
+		return true ;
+	}
+
+	stMsg* pRet = pmsg;
+	if ( pRet->usMsgType != MSG_TRANSER_DATA )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why msg type is not transfer data , type = %d",pRet->usMsgType ) ;
+		return true;
+	}
+
+	stMsgTransferData* pData = (stMsgTransferData*)pRet ;
+	stMsg* preal = (stMsg*)( pMsg->_orgdata + sizeof(stMsgTransferData));
+
+	// check async request 
+	if ( preal->usMsgType == MSG_ASYNC_REQUEST )
+	{
+		stMsgAsyncRequest* pRet = (stMsgAsyncRequest*)preal ;
+		Json::Value jsReqContent ;
+		if ( pRet->nReqContentLen > 0 )
+		{
+			char* pBuffer = (char*)pRet ;
+			pBuffer += sizeof(stMsgAsyncRequest) ;
+			Json::Reader jsReader ;
+			jsReader.parse(pBuffer,pBuffer + pRet->nReqContentLen,jsReqContent,false);
+		}
+
+		if ( !m_pDBManager->onAsyncRequest(pRet->nReqType,pRet->nReqSerailID,pData->nSenderPort,jsReqContent) )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("async request type = %u , not process from port = %u",pRet->nReqType,pData->nSenderPort) ;
+			assert(0 && "must process the req" );
+		}
+		return true ;
+	}
+
+	return IServerApp::OnMessage(pMsg);
+}
+
 void CDBServerApp::onExit()
 {
 	m_pDBWorkThread->StopWork();

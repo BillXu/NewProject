@@ -67,6 +67,8 @@ void RunFunc ( IServerApp* pApp )
 
 
 //#include "NiuNiuPeerCard.h"
+//#include "AsyncRequestQuene.h"
+//#include <algorithm>
 int main()
 {
 	//CNiuNiuPeerCard tC ;
@@ -92,6 +94,52 @@ int main()
 
 	CNiuNiuServerApp* theApp = CNiuNiuServerApp::getInstance() ;
 	bool bok = theApp->init() ;
+
+	// test begin
+	//std::string str = "delete from taxpokerdb.circletopic where topicID = 0 limit 10" ; ;
+	//auto tt = str.find("delete",1);
+	//std::string strSql = "ADHAGHSDLHG";
+	//std::transform(strSql.begin(), strSql.end(),strSql.begin(), ::tolower);
+	//printf("s : %s",strSql.c_str());
+	//CTimer tTestTimer ;
+	//tTestTimer.setInterval(2);
+	//tTestTimer.setIsAutoRepeat(true) ;
+	//uint8_t nTimes = 0 ;
+	//tTestTimer.setCallBack([&nTimes,theApp,&tTestTimer](CTimer* p , float f)
+	//{
+	//	if ( nTimes > 0 )
+	//	{
+	//		printf("skiped\n");
+	//		tTestTimer.canncel() ;
+	//		return ;
+	//	}
+
+	//	Json::Value jsReqValue ;
+	//	//jsReqValue["sql"] = "insert into taxpokerdb.circletopic(topicID , authorUID,publishTime,content) values(0,23,2345234,'hesllsdgasdg');" ;
+	//	jsReqValue["sql"] = "select * from taxpokerdb.circletopic where topicID = 0 " ;
+	//	//jsReqValue["sql"] = "delete from taxpokerdb.circletopic where topicID = 0 limit 10" ;
+	//	//std::string str = "delete from taxpokerdb.circletopic where topicID = 0 limit 10" ; ;
+	//	//auto tt = str.find_first_of("delete");
+	//	theApp->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Select,jsReqValue,[](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData){
+	//		Json::StyledWriter jsW ;
+	//		auto str = jsW.write(retContent) ;
+	//		printf("ret: %s \n",str.c_str()) ;
+	//		if ( retContent["data"].isNull() )
+	//		{
+	//			printf("ret is null\n") ;
+	//		}
+	//		else
+	//		{
+	//			printf("data have content \n");
+	//		}
+	//	}); 
+
+	//	++nTimes ;
+
+	//}
+	//) ;
+	//tTestTimer.start() ;
+	//// test end
 	if ( !bok )
 	{
 		printf("init data svr error , start up error\n");

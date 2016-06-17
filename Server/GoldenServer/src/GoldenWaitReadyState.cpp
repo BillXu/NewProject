@@ -15,10 +15,10 @@ void IRoomStateWaitReadyState::update(float fDelta )
 		return ;
 	}
 
-	if ( m_pRoom->isHaveRealPlayer() == false )
-	{
-		return ;
-	}
+	//if ( m_pRoom->isHaveRealPlayer() == false )
+	//{
+	//	return ;
+	//}
 
 	bool bStartGame = false ;
 	

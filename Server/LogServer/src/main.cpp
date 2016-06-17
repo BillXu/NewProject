@@ -4,6 +4,7 @@
 #include <iostream>
 #include "ThreadMod.h"
 #pragma comment( lib, "DbgHelp" )
+#pragma comment(lib,"JsonDll.lib")
 //#include "mutex.h"
 //#include <my_global.h>
 //#include "mysql.h"

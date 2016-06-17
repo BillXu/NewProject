@@ -22,6 +22,7 @@
 #include "SeverUtility.h"
 #include "ServerStringTable.h"
 #include "encryptNumber.h"
+#include "Group.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
 #define COIN_BE_INVITED 588
@@ -119,7 +120,7 @@ void CPlayerBaseData::onBeInviteBy(uint32_t nInviteUID )
 
 	// give prize to inviter ;
 	auto player = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(nInviteUID) ;
-	if ( player )
+	if ( player && player->IsState(CPlayer::ePlayerState_Online))
 	{
 		player->GetBaseData()->addInvitePrize(COIN_INVITE_PRIZE);
 
@@ -450,40 +451,95 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				break;
 			}
 
-			if ( pItem->nPrizeType == 1  ) // 0 RMB ,1 diamoned ,2 coin ;
+			if ( 0 == pItem->nPrizeType )
 			{
-				if ( pItem->nPrize > GetAllDiamoned() )
-				{
-					msgBack.nRet = 1 ;
-					msgBack.nDiamoned = GetAllDiamoned();
-					msgBack.nFinalyCoin = GetAllCoin() ;
-					SendMsg(&msgBack,sizeof(msgBack)) ;
-					CLogMgr::SharedLogMgr()->PrintLog("uid = %u buy item diamond is not enough shop id = %u" , GetPlayer()->GetUserUID(),pItem->nShopItemID) ;
-					break;
-				}
-
-				AddMoney(pItem->nCount);
-				decressMoney(pItem->nPrize,true) ;
-
-				msgBack.nDiamoned = GetAllDiamoned();
-				msgBack.nFinalyCoin = GetAllCoin() ;
-				SendMsg(&msgBack,sizeof(msgBack)) ;
-				CLogMgr::SharedLogMgr()->PrintLog("uid = %u buy item ok shop id = %u" , GetPlayer()->GetUserUID(),pItem->nShopItemID) ;
+				stMsgToVerifyServer msgVerify ;
+				msgVerify.nBuyerPlayerUserUID = GetPlayer()->GetUserUID();
+				msgVerify.nBuyForPlayerUserUID = msgVerify.nBuyerPlayerUserUID ;
+				msgVerify.nMiUserUID = pRet->nMiUserUID ;
+				msgVerify.nShopItemID = pRet->nShopItemID ;
+				msgVerify.nTranscationIDLen = pRet->nBufLen ;
+				msgVerify.nChannel = pRet->nChannelID ;
+				CAutoBuffer buffer(sizeof(stMsgPlayerBuyShopItem) + pRet->nBufLen ) ;
+				buffer.addContent(&msgVerify,sizeof(msgVerify));
+				buffer.addContent(((char*)pRet) + sizeof(stMsgPlayerBuyShopItem),pRet->nBufLen);
+				SendMsg((stMsg*)buffer.getBufferPtr(),buffer.getContentSize());
 				break;
 			}
 
-			// else RMB ;
-			stMsgToVerifyServer msgVerify ;
-			msgVerify.nBuyerPlayerUserUID = GetPlayer()->GetUserUID();
-			msgVerify.nBuyForPlayerUserUID = msgVerify.nBuyerPlayerUserUID ;
-			msgVerify.nMiUserUID = pRet->nMiUserUID ;
-			msgVerify.nShopItemID = pRet->nShopItemID ;
-			msgVerify.nTranscationIDLen = pRet->nBufLen ;
-			msgVerify.nChannel = pRet->nChannelID ;
-			CAutoBuffer buffer(sizeof(stMsgPlayerBuyShopItem) + pRet->nBufLen ) ;
-			buffer.addContent(&msgVerify,sizeof(msgVerify));
-			buffer.addContent(((char*)pRet) + sizeof(stMsgPlayerBuyShopItem),pRet->nBufLen);
-			SendMsg((stMsg*)buffer.getBufferPtr(),buffer.getContentSize());
+			 // 0 RMB ,1 diamoned ,2 coin ;
+
+			// do diamond purchase
+			if ( pItem->nPrize > GetAllDiamoned() )
+			{
+				msgBack.nRet = 1 ;
+				msgBack.nDiamoned = GetAllDiamoned();
+				msgBack.nFinalyCoin = GetAllCoin() ;
+				SendMsg(&msgBack,sizeof(msgBack)) ;
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %u buy item diamond is not enough shop id = %u" , GetPlayer()->GetUserUID(),pItem->nShopItemID) ;
+				break;
+			}
+
+			if ( pRet->nShopItemID == 16 )
+			{
+				CLogMgr::SharedLogMgr()->SystemLog("uid = %d buy a vip card month card ",GetPlayer()->GetUserUID()) ;
+				updateCardLife();
+				if ( eCard_LV1 == m_stBaseData.nCardType )
+				{
+					m_stBaseData.nCardEndTime = m_stBaseData.nCardEndTime + 60 * 60 * 24 * 31;
+				}
+				else if ( eCard_LV1 < m_stBaseData.nCardType )
+				{
+					msgBack.nRet = 6 ;
+					msgBack.nDiamoned = GetAllDiamoned();
+					msgBack.nFinalyCoin = GetAllCoin() ;
+					SendMsg(&msgBack,sizeof(msgBack)) ;
+					CLogMgr::SharedLogMgr()->PrintLog("uid = %u buy item eCard_LV1 < m_stBaseData.nCardType shop id = %u" , GetPlayer()->GetUserUID(),pItem->nShopItemID) ;
+					break;
+				}
+				else
+				{
+					m_stBaseData.nCardEndTime = time(nullptr) + 60 * 60 * 24 * 31;
+				}
+
+				m_stBaseData.nCardType = eCard_LV1 ;
+				m_bCommonLogicDataDirty = true ;
+			}
+			else if ( 17 == pRet->nShopItemID )
+			{
+				CLogMgr::SharedLogMgr()->SystemLog("uid = %d buy a vip card month card ",GetPlayer()->GetUserUID()) ;
+				updateCardLife();
+				if ( eCard_LV2 == m_stBaseData.nCardType )
+				{
+					m_stBaseData.nCardEndTime = m_stBaseData.nCardEndTime + 60 * 60 * 24 * 31;
+				}
+				else if ( eCard_LV2 < m_stBaseData.nCardType )
+				{
+					msgBack.nRet = 6 ;
+					msgBack.nDiamoned = GetAllDiamoned();
+					msgBack.nFinalyCoin = GetAllCoin() ;
+					SendMsg(&msgBack,sizeof(msgBack)) ;
+					CLogMgr::SharedLogMgr()->PrintLog("uid = %u buy item eCard_LV2 < m_stBaseData.nCardType shop id = %u" , GetPlayer()->GetUserUID(),pItem->nShopItemID) ;
+					break;
+				}
+				else
+				{
+					m_stBaseData.nCardEndTime = time(nullptr) + 60 * 60 * 24 * 31;
+				}
+				m_stBaseData.nCardType = eCard_LV2 ;
+				m_bCommonLogicDataDirty = true ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("player uid = %u buy coin use diamond",GetPlayer()->GetUserUID());
+				AddMoney(pItem->nCount);
+			}
+			decressMoney(pItem->nPrize,true) ;
+			msgBack.nDiamoned = GetAllDiamoned();
+			msgBack.nFinalyCoin = GetAllCoin() ;
+			SendMsg(&msgBack,sizeof(msgBack)) ;
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %u buy item ok shop id = %u" , GetPlayer()->GetUserUID(),pItem->nShopItemID) ;
+			break;
 		}
 		break;
 	case MSG_VERIFY_TANSACTION:
@@ -497,14 +553,6 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			msgBack.nRet = 0 ;
 			if ( pRet->nRet == 4 ) // success 
 			{
-				if ( pRet->nShopItemID == 6 )
-				{
-					CLogMgr::SharedLogMgr()->SystemLog("uid = %d buy a vip card week card ",GetPlayer()->GetUserUID()) ;
-					m_stBaseData.nCardEndTime = time(nullptr) + 60 * 60 * 24 * 8;
-					m_stBaseData.nCardType = eCard_Week ;
-					m_bCommonLogicDataDirty = true ;
-				}
-				else
 				{
 					CShopConfigMgr* pMgr = (CShopConfigMgr*)CGameServerApp::SharedGameServerApp()->GetConfigMgr()->GetConfig(CConfigManager::eConfig_Shop);
 					stShopItem* pItem = pMgr->GetShopItem(pRet->nShopItemID);
@@ -808,6 +856,66 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 	return true ;
 }
 
+bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort )
+{
+	switch ( nmsgType )
+	{
+	case MSG_CREATE_CLUB:
+		{
+			auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
+			uint16_t nOwnClubCnt = pg->getClubCntByUserUID(GetPlayer()->GetUserUID());
+			uint16_t nMaxCanCreate = getMaxCanCreateClubCount() ;
+
+			Json::Value jsMsgBack ;
+			jsMsgBack["newClubID"] = recvValue["newClubID"].asUInt() ;
+			if ( nOwnClubCnt >= nMaxCanCreate )
+			{
+				jsMsgBack["ret"] = 1 ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
+				return true ;
+			}
+			jsMsgBack["ret"] = 0 ;
+			stGroupItem* pItem = new stGroupItem ;
+			pItem->nCityCode = recvValue["cityCode"].asUInt() ;
+			pItem->nCreaterUID = GetPlayer()->GetUserUID() ;
+			pItem->nGroupID = recvValue["newClubID"].asUInt() ;
+			pg->addGroup(pItem) ;
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u create new club id = %u city code = %u",GetPlayer()->GetUserUID(),pItem->nGroupID,pItem->nCityCode) ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
+		}
+		break ;
+	case MSG_DISMISS_CLUB:
+		{
+			uint32_t nClubID = recvValue["clubID"].asUInt() ;
+			auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
+			auto pClub = pg->getGroupByID(nClubID) ;
+
+			Json::Value jsMsgBack ;
+			jsMsgBack["ret"] = 0 ;
+			if ( pClub == nullptr || pClub->nCreaterUID != GetPlayer()->GetUserUID() )
+			{
+				jsMsgBack["ret"] = 1 ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
+				return true ;
+			}
+
+			if ( pClub->isRoomKeepRunning() )
+			{
+				jsMsgBack["ret"] = 2 ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
+				return true ;
+			}
+			pg->dismissGroup(nClubID) ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u dismiss club id = %u",GetPlayer()->GetUserUID(),nClubID) ;
+		}
+		break ;
+	default:
+		return false;
+	}
+	return true ;
+}
+
 bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eMsgPort eSenderPort,Json::Value* vJsValue )
 {
 	if ( IPlayerComponent::onCrossServerRequest(pRequest,eSenderPort,vJsValue) )
@@ -939,6 +1047,7 @@ void CPlayerBaseData::SendBaseDatToClient()
 {
 	if ( nReadingDataFromDB == 2 )
 	{
+		updateCardLife() ;
 		stMsgPlayerBaseData msg ;
 		memcpy(&msg.stBaseData,&m_stBaseData,sizeof(msg.stBaseData));
 		msg.nSessionID = GetPlayer()->GetSessionID() ;
@@ -1207,7 +1316,7 @@ void CPlayerBaseData::GetPlayerBrifData(stPlayerBrifData* pData )
 	}
 	memcpy(pData,&m_stBaseData,sizeof(stPlayerBrifData));
 	auto pGameData = (CPlayerGameData*)GetPlayer()->GetComponent(ePlayerComponent_PlayerGameData);
-	pData->nCurrentRoomID = pGameData->getCurRoomID() * 10 + pGameData->getCurRoomType();
+	pData->nCurrentRoomID = pGameData->getCurRoomID();
 }
 
 void CPlayerBaseData::GetPlayerDetailData(stPlayerDetailData* pData )
@@ -1387,6 +1496,50 @@ void CPlayerBaseData::addTodayGameCoinOffset(int32_t nOffset )
 	m_stBaseData.nTodayGameCoinOffset += nOffset ; 
 	this->m_bCommonLogicDataDirty = true ; 
 	CLogMgr::SharedLogMgr()->PrintLog("update game coin offset uid = %u , today offset = %I64d, total = %d , offset = %d",GetPlayer()->GetUserUID(),m_stBaseData.nTodayGameCoinOffset,m_stBaseData.nTotalGameCoinOffset,nOffset);
+}
+
+void CPlayerBaseData::updateCardLife()
+{
+	if ( eVipCardType::eCard_None != m_stBaseData.nCardType && time(nullptr) > m_stBaseData.nCardEndTime )
+	{
+		m_stBaseData.nCardEndTime = 0 ;
+		m_stBaseData.nCardType = eVipCardType::eCard_None ;
+		m_bCommonLogicDataDirty = true ;
+	}
+}
+
+uint16_t CPlayerBaseData::getMaxCanCreteRoomCount()
+{
+	updateCardLife() ;
+	if ( eVipCardType::eCard_LV1 == m_stBaseData.nCardType )
+	{
+		return 3 ;
+	}
+
+	if ( eVipCardType::eCard_LV2 == m_stBaseData.nCardType )
+	{
+		return 5 ;
+	}
+
+	return 1 ;
+
+}
+
+uint16_t CPlayerBaseData::getMaxCanCreateClubCount()
+{
+	//CLogMgr::SharedLogMgr()->ErrorLog("temp set max can create club count = 2") ;
+	updateCardLife() ;
+	if ( eVipCardType::eCard_LV1 == m_stBaseData.nCardType )
+	{
+		return 3 ;
+	}
+
+	if ( eVipCardType::eCard_LV2 == m_stBaseData.nCardType )
+	{
+		return 5 ;
+	}
+
+	return 1 ;
 }
 
 

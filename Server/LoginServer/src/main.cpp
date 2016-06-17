@@ -4,6 +4,7 @@
 #include <WinDef.h>
 #include <Dbghelp.h>
 #pragma comment( lib, "DbgHelp" )
+#pragma comment(lib,"JsonDll.lib")
 CLoginApp* pTheApp = NULL ;
 BOOL WINAPI ConsoleHandler(DWORD msgType)
 {    

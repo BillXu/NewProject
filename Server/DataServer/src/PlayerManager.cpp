@@ -294,6 +294,31 @@ bool CPlayerManager::OnMessage( stMsg* pMessage , eMsgPort eSenderPort , uint32_
 	return false ;
 }
 
+bool CPlayerManager::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID  )
+{
+	CPlayer* pTargetPlayer = GetPlayerBySessionID(nSessionID,true );
+	if ( pTargetPlayer && pTargetPlayer->OnMessage(recvValue,nmsgType,eSenderPort ) )
+	{
+		if (pTargetPlayer->IsState(CPlayer::ePlayerState_Offline) )
+		{
+			pTargetPlayer->OnTimerSave(0,0);
+		}
+		return true  ;
+	}
+	else
+	{
+		if (pTargetPlayer == NULL )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("can not find session id = %d to process msg id = %d ,from = %d",nSessionID,nmsgType,eSenderPort) ;
+		}
+		else
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog( "unprocess msg for player uid = %d , msg = %d ,from %d ",pTargetPlayer->GetUserUID(),nmsgType,eSenderPort ) ;
+		}
+	}
+	return false ;
+}
+
 bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID  )
 {
 	switch ( prealMsg->usMsgType )
@@ -373,7 +398,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 		{
 			stMsgSyncPrivateRoomResult* pRet = (stMsgSyncPrivateRoomResult*)prealMsg ;
 			CPlayer* pp = GetPlayerByUserUID(pRet->nTargetPlayerUID) ;
-			if (!pp)
+			if (!pp || pp->IsState(CPlayer::ePlayerState_Online) == false )
 			{
 				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not process MSG_SYNC_PRIVATE_ROOM_RESULT ",pRet->nTargetPlayerUID);
 				Json::Value jsArg ;
@@ -382,10 +407,9 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				jsArg["finalCoin"] = pRet->nFinalCoin ;
 				jsArg["offset"] = pRet->nOffset ;
 				jsArg["roomID"] = pRet->nRoomID ;
-				jsArg["roomType"] = pRet->nRoomType ;
 				jsArg["finishTime"] = (uint32_t)time(nullptr);
 				jsArg["buyIn"] = pRet->nBuyIn ;
-				jsArg["configID"] = pRet->nConfigID ;
+				jsArg["baseBet"] = pRet->nBaseBet ;
 				CPlayerMailComponent::PostOfflineEvent(CPlayerMailComponent::Event_SyncGameResult,jsArg,pRet->nTargetPlayerUID);
 			}
 			else
@@ -782,7 +806,7 @@ bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eM
 			uint32_t nUID = item["userUID"].asInt() ;
 			uint16_t nRewardID = item["rewardID"].asInt() ;
 			CPlayer* pp = GetPlayerByUserUID(nUID) ;
-			if ( pp )
+			if ( pp && pp->IsState(CPlayer::ePlayerState_Online) )
 			{
 				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , get reward id = %u ",nUID,nRewardID ) ;
 				pp->GetBaseData()->onGetReward(nIdx,nRewardID,(uint16_t)pRequest->vArg[0],pName) ;

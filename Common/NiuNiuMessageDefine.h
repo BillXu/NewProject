@@ -88,7 +88,7 @@ struct stMsgNNPlayerTryBankerRet
 	:public stMsg
 {
 	stMsgNNPlayerTryBankerRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_NN_PLAYER_TRY_BANKER ;  }
-	uint8_t nRet ; // 0 success , 1 state error , 2 coin not enough , 3 , you are not sit down ;
+	uint8_t nRet ; // 0 success , 1 state error , 2 coin not enough , 3 , you are not sit down ; 4 already grabed banker ;
 };
 
 
@@ -127,7 +127,7 @@ struct stMsgNNPlayerBetRet
 	:public stMsg
 {
 	stMsgNNPlayerBetRet(){ usMsgType = MSG_NN_PLAYER_BET ; cSysIdentifer = ID_MSG_PORT_CLIENT ; }
-	uint8_t nRet ; // 0 success , 1 banker coin not enough , 2 self coin not enough , 3 state error;
+	uint8_t nRet ; // 0 success , 1 banker coin not enough , 2 self coin not enough , 3 state error; 4 don't bet twice ;
 };
 
 struct stMsgNNBet

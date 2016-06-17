@@ -25,7 +25,7 @@ CTaxasRoom::CTaxasRoom()
 	m_nBigBlindIdx = 0;
 	m_nCurWaitPlayerActionIdx = -1 ;
 	m_nCurMainBetPool  = 0 ;
-	uint64_t  m_nMostBetCoinThisRound = 0 ;
+	m_nMostBetCoinThisRound = 0 ;
 	memset(m_vPublicCardNums,0,sizeof(m_vPublicCardNums)) ;
 	m_nPublicCardRound = 0 ;
 	for ( auto& pool : m_vAllVicePools )
@@ -46,13 +46,14 @@ uint8_t CTaxasRoom::getRoomType()
 	return eRoom_TexasPoker ;
 }
 
-bool CTaxasRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue )
+bool CTaxasRoom::onFirstBeCreated(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue )
 {
-	stTaxasRoomConfig* pRoomConfig = (stTaxasRoomConfig*)pConfig ;
-	m_nLittleBlind = (uint32_t)(pRoomConfig->nBigBlind * 0.5f );
-	m_nMinTakeIn = pRoomConfig->nMiniTakeInCoin ;
-	m_nMaxTakeIn = pRoomConfig->nMaxTakeInCoin;
-	ISitableRoom::onFirstBeCreated(pRoomMgr,pConfig,nRoomID,vJsValue) ;
+	m_nLittleBlind = vJsValue["baseBet"].asUInt();
+	m_nMinTakeIn = vJsValue["baseTakeIn"].asUInt() ;
+	Json::Value jsOpt = vJsValue["opts"];
+	assert(jsOpt.isNull() == false && "taxas opts is null");
+	m_nMaxTakeIn = jsOpt["maxTakeIn"].asUInt();
+	ISitableRoom::onFirstBeCreated(pRoomMgr,nRoomID,vJsValue) ;
 	return true ;
 }
 
@@ -60,8 +61,8 @@ void CTaxasRoom::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pC
 {
 	stTaxasRoomConfig* pRoomConfig = (stTaxasRoomConfig*)pConfig ;
 	m_nLittleBlind = (uint32_t)(pRoomConfig->nBigBlind * 0.5f );
-	m_nMinTakeIn = pRoomConfig->nMiniTakeInCoin ;
-	m_nMaxTakeIn = pRoomConfig->nMaxTakeInCoin;
+	//m_nMinTakeIn = pRoomConfig->nMiniTakeInCoin ;
+	//m_nMaxTakeIn = pRoomConfig->nMaxTakeInCoin;
 	ISitableRoom::serializationFromDB(pRoomMgr,pConfig,nRoomID,vJsValue) ;
 }
 
@@ -158,12 +159,14 @@ ISitableRoomPlayer* CTaxasRoom::doCreateSitableRoomPlayer()
 
 uint32_t CTaxasRoom::coinNeededToSitDown()
 {
-	if ( m_nLittleBlind*20 > m_nMinTakeIn )
-	{
-		return m_nLittleBlind*20 ;
-	}
+	return m_nLittleBlind*2 ;
 
-	return m_nMinTakeIn ;
+	//if ( m_nLittleBlind*2 > m_nMinTakeIn )
+	//{
+	//	return m_nLittleBlind*20 ;
+	//}
+
+	//return m_nMinTakeIn ;
 }
 
 void CTaxasRoom::prepareCards()
@@ -938,7 +941,6 @@ void CTaxasRoom::CaculateVicePool(stVicePool& pPool )
 void CTaxasRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 {
 	vOutJsValue["litBlind"] = m_nLittleBlind;
-	vOutJsValue["minTakIn"] = m_nMinTakeIn;
 	vOutJsValue["maxTakIn"] = m_nMaxTakeIn;
 	vOutJsValue["bankIdx"] = m_nBankerIdx;
 	vOutJsValue["litBlindIdx"] = m_nLittleBlindIdx;

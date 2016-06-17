@@ -23,10 +23,10 @@ CGoldenRoom::CGoldenRoom()
 	getPoker()->InitTaxasPoker() ;
 }
 
-bool CGoldenRoom::onFirstBeCreated(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig, uint32_t nRoomID , Json::Value& vJsValue)
+bool CGoldenRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID , const Json::Value& vJsValue)
 {
-	ISitableRoom::onFirstBeCreated(pRoomMgr,pConfig,nRoomID,vJsValue) ;
-	m_nBaseBet = ((stNiuNiuRoomConfig*)pConfig)->nBaseBet;
+	ISitableRoom::onFirstBeCreated(pRoomMgr,nRoomID,vJsValue) ;
+	m_nBaseBet = vJsValue["baseBet"].asUInt();
 
 	return true ;
 }

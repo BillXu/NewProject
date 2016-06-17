@@ -10,11 +10,11 @@ void CNiuNiuRoomGameResultState::enterState(IRoom* pRoom)
 	CLogMgr::SharedLogMgr()->PrintLog("room id = %d game result ",pRoom->getRoomID()) ;
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
 	m_pRoom->caculateGameResult() ;
-
+	m_pRoom->onGameDidEnd();
 	setStateDuringTime(TIME_NIUNIU_GAME_RESULT_PER_PLAYER * m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) + TIME_NIUNIU_GAME_RESULT_EXT ) ;
 }
 
 void CNiuNiuRoomGameResultState::onStateDuringTimeUp()
 {
-	m_pRoom->goToState(eRoomState_DidGameOver) ;
+	m_pRoom->goToState(eRoomState_WaitJoin) ;
 }

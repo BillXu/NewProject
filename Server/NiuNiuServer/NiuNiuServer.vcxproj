@@ -102,6 +102,7 @@
     <ClInclude Include="..\..\Common\NiuNiuPeerCard.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\httpRequest.h" />
     <ClInclude Include="..\ServerCommon\IGlobalModule.h" />
@@ -126,6 +127,7 @@
     <ClInclude Include="..\ServerCommon\ISitableRoom.h" />
     <ClInclude Include="..\ServerCommon\SystemRoom.h" />
     <ClInclude Include="..\ServerCommon\Timer.h" />
+    <ClInclude Include="src\NiuNiuGrabBanker.h" />
     <ClInclude Include="src\NiuNiuRoom.h" />
     <ClInclude Include="src\NiuNiuRoomBetState.h" />
     <ClInclude Include="src\NiuNiuRoomDistribute4CardState.h" />
@@ -137,6 +139,7 @@
     <ClInclude Include="src\NiuNiuRoomRandBankerState.h" />
     <ClInclude Include="src\NiuNiuRoomTryBankerState.h" />
     <ClInclude Include="src\NiuNiuServer.h" />
+    <ClInclude Include="src\NiuNiuWaitStartGame.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\CardPoker.cpp" />
@@ -146,6 +149,7 @@
     <ClCompile Include="..\..\Common\NiuNiuPeerCard.cpp" />
     <ClCompile Include="..\..\Common\RoomConfig.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp" />
     <ClCompile Include="..\ServerCommon\httpRequest.cpp" />
     <ClCompile Include="..\ServerCommon\IRoom.cpp" />
     <ClCompile Include="..\ServerCommon\IRoomDelegate.cpp" />
@@ -161,9 +165,9 @@
     <ClCompile Include="..\ServerCommon\ISitableRoom.cpp" />
     <ClCompile Include="..\ServerCommon\ServerStringTable.cpp" />
     <ClCompile Include="..\ServerCommon\SeverUtility.cpp" />
-    <ClCompile Include="..\ServerCommon\SystemRoom.cpp" />
     <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\NiuNiuGrabBanker.cpp" />
     <ClCompile Include="src\NiuNiuRoom.cpp" />
     <ClCompile Include="src\NiuNiuRoomBetState.cpp" />
     <ClCompile Include="src\NiuNiuRoomDistribute4CardState.cpp" />
@@ -175,6 +179,7 @@
     <ClCompile Include="src\NiuNiuRoomTryBankerState.cpp" />
     <ClCompile Include="src\NiuNiuServer.cpp" />
     <ClCompile Include="src\NiuNiuRoomDistributeFinalCardState.cpp" />
+    <ClCompile Include="src\NiuNiuWaitStartGame.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

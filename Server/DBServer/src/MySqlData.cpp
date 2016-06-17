@@ -1,5 +1,5 @@
 #include "MySqlData.h"
-
+#include <algorithm>
 unsigned int stMysqlField::IntValue()
 { 
 	return strtol(pBuffer,(char**)NULL,10) ; 
@@ -110,6 +110,41 @@ stMysqlField* CMysqlRow::GetFiledByName( const char* pFiledName )
 		}
 	}
 	return NULL ;
+}
+
+void CMysqlRow::toJsValue(Json::Value& jsValue )
+{
+	std::find_if(m_vField.begin(),m_vField.end(),[&jsValue]( stMysqlField* pFiled )->bool
+	{
+		if ( pFiled == nullptr )
+		{
+			printf("why have an empty filed ?") ;
+			return false ;
+		}
+
+		switch (pFiled->nValueType )
+		{
+		case eValue_Float:
+			{
+				jsValue[pFiled->strFieldName] = pFiled->FloatValue() ;
+			}
+			break;
+		case eValue_Int:
+			{
+				jsValue[pFiled->strFieldName] = pFiled->IntValue() ;
+			}
+			break;
+		case eValue_String:
+			{
+				jsValue[pFiled->strFieldName] = pFiled->CStringValue() ;
+			}
+			break;
+		default:
+			printf("for fied = %s , unknown type",pFiled->strFieldName.c_str()) ;
+			return false;
+		}
+		return false ;
+	});
 }
 
 stMysqlField* CMysqlRow::operator[](const char* pFieldname )

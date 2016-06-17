@@ -198,6 +198,7 @@ void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort , ui
 		}
 
 		// transer dat to center svr  ;
+		CLogMgr::SharedLogMgr()->PrintLog("tell data svr disconnected event ") ;
 		Packet tPacket ;
 		tPacket._brocast = false ;
 		if ( pClient )

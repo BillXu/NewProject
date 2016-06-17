@@ -69,6 +69,32 @@ struct stMsgGetMaxRoomIDRet
 	uint32_t nMaxRoomID ; 
 };
 
+struct stMsgAsyncRequest
+	:public stMsg
+{
+	stMsgAsyncRequest(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_ASYNC_REQUEST ;}
+	uint16_t nReqType ;
+	uint32_t nReqSerailID ;
+	uint16_t nReqContentLen ;
+	PLACE_HOLDER(char* jsReqContentLen);
+};
+
+struct stMsgAsyncRequestRet
+	:public stMsg
+{
+	stMsgAsyncRequestRet(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_ASYNC_REQUEST_RESULT ;}
+	uint32_t nReqSerailID ;
+	uint16_t nResultContentLen ;
+	PLACE_HOLDER(char* jsResultContentLen);
+};
+
+struct stMsgSyncClientNetState
+	:public stMsg
+{
+	stMsgSyncClientNetState(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CLIENT_NET_STATE ; }
+	uint8_t nState ; // 0 waiting for reconnected , 1 reconnected success ;
+};
+
 // sysn private room data 
 struct stMsgSyncPrivateRoomResult
 	:public stMsg
@@ -76,13 +102,12 @@ struct stMsgSyncPrivateRoomResult
 	stMsgSyncPrivateRoomResult(){ cSysIdentifer = ID_MSG_PORT_DATA ;  usMsgType = MSG_SYNC_PRIVATE_ROOM_RESULT ; }
 	uint32_t nTargetPlayerUID ;
 	uint32_t nRoomID ;
-	uint8_t nRoomType ;
 	uint32_t nFinalCoin ;
 	uint32_t nBuyIn ;
 	int32_t nOffset ;
 	uint32_t nDuringTimeSeconds ;
 	uint32_t nCreatorUID ;
-	uint16_t nConfigID ;
+	uint32_t nBaseBet ;
 };
 
 struct stMsgSaveGameResult
@@ -136,7 +161,7 @@ struct stMsgSavePlayerGameRecorder
 	int32_t nOffset ;
 	uint32_t nUserUID ;
 	uint32_t nBuyIn ;
-	uint16_t nConfigID ;
+	uint32_t nBaseBet ;
 };
 
 struct stMsgReadPlayerGameRecorder
@@ -153,12 +178,11 @@ struct stMsgReadPlayerGameRecorderRet
 	bool isFinal ;
 	uint32_t nRoomID ;
 	uint32_t nCreateUID ;
-	uint8_t nRoomType ;
 	uint32_t nFinishTime ;
 	uint32_t nDuiringSeconds ;
 	int32_t nOffset ;
 	uint32_t nBuyIn ;
-	uint16_t nConfigID ;
+	uint32_t nBaseBet ;
 };
 
 
@@ -633,8 +657,7 @@ struct stMsgSvrEnterRoom
 	:public stMsg
 {
 	stMsgSvrEnterRoom(){ cSysIdentifer = ID_MSG_PORT_NIU_NIU ; usMsgType = MSG_SVR_ENTER_ROOM ; }
-	uint8_t nGameType ;
-	uint8_t nRoomID ;
+	uint32_t nRoomID ;
 	int8_t nSubIdx ;  // -1 means sys decide ;
 	stEnterRoomData tPlayerData ;
 };
@@ -971,6 +994,7 @@ struct stMsgSaveEncryptNumber
 	uint16_t nRMB ;
 	uint8_t nNumberType ;   // 1 new player , 2 newMal ; 
 	uint8_t nCoinType ; // 1 coin£¬0 diamond
+	uint16_t nChannelID ;
 };
 
 struct stMsgSaveEncryptNumberRet

@@ -38,9 +38,11 @@ public:
 	void init( IServerApp* svrApp )override; 
 	uint16_t getModuleType(){ return IGlobalModule::eMod_RoomMgr ;}
 	bool onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)override;
+	bool onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID)override ;
 	virtual bool onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID);
 	IRoomInterface* GetRoomByID(uint32_t nRoomID );
 	void sendMsg(stMsg* pmsg, uint32_t nLen , uint32_t nSessionID ) ;
+	bool sendMsg( uint32_t nSessionID , Json::Value& recvValue, uint16_t nMsgID = 0 ,uint8_t nTargetPort = ID_MSG_PORT_CLIENT );
 	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg);
 	void update(float fDeta )override;
 	void onTimeSave()override;
@@ -48,11 +50,11 @@ public:
 	bool reqeustChatRoomID(IRoom* pRoom);
 	void deleteRoomChatID(uint32_t nChatID );
 	void addPrivateRoomRecorder( stPrivateRoomRecorder* pRecorder, bool isSaveDB = true );
+	bool onAsyncRequest(uint16_t nRequestType , const Json::Value& jsReqContent, Json::Value& jsResult )override ;
 protected:
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
-	virtual bool onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult,Json::Value* vJsValue = nullptr );
 	virtual IRoomInterface* doCreateRoomObject( eRoomType cRoomType,bool isPrivateRoom ) = 0 ;
-	virtual IRoomInterface* doCreateInitedRoomObject(uint32_t nRoomID , bool isPrivateRoom, uint16_t nRoomConfigID ,eRoomType reqSubRoomType, Json::Value& vJsValue) = 0 ;
+	virtual IRoomInterface* doCreateInitedRoomObject(uint32_t nRoomID,const Json::Value& vJsValue) = 0 ;
 	void addRoomToCreator(uint32_t nOwnerUID ,IRoomInterface* pRoom);
 	bool getRoomCreatorRooms(uint32_t nCreatorUID,LIST_ROOM& vInfo );
 	void removeRoom(IRoomInterface* pRoom );

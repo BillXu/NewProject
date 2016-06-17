@@ -7,6 +7,7 @@
 #include "DataBaseThread.h"
 #include "AutoBuffer.h"
 #include "json/json.h"
+#include <algorithm>
 #define PLAYER_BRIF_DATA "playerName,userUID,sex,vipLevel,photoID,coin,diamond"
 #define PLAYER_BRIF_DATA_DETAIL_EXT ",signature,singleWinMost,mostCoinEver,vUploadedPic,winTimes,loseTimes,longitude,latitude,offlineTime,maxCard,vJoinedClubID"
 CDBManager::CDBManager(CDBServerApp* theApp )
@@ -40,6 +41,102 @@ void CDBManager::Init()
 	//pRequest->pUserData = NULL;
 	//pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"(select max(Account.UserUID) FROM Account)") ;
 	//CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+}
+
+static const uint32_t nAsyncReq = -1 ;
+bool CDBManager::onAsyncRequest(uint32_t nReqType ,uint32_t nSerialNum, uint8_t nSrcPort,Json::Value jsReqContent )
+{
+	if ( jsReqContent["sql"].isNull() )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("sql is null reqType = %u, from srcPort = %u, serialNum = %u",nReqType,nSrcPort,nSerialNum) ;
+		return false ;
+	}
+#ifdef _DEBUG
+	std::string strSql = jsReqContent["sql"].asString() ;
+	std::transform(strSql.begin(), strSql.end(),strSql.begin(), ::tolower);
+	eDBRequestType nDBTypeGuess = eRequestType_Max  ;
+	// check selectType 
+	if ( strSql.find("select") < 10 || strSql.find("call") < 10 )
+	{
+		nDBTypeGuess = eRequestType_Select ;
+	}
+	else if ( strSql.find("update") < 10 ) 
+	{
+		nDBTypeGuess = eRequestType_Update ;
+	}
+	else if ( strSql.find("delete") < 10 ) 
+	{
+		nDBTypeGuess = eRequestType_Delete ;
+	}
+	else if ( strSql.find("insert") < 10 )
+	{
+		nDBTypeGuess = eRequestType_Add ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("can not tell from sql , what req type : sql = %s",strSql.c_str()) ;
+	}
+#endif
+
+	eDBRequestType nDBType = eRequestType_Select ;
+	switch ( nReqType )
+	{
+	case eAsync_DB_Select:
+		{
+			nDBType = eRequestType_Select ; 
+		}
+		break;
+	case eAsync_DB_Update:
+		{
+			nDBType = eRequestType_Update;
+		}
+		break;
+	case eAsync_DB_Add:
+		{
+			nDBType = eRequestType_Add ;
+		}
+		break ;
+	case eAsync_Db_Delete:
+		{
+			nDBType = eRequestType_Delete ;
+		}
+		break;
+	default:
+		CLogMgr::SharedLogMgr()->PrintLog("unknown reqType = %u, from srcPort = %u, serialNum = %u",nReqType,nSrcPort,nSerialNum) ;
+		return false ;
+	}
+
+#ifdef _DEBUG
+	if ( nDBType != nDBTypeGuess && nDBTypeGuess != eRequestType_Max )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("intent type = %u not the same with guessType = %u sql = %s",nDBType,nDBTypeGuess,strSql.c_str()) ;
+	}
+#endif
+
+	stArgData* pdata = GetReserverArgData() ;
+	if ( pdata == NULL )
+	{
+		pdata = new stArgData ;
+	}
+
+	pdata->eFromPort = (eMsgPort)nSrcPort ;
+	pdata->nSessionID = nSerialNum ;
+
+	stDBRequest* pRequest = CDBRequestQueue::SharedDBRequestQueue()->GetReserveRequest();
+	pRequest->cOrder = eReq_Order_Normal ;
+	if ( jsReqContent["order"].isNull() == false )
+	{
+		pRequest->cOrder = jsReqContent["order"].asUInt() ;
+	}
+	pRequest->nRequestUID = nAsyncReq ;
+	pRequest->pUserData = pdata;
+	pRequest->eType = nDBType ;
+	pRequest->nSqlBufferLen = 0 ;
+	pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),"%s",jsReqContent["sql"].asCString());
+	CLogMgr::SharedLogMgr()->PrintLog("receive async db reqType = %d , srcPort = %u , serial number = %u" ,nReqType,nSrcPort,nSerialNum);
+
+	CDBRequestQueue::SharedDBRequestQueue()->PushRequest(pRequest) ;
+	return true ;
 }
 
 void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessionID )
@@ -82,7 +179,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadPrivateRoomPlayer* pRet = (stMsgReadPrivateRoomPlayer*)pmsg ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM privateroomplayer WHERE roomID = '%u', roomType = '%u' limit 80",pRet->nRoomID,pRet->nRoomType ) ;
+				"SELECT * FROM privateroomplayer WHERE roomID = '%u'and roomType = '%u' limit 80",pRet->nRoomID,pRet->nRoomType ) ;
 		}
 		break ;
 	case MSG_SAVE_ENCRYPT_NUMBER:
@@ -90,7 +187,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgSaveEncryptNumber* pRet = (stMsgSaveEncryptNumber*)pmsg ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"call saveEncryptNumber( '%llu','%u','%u','%u','%u')",pRet->nEncryptNumber,pRet->nCoin,pRet->nRMB,pRet->nNumberType,pRet->nCoinType) ;
+				"call saveEncryptNumber( '%llu','%u','%u','%u','%u','%u')",pRet->nEncryptNumber,pRet->nCoin,pRet->nRMB,pRet->nNumberType,pRet->nCoinType,pRet->nChannelID) ;
 		}
 		break ;
 	case MSG_VERIFY_ENCRYPT_NUMBER:
@@ -116,8 +213,8 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 		{
 			stMsgSavePlayerGameRecorder* pRet = (stMsgSavePlayerGameRecorder*)pmsg ;
 			pRequest->eType = eRequestType_Add;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamerecorder (userUID,roomID, roomType,createUID,finishTime,duiringSeconds,offset,buyIn,configID ) VALUES ('%u', '%u','%u','%u','%u','%u','%d','%u','%u')",
-				pRet->nUserUID,pRet->nRoomID,pRet->nRoomType,pRet->nCreateUID,pRet->nFinishTime,pRet->nDuiringSeconds,pRet->nOffset,pRet->nBuyIn,pRet->nConfigID) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamerecorder (userUID,roomID, roomType,createUID,finishTime,duiringSeconds,offset,buyIn,baseBet ) VALUES ('%u', '%u','%u','%u','%u','%u','%d','%u','%u')",
+				pRet->nUserUID,pRet->nRoomID,pRet->nRoomType,pRet->nCreateUID,pRet->nFinishTime,pRet->nDuiringSeconds,pRet->nOffset,pRet->nBuyIn,pRet->nBaseBet) ;
 		}
 		break ;
 	case MSG_READ_GAME_RESULT:
@@ -935,8 +1032,46 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 
 	stArgData*pdata = (stArgData*)pResult->pUserData ;
 	CLogMgr::SharedLogMgr()->PrintLog("processed db ret = %d",pResult->nRequestUID);
+	
 	switch ( pResult->nRequestUID )
 	{
+	case nAsyncReq:
+		{
+			// make result to js value ;
+			Json::Value jsResult ;
+			jsResult["afctRow"] = pResult->nAffectRow ;
+			Json::Value jsData ;
+			for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow && pResult->vResultRows.size() > nIdx ; ++nIdx )
+			{
+				CMysqlRow& pRow = *pResult->vResultRows[nIdx] ;
+				Json::Value jsRow ;
+				pRow.toJsValue(jsRow) ;
+				jsData[jsData.size()] = jsRow ;
+			}
+			jsResult["data"] = jsData ;
+
+			// send back ;
+			stMsgAsyncRequestRet msgBack ;
+			msgBack.cSysIdentifer = (eMsgPort)pdata->eFromPort ;
+			msgBack.nReqSerailID = pdata->nSessionID ;
+			msgBack.nResultContentLen = 0 ;
+			if ( jsResult.isNull() == true )
+			{
+				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
+			}
+			else
+			{
+				Json::StyledWriter jsWrite ;
+				auto strResult = jsWrite.write(jsResult);
+				msgBack.nResultContentLen = strResult.size() ;
+				CAutoBuffer auBuffer(sizeof(msgBack) + msgBack.nResultContentLen );
+				auBuffer.addContent(&msgBack,sizeof(msgBack));
+				auBuffer.addContent(strResult.c_str(),msgBack.nResultContentLen) ;
+				m_pTheApp->sendMsg(pdata->nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+			}
+			CLogMgr::SharedLogMgr()->PrintLog("processed async req from = %u , serailNum = %u",pdata->eFromPort,pdata->nSessionID);
+		}
+		break;
 	case MSG_READ_PRIVATE_ROOM_PLAYER:
 		{
 			stMsgReadPrivateRoomPlayerRet msgBack ;
@@ -1016,9 +1151,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msgBack.nFinishTime = pRow["finishTime"]->IntValue();
 				msgBack.nOffset = pRow["offset"]->IntValue();
 				msgBack.nRoomID = pRow["roomID"]->IntValue();
-				msgBack.nRoomType = pRow["roomType"]->IntValue();
 				msgBack.nBuyIn = pRow["buyIn"]->IntValue() ;
-				msgBack.nConfigID = pRow["configID"]->IntValue() ;
+				msgBack.nBaseBet = pRow["baseBet"]->IntValue() ;
 				m_pTheApp->sendMsg(pdata->nSessionID,(char*)&msgBack,sizeof(msgBack)) ;
 			}
 		}
@@ -1101,7 +1235,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				memset(tData.cName,0,sizeof(tData.cName)) ;
 				sprintf_s(tData.cName,sizeof(tData.cName),"%s",pRow["cName"]->CStringValue()) ;
 				tData.nCoin = pRow["nCoin"]->IntValue64();
-				tData.nDiamoned = pRow["nDiamoned"]->IntValue64();
+				tData.nDiamoned = pRow["nDiamoned"]->IntValue();
 				tData.nPhotoID = pRow["nPhotoID"]->IntValue();
 				tData.nSex = pRow["nSex"]->IntValue();
 				tData.nUserUID = pRow["nUserUID"]->IntValue();

@@ -57,6 +57,14 @@ public:
 	uint16_t nVerfion ;
 };
 
+struct stMsgJsonContent
+	:public stMsg
+{
+	stMsgJsonContent(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_JSON_CONTENT ; }
+	uint16_t nJsLen ;
+	PLACE_HOLDER(char* pJsMsgContent);
+};
+
 // register an login ;
 struct stMsgRegister
 	:public stMsg
@@ -587,25 +595,26 @@ struct stMsgRequestRoomListRet
 	PLACE_HOLDER(uint32_t* vRoomIDs);
 };
 
-struct stMsgRequestRoomItemDetail
-	:public stMsgToRoom
-{
-	stMsgRequestRoomItemDetail(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_REQUEST_ROOM_ITEM_DETAIL ;}
-};
-
-struct stMsgRequestRoomItemDetailRet
-	:public stMsg
-{
-	stMsgRequestRoomItemDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_ITEM_DETAIL ; }
-	uint8_t nRet ; // 0 success , 1 not find room ;
-	uint8_t nRoomType ;
-	uint32_t nRoomID ;
-	uint32_t nOwnerUID ; // 0 means public rooms , other value , private room ;
-	uint16_t nJsonLen ;
-	PLACE_HOLDER(char* pLen ); 
-	// public room : { configID : 23 ,name : "number 1 poker", openTime : 23345 , closeTime: 2345, state : 23  }
-	// private room:  { configID : 23 , closeTime: 2345, state : 23 ,createTime : 2345 , curCnt : 3  };
-};
+//struct stMsgRequestRoomItemDetail
+//	:public stMsgToRoom
+//{
+//	stMsgRequestRoomItemDetail(){ cSysIdentifer = ID_MSG_PORT_NONE ; usMsgType = MSG_REQUEST_ROOM_ITEM_DETAIL ;}
+//	uint32_t nUserUID ;
+//};
+//
+//struct stMsgRequestRoomItemDetailRet
+//	:public stMsg
+//{
+//	stMsgRequestRoomItemDetailRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_REQUEST_ROOM_ITEM_DETAIL ; }
+//	uint8_t nRet ; // 0 success , 1 not find room ;
+//	uint8_t nRoomType ;
+//	uint32_t nRoomID ;
+//	uint32_t nOwnerUID ; // 0 means public rooms , other value , private room ;
+//	uint16_t nJsonLen ;
+//	PLACE_HOLDER(char* pLen ); 
+//	// public room : { configID : 23 ,name : "number 1 poker", openTime : 23345 , closeTime: 2345, state : 23  }
+//	// private room:  { configID : 23 , closeTime: 2345, state : 23 ,createTime : 2345 , curCnt : 3 , offset : -34 };
+//};
 
 struct stMsgRequestRoomRewardInfo
 	:public stMsgToRoom
@@ -630,42 +639,42 @@ struct stMsgRequestRoomInfo
 };
 
 // create room
-struct stMsgCreateRoom
-	:public stMsg
-{
-	stMsgCreateRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CREATE_ROOM ; }
-	uint8_t nRoomType ; // eRoomType ;
-	uint16_t nConfigID ;
-	uint16_t nMinites ;
-	char vRoomName[MAX_LEN_ROOM_NAME] ;
-};
-
-struct stMsgCreateRoomRet
-	:public stMsg
-{
-	stMsgCreateRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_CREATE_ROOM ; }
-	uint8_t nRoomType ; // eRoomType ;
-	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough , 5 reach your own room cnt up limit , 6 unknown room type ;
-	uint32_t nRoomID ; 
-	uint64_t nFinalCoin ; 
-};
-
-struct stMsgDeleteRoom
-	:public stMsg
-{
-	stMsgDeleteRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_DELETE_ROOM ; }
-	uint8_t nRoomType ;
-	uint32_t nRoomID ;
-};
-
-struct stMsgDeleteRoomRet
-	:public stMsg
-{
-	stMsgDeleteRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_DELETE_ROOM ; }
-	uint8_t nRet ; // 0 success , 1 you don't have target room , 2 unknown room type 
-	uint8_t nRoomType ;
-	uint32_t nRoomID ;
-};
+//struct stMsgCreateRoom
+//	:public stMsg
+//{
+//	stMsgCreateRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_CREATE_ROOM ; }
+//	uint8_t nRoomType ; // eRoomType ;
+//	uint16_t nConfigID ;
+//	uint16_t nMinites ;
+//	char vRoomName[MAX_LEN_ROOM_NAME] ;
+//};
+//
+//struct stMsgCreateRoomRet
+//	:public stMsg
+//{
+//	stMsgCreateRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_CREATE_ROOM ; }
+//	uint8_t nRoomType ; // eRoomType ;
+//	uint8_t nRet ; // 0 success , 1 config error , 2 no more chat room id , 3 can not connect to chat svr , 4 coin not enough , 5 reach your own room cnt up limit , 6 unknown room type ;
+//	uint32_t nRoomID ; 
+//	uint64_t nFinalCoin ; 
+//};
+//
+//struct stMsgDeleteRoom
+//	:public stMsg
+//{
+//	stMsgDeleteRoom(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_DELETE_ROOM ; }
+//	uint8_t nRoomType ;
+//	uint32_t nRoomID ;
+//};
+//
+//struct stMsgDeleteRoomRet
+//	:public stMsg
+//{
+//	stMsgDeleteRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_DELETE_ROOM ; }
+//	uint8_t nRet ; // 0 success , 1 you don't have target room , 2 unknown room type 
+//	uint8_t nRoomType ;
+//	uint32_t nRoomID ;
+//};
 
 struct stMsgCaculateRoomProfit
 	:public stMsg
@@ -713,29 +722,6 @@ struct stMsgRoomEnterNewState
 	float m_fStateDuring ; 
 };
 
-// room info 
-struct stMsgRoomInfo
-	:public stMsg
-{
-	stMsgRoomInfo(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_ROOM_INFO ; }
-	uint8_t nRoomType ;
-	uint32_t nRoomID ;
-	uint8_t nMaxSeat;
-	uint32_t nChatRoomID;
-	uint32_t eCurRoomState ; // eRoomState ;
-	uint32_t nDeskFee;
-	float fChouShuiRate ; 
-	uint32_t nCloseTime ;
-	uint8_t nSubIdx ; 
-	uint16_t nJsonLen ;
-	PLACE_HOLDER(char* jsonstr);
-	//taxas js { private : { selfCoin : 2345 , baseTakeIn : 200 },  "litBlind":20,"minTakIn":200,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] }	
-
-	// niu niu js { private : { selfCoin : 2345 , baseTakeIn : 200 }, "bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2 };
-	
-	// golden js { private : { selfCoin : 2345 , baseTakeIn : 200 }, "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 };
-};
-
 // enter and leave 
 struct stMsgPlayerEnterRoom
 	:public stMsgToRoom
@@ -767,23 +753,23 @@ struct stMsgPlayerLeaveRoomRet
 };
 
 // buy in 
-struct stMsgPlayerReBuyIn
-	:public stMsgToRoom
-{
-public:
-	stMsgPlayerReBuyIn(){ usMsgType = MSG_PLAYER_REBUY ;}
-	uint32_t nBuyInCoin ;
-};
-
-struct stMsgPlayerReBuyInRet
-	:public stMsg
-{
-public:
-	stMsgPlayerReBuyInRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_REBUY ;}
-	uint8_t nRet ; // 0 success , 1 coin not enough , 2 take in count error ;
-	uint32_t nBuyInCoin ;
-	uint32_t nFinalCoin ;
-};
+//struct stMsgPlayerReBuyIn
+//	:public stMsgToRoom
+//{
+//public:
+//	stMsgPlayerReBuyIn(){ usMsgType = MSG_PLAYER_REBUY ;}
+//	uint32_t nBuyInCoin ;
+//};
+//
+//struct stMsgPlayerReBuyInRet
+//	:public stMsg
+//{
+//public:
+//	stMsgPlayerReBuyInRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_REBUY ;}
+//	uint8_t nRet ; // 0 success , 1 coin not enough , 2 take in count error ;
+//	uint32_t nBuyInCoin ;
+//	uint32_t nFinalCoin ;
+//};
 
 struct stMsgPrivateRoomReBuyIn
 	:public stMsg
@@ -827,8 +813,7 @@ struct stMsgPlayerRequestGameRecorder
 struct stRecorderItem
 {
 	uint32_t nRoomID ;
-	uint8_t nRoomType ;
-	uint16_t nConfigID ;
+	uint16_t nBaseBet ;
 	uint32_t nCreateUID ;
 	uint32_t nFinishTime ;
 	uint32_t nDuiringSeconds ;
@@ -1136,6 +1121,7 @@ struct stMsgRobotGenerateEncryptNumber
 	uint32_t nGenCount ;
 	uint8_t nNumberType ;   // 1 new player , 2 newMal ; 
 	uint8_t nCoinType ; // 0 diamond , 1 coin 
+	uint16_t nChannelID ;  
 };
 
 struct  stMsgPlayerUseEncryptNumber

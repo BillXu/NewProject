@@ -19,11 +19,11 @@
 #define TIME_DELAY_DELETE 2*60
 CPlayer::CPlayer( )
 {
+	m_bIsWaitingAsyncRequest = false ;
 	m_nUserUID = 0 ;
 	m_eSate = ePlayerState_Online ;
 	m_nSessionID = 0 ;
 	m_nDisconnectTime = 0 ;
-	m_pTimerSave = 0 ;
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
 		 m_vAllComponents[i] = NULL;
@@ -39,20 +39,14 @@ CPlayer::~CPlayer()
 			delete p ;
 		m_vAllComponents[i] = NULL ;
 	}
-
-	if ( m_pTimerSave )
-	{
-		CGameServerApp::SharedGameServerApp()->getTimerMgr()->RemoveTimer(m_pTimerSave) ;
-		m_pTimerSave = NULL ;
-	}
 }
 
 void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
 {
+	m_bIsWaitingAsyncRequest = false ;
 	m_nSessionID = nSessionID ;
 	m_nUserUID = nUserUID ;
 	m_eSate = ePlayerState_Online ;
-	m_pTimerSave = NULL ;
 	m_nDisconnectTime = 0 ;
 	/// new components ;here ;
 	m_vAllComponents[ePlayerComponent_BaseData] = new CPlayerBaseData(this) ;
@@ -71,17 +65,15 @@ void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
 		}
 	}
 
-	if ( m_pTimerSave == NULL )
-	{
-		m_pTimerSave = CGameServerApp::SharedGameServerApp()->getTimerMgr()->AddTimer(this,cc_selector_timer(CPlayer::OnTimerSave)) ;
-		m_pTimerSave->SetDelayTime( TIME_SAVE * 0.5 ) ;
-		m_pTimerSave->SetInterval(TIME_SAVE) ;
-		m_pTimerSave->Start();
-	}
+	m_tTimerSave.setCallBack(timer_bind_obj_func(this,CPlayer::OnTimerSave )) ;
+	m_tTimerSave.setIsAutoRepeat(true) ;
+	m_tTimerSave.setInterval(TIME_SAVE);
+	m_tTimerSave.start() ;
 }
 
 void CPlayer::Reset(unsigned int nUserUID, unsigned int nSessionID )
 {
+	m_bIsWaitingAsyncRequest = false ;
 	m_nDisconnectTime = 0 ;
 	m_nSessionID = nSessionID ;
 	m_nUserUID = nUserUID ;
@@ -96,11 +88,8 @@ void CPlayer::Reset(unsigned int nUserUID, unsigned int nSessionID )
 		}
 	}
 
-	if ( m_pTimerSave )
-	{
-		m_pTimerSave->Reset();
-		m_pTimerSave->Start();
-	}
+	m_tTimerSave.reset();
+	m_tTimerSave.start() ;
 }
 
 bool CPlayer::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
@@ -236,6 +225,25 @@ bool CPlayer::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 }
 
+bool CPlayer::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort )
+{
+	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+	{
+		IPlayerComponent* p = m_vAllComponents[i] ;
+		if ( p )
+		{
+			if ( p->OnMessage(recvValue,nmsgType,eSenderPort) )
+			{
+				return true;
+			}
+		}
+	}
+
+	CLogMgr::SharedLogMgr()->ErrorLog("Unprocessed msg id = %d, from = %d  uid = %d",nmsgType,eSenderPort,GetUserUID() ) ;
+
+	return false ;
+}
+
 void CPlayer::OnPlayerDisconnect()
 {
 	m_nDisconnectTime = time(NULL) ;
@@ -249,13 +257,9 @@ void CPlayer::OnPlayerDisconnect()
 		}
 	}
 
-	OnTimerSave(0,0);
+	OnTimerSave(nullptr,0);
+	m_tTimerSave.canncel() ;
 
-	if ( m_pTimerSave )
-	{
-		m_pTimerSave->Stop();
-	}
-	
 	SetState(ePlayerState_Offline) ;
 	CLogMgr::SharedLogMgr()->ErrorLog("player disconnect should inform other sever");
 
@@ -286,9 +290,19 @@ void CPlayer::PostPlayerEvent(stPlayerEvetArg* pEventArg )
 void CPlayer::SendMsgToClient(const char* pBuffer, unsigned short nLen,bool bBrocat )
 {
 	stMsg* pmsg = (stMsg*)pBuffer ;
-	if ( IsState(ePlayerState_Online) || pmsg->cSysIdentifer != ID_MSG_PORT_CLIENT  )
+	if ( IsState(ePlayerState_Offline) == false )
 	{
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),pBuffer,nLen,bBrocat) ;
+		return ;
+	}
+	CLogMgr::SharedLogMgr()->PrintLog("player uid = %d not online so , can not send msg" ,GetUserUID() ) ;
+}
+
+void CPlayer::SendMsgToClient(Json::Value& jsMsg, uint16_t nMsgType ,bool bBrocat )
+{
+	if ( IsState(ePlayerState_Offline) == false  )
+	{
+		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),jsMsg,nMsgType,ID_MSG_PORT_CLIENT,bBrocat) ;
 		return ;
 	}
 	CLogMgr::SharedLogMgr()->PrintLog("player uid = %d not online so , can not send msg" ,GetUserUID() ) ;
@@ -321,6 +335,7 @@ void CPlayer::OnAnotherClientLoginThisPeer(unsigned int nSessionID )
 	}
 	// bind new client ;
 	m_nSessionID = nSessionID ;
+	m_eSate = ePlayerState_Online;
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
 		IPlayerComponent* p = m_vAllComponents[i] ;
@@ -340,6 +355,27 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 // 			CRobotManager::SharedRobotMgr()->AddIdleRobotPlayer(this) ;
 // 		}
 // 		break;
+	case MSG_CLIENT_NET_STATE:
+		{
+			stMsgSyncClientNetState* pRet = (stMsgSyncClientNetState*)pMsg ;
+			if ( 0 == pRet->nState )
+			{
+				SetState(ePlayerState_WaitReconnect);
+			}
+			else
+			{
+				SetState(ePlayerState_Online) ;
+				for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
+				{
+					IPlayerComponent* p = m_vAllComponents[i] ;
+					if ( p )
+					{
+						p->onPlayerReconnected();
+					}
+				}
+			}
+		}
+		break ;
 	case MSG_ADD_MONEY:
 		{
 			stMsgRobotAddMoney* pAdd = (stMsgRobotAddMoney*)pMsg ;
@@ -546,7 +582,7 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 	return true ;
 }
 
-void CPlayer::OnTimerSave(float fTimeElaps,unsigned int nTimerID )
+void CPlayer::OnTimerSave( CTimer* p,float fTimeElaps )
 {
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
@@ -590,13 +626,6 @@ void CPlayer::OnReactive(uint32_t nSessionID )
 	m_nSessionID = nSessionID ;
 	SetState(ePlayerState_Online) ;
 	m_nDisconnectTime = 0 ;
-	
-	if ( m_pTimerSave )
-	{
-		m_pTimerSave->Reset();
-		m_pTimerSave->Start();
-	}
-
 
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
@@ -606,6 +635,8 @@ void CPlayer::OnReactive(uint32_t nSessionID )
 			p->OnReactive(nSessionID);
 		}
 	}
+	m_tTimerSave.reset() ;
+	m_tTimerSave.start() ;
 }
 
 bool CPlayer::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue)

@@ -18,7 +18,7 @@ bool CNiuNiuServerApp::init()
 		return false;
 	}
 	setConnectServerConfig(pConfig);
-	m_tMgr.LoadFile("../configFile/RoomConfig.txt") ;
+	//m_tMgr.LoadFile("../configFile/RoomConfig.txt") ;
 
 	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
 	CRewardConfig::getInstance()->LoadFile("../configFile/rewardConfig.txt");

@@ -3,6 +3,7 @@
 #include <string>
 #include <list>
 #include "utility.h"
+#include "json/json.h"
 #define FILIED_SPLIT ','
 enum eValueType
 {
@@ -22,6 +23,7 @@ struct stMysqlField
 	std::string strFieldName ;
 	char* pBuffer ;
 	int nBufferLen ;
+	eValueType nValueType ;
 public:
 	template<class varType >
 	static std::string UnIntArraryToString( varType vInt[] , uint16_t nCnt )
@@ -90,6 +92,7 @@ public:
 	stMysqlField* GetFiledByName( const char* pFiledName );
 	stMysqlField* operator [](const char* pFieldname );
 	int GetFieldCount(){return m_vField.size() ;}
+	void toJsValue(Json::Value& jsValue );
 protected:
 	void ClearAllFiled();
 protected:

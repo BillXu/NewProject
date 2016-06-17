@@ -55,6 +55,8 @@ public:
     stShopItem* GetPropsByIndex(unsigned int index);//道具
     stShopItem* GetAssetByIndex(unsigned int index);//资产
     
+    stShopItem* GetCoinProductByIndex(unsigned int index);//appstore商品
+    
     stShopItem* GetAppStoreProductByIndex(unsigned int index);//appstore商品
     stShopItem* GetAppStoreProductByProductID(std::string productID);//appstore商品
     

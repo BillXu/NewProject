@@ -18,6 +18,7 @@ public:
 	{
 		if ( nLen + header_length > max_body_length )
 		{
+			printf("body data too big \n ") ;
 			return false ;
 		}
 		bodyLength(nLen) ;
@@ -78,6 +79,7 @@ public:
 		if (body_length_ > max_body_length - header_length )  
 		{  
 			body_length_ = 0;  
+			printf("receive msg too big , so kick out it \n") ;
 			return false;  
 		}  
 		return true;  

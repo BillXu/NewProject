@@ -114,6 +114,7 @@
     <ClInclude Include="..\DataServer\src\ExchangeCenter.h" />
     <ClInclude Include="..\DataServer\src\ExchangeConfig.h" />
     <ClInclude Include="..\DataServer\src\GameServerApp.h" />
+    <ClInclude Include="..\DataServer\src\Group.h" />
     <ClInclude Include="..\DataServer\src\IPlayerComponent.h" />
     <ClInclude Include="..\DataServer\src\main.h" />
     <ClInclude Include="..\DataServer\src\Player.h" />
@@ -122,9 +123,9 @@
     <ClInclude Include="..\DataServer\src\PlayerGameData.h" />
     <ClInclude Include="..\DataServer\src\PlayerMail.h" />
     <ClInclude Include="..\DataServer\src\PlayerManager.h" />
-    <ClInclude Include="..\DataServer\src\PlayerMission.h" />
     <ClInclude Include="..\DataServer\src\PokerCircle.h" />
     <ClInclude Include="..\DataServer\src\RobotCenter.h" />
+    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\IGlobalModule.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="..\DataServer\src\ExchangeCenter.cpp" />
     <ClCompile Include="..\DataServer\src\ExchangeConfig.cpp" />
     <ClCompile Include="..\DataServer\src\GameServerApp.cpp" />
+    <ClCompile Include="..\DataServer\src\Group.cpp" />
     <ClCompile Include="..\DataServer\src\IPlayerComponent.cpp" />
     <ClCompile Include="..\DataServer\src\main.cpp" />
     <ClCompile Include="..\DataServer\src\Player.cpp" />
@@ -165,9 +167,9 @@
     <ClCompile Include="..\DataServer\src\PlayerGameData.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerMail.cpp" />
     <ClCompile Include="..\DataServer\src\PlayerManager.cpp" />
-    <ClCompile Include="..\DataServer\src\PlayerMission.cpp" />
     <ClCompile Include="..\DataServer\src\PokerCircle.cpp" />
     <ClCompile Include="..\DataServer\src\RobotCenter.cpp" />
+    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\RewardConfig.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
