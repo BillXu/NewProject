@@ -66,7 +66,7 @@ void CDBServerApp::update(float fDeta )
 	{
 		stDBResult* pRet = *iter ;
 		m_pDBManager->OnDBResult(pRet) ;
-		delete pRet ;
+		CDBRequestQueue::SharedDBRequestQueue()->pushDeleteResult(pRet) ;
 	}
 	vResultOut.clear();
 }

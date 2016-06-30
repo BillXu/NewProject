@@ -31,6 +31,7 @@ bool CAsyncRequestQuene::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		pBuffer += sizeof(stMsgAsyncRequestRet);
 		Json::Reader jsReader ;
 		jsReader.parse(pBuffer,pBuffer + pRet->nResultContentLen,jsResultContent) ;
+		//CLogMgr::SharedLogMgr()->PrintLog("as str : %s",pBuffer);
 	}
  
 	auto pReqIter = m_mapRunningRequest.find(pRet->nReqSerailID) ;
@@ -168,7 +169,7 @@ void CAsyncRequestQuene::timerCheckReqState(CTimer* pTimer, float fTick )
 
 		if ( pReq->nSendTimes > 5 )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("req type = %u , target port = %u , tried too many times , why ",pReq->nReqType,pReq->nSendTimes) ;
+			CLogMgr::SharedLogMgr()->ErrorLog("req type = %u , target port = %u , tried too many times = %u , why ",pReq->nReqType,pReq->nTargetPortID,pReq->nSendTimes) ;
 		}
 	}
 }

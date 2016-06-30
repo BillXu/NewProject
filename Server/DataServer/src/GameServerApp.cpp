@@ -12,6 +12,7 @@
 #include "Player.h"
 #include "PlayerGameData.h"
 #include "Group.h"
+#include "GameRoomCenter.h"
 #ifndef USHORT_MAX
 #define USHORT_MAX 65535 
 #endif
@@ -71,6 +72,9 @@ bool CGameServerApp::init()
 	auto group = new CGroup();
 	registerModule(group);
 	
+	auto grc = new CGameRoomCenter();
+	registerModule(grc);
+
 	time_t tNow = time(NULL) ;
 	m_nCurDay = localtime(&tNow)->tm_mday ;
 	return true ;
@@ -131,38 +135,6 @@ bool CGameServerApp::onAsyncRequest(uint16_t nRequestType , const Json::Value& j
 			auto jsArg = jsReqContent["arg"];
 			CPlayerMailComponent::PostDlgNotice(eType,jsArg,nTargetUID) ;
 			CLogMgr::SharedLogMgr()->PrintLog("do async post dlg notice etype = %u ,targetUID = %u",eType,nTargetUID) ;
-		}
-		break ;
-	case eAsync_OnRoomDeleted:
-		{
-			uint32_t nRoomID = jsReqContent["roomID"].asUInt() ;
-			uint32_t nOwnerUID = jsReqContent["ownerUID"].asUInt() ;
-			uint32_t nClubID = jsReqContent["clubID"].asUInt() ;
-
-			if ( nClubID )
-			{
-				auto pg = (CGroup*)getModuleByType(IGlobalModule::eMod_Group );
-				auto pi = pg->getGroupByID(nClubID) ;
-				if ( pi == nullptr )
-				{
-					CLogMgr::SharedLogMgr()->ErrorLog("why clubid = %u is null ",nClubID);
-				}
-				else
-				{
-					pi->removeRoomID(nRoomID) ;
-				}
-			}
-
-			auto pPlayer = GetPlayerMgr()->GetPlayerByUserUID(nOwnerUID);
-			if ( pPlayer )
-			{
-				auto pGameData = (CPlayerGameData*)pPlayer->GetComponent(ePlayerComponent_PlayerGameData);
-				pGameData->deleteOwnRoom(nRoomID) ;
-			}
-			else
-			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %u not online  so how to do ?") ;
-			}
 		}
 		break ;
 	default:

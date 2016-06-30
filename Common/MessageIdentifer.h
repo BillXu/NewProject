@@ -327,7 +327,7 @@ enum eMsgType
 	// ret : 0 means success , 1 you are not creator , 2 room is running, try later , 3 club do not have room with that id ;
 	MSG_REQUEST_ROOM_ITEM_DETAIL, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
 	// client : { roomID : 0 }
-	// svr : { ret : 0 , name: "fsg" , creatorUID : 235, baseBet : 2, playerCnt : 23, roomID : 235 , roomType : eRoomType , initTime : 20, playedTime : 2345 }
+	// svr : { ret : 0 , name: "fsg" , creatorUID : 235, baseBet : 2, playerCnt : 23, roomID : 235 , roomType : eRoomType , initTime : 20, playedTime : 2345, seatCnt : 6 }
 	// ret : 0 success , 1 can not find room ;
 
 	MSG_ROOM_INFO,
@@ -360,6 +360,32 @@ enum eMsgType
 	MSG_REQUEST_ROOM_AUDIENTS, // audients ;
 	// client : { roomID : 2345 }
 	// svr : { audients : [234, 235 ,2456 ] }  , audients player uid array ;
+
+	MSG_CLUB_ADD_MEMBER,
+	// client : { groupID : 2345 , userAccount : 2345 }  // gotpe user account , not game player user account 
+	// client { ret : 0 , groupID : 2345 , userAccount : 2345 } // ret : 1 can not find groupID ; 2 svr error , 3 reach member cnt limit;
+
+	MSG_CLUB_DELETE_MEMBER,
+	// client : { groupID : 2345 , userAccount : 2345 }  // gotpe user account , not game player user account 
+	// client { ret : 0 , groupID : 2345 , userAccount : 2345 } // ret : 1 can not find groupID ; 2 svr error ;
+
+	MSG_REQ_CLUB_INFO,
+	//client : { groupID : 23455 }
+	// svr: { ret : 0 , groupID : 23455,curCnt : 23 , capacity : 80, level : 0 , deadTime : 2345523 } , ret : 0 success , 1 can not find club ;
+
+	MSG_REQ_RECORMED_CLUB,
+	// client : null
+	// svr { clubIDs : [234, 234 ,23452,2345] } 
+
+	MSG_REQ_LEVEL_UP_CLUB,
+	// client : { clubID : 234, level : 234 } 
+	// svr : { ret : 0 , clubID : 2345 , level : 2345 , deadTime : 23456 }
+	// ret : 0 , success , 1 can not find club , 2 diamond is not enough, 3 invalid argument  , 4 target level invalid;
+
+
+
+
+
 
 
 

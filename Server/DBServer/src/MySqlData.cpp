@@ -97,7 +97,11 @@ void CMysqlRow::PushFiled(stMysqlField* pFiled )
 stMysqlField* CMysqlRow::GetFiledByName( const char* pFiledName )
 {
 	if ( !pFiledName )
+	{
+		printf("cell name is null \n") ;
 		return NULL ;
+	}
+		
 	LIST_FIELD::iterator iter = m_vField.begin() ;
 	for ( ; iter != m_vField.end() ; ++iter )
 	{
@@ -109,6 +113,7 @@ stMysqlField* CMysqlRow::GetFiledByName( const char* pFiledName )
 			return pField ;
 		}
 	}
+	printf("cell is null for name = %u \n",pFiledName);
 	return NULL ;
 }
 

@@ -101,6 +101,30 @@ stDBRequest* CDBRequestQueue::GetReserveRequest()
 	memset(pOut,0,sizeof(stDBRequest));
 	return pOut ;
 }
+
+void CDBRequestQueue::pushDeleteResult(stDBResult* pResult)
+{
+	mWillDelteResultLock.Lock() ;
+	m_vWillDelteResult.push_back(pResult) ;
+	mWillDelteResultLock.Unlock();
+}
+
+void CDBRequestQueue::doClearResult()
+{
+	VEC_DBRESULT vResult ;
+	vResult.clear() ;
+	mWillDelteResultLock.Lock() ;
+	vResult.swap(m_vWillDelteResult) ;
+	mWillDelteResultLock.Unlock();
+
+	for ( auto ref : vResult )
+	{
+		delete ref ;
+		ref = nullptr ;
+	}
+	vResult.clear() ;
+}
+
 void CDBRequestQueue::GetAllRequest(VEC_DBREQUEST& vAllRequestOut )
 {
 	vAllRequestOut.clear();

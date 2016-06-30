@@ -12,6 +12,7 @@
 #include "PlayerEvent.h"
 #include "AutoBuffer.h"
 #include "PlayerGameData.h"
+#include "GameRoomCenter.h"
 #include <cassert>
 #define  MAX_KEEP_MAIL_CNT 20
 
@@ -490,7 +491,7 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 			msgSyn.nBuyIn = jArg["buyIn"].asUInt() ;
 			msgSyn.nTargetPlayerUID = GetPlayer()->GetUserUID() ;
 			msgSyn.nBaseBet = jArg["baseBet"].asUInt() ;
-			uint16_t nType = CPlayerGameData::getRoomType(msgSyn.nRoomID);
+			uint16_t nType = CGameRoomCenter::getRoomType(msgSyn.nRoomID);
 			CLogMgr::SharedLogMgr()->PrintLog("do syn game result from offline event room id = %u, room type = %u , uid = %u",msgSyn.nRoomID,nType,msgSyn.nTargetPlayerUID);
 			GetPlayer()->OnMessage(&msgSyn, (eMsgPort)GetPlayer()->getMsgPortByRoomType(nType));
 		}

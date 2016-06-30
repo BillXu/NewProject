@@ -179,7 +179,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadPrivateRoomPlayer* pRet = (stMsgReadPrivateRoomPlayer*)pmsg ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM privateroomplayer WHERE roomID = '%u'and roomType = '%u' limit 80",pRet->nRoomID,pRet->nRoomType ) ;
+				"SELECT * FROM privateroomplayer WHERE roomID = '%u'and roomType = %u limit 80",pRet->nRoomID,pRet->nRoomType ) ;
 		}
 		break ;
 	case MSG_SAVE_ENCRYPT_NUMBER:
@@ -1119,6 +1119,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_READ_GAME_RESULT:
 		{
 			stMsgReadGameResultRet msgBack ;
+			msgBack.cSysIdentifer = pdata->eFromPort ;
 			CAutoBuffer auBuffer (sizeof(msgBack) + 200 );
 			for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow; ++nIdx )
 			{

@@ -3,6 +3,10 @@
 void CNiuNiuWaitStartGame::enterState(IRoom* pRoom )
 {
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
+	if ( m_pRoom->getSitDownPlayerCount() <= 1 )
+	{
+		m_pRoom->clearBanker();
+	}
 }
 
 void CNiuNiuWaitStartGame::update(float fd)

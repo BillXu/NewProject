@@ -10,10 +10,10 @@ IRoomDelegate::~IRoomDelegate()
 
 void IRoomDelegate::onUpdatePlayerGameResult( IRoom* pRoom, uint32_t nUserUID , int32_t nOffsetGame, int32_t nOtherOffset  )
 {
-	if ( nOffsetGame == 0 && nOtherOffset == 0 )
-	{
-		return ;
-	}
+	//if ( nOffsetGame == 0 && nOtherOffset == 0 )
+	//{
+	//	return ;
+	//}
 
 	m_bDirySorted = true ;
 

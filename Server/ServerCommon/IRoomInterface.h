@@ -33,4 +33,6 @@ public:
 	virtual uint32_t getOwnerUID() = 0 ;
 	virtual int32_t getPlayerOffsetByUID( uint32_t nUserUID ) { return 0 ;}  ;
 	virtual bool isPlaying() = 0 ;
+	virtual void setLeftTime(uint32_t nLeftSec ){  }
+	virtual void setRoomState(uint32_t nRoomState ){}
 };

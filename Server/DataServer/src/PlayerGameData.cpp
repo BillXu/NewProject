@@ -9,34 +9,19 @@
 #include "RoomConfig.h"
 #include "AsyncRequestQuene.h"
 #include "Group.h"
+#include "GameRoomCenter.h"
 void CPlayerGameData::Reset()
 {
 	IPlayerComponent::Reset();
 	m_nStateInRoomID = 0;
 	m_nSubRoomIdx = 0 ;
 	memset(&m_vData,0,sizeof(m_vData));
-	m_vMyOwnRooms.clear() ;
 	for ( auto refPtr : m_vGameRecorders )
 	{
 		delete refPtr ;
 		refPtr = nullptr ;
 	}
 	m_vGameRecorders.clear() ;
-
-	stMsgReadMyOwnTaxasRooms msgReqr ;
-	msgReqr.nUserUID = GetPlayer()->GetUserUID();
-	SendMsg(&msgReqr,sizeof(msgReqr)) ;
-
-	// niu  niu 
-	stMsgReadMyOwnRooms msgReq ;
-	msgReq.nUserUID = GetPlayer()->GetUserUID();
-	SendMsg(&msgReq,sizeof(msgReq)) ;
-
-	// golden 
-	stMsgReadMyOwnRooms msgReqGolden ;
-	msgReqGolden.cSysIdentifer = ID_MSG_PORT_GOLDEN ;
-	msgReqGolden.nUserUID = GetPlayer()->GetUserUID();
-	SendMsg(&msgReqGolden,sizeof(msgReqGolden)) ;   
 
 	stMsgReadPlayerGameData msg ;
 	msg.nUserUID = GetPlayer()->GetUserUID() ;
@@ -66,22 +51,6 @@ void CPlayerGameData::Init()
 	m_eType = ePlayerComponent_PlayerGameData ;
 	m_nStateInRoomID = 0;
 	memset(&m_vData,0,sizeof(m_vData));
-	m_vMyOwnRooms.clear() ;
-
-	stMsgReadMyOwnTaxasRooms msgReqr ;
-	msgReqr.nUserUID = GetPlayer()->GetUserUID();
-	SendMsg(&msgReqr,sizeof(msgReqr)) ;
-
-	// niu  niu 
-	stMsgReadMyOwnRooms msgReq ;
-	msgReq.nUserUID = GetPlayer()->GetUserUID();
-	SendMsg(&msgReq,sizeof(msgReq)) ;
-
-	// golden 
-	stMsgReadMyOwnRooms msgReqGolden ;
-	msgReqGolden.cSysIdentifer = ID_MSG_PORT_GOLDEN ;
-	msgReqGolden.nUserUID = GetPlayer()->GetUserUID();
-	SendMsg(&msgReqGolden,sizeof(msgReqGolden)) ;   
 
 	stMsgReadPlayerGameData msg ;
 	msg.nUserUID = GetPlayer()->GetUserUID() ;
@@ -321,6 +290,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			pRecorder->nCreateUID = pRet->nCreateUID ;
 			pRecorder->nBuyIn = pRet->nBuyIn ;
 			pRecorder->nBaseBet = pRet->nBaseBet ;
+			CLogMgr::SharedLogMgr()->PrintLog("read basebet = %u ",pRet->nBaseBet) ;
 			addPlayerGameRecorder(pRecorder,false);
 		}
 		break ;
@@ -394,22 +364,6 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			//SendMsg((stMsg*)autoBuffer.getBufferPtr(),autoBuffer.getContentSize()) ;
 		}
 		break;
-	case MSG_READ_MY_OWN_ROOMS:
-		{
-			stMsgReadMyOwnRoomsRet* pRet = (stMsgReadMyOwnRoomsRet*)pMessage ;
-			if ( pRet->nRoomType >= eRoom_Max )
-			{
-				return false;
-			}
-			stMyOwnRoom* pRoomPtr = (stMyOwnRoom*)((char*)pMessage + sizeof(stMsgReadMyOwnRoomsRet));
-			while ( pRet->nCnt-- )
-			{
-				addOwnRoom(pRoomPtr->nRoomID);
-				++pRoomPtr ;
-			}
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d ,read own creator room" , GetPlayer()->GetUserUID() ) ;
-		}
-		break;
 	default:
 		return false;
 	}
@@ -442,8 +396,10 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				break;
 			}
 
-			if ( isCreateRoomCntReachLimit() )
+			auto pgameCenter = (CGameRoomCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_RoomCenter) ;
+			if ( pgameCenter->getPlayerOwnRoomCnt(GetPlayer()->GetUserUID()) >= getCreateRoomCntLimit() )
 			{
+				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , create failed , already have room cnt = %u , limit = %u",GetPlayer()->GetUserUID(),pgameCenter->getPlayerOwnRoomCnt(GetPlayer()->GetUserUID()),getCreateRoomCntLimit()) ;
 				jsMsgBack["ret"] = 1 ;
 				SendMsg(jsMsgBack,nmsgType);
 				break;
@@ -463,16 +419,19 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			}
 
 			// async create room ;
-			uint32_t nNewRoomID = generateRoomID(eroomType) ;
+			uint32_t nSerailNum = 0;
+			uint32_t nNewRoomID = pgameCenter->generateRoomID(eroomType,nSerailNum) ;
 			uint8_t nPortID = GetPlayer()->getMsgPortByRoomType(eroomType) ;
 			recvValue["roomID"] = nNewRoomID ;
 			recvValue["createUID"] = GetPlayer()->GetUserUID() ;
+			recvValue["serialNum"] = nSerailNum ;
 
 			Json::Value jsUserData ;
 			jsUserData["roomID"] = nNewRoomID ;
 			jsUserData["clubID"] = nClubID ;
+			jsUserData["serialNum"] = nSerailNum ;
 			GetPlayer()->startAsyncReq() ;
-			CGameServerApp::SharedGameServerApp()->getAsynReqQueue()->pushAsyncRequest(nPortID,eAsync_CreateRoom,recvValue,[this](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData)
+			CGameServerApp::SharedGameServerApp()->getAsynReqQueue()->pushAsyncRequest(nPortID,eAsync_CreateRoom,recvValue,[this,pgameCenter](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData)
 			{
 				uint8_t nRet = retContent["ret"].asUInt() ;
 				if ( nRet )
@@ -480,16 +439,17 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 					CLogMgr::SharedLogMgr()->ErrorLog("why create room not success ?") ;
 				}
 				GetPlayer()->endAsyncReq() ;
-
+				
+				// add game room to room center ;
 				uint32_t nRoomID = jsUserData["roomID"].asUInt() ;
 				uint32_t nClubID = jsUserData["clubID"].asUInt() ;
-				addOwnRoom(nRoomID) ;
-				if ( nClubID )
-				{
-					auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
-					auto group = pg->getGroupByID(nClubID) ;
-					group->addRoomID(nRoomID) ;
-				}
+
+				auto pRoomItem = new CGameRoomCenter::stRoomItem ;
+				pRoomItem->nBelongsToClubUID = nClubID;
+				pRoomItem->nRoomID = nRoomID ;
+				pRoomItem->nCreator = GetPlayer()->GetUserUID() ;
+				pRoomItem->nSerialNumber = jsUserData["serialNum"].asUInt();
+				pgameCenter->addRoomItem(pRoomItem,true);
 
 				// send msg 
 				Json::Value jsMsgBack ;
@@ -515,8 +475,11 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			uint32_t nClubID = recvValue["clubID"].asUInt() ;
 		
 			Json::Value jsMsgBack ;
+
+			auto pgameCenter = (CGameRoomCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_RoomCenter) ;
+			auto pRoomItem = pgameCenter->getRoomItemByRoomID(nRoomID) ;
 			// check self 
-			if ( isRoomIDMyOwn(nRoomID) == false )
+			if ( pRoomItem == nullptr || pRoomItem->nCreator != GetPlayer()->GetUserUID() )
 			{
 				jsMsgBack["ret"] = 1 ;
 				SendMsg(jsMsgBack,MSG_DELETE_ROOM);
@@ -524,22 +487,22 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			}
 
 			// check club 
-			if ( nClubID )
-			{
-				auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
-				auto group = pg->getGroupByID(nClubID) ;
-				if ( group == nullptr || group->isHaveRoomID(nClubID) == false )
-				{
-					jsMsgBack["ret"] = 3 ;
-					SendMsg(jsMsgBack,MSG_DELETE_ROOM);
-					return true ;
-				}
-			}
+			//if ( nClubID )
+			//{
+			//	auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
+			//	auto group = pg->getGroupByID(nClubID) ;
+			//	if ( group == nullptr || group->isHaveRoomID(nClubID) == false )
+			//	{
+			//		jsMsgBack["ret"] = 3 ;
+			//		SendMsg(jsMsgBack,MSG_DELETE_ROOM);
+			//		return true ;
+			//	}
+			//}
 
 			// do request 
-			uint8_t nPortID = GetPlayer()->getMsgPortByRoomType(getRoomType(nRoomID)) ;
+			uint8_t nPortID = GetPlayer()->getMsgPortByRoomType(CGameRoomCenter::getRoomType(nRoomID)) ;
 			GetPlayer()->startAsyncReq() ;
-			CGameServerApp::SharedGameServerApp()->getAsynReqQueue()->pushAsyncRequest(nPortID,eAsync_DeleteRoom,recvValue,[this](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData)
+			CGameServerApp::SharedGameServerApp()->getAsynReqQueue()->pushAsyncRequest(nPortID,eAsync_DeleteRoom,recvValue,[this,pgameCenter](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData)
 			{
 				GetPlayer()->endAsyncReq() ;
 
@@ -556,14 +519,15 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				
 
 				uint32_t nRoomID = jsUserData["roomID"].asUInt() ;
-				uint32_t nClubID = jsUserData["clubID"].asUInt() ;
-				deleteOwnRoom(nRoomID);
+				//uint32_t nClubID = jsUserData["clubID"].asUInt() ;
+				pgameCenter->deleteRoomItem(nRoomID);
+				/*deleteOwnRoom(nRoomID);
 				if ( nClubID )
 				{
-					auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
-					auto group = pg->getGroupByID(nClubID) ;
-					group->removeRoomID(nRoomID) ;
-				}
+				auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
+				auto group = pg->getGroupByID(nClubID) ;
+				group->removeRoomID(nRoomID) ;
+				}*/
 
 				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , removed room ok ",GetPlayer()->GetUserUID()) ;
 
@@ -701,7 +665,7 @@ void CPlayerGameData::OnPlayerDisconnect()
 	if ( isNotInAnyRoom() == false )
 	{
 		stMsgCrossServerRequest msgEnter ;
-		msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(getRoomType(m_nStateInRoomID)) ;
+		msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(CGameRoomCenter::getRoomType(m_nStateInRoomID)) ;
 		msgEnter.nJsonsLen = 0 ;
 		msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
 		msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
@@ -721,7 +685,7 @@ void CPlayerGameData::OnOtherWillLogined()
 	if ( isNotInAnyRoom() == false )
 	{
 		stMsgCrossServerRequest msgEnter ;
-		msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(getRoomType(m_nStateInRoomID)) ;
+		msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(CGameRoomCenter::getRoomType(m_nStateInRoomID)) ;
 		msgEnter.nJsonsLen = 0 ;
 		msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
 		msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
@@ -781,52 +745,9 @@ void CPlayerGameData::TimerSave()
 	}
 }
 
-void CPlayerGameData::addOwnRoom(uint32_t nRoomID  )
+uint16_t CPlayerGameData::getCreateRoomCntLimit()
 {
-	stMyOwnRoom myroom ;
-	myroom.nRoomID = nRoomID ;
-	m_vMyOwnRooms.insert(MAP_ID_MYROOW::value_type(myroom.nRoomID,myroom));
-}
-
-bool CPlayerGameData::isCreateRoomCntReachLimit()
-{
-	if ( GetPlayer()->GetUserUID() == MATCH_MGR_UID )
-	{
-		return false ;
-	}
-	return m_vMyOwnRooms.size() >= GetPlayer()->GetBaseData()->getMaxCanCreteRoomCount() ;
-}
-
-bool CPlayerGameData::deleteOwnRoom(uint32_t nRoomID )
-{
-	auto iter = m_vMyOwnRooms.find(nRoomID) ;
-	if ( iter != m_vMyOwnRooms.end() )
-	{
-		m_vMyOwnRooms.erase(iter) ;
-		return true ;
-	}
-	return false ;
-}
-
-//uint16_t CPlayerGameData::getMyOwnRoomConfig( eRoomType eType , uint32_t nRoomID ) 
-//{
-//	if ( eType >= eRoom_Max )
-//	{
-//		return 0;
-//	}
-//
-//	MAP_ID_MYROOW::iterator iter = m_vMyOwnRooms[eType].find(nRoomID) ;
-//	if ( iter != m_vMyOwnRooms[eType].end() )
-//	{
-//		return iter->second.nConfigID ;
-//	}
-//	return 0 ;
-//}
-
-bool CPlayerGameData::isRoomIDMyOwn(uint32_t nRoomID)
-{
-	MAP_ID_MYROOW::iterator iter = m_vMyOwnRooms.find(nRoomID) ;
-	return iter != m_vMyOwnRooms.end() ;
+	return GetPlayer()->GetBaseData()->getMaxCanCreteRoomCount() ;
 }
 
 void CPlayerGameData::addPlayerGameRecorder(stPlayerGameRecorder* pRecorder , bool isSaveDB  )
@@ -853,7 +774,7 @@ void CPlayerGameData::addPlayerGameRecorder(stPlayerGameRecorder* pRecorder , bo
 	msgSave.nFinishTime = pRecorder->nFinishTime ;
 	msgSave.nOffset = pRecorder->nOffset ;
 	msgSave.nRoomID = pRecorder->nRoomID ;
-	msgSave.nRoomType = CPlayerGameData::getRoomType(pRecorder->nRoomID); ;
+	msgSave.nRoomType = CGameRoomCenter::getRoomType(pRecorder->nRoomID); ;
 	msgSave.nUserUID = GetPlayer()->GetUserUID() ;
 	msgSave.nCreateUID = pRecorder->nCreateUID ;
 	msgSave.nBuyIn = pRecorder->nBuyIn ;
@@ -874,54 +795,4 @@ void CPlayerGameData::sendGameDataToClient()
 	stMsgPlayerBaseDataTaxas msgT ;
 	memcpy(&msgT.tTaxasData,&m_vData[eRoom_TexasPoker],sizeof(msgT.tTaxasData));
 	SendMsg(&msgT,sizeof(msgT)) ;
-}
-
-// static 
-std::map<uint32_t,uint8_t> CPlayerGameData::s_mapRoomIDKeeper;
-
-uint8_t CPlayerGameData::getRoomType(uint32_t nRoomID)
-{
-	uint32_t nTypeNumber = nRoomID / 100000 ;
-	uint32_t nRealID = nRoomID % 100000 ;
-	uint32_t narg = nRealID % 7 + 1;
-	return (nTypeNumber - narg) ;
-}
-
-uint32_t CPlayerGameData::generateRoomID(eRoomType eType )
-{
-	uint32_t nRoomID = 0 ;
-	auto iter = s_mapRoomIDKeeper.begin() ;
-	uint32_t nTryTimes = 0 ;
-	do 
-	{
-		uint32_t nRealID = rand() % 100000 ;
-		uint32_t narg = nRealID % 7 + 1;
-		uint32_t nTypeNumber = eType + narg ;
-		nRoomID = nTypeNumber * 100000 + nRealID ;	
-
-		iter = s_mapRoomIDKeeper.find(nRoomID) ;
-		++nTryTimes ;
-		if ( nTryTimes > 1 )
-		{
-			CLogMgr::SharedLogMgr()->PrintLog("try times = %u to generate room id ",nTryTimes);
-		}
-	}
-	while (iter != s_mapRoomIDKeeper.end() ) ;
-	return nRoomID ;
-}
-
-void CPlayerGameData::removeRoomID( uint32_t nRoomID )
-{
-	auto iter = s_mapRoomIDKeeper.find(nRoomID) ;
-	if ( iter == s_mapRoomIDKeeper.end() )
-	{
-		CLogMgr::SharedLogMgr()->ErrorLog("room id = %u not register the id map",nRoomID) ;
-		return ;
-	}
-	s_mapRoomIDKeeper.erase(iter) ;
-}
-
-void CPlayerGameData::useRoomID( uint32_t nRoomID )
-{
-	s_mapRoomIDKeeper[nRoomID] = 1 ;
 }

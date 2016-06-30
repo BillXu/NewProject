@@ -28,6 +28,14 @@ enum  eLogType
 	eLog_Max,
 };
 
+enum eOperateStage
+{
+	eOperate_NotDo,
+	eOperate_Doing,
+	eOperate_Done,
+	eOperate_Max,
+};
+
 enum eDBAct
 {
 	eDBAct_Add,
@@ -86,14 +94,15 @@ enum  eCrossSvrReqType
 
 enum eAsyncReq
 {
-	eAsync_CreateRoom, // extern MSG_CREATE_ROOM client , addtion : { roomID : 235, createUID : 3334 }  // result : { ret : 0 } , must success ;
+	eAsync_CreateRoom, // extern MSG_CREATE_ROOM client , addtion : { roomID : 235, createUID : 3334, serialNum : 23455 }  // result : { ret : 0 } , must success ;
 	eAsync_DeleteRoom,// { roomID : 2345 }  // ret : { ret : 0 } // 0 success , 1 not find room , 2 room is running ;
 	eAsync_PostDlgNotice, // { dlgType : eNoticeType , targetUID : 2345 , arg : { ....strg } }
-	eAsync_OnRoomDeleted, // { roomID : 234 , ownerUID : 2345 , clubID : 235 }
+	eAsync_OnRoomDeleted, // { roomID : 234 }
 	eAsync_DB_Select,   // { sql : "select * from table where uid = 345" , order : 0 } // order [ 0 - 3 ] biger first process ,  result : { afctRow : 1 , data : [row0,row1] }/// row { tile0 : value , title 0 ;}
 	eAsync_DB_Update, // { sql : "select * from table where uid = 345" , order : 0 } // order [ 0 - 3 ] biger first process ,  result : { afctRow : 1 , data : [row0,row1] }/// row { tile0 : value , title 0 ;}
 	eAsync_DB_Add,	// { sql : "select * from table where uid = 345" , order : 0 } // order [ 0 - 3 ] biger first process ,  result : { afctRow : 1 , data : [row0,row1] }/// row { tile0 : value , title 0 ;}
 	eAsync_Db_Delete,	// { sql : "select * from table where uid = 345" , order : 0 } // order [ 0 - 3 ] biger first process ,  result : { afctRow : 1 , data : [row0,row1] }/// row { tile0 : value , title 0 ;}
+	eAsync_ReqRoomSerials, // {roomType : 2 }  // result :  { ret : 0 , serials : [0 , 2 ,34,56 ] }  // ret : 0 success , 1 svr is reading from db wait a moment ; 
 	eAsync_Max,
 };
 

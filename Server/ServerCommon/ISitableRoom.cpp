@@ -220,6 +220,11 @@ void ISitableRoom::onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )
 
 uint16_t ISitableRoom::getEmptySeatCount()
 {
+	if ( m_vSitdownPlayers == nullptr )
+	{
+		return getSeatCount() ;
+	}
+
 	uint16_t nCount = 0 ;
 	for ( uint16_t nIdx = 0 ; nIdx < m_nSeatCnt ; ++nIdx )
 	{

@@ -14,7 +14,9 @@ public:
 	bool init(const char* pBaseUrl );
 	bool performRequest(const char* pAddtionUrl , const char* pData , size_t nLen, void* pUserData , size_t nUserTypeArg = 0 );
 	void setDelegate(CHttpRequestDelegate* pDelegate);
+	void setBaseURL(const char* pBaseURl){ m_strBaseURL = pBaseURl ;}
 	static size_t onRecieveData(void *buffer, size_t size, size_t count, void *user_p);
+	void setHead(const char* pHeadStr);
 protected:
 	std::string m_strBaseURL ;
 	CHttpRequestDelegate* m_pDelegate ;

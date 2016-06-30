@@ -6,8 +6,9 @@
 #include "Client.h"
 #define MODULE_COMMON "common"
 
-BEGIN_REG_CMD(hem)
+BEGIN_REG_CMD(commonCmdScene_m)
 
+// login 
 REG_CMD( MODULE_COMMON,"login","[account] [pwd]",[](std::vector<std::string>& vArg,CClientRobot* pCnter)
 {
 	if ( vArg.size() != 2 )
@@ -25,9 +26,7 @@ REG_CMD( MODULE_COMMON,"login","[account] [pwd]",[](std::vector<std::string>& vA
 });
 
 
-
-
-END_REG_CMD(hem)
+END_REG_CMD(commonCmdScene_m)
 
 
 bool commonCmdScene::onMessage(stMsg* pmsg)

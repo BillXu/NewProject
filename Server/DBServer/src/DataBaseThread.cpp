@@ -86,8 +86,11 @@ int CDataBaseThread::EscapeString(char *to, const char *from, unsigned long leng
 
 bool CDataBaseThread::ProcessRequest()
 {
-	// process request here ;
 	CDBRequestQueue* pRequestQueue = CDBRequestQueue::SharedDBRequestQueue();
+	// clear will delte result 
+	pRequestQueue->doClearResult();
+
+	// process request here ;
 	CDBRequestQueue::VEC_DBREQUEST vRequestOut ;
 	CDBRequestQueue::VEC_DBRESULT vProcessedResult ;
 	pRequestQueue->GetAllRequest(vRequestOut);
@@ -184,6 +187,7 @@ bool CDataBaseThread::ProcessRequest()
 								}
 								break;
 							case MYSQL_TYPE_BLOB: // binary 
+							case MYSQL_TYPE_DATETIME:
 							case MYSQL_TYPE_VAR_STRING:  // string 
 								{
 									pField->nValueType = eValue_String ;

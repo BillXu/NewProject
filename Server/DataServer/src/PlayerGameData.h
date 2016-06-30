@@ -41,17 +41,9 @@ public:
 	void OnReactive(uint32_t nSessionID )override{ sendGameDataToClient(); }
 	void OnOtherDoLogined() override{sendGameDataToClient();}
 	uint32_t getCurRoomID(){ return m_nStateInRoomID ;}
-	void addOwnRoom(uint32_t nRoomID );
-	bool isCreateRoomCntReachLimit();
-	bool deleteOwnRoom(uint32_t nRoomID );
-	/*uint16_t getMyOwnRoomConfig(eRoomType eType ,  uint32_t nRoomID ) ;*/
-	bool isRoomIDMyOwn(uint32_t nRoomID);
+	uint16_t getCreateRoomCntLimit();
 	bool isNotInAnyRoom(){ return m_nStateInRoomID == 0 ; }
 	void addPlayerGameRecorder(stPlayerGameRecorder* pRecorder , bool isSaveDB = true );
-	static uint8_t getRoomType(uint32_t nRoomID);
-	static uint32_t generateRoomID(eRoomType eType );
-	static void removeRoomID( uint32_t nRoomID ) ;
-	static void useRoomID( uint32_t nRoomID ) ;
 protected:
 	void sendGameDataToClient();
 protected:
@@ -59,9 +51,6 @@ protected:
 	uint8_t m_nSubRoomIdx ; 
 
 	stGameData m_vData[eRoom_Max] ;
-	MAP_ID_MYROOW m_vMyOwnRooms;
 
 	LIST_PLAYER_RECORDERS m_vGameRecorders ;
-
-	static std::map<uint32_t,uint8_t> s_mapRoomIDKeeper ;
 };

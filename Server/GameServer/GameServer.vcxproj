@@ -64,7 +64,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies);libcurl_imp.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -84,7 +84,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies);libcurl_imp.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -113,6 +113,7 @@
     <ClInclude Include="..\DataServer\src\Events.h" />
     <ClInclude Include="..\DataServer\src\ExchangeCenter.h" />
     <ClInclude Include="..\DataServer\src\ExchangeConfig.h" />
+    <ClInclude Include="..\DataServer\src\GameRoomCenter.h" />
     <ClInclude Include="..\DataServer\src\GameServerApp.h" />
     <ClInclude Include="..\DataServer\src\Group.h" />
     <ClInclude Include="..\DataServer\src\IPlayerComponent.h" />
@@ -127,6 +128,7 @@
     <ClInclude Include="..\DataServer\src\RobotCenter.h" />
     <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h" />
     <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
+    <ClInclude Include="..\ServerCommon\httpRequest.h" />
     <ClInclude Include="..\ServerCommon\IGlobalModule.h" />
     <ClInclude Include="..\ServerCommon\ISeverApp.h" />
     <ClInclude Include="..\ServerCommon\RewardConfig.h" />
@@ -157,6 +159,7 @@
     <ClCompile Include="..\DataServer\src\EventCenter.cpp" />
     <ClCompile Include="..\DataServer\src\ExchangeCenter.cpp" />
     <ClCompile Include="..\DataServer\src\ExchangeConfig.cpp" />
+    <ClCompile Include="..\DataServer\src\GameRoomCenter.cpp" />
     <ClCompile Include="..\DataServer\src\GameServerApp.cpp" />
     <ClCompile Include="..\DataServer\src\Group.cpp" />
     <ClCompile Include="..\DataServer\src\IPlayerComponent.cpp" />
@@ -170,6 +173,7 @@
     <ClCompile Include="..\DataServer\src\PokerCircle.cpp" />
     <ClCompile Include="..\DataServer\src\RobotCenter.cpp" />
     <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp" />
+    <ClCompile Include="..\ServerCommon\httpRequest.cpp" />
     <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\RewardConfig.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />

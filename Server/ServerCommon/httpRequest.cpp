@@ -31,7 +31,13 @@ bool CHttpRequest::init(const char* pBaseUrl )
 #endif
 	curl_easy_setopt(m_pCURL,CURLOPT_POST,1L) ;
 	m_pCurlList = curl_slist_append(m_pCurlList,"Content-Type:application/json") ;
+	curl_slist_append(m_pCurlList,"Accept:application/json") ;
 	return true ;
+}
+
+void CHttpRequest::setHead(const char* pHeadStr)
+{
+	m_pCurlList = curl_slist_append(m_pCurlList,pHeadStr) ;
 }
 
 bool CHttpRequest::performRequest(const char* pAddtionUrl , const char* pData , size_t nLen, void* pUserData, size_t nUserTypeArg )

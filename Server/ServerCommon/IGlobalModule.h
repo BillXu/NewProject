@@ -11,6 +11,7 @@ public:
 		eMod_Group,
 		eMode_AsyncRequestQueu,
 		eMod_RoomMgr,
+		eMod_RoomCenter,
 		eMod_Max
 	}; 
 public:

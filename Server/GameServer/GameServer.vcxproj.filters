@@ -169,6 +169,12 @@
     <ClInclude Include="..\DataServer\src\Group.h">
       <Filter>src\App</Filter>
     </ClInclude>
+    <ClInclude Include="..\DataServer\src\GameRoomCenter.h">
+      <Filter>src\App</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\httpRequest.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
@@ -284,6 +290,12 @@
     </ClCompile>
     <ClCompile Include="..\DataServer\src\Group.cpp">
       <Filter>src\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\GameRoomCenter.cpp">
+      <Filter>src\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\httpRequest.cpp">
+      <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

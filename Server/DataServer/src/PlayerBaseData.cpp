@@ -172,7 +172,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 		{
 			stMsgPlayerUseEncryptNumberRet msgBack ;
 			stMsgPlayerUseEncryptNumber* pRet = (stMsgPlayerUseEncryptNumber*)pMsg ;
-			if ( CEncryptNumber::isNumberValid(pRet->nNumber) )
+			if ( 1 || CEncryptNumber::isNumberValid(pRet->nNumber) )
 			{
 				stMsgVerifyEncryptNumber msgVerifyEncrypt ;
 				msgVerifyEncrypt.nNumber = pRet->nNumber ;
@@ -875,7 +875,7 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				return true ;
 			}
 			jsMsgBack["ret"] = 0 ;
-			stGroupItem* pItem = new stGroupItem ;
+			stGroupItem* pItem = new stGroupItem() ;
 			pItem->nCityCode = recvValue["cityCode"].asUInt() ;
 			pItem->nCreaterUID = GetPlayer()->GetUserUID() ;
 			pItem->nGroupID = recvValue["newClubID"].asUInt() ;

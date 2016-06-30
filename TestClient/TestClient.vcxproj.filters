@@ -27,6 +27,15 @@
     <Filter Include="src\cmd">
       <UniqueIdentifier>{5d03fce9-3e61-4c84-9319-aa04ebf28ba8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\NiuNiu">
+      <UniqueIdentifier>{96a77566-3340-4cf6-9760-e2087921311d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\golden">
+      <UniqueIdentifier>{56c2188e-3f23-4b4a-b511-9922bc0119c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\taxas">
+      <UniqueIdentifier>{adc6510e-0f50-452e-8191-b89f2f43b007}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\ConfigReader.cpp">
@@ -77,9 +86,6 @@
     <ClCompile Include="..\Common\CardPoker.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="src\TaxasPokerScene.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\Server\ServerCommon\mutex.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
@@ -101,23 +107,11 @@
     <ClCompile Include="src\robotControl.cpp">
       <Filter>robot</Filter>
     </ClCompile>
-    <ClCompile Include="src\TaxasPokerData.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\MemoryManager.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="src\RobotAIConfig.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\TaxasRobotBrain.cpp">
       <Filter>robot</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NiuNiuScene.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NiuNiuData.cpp">
-      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\RobotControlNiuNiu.cpp">
       <Filter>robot</Filter>
@@ -128,20 +122,35 @@
     <ClCompile Include="src\RobotControlGolden.cpp">
       <Filter>robot</Filter>
     </ClCompile>
-    <ClCompile Include="src\GoldenData.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\PeerCard.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="src\GoldenScene.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cmdCenter.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\commonCmdScene.cpp">
       <Filter>src\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GoldenData.cpp">
+      <Filter>src\golden</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GoldenScene.cpp">
+      <Filter>src\golden</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NiuNiuData.cpp">
+      <Filter>src\NiuNiu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NiuNiuScene.cpp">
+      <Filter>src\NiuNiu</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TaxasPokerData.cpp">
+      <Filter>src\taxas</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TaxasPokerScene.cpp">
+      <Filter>src\taxas</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmdCenter.cpp">
+      <Filter>src\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RobotAIConfig.cpp">
+      <Filter>src\taxas</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -223,12 +232,6 @@
     <ClInclude Include="src\RobotConfig.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\TaxasPokerScene.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TaxasPokerData.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\MemoryManager.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -237,12 +240,6 @@
     </ClInclude>
     <ClInclude Include="..\Common\NiuNiuMessageDefine.h">
       <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NiuNiuScene.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NiuNiuData.h">
-      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\RobotControlNiuNiu.h">
       <Filter>robot</Filter>
@@ -253,22 +250,34 @@
     <ClInclude Include="src\RobotControlGolden.h">
       <Filter>robot</Filter>
     </ClInclude>
-    <ClInclude Include="src\GoldenData.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\GoldenMessageDefine.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\PeerCard.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="src\commonCmdScene.h">
+      <Filter>src\cmd</Filter>
+    </ClInclude>
     <ClInclude Include="src\GoldenScene.h">
-      <Filter>src</Filter>
+      <Filter>src\golden</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GoldenData.h">
+      <Filter>src\golden</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NiuNiuData.h">
+      <Filter>src\NiuNiu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NiuNiuScene.h">
+      <Filter>src\NiuNiu</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TaxasPokerScene.h">
+      <Filter>src\taxas</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TaxasPokerData.h">
+      <Filter>src\taxas</Filter>
     </ClInclude>
     <ClInclude Include="src\cmdCenter.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\commonCmdScene.h">
       <Filter>src\cmd</Filter>
     </ClInclude>
   </ItemGroup>

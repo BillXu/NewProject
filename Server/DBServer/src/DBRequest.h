@@ -65,6 +65,8 @@ public:
 	void PushReserveRequest(VEC_DBREQUEST& request );  // stDBRequest 对象使用完　不要delete ，而是push进来。thread safe ;
 	void PushReserveRequest(stDBRequest* request );
 	stDBRequest* GetReserveRequest(); //  stDBReuest 不能直接new， 要通过此函数获取； thread safe ;
+	void pushDeleteResult(stDBResult* pResult);
+	void doClearResult();
 protected:
 	void ClearAllRequest();
 	void ClearAllResult();
@@ -73,7 +75,9 @@ protected:
 	Mutex mRequestLock ;
 	Mutex mResultLock ;
 	Mutex mReserveQuestLock ;
+	Mutex mWillDelteResultLock ;
 	VEC_DBREQUEST m_vReserveRequest ;
 	VEC_DBREQUEST m_vAllRequest ;
 	VEC_DBRESULT m_vAllResult ;
+	VEC_DBRESULT m_vWillDelteResult ;
 };

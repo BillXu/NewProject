@@ -5,6 +5,7 @@
 #include "httpRequest.h"
 #include "IGlobalModule.h"
 #include <list>
+#include "Timer.h"
 class CRoomConfigMgr ;
 class IRoomInterface ;
 class IRoom ;
@@ -24,6 +25,15 @@ class IRoomManager
 	,public IGlobalModule
 {
 public:
+	enum eHttpReq
+	{
+		eHttpReq_CreateChatRoom,
+		eHttpReq_ChatRoomList,
+		eHttpReq_Token,
+		eHttpReq_DeleteChatRoomID,
+		eHttpReq_Max,
+	};
+
 	typedef std::list<IRoomInterface*> LIST_ROOM ;
 	typedef std::map<uint32_t, IRoomInterface*> MAP_ID_ROOM;
 	struct stRoomCreatorInfo
@@ -51,21 +61,26 @@ public:
 	void deleteRoomChatID(uint32_t nChatID );
 	void addPrivateRoomRecorder( stPrivateRoomRecorder* pRecorder, bool isSaveDB = true );
 	bool onAsyncRequest(uint16_t nRequestType , const Json::Value& jsReqContent, Json::Value& jsResult )override ;
+	//bool requestChatRoomIDList();
+	//bool requestGotypeToken();
+	void onExit()override ;
 protected:
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
 	virtual IRoomInterface* doCreateRoomObject( eRoomType cRoomType,bool isPrivateRoom ) = 0 ;
 	virtual IRoomInterface* doCreateInitedRoomObject(uint32_t nRoomID,const Json::Value& vJsValue) = 0 ;
-	void addRoomToCreator(uint32_t nOwnerUID ,IRoomInterface* pRoom);
-	bool getRoomCreatorRooms(uint32_t nCreatorUID,LIST_ROOM& vInfo );
 	void removeRoom(IRoomInterface* pRoom );
 	virtual eRoomType getMgrRoomType() = 0 ;
+	void readRoomSerails();;
+	void readRoomInfo(uint32_t nSeailNum );
 protected:
 	MAP_ID_ROOM m_vRooms ;
 
 	CHttpRequest m_pGoTyeAPI;
-	uint32_t m_nMaxRoomID ;
-	MAP_UID_CR m_vCreatorAndRooms ;
 	CRoomConfigMgr* m_pConfigMgr ;
+	CTimer m_tReaderRoomSerials ;
+
+	CTimer m_tRequestGoTyeToken ;
 
 	std::map<uint32_t,stPrivateRoomRecorder*> m_mapPrivateRecorder ;
+	//eOperateStage m_eRequestChatRoomIDs ;
 };

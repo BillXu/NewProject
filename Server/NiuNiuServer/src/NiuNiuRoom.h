@@ -14,6 +14,7 @@ public:
 	void roomInfoVisitor(Json::Value& vOutJsValue)override ;
 	void sendRoomPlayersInfo(uint32_t nSessionID)override ;
 	void setBankerIdx(uint8_t nIdx ) ;
+	void clearBanker(){ m_nBankerIdx = -1 ;}
 	uint8_t getBankerIdx(){ return m_nBankerIdx ;}
 	void setBetBottomTimes(uint8_t nTimes ){ m_nBetBottomTimes = nTimes ;}
 	uint8_t getBetBottomTimes(){ return m_nBetBottomTimes ;}

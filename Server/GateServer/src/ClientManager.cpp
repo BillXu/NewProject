@@ -60,8 +60,8 @@ bool CGateClientMgr::OnMessage( Packet* pData )
 		CLogMgr::SharedLogMgr()->SystemLog("current online cnt = %d", m_vSessionGateClient.size() - m_vWaitToReconnect.size() ) ;
 
 		stMsgControlFlag msgFlag ;
-		msgFlag.nFlag = 1 ;
-		msgFlag.nVerfion = 2 ;
+		msgFlag.nFlag = 0 ;
+		msgFlag.nVerfion = 5 ;
 		CGateServer::SharedGateServer()->SendMsgToClient((char*)&msgFlag,sizeof(msgFlag),pData->_connectID,false) ;
 		return true;
 	}

@@ -25,6 +25,8 @@ IRoom::IRoom()
 
 	m_nTotalProfit = 0;
 	m_nChatRoomID = 0;
+	m_nDeskFree = 0 ;
+	m_fDividFeeRate = 0 ;
 
 	m_bRoomInfoDiry = false ;
 	m_pRoomMgr = nullptr ;

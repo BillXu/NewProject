@@ -63,6 +63,7 @@ void RunFunc ( CGameServerApp* pApp )
 	}
 	__except(MyUnhandledExceptionFilter(GetExceptionInformation()))
 	{
+		printf("what hello\n");
 	}
 }
 #include <time.h>
