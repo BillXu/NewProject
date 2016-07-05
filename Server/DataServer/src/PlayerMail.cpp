@@ -491,6 +491,9 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 			msgSyn.nBuyIn = jArg["buyIn"].asUInt() ;
 			msgSyn.nTargetPlayerUID = GetPlayer()->GetUserUID() ;
 			msgSyn.nBaseBet = jArg["baseBet"].asUInt() ;
+			auto strname = jArg["roomName"].asString();
+			msgSyn.cRoomName[strname.size()] = 0 ;
+			sprintf_s(msgSyn.cRoomName,sizeof(msgSyn.cRoomName),"%s",strname.c_str()) ;
 			uint16_t nType = CGameRoomCenter::getRoomType(msgSyn.nRoomID);
 			CLogMgr::SharedLogMgr()->PrintLog("do syn game result from offline event room id = %u, room type = %u , uid = %u",msgSyn.nRoomID,nType,msgSyn.nTargetPlayerUID);
 			GetPlayer()->OnMessage(&msgSyn, (eMsgPort)GetPlayer()->getMsgPortByRoomType(nType));

@@ -316,7 +316,7 @@ enum eMsgType
 	MSG_CREATE_ROOM, // ID_MSG_PORT_DATA ;
 	// client : { name : "this is room name" ,roomType : eRoomType , baseBet : 23 , duringMin : 2345 , clubID : 23 , baseTakeIn : 235, isControlTakeIn : 0 , seatCnt : 2 , opts : { ... } }
 	// roomType : means eRoomType . baseBet , for taxas , it represent small blind . duringMin : room keep running time , by minite . clubID : when equal 0 , means ,quick game , opts : depend on game type ;
-	// NIU NIU  opts : { unbankerType : 0 }  // 0 no niu leave banker , 1 lose to all  leave banker ;
+	// NIU NIU  opts : { unbankerType : 0 }  // 0 no niu leave banker , 1 lose to all  leave banker , 2 manual leave banker;
 	// Taxas Poker opts : { maxTakeIn : 2345 }
 	// Golden opts : { maxSingleBet : 20 }
 	// svr : { ret : 0 , roomID : 235 , clubID : 23 } ;
@@ -333,7 +333,7 @@ enum eMsgType
 	MSG_ROOM_INFO,
 	// svr : { ownerUID : 234552 , roomID : 2345 , seatCnt : 4 , chatID : 23455 , curState : eRoomState , leftTimeSec : 235 , baseTakeIn : 2345 , selfCoin : 2345 , game : { ... } } 
 	// goldn :  game : { "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 }
-	// NiuNiu : game : { "bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2 }
+	// NiuNiu : game : { "bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2, unbankerType : 0  }
 	// taxas :   game : { "litBlind":20,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] };
 
 	MSG_SET_GAME_STATE, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
@@ -382,7 +382,14 @@ enum eMsgType
 	// svr : { ret : 0 , clubID : 2345 , level : 2345 , deadTime : 23456 }
 	// ret : 0 , success , 1 can not find club , 2 diamond is not enough, 3 invalid argument  , 4 target level invalid;
 
+	MSG_REQ_RESIGN_BANKER, // request leave banker ;
+	// client : null 
+	// svr : { ret : 0 } ;
+	// ret : 0 success , 1 you are not banker now , 2 , current leave banker mode is not manual leave ;
 
+	MSG_REQ_PLAYER_JOINED_CLUBS,  // request player joined clubs 
+	// client : { uid : 2345 }
+	// svr : { uid : 2345 , clubIDs : [2 , 3 ,6 ,3 ]  } 
 
 
 

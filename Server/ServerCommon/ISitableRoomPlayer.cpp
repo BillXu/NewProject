@@ -16,6 +16,7 @@ void ISitableRoomPlayer::reset(IRoom::stStandPlayer* pPlayer)
 	nTempHaloWeight = 0 ;
 	m_isDelayStandUp = false ;
 	nTotalGameOffset = 0 ;
+	resetNoneActTimes();
 }
 
 void ISitableRoomPlayer::onGameEnd()

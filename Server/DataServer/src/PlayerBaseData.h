@@ -66,6 +66,7 @@ protected:
 	void OnNewDay(stEventArg* pArg);
 private:
 	stServerBaseData m_stBaseData ;
+	Json::Value m_jsJoinedClubs;
 	ePlayerType m_ePlayerType ; 
 	uint32_t m_nTempCoin ;
 

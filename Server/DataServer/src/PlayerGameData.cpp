@@ -218,6 +218,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				rItem.nOffset = (*iter)->nOffset ;
 				rItem.nRoomID = (*iter)->nRoomID ;
 				rItem.nBaseBet = (*iter)->nBaseBet ;
+				memcpy(rItem.cRoomName,(*iter)->cRoomName,sizeof(rItem.cRoomName));
 				auBuffer.addContent(&rItem,sizeof(rItem)) ;
 
 				// delete sended recorder ;
@@ -290,6 +291,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			pRecorder->nCreateUID = pRet->nCreateUID ;
 			pRecorder->nBuyIn = pRet->nBuyIn ;
 			pRecorder->nBaseBet = pRet->nBaseBet ;
+			memcpy(pRecorder->cRoomName,pRet->cRoomName,sizeof(pRet->cRoomName));
 			CLogMgr::SharedLogMgr()->PrintLog("read basebet = %u ",pRet->nBaseBet) ;
 			addPlayerGameRecorder(pRecorder,false);
 		}
@@ -305,6 +307,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			pRecorder->nCreateUID = pRet->nCreatorUID ;
 			pRecorder->nBuyIn = pRet->nBuyIn ;
 			pRecorder->nBaseBet = pRet->nBaseBet ; 
+			memcpy(pRecorder->cRoomName,pRet->cRoomName,sizeof(pRet->cRoomName));
 			addPlayerGameRecorder(pRecorder) ;
 
 			// process coin ;
@@ -779,6 +782,7 @@ void CPlayerGameData::addPlayerGameRecorder(stPlayerGameRecorder* pRecorder , bo
 	msgSave.nCreateUID = pRecorder->nCreateUID ;
 	msgSave.nBuyIn = pRecorder->nBuyIn ;
 	msgSave.nBaseBet = pRecorder->nBaseBet ; 
+	memcpy(msgSave.cRoomName,pRecorder->cRoomName,sizeof(msgSave.cRoomName));
 	SendMsg(&msgSave,sizeof(msgSave)) ;
 	
 	CLogMgr::SharedLogMgr()->PrintLog("save player game recorder room id = %u , baseBet = %d",pRecorder->nRoomID, pRecorder->nBaseBet) ;

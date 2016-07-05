@@ -207,7 +207,7 @@ void CTaxasRoom::onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )
 
 	if ( pPlayer->isHaveState(eRoomPeer_StayThisRound) )
 	{
-		if ( getCurRoomState()->getStateID() != eRoomState_TP_GameResult )
+		if ( getCurRoomState()->getStateID() != eRoomState_DidGameOver )
 		{
 			CTaxasPlayer* p = (CTaxasPlayer*)pPlayer ;
 			CLogMgr::SharedLogMgr()->ErrorLog("will stand up update offset uid = %d",pPlayer->getUserUID());
@@ -227,7 +227,7 @@ void CTaxasRoom::onPlayerWillStandUp(ISitableRoomPlayer* pPlayer )
 
 uint32_t CTaxasRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp)
 {
-	return 0 ;
+	return 99999999 ;
 }
 
 uint8_t CTaxasRoom::OnPlayerAction( uint8_t nSeatIdx ,eRoomPeerAction act , uint32_t& nValue )
@@ -489,6 +489,7 @@ uint8_t CTaxasRoom::InformPlayerAct()
 void CTaxasRoom::OnPlayerActTimeOut()
 {
 	stMsgTaxasPlayerAct msg ;
+	msg.cSysIdentifer = 0 ;
 	msg.nValue = 0 ;
 	msg.nRoomID = getRoomID() ;
 	CTaxasPlayer* pPlayer = (CTaxasPlayer*)getPlayerByIdx(m_nCurWaitPlayerActionIdx);
@@ -508,6 +509,7 @@ void CTaxasRoom::OnPlayerActTimeOut()
 	}
 	CLogMgr::SharedLogMgr()->PrintLog("wait player act time out auto act room id = %d",getRoomID()) ;
 	onMessage(&msg,ID_MSG_PORT_CLIENT,pPlayer->getSessionID()) ;
+	pPlayer->increaseNoneActTimes();
 }
 
 bool CTaxasRoom::IsThisRoundBetOK()
@@ -828,8 +830,6 @@ void CTaxasRoom::writePlayerResultLogToJson(CTaxasPlayer* pWritePlayer)
 	m_arrPlayers[pWritePlayer->getIdx()] = refPlayer ;
 	CLogMgr::SharedLogMgr()->PrintLog("write player uid = %d result log to json",pWritePlayer->getUserUID());
 }
-
-
 
 stVicePool& CTaxasRoom::GetFirstCanUseVicePool()
 {

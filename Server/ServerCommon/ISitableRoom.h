@@ -19,6 +19,7 @@ public:
 	void roomItemDetailVisitor(Json::Value& vOutJsValue)override;
 	bool canStartGame()override ;
 	void update(float fDelta)override;
+	void onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t& nSubIdx )override;
 	// event function 
 	virtual void onPlayerSitDown( ISitableRoomPlayer* pPlayer ){}
 	virtual void onPlayerWillStandUp(ISitableRoomPlayer* pPlayer );
@@ -53,6 +54,7 @@ public:
 	}
 	VEC_SITDOWN_PLAYERS::iterator getSortedPlayerEndIter(){ return m_vSortByPeerCardsAsc.end() ; }
 	virtual uint32_t getMaxTakeIn(){ return 999999999 ;};
+	virtual uint32_t getMaxNoneActTimeForStandUp(){ return 3 ;}
 protected:
 	uint8_t GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRoomPeerState estate );
 private:

@@ -23,7 +23,7 @@ void CNiuNiuRoomDistribute4CardState::enterState(IRoom* pRoom)
 		{
 			 stDistriuet4CardItem item ;
 			 item.nSeatIdx = pRoomPlayer->getIdx();
-			 for ( uint8_t nIdx = 0 ; nIdx < 4 ; ++nIdx )
+			 for ( uint8_t nIdx = 0 ; nIdx < 5 ; ++nIdx )
 			 {
 				 item.vCardCompsitNum[nIdx] = pRoomPlayer->getCardByIdx(nIdx);
 			 }

@@ -8,7 +8,12 @@
 void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 {
 	CLogMgr::SharedLogMgr()->PrintLog("room id = %d start final card ",pRoom->getRoomID()) ;
+
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
+
+	setStateDuringTime(1 * TIME_NIUNIU_DISTRIBUTE_FINAL_CARD_PER_PLAYER );
+	CLogMgr::SharedLogMgr()->PrintLog("room id = %d distribute final card, already distribute all card",m_pRoom->getRoomID()) ;
+	return ;
 	// distribute final card ;
 	uint8_t nPlayerCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ; ;
 	uint8_t nSeatCnt = (uint8_t)m_pRoom->getSeatCount() ;
@@ -30,9 +35,6 @@ void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 		}
 	}
 	m_pRoom->sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
-
-	setStateDuringTime(nPlayerCnt * TIME_NIUNIU_DISTRIBUTE_FINAL_CARD_PER_PLAYER );
-	CLogMgr::SharedLogMgr()->PrintLog("room id = %d distribute final card, player cnt = %d",m_pRoom->getRoomID(),nPlayerCnt) ;
 }
 
 void CNiuNiuRoomDistributeFinalCardState::onStateDuringTimeUp()

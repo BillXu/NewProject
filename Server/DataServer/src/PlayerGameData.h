@@ -15,6 +15,7 @@ public:
 		uint32_t nCreateUID ;
 		uint32_t nBaseBet ;
 		uint32_t nBuyIn ;
+		char cRoomName[MAX_LEN_ROOM_NAME] ;
 	};
 
 	struct stGameData

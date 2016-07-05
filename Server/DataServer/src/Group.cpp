@@ -136,6 +136,16 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 	
 	switch ( nMsgType )
 	{
+	case MSG_REQ_PLAYER_JOINED_CLUBS:
+		{
+			Json::Value jsJoinedClubs ;
+			jsJoinedClubs[jsJoinedClubs.size()] = 11947940;
+			jsJoinedClubs[jsJoinedClubs.size()] = 11947640;
+			jsJoinedClubs[jsJoinedClubs.size()] = 11947138;
+			prealMsg["clubIDs"] = jsJoinedClubs ;
+			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
+		}
+		break;
 	case MSG_REQ_CLUB_ROOM:
 		{
 			Json::Value jsMsgBack ;
@@ -271,7 +281,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 
 			if ( pPlayer->GetBaseData()->GetAllDiamoned() < nDiamondPrice )
 			{
-				prealMsg["ret"] = 3 ;
+				prealMsg["ret"] = 2 ;
 				getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
 				break ;
 			}

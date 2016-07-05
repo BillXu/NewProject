@@ -22,6 +22,7 @@ void CTaxasPlayer::reset(IRoom::stStandPlayer* pPlayer)
 {
 	ISitableRoomPlayer::reset(pPlayer) ;
 	setState(eRoomPeer_WaitNextGame) ;
+	resetNoneActTimes();
 	zeroData();
 }
 

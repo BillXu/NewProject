@@ -36,6 +36,8 @@ public:
 	bool getPlayersHaveGrabBankerPrivilege(std::vector<uint8_t>& vAllPrivilegeIdxs); 
 	bool getPlayersWillBetPlayer(std::vector<uint8_t>& vWillBetIdx);
 	bool isHaveBanker();
+	bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID  )override ;
+	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override ;
 	bool canStartGame()override ;
 protected:
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;
@@ -44,7 +46,8 @@ protected:
 	uint8_t m_nBetBottomTimes ;
 	uint32_t m_nBankerCoinLimitForBet ; // 
 	uint32_t m_nBaseBet ;
-	uint8_t m_nResignBankerCtrl ;  // // 0 no niu leave banker , 1 lose to all  leave banker ;
+	uint8_t m_nResignBankerCtrl ;  // // 0 no niu leave banker , 1 lose to all  leave banker , 2 manual leave banker;
+	bool m_isWillManualLeaveBanker ;
 
 	Json::Value m_arrPlayers ;
 };

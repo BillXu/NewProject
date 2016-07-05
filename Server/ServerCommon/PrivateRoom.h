@@ -175,6 +175,7 @@ protected:
 	uint32_t m_nSerialNum ;
 	bool m_bRoomInfoDiry ;
 	bool m_isRequestingChatID ;
+	float m_fWaitOpenTicket ;
 
 	std::map<uint32_t,stPrivateRoomPlayerItem*> m_mapPrivateRoomPlayers ;
 };
@@ -244,6 +245,7 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	m_isControlTakeIn = vJsValue["isControlTakeIn"].asBool() ;
 	m_nClubID = vJsValue["clubID"].asUInt() ;
 	m_nSerialNum = vJsValue["serialNum"].asUInt();
+	m_fWaitOpenTicket = 0 ;
 	if ( vJsValue["duringMin"].isNull() == false )
 	{
 		m_nDuringSeconds = vJsValue["duringMin"].asUInt() * 60 ;
@@ -508,6 +510,8 @@ void CPrivateRoom<T>::onRoomDoClosed()
 	msgResult.nRoomID = getRoomID() ;
 	msgResult.nCreatorUID = getOwnerUID() ;
 	msgResult.nDuringTimeSeconds = m_nDuringSeconds ;
+	memset(msgResult.cRoomName,0,sizeof(msgResult.cRoomName));
+	sprintf_s(msgResult.cRoomName,sizeof(msgResult.cRoomName),"%s",m_strRoomName.c_str());
 				
 	LIST_ROOM_RANK_ITEM::iterator iter = m_vSortedRankItems.begin();
 	for ( uint16_t nIdx = 0 ; iter != m_vSortedRankItems.end(); ++iter, ++nIdx )
@@ -566,6 +570,22 @@ void CPrivateRoom<T>::update(float fDelta)
 {
 	if ( m_eState == eRoomState_Close || eRoomState_WaitOpen == m_eState )
 	{
+		if ( eRoomState_WaitOpen == m_eState )
+		{
+			m_fWaitOpenTicket += fDelta ;
+			if ( m_fWaitOpenTicket >= 60*60 )
+			{
+				m_eState = eRoomState_Close ;
+				onRoomDoClosed();
+				// inform data svr clear room info ;
+				Json::Value jsReq ;
+				jsReq["roomID"] = getRoomID() ;
+				jsReq["ownerUID"] = getOwnerUID() ;
+				jsReq["clubID"] = m_nClubID ;
+				m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DATA,eAsync_OnRoomDeleted,jsReq);
+				return ;
+			}
+		}
 		return ;
 	}
 
@@ -1006,7 +1026,12 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 template<class T >
 bool CPrivateRoom<T>::isDeleteRoom()
 {
+#ifdef _DEBUG
+	return m_eState == eRoomState_Close; // when room is request chat room id , can not delete the object , it is call back arg ;
+#else
 	return m_eState == eRoomState_Close && ( m_pRoom->getChatRoomID() > 0 ); // when room is request chat room id , can not delete the object , it is call back arg ;
+#endif
+	
 }
 
 template<class T >

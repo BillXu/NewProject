@@ -5,6 +5,7 @@ class IPeerCard ;
 class ISitableRoomPlayer
 {
 public:
+	ISitableRoomPlayer(){ nNoneActTimes = 0 ;}
 	uint8_t getIdx(){return m_nIdx ;}
 	void setIdx( uint8_t nIdx){ m_nIdx = nIdx ;}
 	virtual void doSitdown(uint8_t nIdx ){ m_nIdx = nIdx ;}
@@ -40,6 +41,10 @@ public:
 	virtual int32_t getGameOffset() = 0 ;
 	virtual IPeerCard* getPeerCard() = 0 ;
 	int32_t getTotalGameOffset(){ return nTotalGameOffset ;}
+	void increaseNoneActTimes(){ ++nNoneActTimes ;}
+	void resetNoneActTimes(){ nNoneActTimes = 0 ;}
+	uint32_t getNoneActTimes(){ return nNoneActTimes ; }
+	void reactive( uint32_t nNewSessionID ) { nSessionID = nNewSessionID ; m_isDelayStandUp = false ; resetNoneActTimes(); }
 private:
 	uint16_t getTotalHaloWeight(){ return nNewPlayerHaloWeight + nTempHaloWeight; }
 	void increaseWinTimes(){ ++nWinTimes ;}
@@ -58,4 +63,5 @@ private:
 	uint32_t nWinTimes ;
 	uint32_t nSingleWinMost ;
 	int32_t nTotalGameOffset ;
+	uint32_t nNoneActTimes ; 
 };

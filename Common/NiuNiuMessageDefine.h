@@ -66,7 +66,7 @@ struct stMsgNNStandUp
 struct stDistriuet4CardItem
 {
 	uint8_t nSeatIdx ;
-	uint8_t vCardCompsitNum[4] ;
+	uint8_t vCardCompsitNum[5] ;
 };
 
 struct stMsgNNDistriute4Card

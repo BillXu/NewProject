@@ -103,6 +103,17 @@ void ISitableRoom::update(float fDelta)
 	IRoom::update(fDelta);
 	m_pRobotDispatchStrage->update(fDelta) ;
 }
+
+void ISitableRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t& nSubIdx )
+{
+	IRoom::onPlayerEnterRoom(pEnterRoomPlayer,nSubIdx);
+	auto pp = getSitdownPlayerByUID(pEnterRoomPlayer->nUserUID) ;
+	if ( pp )
+	{
+		pp->reactive(pEnterRoomPlayer->nUserSessionID) ;
+	}
+}
+
 //bool ISitableRoom::onPlayerSitDown(ISitableRoomPlayer* pPlayer , uint8_t nIdx )
 //{
 //	if ( isSeatIdxEmpty(nIdx) )
@@ -488,7 +499,7 @@ void ISitableRoom::onGameDidEnd()
 			CLogMgr::SharedLogMgr()->PrintLog("update room peer offset uid = %u, offset = %d",pPlayer->getUserUID(),pPlayer->getGameOffset());
 		}
 
-		if ( (pPlayer->isDelayStandUp() || pPlayer->getCoin() < coinNeededToSitDown() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
+		if ( pPlayer->getNoneActTimes() >= getMaxNoneActTimeForStandUp() || (pPlayer->isDelayStandUp() || pPlayer->getCoin() < coinNeededToSitDown() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
 		{
 			playerDoStandUp(pPlayer);	
 			pPlayer = nullptr ;

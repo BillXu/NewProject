@@ -20,6 +20,7 @@ void CNiuNiuRoomBetState::onStateDuringTimeUp()
 		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getPlayerByIdx(idx);
 		if ( pPlayer )
 		{
+			pPlayer->increaseNoneActTimes();
 			pPlayer->setBetTimes(1) ;
 		}
 	}
@@ -78,7 +79,7 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 	}
 
 	m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
-
+	pPlayer->resetNoneActTimes();
 	if ( vWaitBetPlayerIdxs.empty() )
 	{
 		onStateDuringTimeUp();

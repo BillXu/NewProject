@@ -32,6 +32,7 @@ bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, cons
 	m_nBankerIdx = -1;
 	m_nBetBottomTimes = 1 ;
 	m_nBankerCoinLimitForBet = 0 ;
+	m_isWillManualLeaveBanker = false ;
 	return true ;
 }
 
@@ -125,6 +126,7 @@ void CNiuNiuRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	}
 	vOutJsValue["baseBet"] = getBaseBet();
 	vOutJsValue["bankerTimes"] = m_nBetBottomTimes;
+	vOutJsValue["unbankerType"] = m_nResignBankerCtrl;
 }
 
 void CNiuNiuRoom::sendRoomPlayersInfo(uint32_t nSessionID)
@@ -227,6 +229,7 @@ void CNiuNiuRoom::onGameWillBegin()
 	ISitableRoom::onGameWillBegin();
 	m_nBankerCoinLimitForBet = 0 ;
 	m_nBetBottomTimes = 1 ;
+	m_isWillManualLeaveBanker = false ;
 	getPoker()->RestAllPoker();
 	if ( isHaveBanker() )
 	{
@@ -423,11 +426,18 @@ void CNiuNiuRoom::caculateGameResult()
 
 	sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
 
-	// decide banker ;
-	 // // 0 no niu leave banker , 1 lose to all  leave banker ;
-	if ( ( m_nResignBankerCtrl == 0 && isBankerHaveNiu == false ) || (m_nResignBankerCtrl == 1 && isLoseToAll ) )
+	// check banker for coin 
+	if ( pBanker->getCoin() < getLeastCoinNeedForBeBanker(1) )
 	{
 		m_nBankerIdx = -1 ;
+		CLogMgr::SharedLogMgr()->SystemLog("coin is not enough , so resign banker uid = %u",pBanker->getUserUID()) ;
+	}
+	// decide banker ;
+	 // // 0 no niu leave banker , 1 lose to all  leave banker ;
+	if ( ( m_nResignBankerCtrl == 0 && isBankerHaveNiu == false ) || (m_nResignBankerCtrl == 1 && isLoseToAll ) || ( 2 == m_nResignBankerCtrl && m_isWillManualLeaveBanker ) )
+	{
+		m_nBankerIdx = -1 ;
+		m_isWillManualLeaveBanker = false ;
 		CLogMgr::SharedLogMgr()->PrintLog("resign banker ctrl = %u , isBankerHaveNiu = %u , isLoseToAll = %u",m_nResignBankerCtrl,isBankerHaveNiu,isLoseToAll) ;
 	}
 }
@@ -500,3 +510,48 @@ bool CNiuNiuRoom::canStartGame()
 	std::vector<uint8_t> v ;
 	return getPlayersHaveGrabBankerPrivilege(v) ;
 } 
+
+bool CNiuNiuRoom::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID  )
+{
+	if ( ISitableRoom::onMessage(prealMsg,nMsgType,eSenderPort,nSessionID) )
+	{
+		return true ;
+	}
+
+	switch ( nMsgType )
+	{
+	case MSG_REQ_RESIGN_BANKER:
+		{
+			auto pPlayer = getSitdownPlayerBySessionID(nSessionID) ;
+			uint8_t nRet = 0 ;
+			do
+			{
+				if ( !pPlayer || pPlayer->getIdx() != getBankerIdx() )
+				{
+					nRet = 1 ;
+					break; 
+				}
+
+				if ( 2 != m_nResignBankerCtrl )
+				{
+					nRet = 2 ;
+					break ;
+				}
+
+				m_isWillManualLeaveBanker = true ;
+			}
+			while(0);
+			Json::Value jsmsgBack ;
+			jsmsgBack["ret"] = nRet ;
+			sendMsgToPlayer(nSessionID,jsmsgBack,nMsgType) ;
+		}
+		break ;
+	default:
+		return false ;
+	}
+	return true ;
+}
+bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
+{
+	return ISitableRoom::onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
+}

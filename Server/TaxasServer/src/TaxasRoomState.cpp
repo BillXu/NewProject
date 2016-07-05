@@ -192,6 +192,11 @@ bool CTaxasStatePlayerBet::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , u
 				m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID);
 				CLogMgr::SharedLogMgr()->ErrorLog("player idx = %d act error ret = %d , room id = %d",nSeatIdx,msgBack.nRet,m_pRoom->getRoomID()); 
 			}
+
+			if ( prealMsg->cSysIdentifer != 0 )
+			{
+				pPlayer->resetNoneActTimes();
+			}
 		}
 		break;
 	default:

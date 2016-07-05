@@ -69,6 +69,7 @@ bool CGoldenRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 				auto pp = getSitdownPlayerBySessionID(nPlayerSessionID) ;
 				if ( pp )
 				{
+					pp->resetNoneActTimes();
 					if ( pp->isHaveState(eRoomPeer_CanAct) == false )
 					{
 						pp->setState(eRoomPeer_Ready) ;
@@ -175,6 +176,10 @@ void CGoldenRoom::onGameWillBegin()
 			pRG->betCoin(getCurBet());
 			m_nMailPool += getCurBet() ;
 		}
+		else if ( pp )
+		{
+			pp->increaseNoneActTimes();
+		}
 	}
 
 
@@ -200,13 +205,17 @@ void CGoldenRoom::onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )
 	}
 	else
 	{
+		if ( pPlayer->isHaveState(eRoomPeer_StayThisRound) && getDelegate() && getCurRoomState()->getStateID() != eRoomState_DidGameOver )
+		{
+			getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),pPlayer->getGameOffset()) ;
+		}
 		playerDoStandUp(pPlayer);
 	}
 }
 
 uint32_t CGoldenRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp)
 {
-	return 0 ;
+	return 99999999 ;
 }
 
 void CGoldenRoom::prepareCards()

@@ -819,6 +819,7 @@ struct stRecorderItem
 	uint32_t nDuiringSeconds ;
 	int32_t nOffset ;
 	uint32_t nBuyIn ;
+	char cRoomName[MAX_LEN_ROOM_NAME] ;
 };
 
 struct stMsgPlayerRequestGameRecorderRet
