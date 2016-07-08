@@ -411,6 +411,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				jsArg["buyIn"] = pRet->nBuyIn ;
 				jsArg["baseBet"] = pRet->nBaseBet ;
 				jsArg["roomName"] = pRet->cRoomName ;
+				jsArg["clubID"] = pRet->nClubID ;
 				CPlayerMailComponent::PostOfflineEvent(CPlayerMailComponent::Event_SyncGameResult,jsArg,pRet->nTargetPlayerUID);
 			}
 			else

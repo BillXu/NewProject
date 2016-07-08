@@ -75,7 +75,7 @@ void CAppleVerifyManager::Init()
 #else
 	curl_easy_setopt(m_pCURL,CURLOPT_URL,"https://buy.itunes.apple.com/verifyReceipt");
 #endif
-	//curl_easy_setopt(m_pCURL,CURLOPT_URL,"https://sandbox.itunes.apple.com/verifyReceipt");
+	curl_easy_setopt(m_pCURL,CURLOPT_URL,"https://sandbox.itunes.apple.com/verifyReceipt");
 	curl_easy_setopt(m_pCURL,CURLOPT_SSL_VERIFYPEER,0L);
 	curl_easy_setopt(m_pCURL,CURLOPT_SSL_VERIFYHOST,0L);
 	curl_easy_setopt(m_pCURL,CURLOPT_WRITEFUNCTION,&OnRecieveData );

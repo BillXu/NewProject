@@ -7,17 +7,21 @@ struct stGroupItem
 	uint32_t nCreaterUID ;
 	uint32_t nCityCode ;
 	uint32_t nGroupID ;
-	uint32_t nCurCnt ;
 	uint16_t nLevel ;
 	bool isDirty ;
 	bool isCntDirty ;
 	uint32_t m_tLevelRunOutTime ;
+	std::vector<uint32_t> vMembers ;
 public:
-	stGroupItem(){ nCurCnt = 1 ; nLevel = 0 ; m_tLevelRunOutTime = 0 ; isCntDirty = false ; isDirty = false ; }
+	stGroupItem(){ nLevel = 0 ; m_tLevelRunOutTime = 0 ; isCntDirty = false ; isDirty = false ; vMembers.clear(); }
 	bool isRoomKeepRunning();
 	bool isGroupFull();
 	uint32_t getCapacity();
 	bool isPlayerCanCreateRoom( uint32_t nUserUID ){ return nUserUID == nCreaterUID ;}
+	void addMember(uint32_t nMemberUID );
+	void removeMember(uint32_t nMemberUID );
+	bool isHaveMember(uint32_t nMemberUID );
+	uint32_t getMemberCnt() ;
 };
 
 class CGroup
@@ -31,6 +35,7 @@ public:
 		eReq_AddMember ,
 		eReq_DeleteMember,
 		eReq_RefreshCnt,
+		eReq_GroupMembers,
 		eReq_Max,
 	};
 public:
@@ -46,6 +51,7 @@ public:
 	uint16_t getClubCntByUserUID(uint32_t nUserUID);
 	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg)override ;
 	void onTimeSave()override ;
+	void reqGroupMembers(stGroupItem* pGroup );
 protected:
 	MAP_GROUP m_vGroups ;
 	CHttpRequest m_pGoTyeAPI;

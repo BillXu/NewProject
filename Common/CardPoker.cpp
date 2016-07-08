@@ -68,16 +68,16 @@ void CCard::LogCardInfo()
 	switch ( m_eType )
 	{
 	case eCard_Heart:
-		pType = "ºìÌÒ";
+		pType = "çº¢æ¡ƒ";
 		break;
 	case eCard_Sword:
-		pType = "ºÚÌÒ";
+		pType = "é»‘æ¡ƒ";
 		break;
 	case eCard_Club:
-		pType = "²İ»¨";
+		pType = "è‰èŠ±";
 		break;
 	case eCard_Diamond:
-		pType = "·½¿é";
+		pType = "æ–¹å—";
 		break;
 	default:
         pType = "unknown";
@@ -235,7 +235,7 @@ void CPoker::SetupCardCount(unsigned short nCount )
 
 void CPoker::LogCardInfo()
 {
-	CLogMgr::SharedLogMgr()->PrintLog("Ï´ÅÆ½á¹ûÈçÏÂ£º");
+	CLogMgr::SharedLogMgr()->PrintLog("Å“Â¥â‰ˆâˆ†Î©Â·Ï€ËšÂ»ÃÅ“Â¬Â£âˆ«   ");
 	CCard stCard(2);
 	for ( int i = 0 ; i < m_nCardCount ; ++i )
 	{

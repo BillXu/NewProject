@@ -2,6 +2,10 @@
 #include <algorithm>
 #include "LogManager.h"
 #include <assert.h>
+#ifdef SERVER
+#include "NativeTypes.h"
+#endif // SERVER
+
 bool CompFunction(CCard* left , CCard* right )
 {
 	unsigned char nNumLeft = left->GetCardFaceNum(true) ;
@@ -154,7 +158,7 @@ char CTaxasPokerPeerCard::PK(CTaxasPokerPeerCard* pPeerCard )
 	sort(pPeerCard->m_vFinalCard.begin(),pPeerCard->m_vFinalCard.end(),CompFunction );
 	adjustPosForSpecailShunZi();
 	pPeerCard->adjustPosForSpecailShunZi();
-	for ( int i = m_vFinalCard.size() -1  ; i >= 0 ; --i )
+	for ( int i = (uint32_t)m_vFinalCard.size() -1  ; i >= 0 ; --i )
 	{
 		unsigned char nNumSelf = m_vFinalCard[i]->GetCardFaceNum(true) ;
 		unsigned char nNumOther = pPeerCard->m_vFinalCard[i]->GetCardFaceNum(true) ;
@@ -408,7 +412,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 			m_eType =  eCard_TongHua ;
 			m_strCardName = "paixing_tonghua";
 			// add final ;
-			for ( int j = vC.size() -1  ;j >= 0 ; --j )
+			for ( int j = (uint32_t)vC.size() -1  ;j >= 0 ; --j )
 			{
 				m_vFinalCard.push_back(vC[j]) ;
 				if ( m_vFinalCard.size() == 5 )
@@ -476,7 +480,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 	int nPairIdx = 0 ;
 //	CCard* pCardIndicator = NULL ;
 	vAllCardHelper.assign(m_vAllCard.begin(),m_vAllCard.end()) ;
-	for ( int i = vAllCardHelper.size() -1  ; i > 0 ; --i )
+	for ( int i = (uint32_t)vAllCardHelper.size() -1  ; i > 0 ; --i )
 	{
 		if ( vAllCardHelper[i]->GetCardFaceNum() == vAllCardHelper[i -1]->GetCardFaceNum() )
 		{
@@ -518,7 +522,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 	{
 		// no pair 
 		m_vFinalCard.clear();
-		for ( int i = m_vAllCard.size() -1 ; i >= 0 ; --i )
+		for ( int i = (uint32_t)m_vAllCard.size() -1 ; i >= 0 ; --i )
 		{
 			m_vFinalCard.push_back(m_vAllCard[i]) ;
 			if ( m_vFinalCard.size() == 5 )
@@ -555,7 +559,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 
 		m_vFinalCard.assign(vPairs[2].begin(),vPairs[2].end()) ;
 		m_vPairs[0].assign(vPairs[2].begin(),vPairs[2].end()) ;
-		for ( int i = vAllCardHelper.size() -1  ; i >= 0 ; --i )
+		for ( int i = (uint32_t)vAllCardHelper.size() -1  ; i >= 0 ; --i )
 		{
 			if ( vAllCardHelper[i] )
 			{
@@ -585,7 +589,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		}
 		else  // san tiao ;
 		{
-			for ( int i = vAllCardHelper.size() -1 ; i >= 0 ; --i )
+			for ( int i = (uint32_t)vAllCardHelper.size() -1 ; i >= 0 ; --i )
 			{
 				if ( vAllCardHelper[i] )
 				{
@@ -644,7 +648,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 #endif
 		}
 
-		for ( int i = vAllCardHelper.size() -1 ; i >= 0 ; --i )
+		for ( int i = (uint32_t)vAllCardHelper.size() -1 ; i >= 0 ; --i )
 		{
 			if (vAllCardHelper[i] )
 			{
@@ -695,7 +699,7 @@ void CTaxasPokerPeerCard::CheckShunZi(VEC_CARD& AllCard , bool bSpecailA, VEC_CA
 
 	vResultChardOut.clear();
 	unsigned char nShunCount = 0 ;
-	for ( int i = AllCard.size() -1  ; i > 0 ; --i )
+	for ( int i = (uint32_t)AllCard.size() -1  ; i > 0 ; --i )
 	{
 		if ( AllCard[i]->GetCardFaceNum(bSpecailA) == AllCard[i-1]->GetCardFaceNum(bSpecailA) + 1 )
 		{
@@ -749,7 +753,7 @@ void CTaxasPokerPeerCard::robotCheck4ShunZi( VEC_CARD& AllCard , bool bSpecailA,
 
 	vResultChardOut.clear();
 	unsigned char nShunCount = 0 ;
-	for ( int i = AllCard.size() -1  ; i > 0 ; --i )
+	for ( int i = (uint32_t)AllCard.size() -1  ; i > 0 ; --i )
 	{
 		if ( AllCard[i]->GetCardFaceNum(bSpecailA) == AllCard[i-1]->GetCardFaceNum(bSpecailA) + 1 )
 		{

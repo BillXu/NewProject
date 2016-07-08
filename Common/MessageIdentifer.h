@@ -327,7 +327,7 @@ enum eMsgType
 	// ret : 0 means success , 1 you are not creator , 2 room is running, try later , 3 club do not have room with that id ;
 	MSG_REQUEST_ROOM_ITEM_DETAIL, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
 	// client : { roomID : 0 }
-	// svr : { ret : 0 , name: "fsg" , creatorUID : 235, baseBet : 2, playerCnt : 23, roomID : 235 , roomType : eRoomType , initTime : 20, playedTime : 2345, seatCnt : 6 }
+	// svr : { ret : 0 , name: "fsg" , creatorUID : 235, baseBet : 2, playerCnt : 23, roomID : 235 , roomType : eRoomType , initTime : 20, playedTime : 2345, seatCnt : 6 ,clubID : 0 }
 	// ret : 0 success , 1 can not find room ;
 
 	MSG_ROOM_INFO,
@@ -391,6 +391,9 @@ enum eMsgType
 	// client : { uid : 2345 }
 	// svr : { uid : 2345 , clubIDs : [2 , 3 ,6 ,3 ]  } 
 
+	MSG_REQ_SELF_CREATE_ROOMS, 
+	// client : { uid : 2345 }
+	// svr : { roomIDs : [234,2345,2345,2345] } 
 
 
 

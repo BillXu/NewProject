@@ -213,8 +213,8 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 		{
 			stMsgSavePlayerGameRecorder* pRet = (stMsgSavePlayerGameRecorder*)pmsg ;
 			pRequest->eType = eRequestType_Add;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamerecorder (userUID,roomID, roomType,createUID,finishTime,duiringSeconds,offset,buyIn,baseBet,roomName ) VALUES ('%u', '%u','%u','%u','%u','%u','%d','%u','%u','%s')",
-				pRet->nUserUID,pRet->nRoomID,pRet->nRoomType,pRet->nCreateUID,pRet->nFinishTime,pRet->nDuiringSeconds,pRet->nOffset,pRet->nBuyIn,pRet->nBaseBet,pRet->cRoomName) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamerecorder (userUID,roomID, roomType,createUID,finishTime,duiringSeconds,offset,buyIn,baseBet,roomName,clubID ) VALUES ('%u', '%u','%u','%u','%u','%u','%d','%u','%u','%s',%u )",
+				pRet->nUserUID,pRet->nRoomID,pRet->nRoomType,pRet->nCreateUID,pRet->nFinishTime,pRet->nDuiringSeconds,pRet->nOffset,pRet->nBuyIn,pRet->nBaseBet,pRet->cRoomName,pRet->nClubID) ;
 		}
 		break ;
 	case MSG_READ_GAME_RESULT:
@@ -1154,6 +1154,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msgBack.nRoomID = pRow["roomID"]->IntValue();
 				msgBack.nBuyIn = pRow["buyIn"]->IntValue() ;
 				msgBack.nBaseBet = pRow["baseBet"]->IntValue() ;
+				msgBack.nClubID = pRow["clubID"]->IntValue() ;
 				memset(msgBack.cRoomName,0,sizeof(msgBack.cRoomName)) ;
 				if ( pRow["roomName"]->nBufferLen > 0 )
 				{

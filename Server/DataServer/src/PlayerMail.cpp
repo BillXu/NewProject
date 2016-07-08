@@ -491,6 +491,7 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 			msgSyn.nBuyIn = jArg["buyIn"].asUInt() ;
 			msgSyn.nTargetPlayerUID = GetPlayer()->GetUserUID() ;
 			msgSyn.nBaseBet = jArg["baseBet"].asUInt() ;
+			msgSyn.nClubID = jArg["clubID"].asUInt() ;
 			auto strname = jArg["roomName"].asString();
 			msgSyn.cRoomName[strname.size()] = 0 ;
 			sprintf_s(msgSyn.cRoomName,sizeof(msgSyn.cRoomName),"%s",strname.c_str()) ;

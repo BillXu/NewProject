@@ -879,6 +879,7 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			pItem->nCityCode = recvValue["cityCode"].asUInt() ;
 			pItem->nCreaterUID = GetPlayer()->GetUserUID() ;
 			pItem->nGroupID = recvValue["newClubID"].asUInt() ;
+			pItem->addMember(GetPlayer()->GetUserUID());
 			pg->addGroup(pItem) ;
 			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u create new club id = %u city code = %u",GetPlayer()->GetUserUID(),pItem->nGroupID,pItem->nCityCode) ;
 			CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;

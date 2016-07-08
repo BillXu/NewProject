@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #define MAX_ROW_BUFFER 1024*2
 #define MAX_CELL_BUFFER 512*2
-
+#include "NativeTypes.h"
 CReaderCell::CReaderCell( const char* strData )
 {
      m_StrData =  strData;
@@ -98,7 +98,7 @@ void CReaderRow::PaseRow(const char *pRowBuffer )
     {
         char pTab [20] = { 0 };
         sprintf(pTab, "\t") ;
-        iTablen = strlen(pTab) ;
+        iTablen = (uint32_t)strlen(pTab) ;
     }
     
     m_vAllCells.reserve(m_vStrToIdx.size()) ;
@@ -126,7 +126,7 @@ void CReaderRow::PaseRowForIndex(const char *pRowBuffer )
     int iTablen = 0 ;
     char pTab [20] = { 0 };
     sprintf(pTab, "\t") ;
-    iTablen = strlen(pTab) ;
+    iTablen = (uint32_t)strlen(pTab) ;
     
     char pDest[MAX_CELL_BUFFER] = { 0 } ;
     int iIndex = 0 ;
@@ -249,7 +249,7 @@ void CConfigReader::UnLoadFile()
 
 int CConfigReader::GetRowCount()
 {
-    return m_VAllRows.size() ;
+    return (uint32_t)m_VAllRows.size() ;
 }
 
 CReaderRow* CConfigReader::GetRowByIndex( int iIndex )

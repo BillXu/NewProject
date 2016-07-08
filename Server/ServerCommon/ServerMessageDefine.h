@@ -108,6 +108,7 @@ struct stMsgSyncPrivateRoomResult
 	uint32_t nDuringTimeSeconds ;
 	uint32_t nCreatorUID ;
 	uint32_t nBaseBet ;
+	uint32_t nClubID ;
 	char cRoomName[MAX_LEN_ROOM_NAME];
 };
 
@@ -163,6 +164,7 @@ struct stMsgSavePlayerGameRecorder
 	uint32_t nUserUID ;
 	uint32_t nBuyIn ;
 	uint32_t nBaseBet ;
+	uint32_t nClubID ;
 	char cRoomName[MAX_LEN_ROOM_NAME];
 };
 
@@ -185,6 +187,7 @@ struct stMsgReadPlayerGameRecorderRet
 	int32_t nOffset ;
 	uint32_t nBuyIn ;
 	uint32_t nBaseBet ;
+	uint32_t nClubID ;
 	char cRoomName[MAX_LEN_ROOM_NAME];
 };
 

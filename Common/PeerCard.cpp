@@ -185,36 +185,36 @@ void CPeerCard::LogInfo()
 	{
 		case ePeerCard_None:
 			{
-				pType = "ÆÕÍ¨ÅÆĞÍ";
+				pType = "æ™®é€šç‰Œå‹   "   ;
 			}
 			break;;
 		case ePeerCard_Pair:
 			{
-				pType = "¶Ô×Ó";
+				pType = "å¯¹å­";
 				break;
 			}
 		case  ePeerCard_Sequence:
 			{
-				pType = "Ë³×Ó";
+				pType = "é¡ºå­";
 				break;
 			}
 		case ePeerCard_SameColor:
 			{
-				pType = "½ğ»¨";
+				pType = "é‡‘èŠ±";
 				break;
 			}
 		case ePeerCard_SameColorSequence:
 			{
-				pType = "Ë³½ğ";
+				pType = "é¡ºé‡‘";
 				break;
 			}
 		case ePeerCard_Bomb:
 			{
-				pType = "±ª×Ó";
+				pType = "è±¹å­";
 				break;
 			}
 		default:
-			pType = "Î´ÖªÅÆĞÍ" ;
+			pType = "æœªçŸ¥ç‰Œå‹" ;
 			break;
 
 	}

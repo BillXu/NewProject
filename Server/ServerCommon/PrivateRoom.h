@@ -450,6 +450,7 @@ void CPrivateRoom<T>::roomItemDetailVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["initTime"] = m_nDuringSeconds / 60 ; ;
 	vOutJsValue["playedTime"] = (uint32_t)((m_nDuringSeconds - m_fLeftTimeSec)/60);
 	vOutJsValue["seatCnt"] = (uint16_t)m_pRoom->getSeatCount();
+	vOutJsValue["clubID"] = m_nClubID ;
 }
 
 template<class T >
@@ -509,6 +510,7 @@ void CPrivateRoom<T>::onRoomDoClosed()
 	stMsgSyncPrivateRoomResult msgResult ;
 	msgResult.nRoomID = getRoomID() ;
 	msgResult.nCreatorUID = getOwnerUID() ;
+	msgResult.nClubID = m_nClubID ; 
 	msgResult.nDuringTimeSeconds = m_nDuringSeconds ;
 	memset(msgResult.cRoomName,0,sizeof(msgResult.cRoomName));
 	sprintf_s(msgResult.cRoomName,sizeof(msgResult.cRoomName),"%s",m_strRoomName.c_str());

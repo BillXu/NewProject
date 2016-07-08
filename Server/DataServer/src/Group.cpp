@@ -6,6 +6,16 @@
 #include "GameRoomCenter.h"
 #include "PlayerBaseData.h"
 #include "Player.h"
+#include "PlayerMail.h"
+//#define  REQ_PAGE_MEMBER_CNT_OF_CLUB 30
+
+struct stClubMemberChangeReqArg
+{
+	stGroupItem* pOwenClub ;
+	uint32_t nTargetUID ;
+	uint32_t nMsgType ;
+};
+
 bool stGroupItem::isRoomKeepRunning()
 {
 	auto pgameCenter = (CGameRoomCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_RoomCenter) ;
@@ -14,7 +24,7 @@ bool stGroupItem::isRoomKeepRunning()
 
 bool stGroupItem::isGroupFull()
 {
-	return nCurCnt >= getCapacity() ; 
+	return getMemberCnt() >= getCapacity() ; 
 }
 
 uint32_t stGroupItem::getCapacity()
@@ -50,6 +60,37 @@ uint32_t stGroupItem::getCapacity()
 		return 200 ;
 	}
 	return 40;
+}
+
+void stGroupItem::addMember(uint32_t nMemberUID )
+{
+#ifdef _DEBUG
+	if ( isHaveMember(nMemberUID) )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("already have member uid = %u , why add twice ? group id = %u",nMemberUID,nGroupID) ;
+		return ;
+	}
+#endif // _DEBUG
+	vMembers.push_back(nMemberUID) ;
+}
+
+void stGroupItem::removeMember(uint32_t nMemberUID )
+{
+	auto iter = std::find(vMembers.begin(),vMembers.end(),nMemberUID);
+	if ( iter != vMembers.end() )
+	{
+		vMembers.erase(iter);
+	}
+}
+
+bool stGroupItem::isHaveMember(uint32_t nMemberUID )
+{
+	return std::find(vMembers.begin(),vMembers.end(),nMemberUID) != vMembers.end() ;
+}
+
+uint32_t stGroupItem::getMemberCnt() 
+{
+	return vMembers.size() ;
 }
 
 CGroup::~CGroup()
@@ -89,12 +130,15 @@ void CGroup::onConnectedSvr()
 			prt->nGroupID = jsRow["clubID"].asUInt() ;
 			prt->nLevel = jsRow["level"].asUInt() ;
 			prt->m_tLevelRunOutTime = jsRow["deadtime"].asUInt() ;
-			prt->nCurCnt = jsRow["curCnt"].asUInt() ;
+			//prt->nCurCnt = jsRow["curCnt"].asUInt() ;
 			prt->isCntDirty = true ;
 			auto iter = m_vGroups.find(prt->nGroupID) ;
 			if ( iter == m_vGroups.end() )
 			{
 				m_vGroups[prt->nGroupID] = prt ;
+
+				CLogMgr::SharedLogMgr()->PrintLog("request room members group id = %u",prt->nGroupID) ;
+				reqGroupMembers(prt) ;
 			}
 			else
 			{
@@ -112,7 +156,7 @@ void CGroup::onConnectedSvr()
 		else
 		{
 			// temp set ;
-			onTimeSave() ;
+			//onTimeSave() ;
 		}
 	});
 
@@ -138,10 +182,16 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 	{
 	case MSG_REQ_PLAYER_JOINED_CLUBS:
 		{
+			uint32_t nReqUID = prealMsg["uid"].asUInt() ;
+
 			Json::Value jsJoinedClubs ;
-			jsJoinedClubs[jsJoinedClubs.size()] = 11947940;
-			jsJoinedClubs[jsJoinedClubs.size()] = 11947640;
-			jsJoinedClubs[jsJoinedClubs.size()] = 11947138;
+			for ( auto vclub : m_vGroups )
+			{
+				if ( vclub.second->isHaveMember(nReqUID) )
+				{
+					jsJoinedClubs[jsJoinedClubs.size()] = vclub.second->nGroupID ;
+				}
+			}
 			prealMsg["clubIDs"] = jsJoinedClubs ;
 			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
 		}
@@ -182,7 +232,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			}
 
 			prealMsg["ret"] = 0 ;
-			prealMsg["curCnt"] = pGroup->nCurCnt ;
+			prealMsg["curCnt"] = pGroup->getMemberCnt() ;
 			prealMsg["capacity"] = pGroup->getCapacity();
 			prealMsg["level"] = pGroup->nLevel ;
 			prealMsg["deadTime"] = pGroup->m_tLevelRunOutTime ;
@@ -221,22 +271,47 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 
 			if ( nMsgType == MSG_CLUB_ADD_MEMBER )
 			{
-				if ( pClub->isGroupFull() )
+				if ( pClub->isGroupFull() || pClub->isHaveMember(nAccountUID) )
 				{
 					prealMsg["ret"] = 3 ;
 					getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
 					CLogMgr::SharedLogMgr()->PrintLog("group is full") ;
 					break ;
 				}
-				m_pGoTyeAPI.performRequest("AddGroupMember",str.c_str(),str.size(),pClub,eReq_AddMember );
+
+				stClubMemberChangeReqArg* pArg = new stClubMemberChangeReqArg ;
+				pArg->nMsgType = nMsgType ;
+				pArg->nTargetUID = nAccountUID;
+				pArg->pOwenClub = pClub ;
+
+				m_pGoTyeAPI.performRequest("AddGroupMember",str.c_str(),str.size(),pArg,eReq_AddMember );
 				CLogMgr::SharedLogMgr()->PrintLog("add member accountUid  = %u",nAccountUID) ;
 			}
 			else
 			{
-				m_pGoTyeAPI.performRequest("DelGroupMember",str.c_str(),str.size(),pClub,eReq_DeleteMember );
+				if ( pClub->isHaveMember(nAccountUID) == false )
+				{
+					prealMsg["ret"] = 2 ;
+					getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
+					break;
+				}
+
+				stClubMemberChangeReqArg* pArg = new stClubMemberChangeReqArg ;
+				pArg->nMsgType = nMsgType ;
+				pArg->nTargetUID = nAccountUID;
+				pArg->pOwenClub = pClub ;
+
+				m_pGoTyeAPI.performRequest("DelGroupMember",str.c_str(),str.size(),pArg,eReq_DeleteMember );
 				CLogMgr::SharedLogMgr()->PrintLog("delete member accountUid  = %u",nAccountUID) ;
 			}
 			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
+
+			// tell result ;
+			eNoticeType eType = nMsgType == MSG_CLUB_ADD_MEMBER ? eNotice_BeAddedToClub : eNotice_BeRemoveFromClub ;
+			Json::Value jsArg;
+			jsArg["clubID"] = nGroupID;
+			CPlayerMailComponent::PostDlgNotice(eType,jsArg,nAccountUID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("club member changed dlg notice etype = %u ,targetUID = %u",eType,nAccountUID) ;
 		}
 		break ;
 	case MSG_REQ_LEVEL_UP_CLUB:
@@ -308,9 +383,16 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 	case MSG_REQ_RECORMED_CLUB:
 		{
 			Json::Value jsArray ;
-			jsArray[jsArray.size()] = 11947940;
-			jsArray[jsArray.size()] = 11947640;
-			jsArray[jsArray.size()] = 11947138;
+			auto iter = m_vGroups.rbegin();
+			for ( ; iter != m_vGroups.rend() ; ++iter )
+			{               
+				jsArray[jsArray.size()] = iter->second->nGroupID;
+				if ( jsArray.size() >= 10 )
+				{
+					break; 
+				}
+			}
+
 			prealMsg["clubIDs"] = jsArray ;
 			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
 		}
@@ -394,56 +476,76 @@ void CGroup::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("club gotyp request failed") ;
+		CLogMgr::SharedLogMgr()->ErrorLog("club gotyp request failed type = %u ",nUserTypeArg) ;
 		return ;
 	}
 
 	if ( jsResult["errcode"].asUInt() != 200 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("club gotype request failed error code = %u ", jsResult["errcode"].asUInt()) ;
+		CLogMgr::SharedLogMgr()->ErrorLog("club gotype request failed error code = %u type = %u", jsResult["errcode"].asUInt(),nUserTypeArg) ;
 		return ;
 	}
 
 	if ( eReq_DeleteMember == nUserTypeArg )
 	{
-		auto pClub = (stGroupItem*)pUserData;
-		if ( pClub->nCurCnt > 0 )
-		{
-			--pClub->nCurCnt;
-			pClub->isDirty = true ;
-			pClub->isCntDirty = true ;
-		}
-		CLogMgr::SharedLogMgr()->PrintLog("delete club member ok ") ;
+		stClubMemberChangeReqArg* pArg = (stClubMemberChangeReqArg*)pUserData ;
+		auto pClub = (stGroupItem*)pArg->pOwenClub;
+		uint32_t nUID = pArg->nTargetUID ;
+		pClub->removeMember(nUID);
+		delete pArg  ;
+		pArg = nullptr ;
+		 
+		CLogMgr::SharedLogMgr()->PrintLog("delete club member ok, uid = %u ",nUID) ;
 	}
 	else if ( eReq_AddMember == nUserTypeArg )
 	{
-		auto pClub = (stGroupItem*)pUserData;
-		++ pClub->nCurCnt;
-		pClub->isCntDirty = true ;
-		pClub->isDirty = true ;
-		CLogMgr::SharedLogMgr()->PrintLog("add club member ok ") ;
+		stClubMemberChangeReqArg* pArg = (stClubMemberChangeReqArg*)pUserData ;
+		auto pClub = (stGroupItem*)pArg->pOwenClub;
+		uint32_t nUID = pArg->nTargetUID ;
+		pClub->addMember(nUID);
+		delete pArg  ;
+		pArg = nullptr ;
+		CLogMgr::SharedLogMgr()->PrintLog("add club member ok uid = %u ",nUID) ;
 	}
 	else if ( eReq_RefreshCnt == nUserTypeArg )
 	{
-		Json::Value jsGropList = jsResult["group_list"];
-		for ( uint32_t nIdx = 0 ; nIdx < jsGropList.size() ; ++nIdx )
-		{
-			auto jsginfo = jsGropList[nIdx] ;
-			uint32_t nClubID = jsginfo["group_id"].asUInt() ;
-			uint32_t nCnt = jsginfo["number"].asUInt() ;
-			CLogMgr::SharedLogMgr()->PrintLog("refresh cnt result club id = %u, curCnt = %u",nClubID,nCnt) ;
+		//Json::Value jsGropList = jsResult["group_list"];
+		//for ( uint32_t nIdx = 0 ; nIdx < jsGropList.size() ; ++nIdx )
+		//{
+		//	auto jsginfo = jsGropList[nIdx] ;
+		//	uint32_t nClubID = jsginfo["group_id"].asUInt() ;
+		//	uint32_t nCnt = jsginfo["number"].asUInt() ;
+		//	CLogMgr::SharedLogMgr()->PrintLog("refresh cnt result club id = %u, curCnt = %u",nClubID,nCnt) ;
 
-			auto gGr = getGroupByID(nClubID) ;
-			if ( gGr && gGr->nCurCnt != nCnt )
-			{
-				gGr->nCurCnt = nCnt ;
-				gGr->isDirty = true ;
-			}
+		//	auto gGr = getGroupByID(nClubID) ;
+		//	if ( gGr && gGr->nCurCnt != nCnt )
+		//	{
+		//		gGr->nCurCnt = nCnt ;
+		//		gGr->isDirty = true ;
+		//	}
 
-			if ( gGr != nullptr && (gGr->isCntDirty = false ) ){}
-		}
+		//	if ( gGr != nullptr && (gGr->isCntDirty = false ) ){}
+		//}
 	}
-	else
+	else if ( eReq_GroupMembers == nUserTypeArg )
+	{
+		auto pClub = (stGroupItem*)pUserData;
+		Json::Value jsMembers = jsResult["user_list"] ;
+		for ( uint16_t nIdx = 0 ; nIdx < jsMembers.size() ; ++nIdx )
+		{
+			auto jsM = jsMembers[nIdx] ;
+			uint32_t nUID = atoi(jsM.asCString()) ;
+			CLogMgr::SharedLogMgr()->PrintLog("req member to add group id = %u , uid = %u",pClub->nGroupID,nUID);
+			pClub->addMember(nUID) ;
+		}
+
+		//if ( jsMembers.size() >= REQ_PAGE_MEMBER_CNT_OF_CLUB )
+		//{
+		//	CLogMgr::SharedLogMgr()->PrintLog("req next page member cnt for club id = %u",pClub->nGroupID) ;
+		//	reqGroupMembers(pClub) ;
+		//}
+	}
+	else 
 	{
 		CLogMgr::SharedLogMgr()->PrintLog("unknown club req type") ;
 	}
@@ -452,15 +554,15 @@ void CGroup::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData
 void CGroup::onTimeSave()
 {
 	char pBuffer[200] = { 0 } ;
-	Json::Value jsreqlist ;
+	//Json::Value jsreqlist ;
 	for ( auto ref : m_vGroups )
 	{
 		auto pG = ref.second ;
 
-		if ( pG->isCntDirty )
-		{
-			jsreqlist[jsreqlist.size()] = pG->nGroupID ; //std::to_string(pG->nGroupID) ;
-		}
+		//if ( pG->isCntDirty )
+		//{
+		//	jsreqlist[jsreqlist.size()] = pG->nGroupID ; //std::to_string(pG->nGroupID) ;
+		//}
 
 		if ( pG->isDirty == false )
 		{
@@ -468,16 +570,33 @@ void CGroup::onTimeSave()
 		}
 		memset(pBuffer,0,sizeof(pBuffer));
 		Json::Value jsReq ;
-		sprintf_s(pBuffer,sizeof(pBuffer),"update clubs set level = '%u' , deadtime = '%u' , curCnt = '%u' where clubID = '%u' limit 1;",pG->nLevel,pG->m_tLevelRunOutTime,pG->nCurCnt,pG->nGroupID);
+		sprintf_s(pBuffer,sizeof(pBuffer),"update clubs set level = '%u' , deadtime = '%u' , curCnt = '%u' where clubID = '%u' limit 1;",pG->nLevel,pG->m_tLevelRunOutTime,pG->getMemberCnt(),pG->nGroupID);
 		jsReq["sql"] = pBuffer ;
 		getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Update,jsReq);
 		pG->isDirty = false ;
 	}
 
-	if ( jsreqlist.empty() )
-	{
-		return ;
-	}
+	//if ( jsreqlist.empty() )
+	//{
+	//	return ;
+	//}
+//	// refresh cnt ;
+//	Json::Value cValue ;
+//	cValue["email"] = "378569952@qq.com" ;
+//	cValue["devpwd"] = "bill007" ;
+//#ifdef _DEBUG
+//	cValue["appkey"] = "e87f31bb-e86c-4d87-a3f3-57b3da76b3d6";
+//#else
+//	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
+//#endif // DEBUG
+//	cValue["group_id_list"] = jsreqlist;
+//	Json::StyledWriter sWrite ;
+//	std::string str = sWrite.write(cValue);
+//	m_pGoTyeAPI.performRequest("GetGroupDetail",str.c_str(),str.size(),nullptr,eReq_RefreshCnt );
+}
+
+void CGroup::reqGroupMembers(stGroupItem* pGroup )
+{
 	// refresh cnt ;
 	Json::Value cValue ;
 	cValue["email"] = "378569952@qq.com" ;
@@ -487,8 +606,10 @@ void CGroup::onTimeSave()
 #else
 	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
 #endif // DEBUG
-	cValue["group_id_list"] = jsreqlist;
+	//cValue["index"] = pGroup->getMemberCnt() / REQ_PAGE_MEMBER_CNT_OF_CLUB ;
+	//cValue["count"] = REQ_PAGE_MEMBER_CNT_OF_CLUB ;
+	cValue["group_id"] = pGroup->nGroupID ;
 	Json::StyledWriter sWrite ;
 	std::string str = sWrite.write(cValue);
-	m_pGoTyeAPI.performRequest("GetGroupDetail",str.c_str(),str.size(),nullptr,eReq_RefreshCnt );
+	m_pGoTyeAPI.performRequest("GetGroupUserList",str.c_str(),str.size(),pGroup,eReq_GroupMembers );
 }

@@ -288,6 +288,22 @@ bool IRoomManager::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSen
 {
 	switch (nMsgType)
 	{
+	case MSG_REQ_SELF_CREATE_ROOMS:
+		{
+			uint32_t nReqUID = prealMsg["uid"].asUInt() ;
+			Json::Value jsRoomIDs ;
+			for ( auto ref : m_vRooms )
+			{
+				if ( ref.second->getOwnerUID() == nReqUID )
+				{
+					jsRoomIDs[jsRoomIDs.size()] = ref.second->getRoomID();
+				}
+			}
+			Json::Value jsMsg ;
+			jsMsg["roomIDs"] = jsRoomIDs ;
+			getSvrApp()->sendMsg(nSessionID,jsMsg,nMsgType) ;
+		}
+		break;
 	case MSG_REQUEST_ROOM_ITEM_DETAIL:
 		{
 			Json::Value jsMsgBack ;
