@@ -28,6 +28,7 @@ public:
 	CTaxasPokerPeerCard(){Reset(); m_vReservs.clear() ;}
 	~CTaxasPokerPeerCard();
 	CCard* AddCardByCompsiteNum(unsigned char nCardNum );
+	bool removePublicCompsiteNum( unsigned char nCardNum );
 	char PK(CTaxasPokerPeerCard* pPeerCard );  // -1 failed 0 same , 1 win ;
 	const char* GetTypeName();
 	eCardType GetCardType();
@@ -55,7 +56,7 @@ protected:
 	VEC_CARD m_vPairs[2] ; // used when have pairs ;
 	std::string m_strCardName ; 
 	eCardType m_eType ;
-	unsigned char nCardCountWhenCaculate ;
 
 	VEC_CARD m_vReservs;
+	bool m_isCardDirty ;
 };

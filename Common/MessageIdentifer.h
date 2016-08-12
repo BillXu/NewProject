@@ -317,7 +317,7 @@ enum eMsgType
 	// client : { name : "this is room name" ,roomType : eRoomType , baseBet : 23 , duringMin : 2345 , clubID : 23 , baseTakeIn : 235, isControlTakeIn : 0 , seatCnt : 2 , opts : { ... } }
 	// roomType : means eRoomType . baseBet , for taxas , it represent small blind . duringMin : room keep running time , by minite . clubID : when equal 0 , means ,quick game , opts : depend on game type ;
 	// NIU NIU  opts : { unbankerType : 0 }  // 0 no niu leave banker , 1 lose to all  leave banker , 2 manual leave banker;
-	// Taxas Poker opts : { maxTakeIn : 2345 }
+	// Taxas Poker opts : { maxTakeIn : 2345, isInsured : 0  }
 	// Golden opts : { maxSingleBet : 20 }
 	// svr : { ret : 0 , roomID : 235 , clubID : 23 } ;
 	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error 
@@ -334,7 +334,7 @@ enum eMsgType
 	// svr : { ownerUID : 234552 , roomID : 2345 , seatCnt : 4 , chatID : 23455 , curState : eRoomState , leftTimeSec : 235 , baseTakeIn : 2345 , selfCoin : 2345 , game : { ... } } 
 	// goldn :  game : { "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 }
 	// NiuNiu : game : { "bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2, unbankerType : 0  }
-	// taxas :   game : { "litBlind":20,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] };
+	// taxas :   game : { isInsurd : 0 ,"litBlind":20,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] };
 
 	MSG_SET_GAME_STATE, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
 	// client : { roomID : 0 , state : 2 , uid : 2345 }  
@@ -363,7 +363,7 @@ enum eMsgType
 
 	MSG_CLUB_ADD_MEMBER,
 	// client : { groupID : 2345 , userAccount : 2345 }  // gotpe user account , not game player user account 
-	// client { ret : 0 , groupID : 2345 , userAccount : 2345 } // ret : 1 can not find groupID ; 2 svr error , 3 reach member cnt limit;
+	// client { ret : 0 , groupID : 2345 , userAccount : 2345 } // ret : 1 can not find groupID ; 2 svr error , 3 reach member cnt limit, 4 already in club;
 
 	MSG_CLUB_DELETE_MEMBER,
 	// client : { groupID : 2345 , userAccount : 2345 }  // gotpe user account , not game player user account 
@@ -395,12 +395,49 @@ enum eMsgType
 	// client : { uid : 2345 }
 	// svr : { roomIDs : [234,2345,2345,2345] } 
 
+	MSG_REQ_CLUB_MEMBER,
+	// client : { clubID : 345345, pageIdx : 234 } 
+	// svr : { ret : 0 , clubID : 345345, pageIdx : 234, members : [123,1234,234,2345] }
+	// ret : 0 success , 1 can not find tareget club ;
 
+	MSG_REQ_CITY_CLUB,
+	// client: { cityCode : 2345, pageIdx : 23  }
+	// svr : { cityCode : 234 , pageIdx : 23, clubs : [234,2345,2345] }
 
+	// insurance module 
 
+	MSG_INFORM_BUY_INSURANCE,
+	// svr : { buyerIdx : 2345 , lowLimit : 23456, outs : [2,345,34 ], playerouts : [ {idx : 0 , outs : 23 },{idx : 0 , outs : 23 } ]  }
 
+	MSG_PLAYER_SELECT_INSURED_AMOUNT,
+	// client : { roomID : 33, amount : 23405 }
+	// svr : { ret : 0 }
+	// ret : 0 success , 1 you are not the insurance buyer ;
 
+	MSG_ROOM_SELECT_INSURED_AMOUNT,
+	// svr : { buyerIdx : 2345 , amount : 2345 }
 
+	MSG_CONFIRM_INSURED_AMOUNT,
+	// client : { roomID : 23, amount : 2345 }
+	// svr : { ret : 0 }
+	// ret : 0 success , 1 you are not insurance buyer , 2 amount not proper ;
+
+	MSG_ROOM_FINISHED_BUY_INSURANCE,
+	// svr : { idx : 2, amount : 2345 }
+	// amount = 0 , means give up buy insurance ;
+
+	MSG_INSURANCE_CALCULATE_RESULT,
+	// svr : { idx : 2 , offset : 2345 }  
+
+	MSG_CHECK_REG_ACCOUNT,  // check the register account , if it already exist
+	// client : { account : 18917562006 }
+	// svr : { ret : 0 , account : 18917562006 } 
+	// ret : 0 ok , 1 already exist ;
+
+	MSG_SYNC_TAXAS_ROOM_PLAYER_COIN, 
+	// svr : { players : [ { idx : 234, coin : 2345} , {idx : 234 , coin : 2345 } ] }
+
+	MSG_SKIP_BUY_INSURANCE,
 
 
 

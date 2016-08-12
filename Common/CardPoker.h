@@ -22,7 +22,7 @@ public:
 	unsigned char GetCardCompositeNum();  // Composite are make of face num and card type ;
 	eCardType GetType(){ return m_eType ;}
 	void LogCardInfo();
-	void SetCard(eCardType etype, unsigned char nFaceNum );
+	CCard& SetCard(eCardType etype, unsigned char nFaceNum );
 protected:
 	eCardType m_eType ;
 	unsigned char m_nCardFaceNum ;
@@ -42,6 +42,7 @@ public:
 	unsigned short GetAllCard(){ return m_nCardCount;  }
 	void ComfirmKeepCard( unsigned char nCardLeft = 3 * 5 ); // 开局发牌之前，一定要确认牌堆里是否有足够的牌。
 	void RestAllPoker();
+	unsigned char getCardNum( unsigned char nIdx );
 protected:
 	void AddCard(unsigned char nCard );   // invoke when init
 	void AddCard(CCard* pcard);   // invoke when init

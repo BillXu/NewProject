@@ -87,7 +87,7 @@ const char*  CNiuNiuPeerCard::getNameString()
             str = "niuniu_meiniu";
             break;
     }
-    return Language::getInstance()->get(str);
+    return Language::getInstance()->get(str.c_str());
 #endif
 	return "niu niu" ;
 }

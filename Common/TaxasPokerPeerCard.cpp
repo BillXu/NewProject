@@ -51,21 +51,39 @@ CCard* CTaxasPokerPeerCard::AddCardByCompsiteNum(unsigned char nCardNum )
 	}
 
 	m_vAllCard.push_back(pCard) ;
+	m_isCardDirty = true ;
 	return pCard ;
+}
+
+bool CTaxasPokerPeerCard::removePublicCompsiteNum( unsigned char nCardNum )
+{
+	auto iter = std::find_if(m_vDefaul.begin(),m_vDefaul.end(),[nCardNum]( CCard* pCard ){ return pCard->GetCardCompositeNum() == nCardNum ; }) ;
+	if ( iter != m_vDefaul.end() )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("remove public card , but card = %u , is in hold card, please attention to add card sequence",nCardNum) ;
+	}
+
+	iter = std::find_if(m_vAllCard.begin(),m_vAllCard.end(),[nCardNum]( CCard* pCard ){ return pCard->GetCardCompositeNum() == nCardNum ; }) ;
+	if ( iter == m_vAllCard.end() )
+	{
+		return false ;
+	}
+	m_vReservs.push_back(*iter) ;
+	m_vAllCard.erase(iter);
+
+	m_isCardDirty = true ;
+	return true ;
 }
 
 const char* CTaxasPokerPeerCard::GetTypeName()
 { 
-	if ( nCardCountWhenCaculate < m_vAllCard.size() )
-	{
-		CaculateFinalCard() ;
-	}
+
+	CaculateFinalCard() ;
 	return m_strCardName.c_str();
 }
 
 CTaxasPokerPeerCard::eCardType CTaxasPokerPeerCard::GetCardType()
 { 
-	if ( nCardCountWhenCaculate < m_vAllCard.size() )
 	{
 		CaculateFinalCard() ;
 	}
@@ -95,7 +113,6 @@ void CTaxasPokerPeerCard::adjustPosForSpecailShunZi()
 
 char CTaxasPokerPeerCard::PK(CTaxasPokerPeerCard* pPeerCard )
 {
-	if ( nCardCountWhenCaculate < m_vAllCard.size() )
 	{
 		CaculateFinalCard() ;
 	}
@@ -178,7 +195,6 @@ char CTaxasPokerPeerCard::PK(CTaxasPokerPeerCard* pPeerCard )
 
 void CTaxasPokerPeerCard::Reset()
 {
-	nCardCountWhenCaculate = 0 ;
 	ClearVecCard(m_vAllCard) ;
 	m_vDefaul.clear() ;
 	m_vFinalCard.clear() ;
@@ -186,6 +202,7 @@ void CTaxasPokerPeerCard::Reset()
 	m_strCardName = "paixing_gaopai";
 	m_vPairs[0].clear();
 	m_vPairs[1].clear(); 
+	m_isCardDirty = false ;
 }
 
 void CTaxasPokerPeerCard::LogInfo()
@@ -208,7 +225,6 @@ void CTaxasPokerPeerCard::LogInfo()
 
 void CTaxasPokerPeerCard::GetFinalCard( unsigned char vMaxCard[5])
 {
-    if ( nCardCountWhenCaculate < m_vAllCard.size() )
 	{
 		CaculateFinalCard() ;
 	}
@@ -238,7 +254,6 @@ unsigned char CTaxasPokerPeerCard::GetCardTypeForRobot(unsigned char& nContriBut
 {
 	unsigned char nRobotCardType = 0 ;
 	nKeyCardFaceNum = 0 ;
-	if ( nCardCountWhenCaculate < m_vAllCard.size() )
 	{
 		CaculateFinalCard() ;
 	}
@@ -329,12 +344,18 @@ unsigned char CTaxasPokerPeerCard::GetCardTypeForRobot(unsigned char& nContriBut
 
 void CTaxasPokerPeerCard::CaculateFinalCard()
 {
-	nCardCountWhenCaculate = m_vAllCard.size() ;
-	if ( nCardCountWhenCaculate < 5 )
+	if ( m_isCardDirty == false )
+	{
+		return ;
+	}
+
+	if ( m_vAllCard.size() < 5  )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("Do nothing , card count < 5 ; ") ;
 		return ;
 	}
+	m_isCardDirty = false ;
+
 	m_vFinalCard.clear() ;
 	m_vPairs[0].clear();
 	m_vPairs[1].clear();

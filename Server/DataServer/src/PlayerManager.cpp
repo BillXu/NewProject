@@ -262,9 +262,11 @@ void CPlayerManager::onExit()
 	{
 		iter_R->second->OnPlayerDisconnect();
 	}
+
+	IGlobalModule::onExit();
 }
 
-bool CPlayerManager::OnMessage( stMsg* pMessage , eMsgPort eSenderPort , uint32_t nSessionID )
+bool CPlayerManager::onMsg( stMsg* pMessage , eMsgPort eSenderPort , uint32_t nSessionID )
 {
 	if ( ProcessPublicMessage(pMessage,eSenderPort,nSessionID) )
 	{
@@ -294,7 +296,7 @@ bool CPlayerManager::OnMessage( stMsg* pMessage , eMsgPort eSenderPort , uint32_
 	return false ;
 }
 
-bool CPlayerManager::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID  )
+bool CPlayerManager::onMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID  )
 {
 	CPlayer* pTargetPlayer = GetPlayerBySessionID(nSessionID,true );
 	if ( pTargetPlayer && pTargetPlayer->OnMessage(recvValue,nmsgType,eSenderPort ) )
@@ -620,7 +622,7 @@ CPlayer* CPlayerManager::GetPlayerBySessionID( unsigned int nSessionID , bool bI
 	return NULL ;
 }
 
-void CPlayerManager::Update(float fDeta )
+void CPlayerManager::update(float fDeta )
 {
 	// process player delay delete
 	 LIST_PLAYERS vListWillDelete ;
@@ -649,6 +651,8 @@ void CPlayerManager::Update(float fDeta )
 			 }
 		 }
 	 }
+
+	 IGlobalModule::update(fDeta);
 }
 
 CPlayer* CPlayerManager::GetFirstActivePlayer()

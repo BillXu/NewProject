@@ -52,7 +52,21 @@ bool CTaxasServerApp::init()
 	m_pRoomConfig = nullptr ;// new CRoomConfigMgr ;
 	//m_pRoomConfig->LoadFile("../configFile/RoomConfig.txt") ;
 	
-	auto pp = new CRoomManager(m_pRoomConfig) ;
-	registerModule(pp) ;
+	installModule(eMod_RoomMgr);
 	return true ;
+}
+
+IGlobalModule* CTaxasServerApp::createModule( uint16_t eModuleType )
+{
+	auto p = IServerApp::createModule(eModuleType);
+	if ( p )
+	{
+		return p;
+	}
+
+	if ( eModuleType == eMod_RoomMgr )
+	{
+		p = new CRoomManager(GetConfigMgr());
+	}
+	return p ;
 }

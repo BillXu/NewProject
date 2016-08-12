@@ -48,7 +48,7 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 	{
 		msgBack.nRet = 3 ;
 	}
-	else if ( pPlayer->getCoin() < nBetCoin )
+	else if ( pPlayer->getCoin() < nBetCoin * m_pRoom->getMaxRate() )  // you must can offer the lose 
 	{
 		msgBack.nRet = 2 ;
 	}
@@ -66,6 +66,7 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 		}
 		else
 		{
+			pPlayer->resetNoneActTimes();
 			vWaitBetPlayerIdxs.erase(iterF) ;
 			msgBack.nRet = 0 ;
 			pPlayer->setBetTimes(pBet->nBetTimes) ;
@@ -79,7 +80,7 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 	}
 
 	m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
-	pPlayer->resetNoneActTimes();
+	
 	if ( vWaitBetPlayerIdxs.empty() )
 	{
 		onStateDuringTimeUp();

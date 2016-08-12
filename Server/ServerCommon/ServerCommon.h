@@ -124,7 +124,7 @@ enum eCrossSvrReqSubType
 	resultBack.nRequestType = pRequest->nRequestType ; \
 	resultBack.nRet = 0 ; \
 	resultBack.nTargetID = pRequest->nReqOrigID ; \
-	memcpy(resultBack.vArg,pRequest->vArg,sizeof(resultBack.vArg)) ;
+	memcpy_s(resultBack.vArg,sizeof(resultBack.vArg),pRequest->vArg,sizeof(resultBack.vArg)) ;
 
 
 #define CON_REQ_MSG_JSON(msgCrossReq,jsonArg,autoBuf)  Json::StyledWriter jsWrite ;\

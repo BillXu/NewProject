@@ -55,7 +55,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;NIUNIU_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;NIUNIU_SERVER;JSON_DLL</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../../Common;../ServerCommon;../NetworkUtility/src</AdditionalIncludeDirectories>
     </ClCompile>
@@ -63,7 +63,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../Bin/Lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies);libcurl_imp.lib</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies);libcurl_imp.lib;ServerCommon_D.lib;GameCommon_D.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -74,7 +74,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;NIUNIU_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;NIUNIU_SERVER;JSON_DLL</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../../Common;../ServerCommon;../NetworkUtility/src</AdditionalIncludeDirectories>
     </ClCompile>
@@ -84,49 +84,14 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>../Bin/Lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies);libcurl_imp.lib</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies);libcurl_imp.lib;ServerCommon.lib;GameCommon.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\CardPoker.h" />
-    <ClInclude Include="..\..\Common\CommonData.h" />
-    <ClInclude Include="..\..\Common\CommonDefine.h" />
-    <ClInclude Include="..\..\Common\ConfigReader.h" />
-    <ClInclude Include="..\..\Common\IConfigFile.h" />
-    <ClInclude Include="..\..\Common\IPeerCard.h" />
-    <ClInclude Include="..\..\Common\LogManager.h" />
-    <ClInclude Include="..\..\Common\MessageDefine.h" />
-    <ClInclude Include="..\..\Common\MessageIdentifer.h" />
-    <ClInclude Include="..\..\Common\NativeTypes.h" />
     <ClInclude Include="..\..\Common\NiuNiuMessageDefine.h" />
     <ClInclude Include="..\..\Common\NiuNiuPeerCard.h" />
-    <ClInclude Include="..\..\Common\RoomConfig.h" />
-    <ClInclude Include="..\..\Common\Utility.h" />
-    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h" />
-    <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\httpRequest.h" />
-    <ClInclude Include="..\ServerCommon\IGlobalModule.h" />
-    <ClInclude Include="..\ServerCommon\IRoom.h" />
-    <ClInclude Include="..\ServerCommon\IRoomDelegate.h" />
-    <ClInclude Include="..\ServerCommon\IRoomInterface.h" />
-    <ClInclude Include="..\ServerCommon\IRoomManager.h" />
-    <ClInclude Include="..\ServerCommon\IRoomPlayer.h" />
-    <ClInclude Include="..\ServerCommon\IRoomState.h" />
-    <ClInclude Include="..\ServerCommon\ISeverApp.h" />
-    <ClInclude Include="..\ServerCommon\ISitableRoomPlayer.h" />
-    <ClInclude Include="..\ServerCommon\PrivateRoom.h" />
     <ClInclude Include="..\ServerCommon\RewardConfig.h" />
-    <ClInclude Include="..\ServerCommon\RobotDispatchStrategy.h" />
-    <ClInclude Include="..\ServerCommon\ServerCommon.h" />
-    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
-    <ClInclude Include="..\ServerCommon\ServerDefine.h" />
-    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
-    <ClInclude Include="..\ServerCommon\ServerStringTable.h" />
-    <ClInclude Include="..\ServerCommon\SeverUtility.h" />
-    <ClInclude Include="..\ServerCommon\Singleton.h" />
-    <ClInclude Include="..\ServerCommon\ISitableRoom.h" />
-    <ClInclude Include="..\ServerCommon\SystemRoom.h" />
-    <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\NiuNiuGrabBanker.h" />
     <ClInclude Include="src\NiuNiuRoom.h" />
     <ClInclude Include="src\NiuNiuRoomBetState.h" />
@@ -142,30 +107,9 @@
     <ClInclude Include="src\NiuNiuWaitStartGame.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\CardPoker.cpp" />
-    <ClCompile Include="..\..\Common\ConfigReader.cpp" />
-    <ClCompile Include="..\..\Common\IConfigFile.cpp" />
-    <ClCompile Include="..\..\Common\LogManager.cpp" />
     <ClCompile Include="..\..\Common\NiuNiuPeerCard.cpp" />
-    <ClCompile Include="..\..\Common\RoomConfig.cpp" />
-    <ClCompile Include="..\..\Common\Utility.cpp" />
-    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp" />
     <ClCompile Include="..\ServerCommon\httpRequest.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoom.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomDelegate.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomInterface.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomManager.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomPlayer.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomState.cpp" />
-    <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
-    <ClCompile Include="..\ServerCommon\ISitableRoomPlayer.cpp" />
     <ClCompile Include="..\ServerCommon\RewardConfig.cpp" />
-    <ClCompile Include="..\ServerCommon\RobotDispatchStrategy.cpp" />
-    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
-    <ClCompile Include="..\ServerCommon\ISitableRoom.cpp" />
-    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp" />
-    <ClCompile Include="..\ServerCommon\SeverUtility.cpp" />
-    <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\NiuNiuGrabBanker.cpp" />
     <ClCompile Include="src\NiuNiuRoom.cpp" />

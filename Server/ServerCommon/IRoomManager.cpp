@@ -315,7 +315,7 @@ bool IRoomManager::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSen
 				jsMsgBack["roomID"] = prealMsg["roomID"].asUInt() ;
 				getSvrApp()->sendMsg(nSessionID,jsMsgBack,nMsgType) ;
 				break;
-			}
+			} 
 			pRoom->roomItemDetailVisitor(jsMsgBack) ;
 			getSvrApp()->sendMsg(nSessionID,jsMsgBack,nMsgType) ;
 		}

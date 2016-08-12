@@ -167,9 +167,11 @@ void CAsyncRequestQuene::timerCheckReqState(CTimer* pTimer, float fTick )
 			sendAsyncRequest(pReq) ;
 		}
 
-		if ( pReq->nSendTimes > 5 )
+		if ( pReq->nSendTimes > 1 )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("req type = %u , target port = %u , tried too many times = %u , why ",pReq->nReqType,pReq->nTargetPortID,pReq->nSendTimes) ;
+			Json::StyledWriter jsWrite ;
+			auto str = jsWrite.write(pReq->jsReqContent);
+			CLogMgr::SharedLogMgr()->ErrorLog("req type = %u , target port = %u  str = %s, tried too many times = %u , why ",pReq->nReqType,pReq->nTargetPortID,str.c_str(),pReq->nSendTimes) ;
 		}
 	}
 }

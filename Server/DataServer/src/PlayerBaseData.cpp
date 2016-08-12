@@ -460,6 +460,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				msgVerify.nShopItemID = pRet->nShopItemID ;
 				msgVerify.nTranscationIDLen = pRet->nBufLen ;
 				msgVerify.nChannel = pRet->nChannelID ;
+
 				CAutoBuffer buffer(sizeof(stMsgPlayerBuyShopItem) + pRet->nBufLen ) ;
 				buffer.addContent(&msgVerify,sizeof(msgVerify));
 				buffer.addContent(((char*)pRet) + sizeof(stMsgPlayerBuyShopItem),pRet->nBufLen);
@@ -862,7 +863,7 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 	{
 	case MSG_CREATE_CLUB:
 		{
-			auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
+			auto pg = CGameServerApp::SharedGameServerApp()->getCroupMgr() ;
 			uint16_t nOwnClubCnt = pg->getClubCntByUserUID(GetPlayer()->GetUserUID());
 			uint16_t nMaxCanCreate = getMaxCanCreateClubCount() ;
 
@@ -888,7 +889,7 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 	case MSG_DISMISS_CLUB:
 		{
 			uint32_t nClubID = recvValue["clubID"].asUInt() ;
-			auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
+			auto pg = CGameServerApp::SharedGameServerApp()->getCroupMgr();
 			auto pClub = pg->getGroupByID(nClubID) ;
 
 			Json::Value jsMsgBack ;

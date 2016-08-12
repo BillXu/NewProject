@@ -58,7 +58,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT;ROBOT;SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT;ROBOT;SERVER;JSON_DLL</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../Common;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;../Server/NetworkUtility/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -76,7 +76,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT;ROBOT;SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;ROBOT;%(PreprocessorDefinitions);CLIENT;ROBOT;SERVER;JSON_DLL</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../Common;../Server/ServerCommon/pthreadLib;../Server/ServerCommon;../Server/NetworkUtility/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>

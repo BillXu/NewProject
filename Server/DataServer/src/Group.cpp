@@ -8,7 +8,8 @@
 #include "Player.h"
 #include "PlayerMail.h"
 //#define  REQ_PAGE_MEMBER_CNT_OF_CLUB 30
-
+#define CNT_PER_PAGE 16
+#define  ONLINE_APP_KEY 
 struct stClubMemberChangeReqArg
 {
 	stGroupItem* pOwenClub ;
@@ -18,7 +19,7 @@ struct stClubMemberChangeReqArg
 
 bool stGroupItem::isRoomKeepRunning()
 {
-	auto pgameCenter = (CGameRoomCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_RoomCenter) ;
+	auto pgameCenter = CGameServerApp::SharedGameServerApp()->getGameRoomCenter() ;
 	return pgameCenter->getClubOwnRoomCnt(nGroupID) > 0 ;
 }
 
@@ -108,6 +109,7 @@ void CGroup::init( IServerApp* svrApp )
 	IGlobalModule::init(svrApp) ;
 	m_pGoTyeAPI.init("https://qplusapi.gotye.com.cn:8443/api/");
 	m_pGoTyeAPI.setDelegate(this);
+	m_isSortDirty = true ;
 }
 
 void CGroup::onConnectedSvr()
@@ -115,7 +117,7 @@ void CGroup::onConnectedSvr()
 	Json::Value jssql ;
 	uint32_t nOffset = m_vGroups.size() ;
 	char pBuffer[512] = {0};
-	sprintf(pBuffer,"select * from clubs where isDelete = '0' limit 20 offset %u ",nOffset);
+	sprintf(pBuffer,"select clubID,cityCode,ownerUID,level,deadtime from clubs where isDelete = '0' limit 10 offset %u ",nOffset);
 	std::string str = pBuffer ;
 	jssql["sql"] = pBuffer ;
 	getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Select,jssql,[this](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData){
@@ -148,7 +150,7 @@ void CGroup::onConnectedSvr()
 			}
 		}
 
-		if ( nRow >= 20 ) // go on read more 
+		if ( nRow >= 10 ) // go on read more 
 		{
 			CLogMgr::SharedLogMgr()->PrintLog("go on reader more clubs") ;
 			onConnectedSvr();
@@ -209,7 +211,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			}
 
 			Json::Value jsRoomIDs ;
-			auto pgameCenter = (CGameRoomCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_RoomCenter) ;
+			auto pgameCenter = CGameServerApp::SharedGameServerApp()->getGameRoomCenter() ;
 			std::vector<uint32_t> vAllRoomIDs ;
 			pgameCenter->getClubOwnRooms(vAllRoomIDs,pg->nGroupID) ;
 			for ( auto rid : vAllRoomIDs )
@@ -257,7 +259,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			Json::Value cValue ;
 			cValue["email"] = "378569952@qq.com" ;
 			cValue["devpwd"] = "bill007" ;
-#ifdef _DEBUG
+#ifndef ONLINE_APP_KEY
 			cValue["appkey"] = "e87f31bb-e86c-4d87-a3f3-57b3da76b3d6";
 #else
 			cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
@@ -271,11 +273,19 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 
 			if ( nMsgType == MSG_CLUB_ADD_MEMBER )
 			{
-				if ( pClub->isGroupFull() || pClub->isHaveMember(nAccountUID) )
+				if ( pClub->isGroupFull() )
 				{
 					prealMsg["ret"] = 3 ;
 					getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
 					CLogMgr::SharedLogMgr()->PrintLog("group is full") ;
+					break ;
+				}
+
+				if ( pClub->isHaveMember(nAccountUID) )
+				{
+					prealMsg["ret"] = 4 ;
+					getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
+					CLogMgr::SharedLogMgr()->PrintLog("already in group ") ;
 					break ;
 				}
 
@@ -377,16 +387,19 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			prealMsg["ret"] = 0 ;
 			prealMsg["deadTime"] = pClub->m_tLevelRunOutTime ;
 			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
+
+			m_isSortDirty = true ;
 			break ;
 		}
 		break ;
 	case MSG_REQ_RECORMED_CLUB:
 		{
+			sortGroup();
 			Json::Value jsArray ;
-			auto iter = m_vGroups.rbegin();
-			for ( ; iter != m_vGroups.rend() ; ++iter )
+			auto iter = m_vSortedGroups.begin();
+			for ( ; iter != m_vSortedGroups.end() ; ++iter )
 			{               
-				jsArray[jsArray.size()] = iter->second->nGroupID;
+				jsArray[jsArray.size()] = (*iter)->nGroupID;
 				if ( jsArray.size() >= 10 )
 				{
 					break; 
@@ -397,6 +410,87 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
 		}
 		break ;
+	case MSG_REQ_CLUB_MEMBER:
+		{
+			uint32_t nClubID = prealMsg["clubID"].asUInt();
+			uint32_t nPageIdx = prealMsg["pageIdx"].asUInt() ;
+			auto pGroup = getGroupByID(nClubID) ;
+			Json::Value jsMembers ;
+			prealMsg["ret"] = 0 ;
+			do 
+			{
+				if ( pGroup == nullptr )
+				{
+					prealMsg["ret"] = 1 ;
+					break;
+				}
+
+				uint32_t nSkipCnt = CNT_PER_PAGE * nPageIdx ;
+				if (nSkipCnt >= pGroup->getMemberCnt() )
+				{
+					break;
+				}
+
+				for ( auto& ref : pGroup->vMembers )
+				{
+					if ( nSkipCnt > 0 )
+					{
+						--nSkipCnt;
+						continue;
+					}
+
+					jsMembers[jsMembers.size()] = ref ;
+
+					if ( jsMembers.size() >= CNT_PER_PAGE )
+					{
+						break;
+					}
+				}
+			} while (0);
+
+			prealMsg["members"] = jsMembers ;
+			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType);
+		}
+		break ;
+	case MSG_REQ_CITY_CLUB:
+		{
+			sortGroup() ;
+			uint32_t nCityCode = prealMsg["cityCode"].asUInt();
+			uint32_t nPageIdx = prealMsg["pageIdx"].asUInt() ;
+			uint32_t nSkipCnt = CNT_PER_PAGE * nPageIdx ;
+
+			Json::Value jsClubs ;
+			if ( nSkipCnt >= m_vSortedGroups.size() )
+			{
+				prealMsg["clubs"] = jsClubs ;
+				getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType);
+				break ;
+			}
+
+			for ( auto& pClub : m_vSortedGroups )
+			{
+				if ( pClub->nCityCode != nCityCode )
+				{
+					continue;
+				}
+
+				if ( nSkipCnt > 0 )
+				{
+					--nSkipCnt;
+					continue;
+				}
+
+				jsClubs[jsClubs.size()] = pClub->nGroupID ;
+
+				if ( jsClubs.size() >= CNT_PER_PAGE )
+				{
+					break;
+				}
+			}
+			prealMsg["clubs"] = jsClubs ;
+			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType);
+		}
+		break;
 	default:
 		return false ;
 	}
@@ -430,6 +524,9 @@ void CGroup::addGroup(stGroupItem* pItem )
 	sprintf(pBuffer,"insert into clubs ( clubID,ownerUID,cityCode,createDate ) values ('%u','%u','%u',now()) ;",pItem->nGroupID,pItem->nCreaterUID,pItem->nCityCode);
 	jssql["sql"] = pBuffer ;
 	getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Add,jssql);
+	
+	// just push to the end of sorted list 
+	m_vSortedGroups.push_back(pItem) ;
 }
 
 void CGroup::dismissGroup(uint32_t nGroupID )
@@ -437,6 +534,17 @@ void CGroup::dismissGroup(uint32_t nGroupID )
 	auto iter = m_vGroups.find(nGroupID) ;
 	if ( iter != m_vGroups.end() )
 	{
+		// remove from sorted list 
+		auto siter = std::find(m_vSortedGroups.begin(),m_vSortedGroups.end(),iter->second) ;
+		if ( siter == m_vSortedGroups.end() )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("why can not find the group in sorted list") ;
+		}
+		else
+		{
+			m_vSortedGroups.erase(siter);
+		}
+		// do delete 
 		delete iter->second ;
 		iter->second = nullptr ;
 		m_vGroups.erase(iter) ;
@@ -496,6 +604,7 @@ void CGroup::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData
 		pArg = nullptr ;
 		 
 		CLogMgr::SharedLogMgr()->PrintLog("delete club member ok, uid = %u ",nUID) ;
+		m_isSortDirty = true ;
 	}
 	else if ( eReq_AddMember == nUserTypeArg )
 	{
@@ -506,6 +615,7 @@ void CGroup::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData
 		delete pArg  ;
 		pArg = nullptr ;
 		CLogMgr::SharedLogMgr()->PrintLog("add club member ok uid = %u ",nUID) ;
+		m_isSortDirty = true ;
 	}
 	else if ( eReq_RefreshCnt == nUserTypeArg )
 	{
@@ -601,7 +711,7 @@ void CGroup::reqGroupMembers(stGroupItem* pGroup )
 	Json::Value cValue ;
 	cValue["email"] = "378569952@qq.com" ;
 	cValue["devpwd"] = "bill007" ;
-#ifdef _DEBUG
+#ifndef ONLINE_APP_KEY
 	cValue["appkey"] = "e87f31bb-e86c-4d87-a3f3-57b3da76b3d6";
 #else
 	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
@@ -612,4 +722,30 @@ void CGroup::reqGroupMembers(stGroupItem* pGroup )
 	Json::StyledWriter sWrite ;
 	std::string str = sWrite.write(cValue);
 	m_pGoTyeAPI.performRequest("GetGroupUserList",str.c_str(),str.size(),pGroup,eReq_GroupMembers );
+}
+
+void CGroup::sortGroup()
+{
+	if ( !m_isSortDirty )
+	{
+		return ;
+	}
+
+	m_isSortDirty = false ;
+
+	m_vSortedGroups.clear();
+	for ( auto& refP : m_vGroups )
+	{
+		m_vSortedGroups.push_back(refP.second) ;
+	}
+
+	auto pf = [](
+		stGroupItem* pLeft , stGroupItem* pRight )->bool{
+			if ( pRight->nLevel == pLeft->nLevel )
+			{
+				return pRight->getMemberCnt() < pLeft->getMemberCnt();
+			}
+			return pRight->nLevel < pLeft->nLevel ;
+	} ;
+	m_vSortedGroups.sort(pf);
 }

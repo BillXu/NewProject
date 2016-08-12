@@ -109,3 +109,17 @@ bool CLoginApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nS
 	}
 	return true ;
 }
+
+bool CLoginApp::onLogicMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID )
+{
+	if ( IServerApp::onLogicMsg(recvValue,nmsgType,eSenderPort,nSessionID) )
+	{
+		return true;
+	}
+
+	if ( m_pDBMgr )
+	{
+		m_pDBMgr->OnMessage( recvValue,nmsgType,eSenderPort,nSessionID ) ;
+	}
+	return true ;
+}

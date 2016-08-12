@@ -41,11 +41,11 @@ public:
 			nAllSize = nLen + nContentSize;
 			nAllSize *= 2 ;
 			char* pB = new char[nAllSize];
-			memcpy(pB,pInnerBuffer,nContentSize);
+			memcpy_s(pB,nAllSize,pInnerBuffer,nContentSize);
 			delete[] pInnerBuffer ;
 			pInnerBuffer = pB ;
 		}
-		memcpy(pInnerBuffer + nContentSize , pData,nLen);
+		memcpy_s(pInnerBuffer + nContentSize,nAllSize - nContentSize , pData,nLen);
 		nContentSize += nLen ;
 		return nContentSize ;
 	}

@@ -133,6 +133,7 @@ bool CClientNetworkImp::sendMsg(const char* pData , size_t nLen )
 {
 	if ( nLen >= CInternalBuffer::max_body_length )
 	{
+		printf("overflow max msg size = %u  , curSize = %u",CInternalBuffer::max_body_length,nLen) ;
 		return false ;
 	}
 	InternalBuffer_ptr msg (new CInternalBuffer());

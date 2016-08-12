@@ -13,6 +13,14 @@ class IServerApp
 	:CNetMessageDelegate
 {
 public:
+	enum eDefaultModule
+	{
+		eDefMod_None,
+		eDefMod_AsyncRequestQueu = eDefMod_None,
+		eDefMod_ChildDef,
+		eDefMod_Max = eDefMod_ChildDef ,
+	};
+public:
 	IServerApp();
 	virtual ~IServerApp();
 	virtual bool init();
@@ -32,17 +40,20 @@ public:
 	virtual uint16_t getLocalSvrMsgPortType() = 0 ; // et : ID_MSG_PORT_DATA , ID_MSG_PORT_TAXAS
 	virtual uint16_t getTargetSvrPortType();
 	bool isConnected();
-	void setConnectServerConfig(stServerConfig* pConfig );
 	CTimerManager* getTimerMgr(){ return m_pTimerMgr ; }
 	virtual void onExit();
 	virtual void onConnectedToSvr();
-	void registerModule(IGlobalModule* pModule);
-	IGlobalModule* getModuleByType(uint16_t nType );
+	IGlobalModule* getModuleByType( uint16_t nType );
 	CAsyncRequestQuene* getAsynReqQueue();
 protected:
+	bool installModule( uint16_t nModuleType );
+	virtual IGlobalModule* createModule( uint16_t eModuleType );
+	void setConnectServerConfig(stServerConfig* pConfig );
 	void doConnectToTargetSvr();
 	uint16_t getVerifyType(); // et:MSG_VERIFY_DATA ,MSG_VERIFY_TAXAS,MSG_VERIFY_LOGIN
 	CNetWorkMgr* getNetwork(){ return m_pNetWork ;}
+private:
+	bool registerModule(IGlobalModule* pModule, uint16_t eModuleType );
 private:
 	bool m_bRunning;
 	CONNECT_ID m_nTargetSvrNetworkID ;

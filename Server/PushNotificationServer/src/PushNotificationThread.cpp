@@ -177,7 +177,7 @@ void CPushNotificationThread::ProcessWork()
 			{	
 				unsigned char nTryTimes = 1 ;
 				
-				while( SSL_write(m_pSSL, pBuffer, nLen) <= 0 )  // maybe disconnect ;
+				while( m_pSSL == nullptr || SSL_write(m_pSSL, pBuffer, nLen) <= 0 )  // maybe disconnect ;
 				{
 					time_t nRunnedTime = time(NULL) - nLastActive ;
 					CLogMgr::SharedLogMgr()->SystemLog("SSL connect to APNS Disconnected , trying to Reconnect times = %d ! runned time = %d",nTryTimes,nRunnedTime ) ;

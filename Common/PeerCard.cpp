@@ -268,7 +268,7 @@ const char*  CPeerCard::getNameString(){
             str = "paixing_danzhang";
             break;
     }
-    return Language::getInstance()->get(str);
+    return Language::getInstance()->get(str.c_str());
 
 }
 #endif

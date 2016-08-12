@@ -8,7 +8,7 @@
 #include <cassert>
 #include "ISitableRoom.h"
 class CTaxasPlayer ;
-
+class CInsuranceCheck ;
 typedef std::vector<uint8_t> VEC_INT8 ;
 struct stTaxasInRoomPeerDataExten
 	:public stTaxasInRoomPeerData
@@ -143,9 +143,17 @@ public:
 	bool IsThisRoundBetOK();
 	uint8_t CaculateOneRoundPool();  // return produced vice pool cunt this round ;
 	uint8_t DistributePublicCard(); // return dis card cnt ;
+	uint8_t getPublicCardRound(){ return m_nPublicCardRound ;}
 	uint8_t CaculateGameResult(); //return pool cnt ;
 	//uint64_t GetAllBetCoinThisRound();
 	bool IsPublicDistributeFinish();
+
+	// insurance module ;
+	bool isNeedByInsurance();
+	bool isAnyOneBuyInsurace();
+	void doCaculateInsurance();
+	CInsuranceCheck* getInsuranceCheck();
+	void setInsuredPlayerIdx(uint8_t nIdx );
 
 	// debug info ;
 
@@ -178,4 +186,9 @@ protected:
 	stVicePool m_vAllVicePools[MAX_PEERS_IN_TAXAS_ROOM] ;
 
 	Json::Value m_arrPlayers ;
+
+	// insurance 
+	bool m_isInsured ;
+	CInsuranceCheck* m_pInsurance ;
+	uint8_t m_nBuyInsuraceIdx ;
 };

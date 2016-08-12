@@ -96,6 +96,7 @@
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\..\Common\NativeTypes.h" />
     <ClInclude Include="..\..\Common\Utility.h" />
+    <ClInclude Include="..\ServerCommon\catch_dump_file.h" />
     <ClInclude Include="..\ServerCommon\ServerConfig.h" />
     <ClInclude Include="..\ServerCommon\ServerDefine.h" />
     <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
@@ -107,6 +108,7 @@
     <ClCompile Include="..\..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\..\Common\LogManager.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
+    <ClCompile Include="..\ServerCommon\catch_dump_file.cpp" />
     <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="src\CenterServer.cpp" />
     <ClCompile Include="src\main.cpp" />

@@ -3,6 +3,7 @@
 #include <list>
 #include <map>
 #include <assert.h>
+#include "json/json.h"
 struct stDBResult ;
 class CLoginApp;
 class CDBManager
@@ -24,8 +25,10 @@ public:
 	~CDBManager();
 	void Init(CLoginApp* pApp );
 	void OnMessage(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
+	void OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID );
 	void OnDBResult(stDBResult* pResult);
 	stArgData* GetReserverArgData();
+	std::string checkString(const char* pstr);
 protected:
 	LIST_ARG_DATA m_vReserverArgData ;
 	CLoginApp* m_pTheApp ;

@@ -60,6 +60,9 @@
     <ClInclude Include="..\..\Common\Utility.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\catch_dump_file.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -82,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Common\Utility.cpp">
       <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\catch_dump_file.cpp">
+      <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

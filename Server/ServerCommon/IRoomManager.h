@@ -46,7 +46,6 @@ public:
 	IRoomManager(CRoomConfigMgr* pConfigMgr);
 	~IRoomManager();
 	void init( IServerApp* svrApp )override; 
-	uint16_t getModuleType(){ return IGlobalModule::eMod_RoomMgr ;}
 	bool onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)override;
 	bool onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID)override ;
 	virtual bool onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID);

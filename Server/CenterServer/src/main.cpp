@@ -4,9 +4,7 @@
 #include "CenterServer.h"
 #include "LogManager.h"
 #include <WinDef.h>
-#include <Dbghelp.h>
-#pragma comment( lib, "DbgHelp" )
-
+#include "catch_dump_file.h"
 DWORD WINAPI ThreadProc(LPVOID lpParam)
 {
 	bool bRunning = true;
@@ -59,15 +57,20 @@ void RunFunc ( CCenterServerApp* pApp )
 	{
 		pApp->RunLoop() ;
 	}
-	__except(MyUnhandledExceptionFilter(GetExceptionInformation()))
+	__except(CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
 	{
+		CLogMgr::SharedLogMgr()->SystemLog("try to recover from exception") ;
+		pApp->RunLoop() ;
 	}
 }
+
+CatchDumpFile::CDumpCatch g_exception_handler;
 
 int main()
 {
 	//zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
 	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
+	_CrtSetReportMode(_CRT_ASSERT, 0);
 	CCenterServerApp  theApp ;
 	CLogMgr::SharedLogMgr()->SetOutputFile("CenterSvr");
 	theApp.Init() ;

@@ -12,7 +12,8 @@ public:
 	~CLoginApp();
 	bool init();
 	void update(float fdeta );
-	bool onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );
+	bool onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )override;
+	bool onLogicMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID )override ;
 	void onExit();
 	uint16_t getLocalSvrMsgPortType(){ return ID_MSG_PORT_LOGIN ;}
 protected:

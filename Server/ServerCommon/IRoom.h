@@ -83,6 +83,7 @@ public:
 	void sendMsgToPlayer( uint32_t nSessionID , Json::Value& recvValue, uint16_t nMsgID  ) ;
 
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override;
+	bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID )override;
 	virtual void roomInfoVisitor(Json::Value& vOutJsValue) = 0 ;
 	virtual void sendRoomPlayersInfo(uint32_t nSessionID) = 0 ;
 	virtual void onGameWillBegin(){}

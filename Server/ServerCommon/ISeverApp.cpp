@@ -24,8 +24,10 @@ bool IServerApp::init()
 
 	m_fReconnectTick = 0 ;
 
-	auto pAsy = new CAsyncRequestQuene ;
-	registerModule(pAsy) ;
+	for ( uint16_t nIdx = eDefMod_None ; nIdx < eDefMod_Max ;  ++nIdx )
+	{
+		installModule(nIdx);
+	}
 	return true ;
 }
 
@@ -123,8 +125,8 @@ bool IServerApp::OnMessage( Packet* pMsg )
 		pBuffer += sizeof(stMsgJsonContent);
 		//#ifdef __DEBUG
 		char pLog[1024] = { 0 };
-		memcpy(pLog,pBuffer,pRet->nJsLen);
-		printf("rec : %s\n",pLog);
+		memcpy_s(pLog,sizeof(pLog),pBuffer,pRet->nJsLen);
+		CLogMgr::SharedLogMgr()->PrintLog("session id = %u rec : %s",pData->nSessionID,pLog);
 		//#endif // __DEBUG
 
 		Json::Reader reader ;
@@ -135,6 +137,7 @@ bool IServerApp::OnMessage( Packet* pMsg )
 		{
 			return true ;
 		}
+		CLogMgr::SharedLogMgr()->ErrorLog("unprocessed json from port = %d , session id = %d js : %s",pData->nSenderPort,pData->nSessionID,pLog) ;
 		return false ;
 	}
 
@@ -244,8 +247,8 @@ bool IServerApp::sendMsg(  uint32_t nSessionID , const char* pBuffer , uint16_t 
 		CLogMgr::SharedLogMgr()->ErrorLog("msg send to session id = %d , is too big , cannot send , msg id = %d ",nSessionID,pmsg->usMsgType) ;
 		return false;
 	}
-	memcpy(m_pSendBuffer,&msgTransData,nLne);
-	memcpy(m_pSendBuffer + nLne , pBuffer,nLen );
+	memcpy_s(m_pSendBuffer ,sizeof(m_pSendBuffer),&msgTransData,nLne);
+	memcpy_s(m_pSendBuffer + nLne ,sizeof(m_pSendBuffer) - nLne, pBuffer,nLen );
 	nLne += nLen ;
 	sendMsg(m_pSendBuffer,nLne);
 	return true ;
@@ -428,12 +431,37 @@ void IServerApp::onConnectedToSvr()
 	}
 }
 
-void IServerApp::registerModule(IGlobalModule* pModule)
+bool IServerApp::registerModule(IGlobalModule* pModule,uint16_t eModuleType)
 {
-	auto pp = getModuleByType(pModule->getModuleType()) ;
+	assert(pModule && "this module is null" );
+	if ( pModule == nullptr )
+	{
+		return false;
+	}
+
+	if ( eModuleType == IGlobalModule::INVALID_MODULE_TYPE )
+	{
+		assert(0&&"please set the module type ");
+		return false ;
+	}
+
+	pModule->setModuleType(eModuleType);
+	auto pp = getModuleByType(eModuleType) ;
 	assert(pp == nullptr && "already have this module" );
+	if ( pp )
+	{
+		return false ;
+	}
+
 	m_vAllModule[pModule->getModuleType()] = pModule ;
 	pModule->init(this);
+	return true ;
+}
+
+bool IServerApp::installModule( uint16_t nModuleType )
+{
+	auto pAsy = createModule(nModuleType) ;
+	return registerModule(pAsy,nModuleType) ;
 }
 
 IGlobalModule* IServerApp::getModuleByType(uint16_t nType )
@@ -446,7 +474,24 @@ IGlobalModule* IServerApp::getModuleByType(uint16_t nType )
 	return nullptr;
 }
 
+IGlobalModule* IServerApp::createModule( uint16_t eModuleType )
+{
+	IGlobalModule* pModule = nullptr ;
+	switch (eModuleType)
+	{
+	case eDefMod_AsyncRequestQueu:
+		{
+			pModule = new CAsyncRequestQuene ;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return pModule ;
+}
+
 CAsyncRequestQuene* IServerApp::getAsynReqQueue()
 {
-	return (CAsyncRequestQuene*)getModuleByType(IGlobalModule::eMode_AsyncRequestQueu);
+	return (CAsyncRequestQuene*)getModuleByType(eDefMod_AsyncRequestQueu);
 }

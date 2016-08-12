@@ -222,7 +222,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadGameResult* pRet = (stMsgReadGameResult*)pmsg ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM gameresult WHERE roomType = '%u' order by roomID desc limit 80",pRet->nRoomType ) ;
+				"SELECT * FROM gameresult WHERE roomType = %u order by time desc limit 80",pRet->nRoomType ) ;
 		}
 		break ;
 	case MSG_READ_PLAYER_GAME_RECORDER:
@@ -1240,7 +1240,11 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 			{
 				tData.bIsOnLine = false ;
 				memset(tData.cName,0,sizeof(tData.cName)) ;
-				sprintf_s(tData.cName,sizeof(tData.cName),"%s",pRow["cName"]->CStringValue()) ;
+				if ( pRow["cName"]->nBufferLen < sizeof(tData.cName) )
+				{
+					sprintf_s(tData.cName,sizeof(tData.cName),"%s",pRow["cName"]->CStringValue()) ;
+				}
+				
 				tData.nCoin = pRow["nCoin"]->IntValue64();
 				tData.nDiamoned = pRow["nDiamoned"]->IntValue();
 				tData.nPhotoID = pRow["nPhotoID"]->IntValue();
@@ -1249,7 +1253,14 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				tData.nVipLevel = pRow["nVipLevel"]->IntValue();
 
 				memset(tData.cSignature,0,sizeof(tData.cSignature)) ;
-				sprintf_s(tData.cSignature,sizeof(tData.cSignature),"%s",pRow["cSignature"]->CStringValue()) ;
+				if ( pRow["cSignature"]->nBufferLen <= sizeof(tData.cSignature) )
+				{
+					memcpy(tData.cSignature,pRow["cSignature"]->BufferData(),pRow["cSignature"]->nBufferLen);
+				}
+				else
+				{
+					CLogMgr::SharedLogMgr()->ErrorLog("signature is too long uid = %u",tData.nUserUID) ;
+				}
 				tData.nMostCoinEver = pRow["nMostCoinEver"]->IntValue64();
 				tData.dfLatidue = pRow["dfLatidue"]->FloatValue();
 				tData.dfLongitude = pRow["dfLongitude"]->FloatValue();

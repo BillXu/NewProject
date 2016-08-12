@@ -80,6 +80,8 @@ void CTaxasPlayer::zeroData()
 	nAllBetCoin = 0 ;
 	nWinCoinThisGame = 0 ;
 	m_tPeerCard.reset() ;
+	nBuyInsuredAmount = 0 ;
+	nInsuranceLoseCoin = 0;
 }
 
 uint32_t CTaxasPlayer::getWinCoinThisGame()
@@ -90,6 +92,11 @@ uint32_t CTaxasPlayer::getWinCoinThisGame()
 void CTaxasPlayer::addWinCoinThisGame(uint32_t nWinCoin )
 {
 	nWinCoinThisGame += nWinCoin ;
+	setCoin(getCoin() + nWinCoin ) ;
+}
+
+void CTaxasPlayer::addWinInsuredCoin(uint32_t nWinCoin)
+{
 	setCoin(getCoin() + nWinCoin ) ;
 }
 

@@ -163,6 +163,7 @@ void CPlayerMailComponent::OnReactive(uint32_t nSessionID )
 {
 	IPlayerComponent::OnReactive(nSessionID) ;
 	InformRecievedUnreadMails();
+	ProcessSpecailMail();
 }
 
 void CPlayerMailComponent::ClearMails()

@@ -11,6 +11,7 @@
 #include "ServerStringTable.h"
 #include "TaxasPlayer.h"
 #include <algorithm>
+#include "InsuranceCheck.h"
 #define TIME_SECONDS_PER_DAY (60*60*24)
 #define TIME_SAVE_ROOM_INFO 60*30
 CTaxasRoom::CTaxasRoom()
@@ -34,6 +35,7 @@ CTaxasRoom::CTaxasRoom()
 	}
 
 	getPoker()->InitTaxasPoker() ;
+	m_pInsurance = nullptr ;
 }
 
 CTaxasRoom::~CTaxasRoom()
@@ -54,6 +56,17 @@ bool CTaxasRoom::onFirstBeCreated(IRoomManager* pRoomMgr, uint32_t nRoomID, cons
 	assert(jsOpt.isNull() == false && "taxas opts is null");
 	m_nMaxTakeIn = jsOpt["maxTakeIn"].asUInt();
 	ISitableRoom::onFirstBeCreated(pRoomMgr,nRoomID,vJsValue) ;
+	m_isInsured = false ;
+	if ( jsOpt["isInsured"].isNull() == false )
+	{
+		m_isInsured = jsOpt["isInsured"].asUInt() ;
+	}
+
+	if ( m_isInsured )
+	{
+		m_pInsurance = new CInsuranceCheck ;
+		m_pInsurance->reset() ;
+	}
 	return true ;
 }
 
@@ -85,7 +98,7 @@ void CTaxasRoom::prepareState()
 	// create room state ;
 	IRoomState* vState[] = {
 		new CTaxasStateStartGame(),new CTaxasStatePlayerBet(),new CTaxasStateOneRoundBetEndResult(),
-		new CTaxasStatePublicCard(),new CTaxasStateGameResult()
+		new CTaxasStatePublicCard(),new CTaxasStateGameResult(),new CTaxasStateInsurance()
 	};
 	for ( uint8_t nIdx = 0 ; nIdx < sizeof(vState) / sizeof(IRoomState*); ++nIdx )
 	{
@@ -159,7 +172,7 @@ ISitableRoomPlayer* CTaxasRoom::doCreateSitableRoomPlayer()
 
 uint32_t CTaxasRoom::coinNeededToSitDown()
 {
-	return m_nLittleBlind*2 ;
+	return m_nLittleBlind*2*6 ;
 
 	//if ( m_nLittleBlind*2 > m_nMinTakeIn )
 	//{
@@ -369,6 +382,12 @@ void CTaxasRoom::onGameWillBegin()
 		m_vAllVicePools[nIdx].nIdx = nIdx ;
 		m_vAllVicePools[nIdx].Reset();
 	}
+
+	if ( m_pInsurance )
+	{
+		m_pInsurance->reset() ;
+	}
+	m_nBuyInsuraceIdx = -1 ;
 }
 
 void CTaxasRoom::onGameDidEnd()
@@ -748,7 +767,6 @@ uint8_t CTaxasRoom::CaculateGameResult()
 		msgResult.bIsLastOne = true ;
 		sendRoomMsg(&msgResult,sizeof(msgResult)) ;
 	}
-
 	didCaculateGameResult();
 	return GetFirstCanUseVicePool().nIdx ;
 }
@@ -763,7 +781,8 @@ void CTaxasRoom::didCaculateGameResult()
 	// save serve log 
 	writeGameResultLog();
 	
-	// update coin Tax ;
+	// update coin Tax  and insurance ;
+	Json::Value arrayJs ;
 	for ( uint8_t nIdx = 0 ; nIdx < getSeatCount(); ++nIdx )
 	{
 		CTaxasPlayer* pPlayer = (CTaxasPlayer*)getPlayerByIdx(nIdx);
@@ -772,11 +791,20 @@ void CTaxasRoom::didCaculateGameResult()
 			continue;
 		}
 		CLogMgr::SharedLogMgr()->ErrorLog("game end update offset");
-		int32_t nTaxFee = (int32_t)(pPlayer->getGameOffset() * getChouShuiRate());
+		int32_t nTaxFee = (int32_t)(pPlayer->getGameOffset() * getChouShuiRate()) + pPlayer->getInsuranceLoseCoin();
 		pPlayer->setCoin(pPlayer->getCoin() - nTaxFee );
 		addTotoalProfit((uint32_t)nTaxFee);
 		CLogMgr::SharedLogMgr()->PrintLog("room id = %u uid = %u , give tax = %d coin = %u",getRoomID(),nTaxFee,pPlayer->getCoin()) ;
+
+		Json::Value jsPeer ;
+		jsPeer["idx"] = nIdx ;
+		jsPeer["coin"] = pPlayer->getCoin() ;
+		arrayJs[arrayJs.size()] = jsPeer ;
 	}
+
+	Json::Value jsmsg ;
+	jsmsg["players"] = arrayJs ;
+	sendRoomMsg(jsmsg,MSG_SYNC_TAXAS_ROOM_PLAYER_COIN) ;
 }
 
 void CTaxasRoom::writeGameResultLog()
@@ -948,6 +976,7 @@ void CTaxasRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["curActIdx"] = m_nCurWaitPlayerActionIdx;
 	vOutJsValue["curPool"] = m_nCurMainBetPool;
 	vOutJsValue["mostBet"] = m_nMostBetCoinThisRound;
+	vOutJsValue["isInsurd"] = (uint8_t)m_isInsured ;
 	
 	// send base info 
 	Json::Value pubCards;
@@ -1012,6 +1041,165 @@ void CTaxasRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 		sendMsgToPlayer(&msgPlayerData,sizeof(msgPlayerData),nSessionID) ;
 	}
 	CLogMgr::SharedLogMgr()->PrintLog("send room data to player ");
+}
+
+// insurance 
+bool CTaxasRoom::isNeedByInsurance()
+{
+	if ( !m_isInsured )
+	{
+		return false ;
+	}
+
+	// is still have card not distribute ? , and already distribute 3 public card 
+	if ( m_nPublicCardRound != 1 && 2 != m_nPublicCardRound )
+	{
+		return false ;
+	}
+	
+	// is all player all in and player cnt >= 2 ?
+	uint8_t nWaitCalPlayer = getPlayerCntWithState(eRoomPeer_WaitCaculate) ;
+	uint8_t nAllInPlayer = getPlayerCntWithState(eRoomPeer_AllIn) ;
+	if ( nWaitCalPlayer < 2 || nWaitCalPlayer > (nAllInPlayer + 1) )
+	{
+		return false ;
+	}
+	
+	// reset insurance module , and add cards to it 
+	m_pInsurance->reset();
+	// find the biggest pool , and  chose a insurance buyer 
+	uint8_t nBigIdx = 0 ;
+	for ( uint8_t nIdx = nBigIdx + 1  ; nIdx < MAX_PEERS_IN_TAXAS_ROOM ; ++nIdx )
+	{
+		if ( m_vAllVicePools[nIdx].nCoin > m_vAllVicePools[nBigIdx].nCoin )
+		{
+			nBigIdx = nIdx ;
+		}
+	}
+
+	// put player into check;
+	for ( uint8_t nIdx = 0 ; nIdx < getSeatCount(); ++nIdx )
+	{
+		auto pp = getPlayerByIdx(nIdx) ;
+		if ( !pp || pp->isHaveState(eRoomPeer_WaitCaculate) == false )
+		{
+			continue;
+		}
+
+		auto tpp = (CTaxasPlayer*)pp ;
+		if ( m_vAllVicePools[nBigIdx].isPlayerInThisPool(nIdx) )
+		{
+			m_pInsurance->addCheckPeer(nIdx,tpp->getPeerCardByIdx(0),tpp->getPeerCardByIdx(1));
+		}
+		else
+		{
+			m_pInsurance->addExincludeCard(tpp->getPeerCardByIdx(1));
+			m_pInsurance->addExincludeCard(tpp->getPeerCardByIdx(0));
+		}
+	}
+
+	// add public cards 
+	if ( m_nPublicCardRound >= 1 )
+	{
+		m_pInsurance->addPublicCard(m_vPublicCardNums[0]);
+		m_pInsurance->addPublicCard(m_vPublicCardNums[1]);
+		m_pInsurance->addPublicCard(m_vPublicCardNums[2]);
+	}
+	
+	if ( 2 == m_nPublicCardRound )
+	{
+		m_pInsurance->addPublicCard(m_vPublicCardNums[3]);
+	}
+
+	uint16_t nBuyers = -1 ;
+	std::vector<uint8_t> vOuts ;
+	auto nOuts = m_pInsurance->getOuts(nBuyers,vOuts);
+	if ( nOuts == 0 || nOuts > 16 )
+	{
+		return false ;
+	}
+	// is outs < 16 ? 
+	// is have insurance buyer ? // must in final pool 
+	return true ;
+}
+
+bool CTaxasRoom::isAnyOneBuyInsurace()
+{
+	if ( !m_isInsured )
+	{
+		return false ;
+	}
+
+	return m_nBuyInsuraceIdx != (uint8_t)-1 ;
+}
+
+void CTaxasRoom::doCaculateInsurance()
+{
+	if ( !m_isInsured )
+	{
+		return ;
+	}
+
+	if ( !isAnyOneBuyInsurace() )
+	{
+		return ;
+	}
+
+	uint16_t nIdx = 0 ;
+	std::vector<uint8_t> vOuts ;
+	m_pInsurance->getOuts(nIdx,vOuts);
+	uint8_t nCurCard = 0 ;
+	if ( m_nPublicCardRound == 2 )
+	{
+		nCurCard = m_vPublicCardNums[3] ;
+	}
+	else if ( 3 == m_nPublicCardRound )
+	{
+		nCurCard = m_vPublicCardNums[4] ;
+	}
+	else
+	{
+		assert("invalid round , this time can not do calculate" && 0 );
+	}
+	
+	auto pPlayer = (CTaxasPlayer*)getPlayerByIdx(nIdx) ;
+	if ( pPlayer->getInsuredAmount() == 0 )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why buy insurance is 0 ") ;
+		return ;
+	}
+	bool isHit = std::find(vOuts.begin(),vOuts.end(),nCurCard) != vOuts.end();
+	assert(pPlayer && "why buyer is null ?" );
+	uint32_t nProfit = 0 ;
+	uint32_t nAmout = pPlayer->getInsuredAmount();
+	if ( isHit )  // hit the point , player win coin
+	{
+		nProfit = m_pInsurance->getInsuredProfit(nAmout);
+		pPlayer->addWinInsuredCoin(nProfit);
+	}
+	else  // not hit point , player lose coin
+	{
+		pPlayer->setInsuranceLoseCoin(pPlayer->getInsuranceLoseCoin() + nAmout) ;
+	}
+
+	pPlayer->setInsuredAmount(0) ;
+	// send msg tell the result 
+	Json::Value jsresult ;
+	jsresult["idx"] = nIdx ;
+	int32_t nOffset = isHit ? nProfit : (((int32_t)nAmout) * -1 );
+	jsresult["offset"] = nOffset;
+	CLogMgr::SharedLogMgr()->PrintLog("insurance offset = %d",nOffset) ;
+	sendRoomMsg(jsresult,MSG_INSURANCE_CALCULATE_RESULT);
+}
+
+CInsuranceCheck* CTaxasRoom::getInsuranceCheck()
+{
+	return m_pInsurance ;
+}
+
+void CTaxasRoom::setInsuredPlayerIdx(uint8_t nIdx )
+{
+	m_nBuyInsuraceIdx = nIdx ;
 }
 
 //void CTaxasRoom::syncPlayerDataToDataSvr( stTaxasPeerData& pPlayerData )

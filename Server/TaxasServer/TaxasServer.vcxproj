@@ -62,7 +62,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies);libcurl_imp.lib</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies);libcurl_imp.lib;ServerCommon_D.lib;GameCommon_D.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -83,45 +83,17 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies);libcurl_imp.lib</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies);libcurl_imp.lib;ServerCommon.lib;GameCommon.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\CardPoker.h" />
-    <ClInclude Include="..\..\Common\CommonData.h" />
-    <ClInclude Include="..\..\Common\CommonDefine.h" />
-    <ClInclude Include="..\..\Common\ConfigReader.h" />
-    <ClInclude Include="..\..\Common\IConfigFile.h" />
-    <ClInclude Include="..\..\Common\LogManager.h" />
-    <ClInclude Include="..\..\Common\MessageDefine.h" />
-    <ClInclude Include="..\..\Common\MessageIdentifer.h" />
-    <ClInclude Include="..\..\Common\RoomConfig.h" />
     <ClInclude Include="..\..\Common\TaxasMessageDefine.h" />
     <ClInclude Include="..\..\Common\TaxasPeerCardAdapter.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
-    <ClInclude Include="..\..\Common\Utility.h" />
-    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h" />
-    <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\httpRequest.h" />
-    <ClInclude Include="..\ServerCommon\IRoom.h" />
-    <ClInclude Include="..\ServerCommon\IRoomDelegate.h" />
-    <ClInclude Include="..\ServerCommon\IRoomInterface.h" />
-    <ClInclude Include="..\ServerCommon\IRoomManager.h" />
-    <ClInclude Include="..\ServerCommon\IRoomState.h" />
-    <ClInclude Include="..\ServerCommon\ISeverApp.h" />
-    <ClInclude Include="..\ServerCommon\ISitableRoom.h" />
-    <ClInclude Include="..\ServerCommon\ISitableRoomPlayer.h" />
-    <ClInclude Include="..\ServerCommon\PrivateRoom.h" />
     <ClInclude Include="..\ServerCommon\RewardConfig.h" />
-    <ClInclude Include="..\ServerCommon\RobotDispatchStrategy.h" />
-    <ClInclude Include="..\ServerCommon\ServerCommon.h" />
-    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
-    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
-    <ClInclude Include="..\ServerCommon\ServerStringTable.h" />
-    <ClInclude Include="..\ServerCommon\SeverUtility.h" />
-    <ClInclude Include="..\ServerCommon\SystemRoom.h" />
-    <ClInclude Include="..\ServerCommon\Timer.h" />
+    <ClInclude Include="src\InsuranceCheck.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\RoomManager.h" />
     <ClInclude Include="src\TaxasPlayer.h" />
@@ -130,30 +102,10 @@
     <ClInclude Include="src\TaxasServerApp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\CardPoker.cpp" />
-    <ClCompile Include="..\..\Common\ConfigReader.cpp" />
-    <ClCompile Include="..\..\Common\IConfigFile.cpp" />
-    <ClCompile Include="..\..\Common\LogManager.cpp" />
-    <ClCompile Include="..\..\Common\RoomConfig.cpp" />
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp" />
-    <ClCompile Include="..\..\Common\Utility.cpp" />
-    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp" />
     <ClCompile Include="..\ServerCommon\httpRequest.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoom.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomDelegate.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomInterface.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomManager.cpp" />
-    <ClCompile Include="..\ServerCommon\IRoomState.cpp" />
-    <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
-    <ClCompile Include="..\ServerCommon\ISitableRoom.cpp" />
-    <ClCompile Include="..\ServerCommon\ISitableRoomPlayer.cpp" />
     <ClCompile Include="..\ServerCommon\RewardConfig.cpp" />
-    <ClCompile Include="..\ServerCommon\RobotDispatchStrategy.cpp" />
-    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
-    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp" />
-    <ClCompile Include="..\ServerCommon\SeverUtility.cpp" />
-    <ClCompile Include="..\ServerCommon\SystemRoom.cpp" />
-    <ClCompile Include="..\ServerCommon\Timer.cpp" />
+    <ClCompile Include="src\InsuranceCheck.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RoomManager.cpp" />
     <ClCompile Include="src\TaxasPlayer.cpp" />

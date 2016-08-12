@@ -23,7 +23,6 @@ public:
 	typedef std::map<uint32_t,stRoomItem*> MAP_ROOM_ITEM ;
 	typedef std::map<uint32_t,stRoomOwnerInfo*> MAP_ROOM_OWNERS ;
 public:
-	uint16_t getModuleType()override{ return eMod_RoomCenter ;};
 	~CGameRoomCenter();
 	void init( IServerApp* svrApp )override ;
 	void onConnectedSvr()override ;

@@ -58,13 +58,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;JSON_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;JSON_DLL;DATA_SERVER</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies);libcurl_imp.lib</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtilityD.lib;%(AdditionalDependencies);libcurl_imp.lib;ServerCommon_D.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -76,7 +76,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;JSON_DLL;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -84,30 +84,22 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies);libcurl_imp.lib</AdditionalDependencies>
+      <AdditionalDependencies>NetworkUtility.lib;%(AdditionalDependencies);libcurl_imp.lib;ServerCommon.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\BoxConfig.h" />
     <ClInclude Include="..\..\Common\CardPoker.h" />
-    <ClInclude Include="..\..\Common\CommonData.h" />
-    <ClInclude Include="..\..\Common\CommonDefine.h" />
     <ClInclude Include="..\..\Common\ConfigManager.h" />
-    <ClInclude Include="..\..\Common\ConfigReader.h" />
     <ClInclude Include="..\..\Common\ContinueLoginConfig.h" />
-    <ClInclude Include="..\..\Common\IConfigFile.h" />
     <ClInclude Include="..\..\Common\ItemConfig.h" />
-    <ClInclude Include="..\..\Common\LogManager.h" />
-    <ClInclude Include="..\..\Common\MessageDefine.h" />
-    <ClInclude Include="..\..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\..\Common\MissionConfig.h" />
     <ClInclude Include="..\..\Common\PeerCard.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
     <ClInclude Include="..\..\Common\ShopConfg.h" />
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\..\Common\TitleLevelConfig.h" />
-    <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\DataServer\src\encryptNumber.h" />
     <ClInclude Include="..\DataServer\src\EventCenter.h" />
     <ClInclude Include="..\DataServer\src\Events.h" />
@@ -126,35 +118,21 @@
     <ClInclude Include="..\DataServer\src\PlayerManager.h" />
     <ClInclude Include="..\DataServer\src\PokerCircle.h" />
     <ClInclude Include="..\DataServer\src\RobotCenter.h" />
-    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h" />
-    <ClInclude Include="..\ServerCommon\AutoBuffer.h" />
     <ClInclude Include="..\ServerCommon\httpRequest.h" />
-    <ClInclude Include="..\ServerCommon\IGlobalModule.h" />
-    <ClInclude Include="..\ServerCommon\ISeverApp.h" />
     <ClInclude Include="..\ServerCommon\RewardConfig.h" />
-    <ClInclude Include="..\ServerCommon\ServerCommon.h" />
-    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
-    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
-    <ClInclude Include="..\ServerCommon\ServerStringTable.h" />
-    <ClInclude Include="..\ServerCommon\SeverUtility.h" />
-    <ClInclude Include="..\ServerCommon\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\BoxConfig.cpp" />
     <ClCompile Include="..\..\Common\CardPoker.cpp" />
     <ClCompile Include="..\..\Common\ConfigManager.cpp" />
-    <ClCompile Include="..\..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\..\Common\ContinueLoginConfig.cpp" />
-    <ClCompile Include="..\..\Common\IConfigFile.cpp" />
     <ClCompile Include="..\..\Common\ItemConfig.cpp" />
-    <ClCompile Include="..\..\Common\LogManager.cpp" />
     <ClCompile Include="..\..\Common\MissionConfig.cpp" />
     <ClCompile Include="..\..\Common\PeerCard.cpp" />
     <ClCompile Include="..\..\Common\RoomConfig.cpp" />
     <ClCompile Include="..\..\Common\ShopConfg.cpp" />
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp" />
     <ClCompile Include="..\..\Common\TitleLevelConfig.cpp" />
-    <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="..\DataServer\src\encryptNumber.cpp" />
     <ClCompile Include="..\DataServer\src\EventCenter.cpp" />
     <ClCompile Include="..\DataServer\src\ExchangeCenter.cpp" />
@@ -172,14 +150,8 @@
     <ClCompile Include="..\DataServer\src\PlayerManager.cpp" />
     <ClCompile Include="..\DataServer\src\PokerCircle.cpp" />
     <ClCompile Include="..\DataServer\src\RobotCenter.cpp" />
-    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp" />
     <ClCompile Include="..\ServerCommon\httpRequest.cpp" />
-    <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\RewardConfig.cpp" />
-    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
-    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp" />
-    <ClCompile Include="..\ServerCommon\SeverUtility.cpp" />
-    <ClCompile Include="..\ServerCommon\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />

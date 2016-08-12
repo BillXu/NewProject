@@ -196,6 +196,7 @@ void ISitableRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 	ISitableRoomPlayer* pSitPlayer = getSitdownPlayerByUID(pPlayer->nUserUID) ;
 	if ( pSitPlayer == nullptr )
 	{
+		CLogMgr::SharedLogMgr()->PrintLog("you don't sit down ,so skip this uid = %u",pPlayer->nUserUID) ;
 		return ;
 	}
 
@@ -338,7 +339,7 @@ bool ISitableRoom::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort
 		return true ;
 	}
 
-	return false ;
+	return IRoom::onMessage(prealMsg,nMsgType,eSenderPort,nSessionID) ;
 }
 
 bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )

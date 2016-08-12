@@ -410,7 +410,7 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 	pPlayerItem->nToTalCoin = pEnterRoomPlayer->nCoin ;
 
 	stEnterRoomData refEnterData ;
-	memcpy(&refEnterData,pEnterRoomPlayer,sizeof(stEnterRoomData));
+	memcpy_s(&refEnterData,sizeof(stEnterRoomData),pEnterRoomPlayer,sizeof(stEnterRoomData));
 	refEnterData.nCoin = pPlayerItem->nCoinInRoom ;
 	m_pRoom->onPlayerEnterRoom(&refEnterData,nSubIdx) ;
 	sendRoomInfo(pEnterRoomPlayer->nUserSessionID);
@@ -863,6 +863,11 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			uint32_t nTakeIn = prealMsg["takeIn"].asUInt() ;
 			// check coin state ;
 			auto stStandPlayer = m_pRoom->getPlayerBySessionID(nSessionID);
+			if ( !stStandPlayer )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("you are not in room ,can not take in ") ;
+				break;
+			}
 			assert( stStandPlayer && "not enter room how to rebuy ?" );
 			ISitableRoomPlayer* stiDownPlayer = m_pRoom->getSitdownPlayerBySessionID(nSessionID);
 
@@ -887,8 +892,8 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			{
 				jsMsgBack["ret"] = 4 ;
 				m_pRoom->sendMsgToPlayer(nSessionID,jsMsgBack,nMsgType) ;
-				CLogMgr::SharedLogMgr()->ErrorLog("temp let double applying take in");
-				//break ; (uint32_t)(float(nCoin) * 1.1 )
+				//CLogMgr::SharedLogMgr()->ErrorLog("temp let double applying take in");
+				break ; //(uint32_t)(float(nCoin) * 1.1 )
 			}
 
 			if ( (uint32_t)(float(nTakeIn) * 1.1 ) > pPrivatePlayer->nToTalCoin )
@@ -908,6 +913,11 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			// check is control ;
 			if ( !m_isControlTakeIn || nTakeIn <= pPrivatePlayer->nCheckedCoin ) // do take in 
 			{
+				if ( !m_isControlTakeIn )
+				{
+					pPrivatePlayer->nCheckedCoin = nTakeIn ;
+				}
+
 				if ( nTakeIn <= pPrivatePlayer->nCheckedCoin )
 				{
 					CLogMgr::SharedLogMgr()->PrintLog("uid = %u , do takeIn = %u , checkCoin = %u",pPrivatePlayer->nUserUID, nTakeIn,pPrivatePlayer->nCheckedCoin ) ;
@@ -1132,6 +1142,10 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	jsMsgRoomInfo["leftTimeSec"]  = (uint32_t)m_fLeftTimeSec ;
 
 	auto iPlayer = pRoom->getPlayerBySessionID(nSessionID);
+	if ( iPlayer == nullptr )
+	{
+		
+	}
 	auto iter = m_mapPrivateRoomPlayers.find(iPlayer->nUserUID) ;
 	assert(iter != m_mapPrivateRoomPlayers.end() && "why this is null ?" );
 	jsMsgRoomInfo["selfCoin"] = iter->second->nCoinInRoom ;

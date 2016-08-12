@@ -34,7 +34,14 @@ CLogMgr::CLogMgr()
     bOutPutToFile = false ;
     bEnable = true ;
 	nSerialNum = 0 ;
-	strFilePre = "Default";
+
+	char szPath[MAX_PATH] = { 0 };
+	::GetModuleFileNameA(NULL, szPath, MAX_PATH);
+	std::string strMoudleName = szPath ;
+	auto nStarPos = strMoudleName.find_last_of("\\/");
+	auto nEndPos = strMoudleName.find_last_of('.');
+	strMoudleName = strMoudleName.substr(nStarPos + 1 , nEndPos - nStarPos - 1 ) ;
+	strFilePre = strMoudleName;
 }
 
 CLogMgr::~CLogMgr()
@@ -52,9 +59,9 @@ void CLogMgr::SetDisablePrint(bool bEnable)
 
 void CLogMgr::PrintLog(const char *sformate, ...)
 {
-#ifdef NDEBUG
-	return ;
-#endif
+//#ifdef NDEBUG
+//	return ;
+//#endif
     va_list va ;
     va_start(va,sformate);
     Print(sformate, va,eLogState_Noraml);
@@ -79,11 +86,12 @@ void CLogMgr::SystemLog(const char* sformate , ...)
 
 void CLogMgr::SetOutputFile(const char *pFilenamePre)
 {
-#ifndef _DEBUG
-	strFilePre = pFilenamePre ;
+//#ifndef _DEBUG
+	// auto get exe name in ctr function ;
+	//strFilePre = pFilenamePre ;
 	bOutPutToFile = true ;
 	RefreshFileState();
-#endif
+//#endif
 }
 
 void CLogMgr::Print(const char *sFormate, va_list va , eLogState eSate )
@@ -102,19 +110,19 @@ void CLogMgr::Print(const char *sFormate, va_list va , eLogState eSate )
 	// 	
     if ( eSate == eLogState_Error )
     {
-        sprintf(pBuffer, "Error: [%s] %s\n",pstr,sFormate);
+        sprintf_s(pBuffer,1024*3, "Error: [%s] %s\n",pstr,sFormate);
     }
     else if ( eSate == eLogState_Noraml )
     {
-        sprintf(pBuffer, "Log: [%s] %s \n",pstr,sFormate);
+        sprintf_s(pBuffer,1024*3, "Log: [%s] %s \n",pstr,sFormate);
     }
     else if ( eSate == eLogState_Warnning )
     {
-        sprintf(pBuffer, "Warnning: [%s] %s \n",pstr,sFormate);
+        sprintf_s(pBuffer,1024*3, "Warnning: [%s] %s \n",pstr,sFormate);
     }
 	else if ( eSate == eLogState_System )
 	{
-		sprintf(pBuffer, "System: [%s] %s \n",pstr,sFormate);
+		sprintf_s(pBuffer,1024*3, "System: [%s] %s \n",pstr,sFormate);
 	}
 #if defined(_WIN64) || defined( _WIN32)
 	switch ( eSate )
@@ -195,12 +203,12 @@ void CLogMgr::RefreshFileState()
 		time(&tCur);
 		tm t ;
 		t = *localtime(&tCur);
-		sprintf(pFileName,"./log/%s%d_%02d_%02d_%02dh%02dm%02ds",strFilePre.c_str(),1900+t.tm_year,t.tm_mon+1,t.tm_mday,t.tm_hour,t.tm_min,t.tm_sec);
+		sprintf_s(pFileName,sizeof(pFileName),"./log/%s%d_%02d_%02d_%02dh%02dm%02ds",strFilePre.c_str(),1900+t.tm_year,t.tm_mon+1,t.tm_mday,t.tm_hour,t.tm_min,t.tm_sec);
 		strFilePre = pFileName ;
 		memset(pFileName,0,sizeof(pFileName));
 	}
 
-	sprintf(pFileName,"%s_%d.txt",strFilePre.c_str(),nSerialNum++);
+	sprintf_s(pFileName,sizeof(pFileName),"%s_%d.txt",strFilePre.c_str(),nSerialNum++);
 	pFile = fopen(pFileName, "w");
 	bOutPutToFile = pFile != nullptr ;
 	return ;

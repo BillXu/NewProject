@@ -28,9 +28,9 @@ bool CSeverConfigMgr::OnPaser(CReaderRow& refReaderRow )
 		CLogMgr::SharedLogMgr()->ErrorLog("too long ip address = %s",refReaderRow["svrIP"]->StringValue().c_str()) ;
 		return false ;
 	}
-	memcpy(configItem.strIPAddress,refReaderRow["svrIP"]->StringValue().c_str(),strlen(refReaderRow["svrIP"]->StringValue().c_str()));
-	memcpy(configItem.strAccount,refReaderRow["account"]->StringValue().c_str(),strlen(refReaderRow["account"]->StringValue().c_str()));
-	memcpy(configItem.strPassword,refReaderRow["password"]->StringValue().c_str(),strlen(refReaderRow["password"]->StringValue().c_str()));
+	memcpy_s(configItem.strIPAddress,sizeof(configItem.strIPAddress),refReaderRow["svrIP"]->StringValue().c_str(),strlen(refReaderRow["svrIP"]->StringValue().c_str()));
+	memcpy_s(configItem.strAccount,sizeof(configItem.strAccount),refReaderRow["account"]->StringValue().c_str(),strlen(refReaderRow["account"]->StringValue().c_str()));
+	memcpy_s(configItem.strPassword,sizeof(configItem.strPassword),refReaderRow["password"]->StringValue().c_str(),strlen(refReaderRow["password"]->StringValue().c_str()));
 	m_vAllSvrConfig[cSvrType].push_back(configItem);
 	return true ;
 }

@@ -204,7 +204,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 	case MSG_PLAYER_REQUEST_GAME_RECORDER:
 		{
 			stMsgPlayerRequestGameRecorderRet msgRet ;
-			msgRet.nCnt = m_vGameRecorders.size() < 10 ? m_vGameRecorders.size() : 10 ;
+			msgRet.nCnt = m_vGameRecorders.size() < 12 ? m_vGameRecorders.size() : 12 ;
 			CAutoBuffer auBuffer (sizeof(msgRet) + sizeof(stRecorderItem) * msgRet.nCnt );
 			auBuffer.addContent(&msgRet,sizeof(msgRet)) ;
 			auto iter = m_vGameRecorders.begin() ;
@@ -402,7 +402,7 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				break;
 			}
 
-			auto pgameCenter = (CGameRoomCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_RoomCenter) ;
+			auto pgameCenter = CGameServerApp::SharedGameServerApp()->getGameRoomCenter() ;
 			if ( pgameCenter->getPlayerOwnRoomCnt(GetPlayer()->GetUserUID()) >= getCreateRoomCntLimit() )
 			{
 				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , create failed , already have room cnt = %u , limit = %u",GetPlayer()->GetUserUID(),pgameCenter->getPlayerOwnRoomCnt(GetPlayer()->GetUserUID()),getCreateRoomCntLimit()) ;
@@ -414,7 +414,7 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			// if club room , have create club room permission or privilege ;
 			if ( nClubID != 0 )
 			{
-				auto pg = (CGroup*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_Group) ;
+				auto pg = CGameServerApp::SharedGameServerApp()->getCroupMgr() ;
 				auto group = pg->getGroupByID(nClubID) ;
 				if ( group == nullptr || !group->isPlayerCanCreateRoom( GetPlayer()->GetUserUID() ) )
 				{
@@ -482,7 +482,7 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 		
 			Json::Value jsMsgBack ;
 
-			auto pgameCenter = (CGameRoomCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(IGlobalModule::eMod_RoomCenter) ;
+			auto pgameCenter = CGameServerApp::SharedGameServerApp()->getGameRoomCenter();
 			auto pRoomItem = pgameCenter->getRoomItemByRoomID(nRoomID) ;
 			// check self 
 			if ( pRoomItem == nullptr || pRoomItem->nCreator != GetPlayer()->GetUserUID() )
@@ -768,12 +768,13 @@ void CPlayerGameData::addPlayerGameRecorder(stPlayerGameRecorder* pRecorder , bo
 		}
 	} 
 #endif
-	m_vGameRecorders.push_front(pRecorder);
 	if ( !isSaveDB )
 	{
+		m_vGameRecorders.push_back(pRecorder);
 		return;
 	}
 
+	m_vGameRecorders.push_front(pRecorder);
 	// save player recorder to db ;
 	stMsgSavePlayerGameRecorder msgSave ;
 	msgSave.nDuiringSeconds = pRecorder->nDuiringSeconds ;

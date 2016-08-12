@@ -24,50 +24,11 @@
     <ClInclude Include="src\main.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\CommonDefine.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ConfigReader.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\IConfigFile.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\LogManager.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\MessageDefine.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\MessageIdentifer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\TaxasPokerPeerCard.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\Utility.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerConfig.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\Timer.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
     <ClInclude Include="src\TaxasServerApp.h">
       <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\CardPoker.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\RoomConfig.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\CommonData.h">
-      <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="src\TaxasRoom.h">
       <Filter>src\Room</Filter>
@@ -81,34 +42,7 @@
     <ClInclude Include="src\RoomManager.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\ISeverApp.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\AutoBuffer.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerCommon.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\ServerCommon\httpRequest.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerStringTable.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\IRoom.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\IRoomManager.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\IRoomState.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ISitableRoom.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ISitableRoomPlayer.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
     <ClInclude Include="src\TaxasPlayer.h">
@@ -117,64 +51,22 @@
     <ClInclude Include="..\ServerCommon\RewardConfig.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\SeverUtility.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\IRoomDelegate.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\IRoomInterface.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\SystemRoom.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\PrivateRoom.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\TaxasPeerCardAdapter.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\RobotDispatchStrategy.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
-      <Filter>SvrCommon</Filter>
+    <ClInclude Include="src\InsuranceCheck.h">
+      <Filter>src\Room</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\ConfigReader.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\IConfigFile.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\LogManager.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Common\TaxasPokerPeerCard.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\Utility.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\Timer.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
     <ClCompile Include="src\TaxasServerApp.cpp">
       <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\CardPoker.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\RoomConfig.cpp">
-      <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="src\TaxasRoom.cpp">
       <Filter>src\Room</Filter>
@@ -185,28 +77,7 @@
     <ClCompile Include="src\RoomManager.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\ServerCommon\httpRequest.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ServerStringTable.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\IRoom.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\IRoomManager.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\IRoomState.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ISitableRoom.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ISitableRoomPlayer.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
     <ClCompile Include="src\TaxasPlayer.cpp">
@@ -215,23 +86,8 @@
     <ClCompile Include="..\ServerCommon\RewardConfig.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
-    <ClCompile Include="..\ServerCommon\SeverUtility.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\IRoomDelegate.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\IRoomInterface.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\SystemRoom.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\RobotDispatchStrategy.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
-      <Filter>SvrCommon</Filter>
+    <ClCompile Include="src\InsuranceCheck.cpp">
+      <Filter>src\Room</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

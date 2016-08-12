@@ -228,6 +228,7 @@ bool CVerifyApp::onLogicMsg( stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSess
 		pRequest->nChannel = pReal->nChannel ;  // now just apple ;
 		pRequest->nSessionID = nSessionID ;
 		pRequest->nMiUserUID = pReal->nMiUserUID ;
+
 		if ( pRequest->nMiUserUID && pRequest->nChannel == ePay_XiaoMi )
 		{
 			memcpy(pRequest->pBufferVerifyID,((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
@@ -235,6 +236,11 @@ bool CVerifyApp::onLogicMsg( stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSess
 		}
 		else if ( pRequest->nChannel == ePay_AppStore )
 		{
+			if ( pRequest->nShopItemID > 1 )
+			{
+				pRequest->nShopItemID -= 1 ;
+			}
+
 			std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
 			//std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),20);
 			memcpy(pRequest->pBufferVerifyID,str.c_str(),strlen(str.c_str()));

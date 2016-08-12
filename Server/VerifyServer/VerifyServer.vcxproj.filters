@@ -5,10 +5,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="common">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="AppleVerify">
       <UniqueIdentifier>{2a44ae33-4ce0-4aa7-abca-0ceb696f4529}</UniqueIdentifier>
     </Filter>
@@ -18,9 +14,6 @@
     </Filter>
     <Filter Include="App">
       <UniqueIdentifier>{27c6589d-6c9c-4251-9659-40e30c15ff81}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AppleVerify\Json">
-      <UniqueIdentifier>{b7d5447d-5f98-4e1d-9059-01c9b6aca892}</UniqueIdentifier>
     </Filter>
     <Filter Include="SvrCommon">
       <UniqueIdentifier>{0b3392f9-9336-4591-a5f9-40f5eff04d47}</UniqueIdentifier>
@@ -36,9 +29,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\LogManager.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\DBServer\src\DataBaseThread.cpp">
       <Filter>DBVerify</Filter>
     </ClCompile>
@@ -57,29 +47,11 @@
     <ClCompile Include="src\AppleVerifyManager.cpp">
       <Filter>AppleVerify</Filter>
     </ClCompile>
-    <ClCompile Include="src\lib_json\json_reader.cpp">
-      <Filter>AppleVerify\Json</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lib_json\json_value.cpp">
-      <Filter>AppleVerify\Json</Filter>
-    </ClCompile>
-    <ClCompile Include="src\lib_json\json_writer.cpp">
-      <Filter>AppleVerify\Json</Filter>
-    </ClCompile>
     <ClCompile Include="src\DBVerifyManager.cpp">
       <Filter>DBVerify</Filter>
     </ClCompile>
     <ClCompile Include="src\VerifyApp.cpp">
       <Filter>App</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\ConfigReader.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\IConfigFile.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\Utility.cpp">
-      <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\mutex.cpp">
       <Filter>SvrCommon</Filter>
@@ -87,16 +59,7 @@
     <ClCompile Include="..\ServerCommon\Sem.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
-    <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
     <ClCompile Include="..\ServerCommon\ThreadMod.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\Timer.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
     <ClCompile Include="src\MiVerifyManager.cpp">
@@ -129,17 +92,8 @@
     <ClCompile Include="src\Md5.cpp">
       <Filter>AppleVerify\MD5</Filter>
     </ClCompile>
-    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\LogManager.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\MessageIdentifer.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\DBServer\src\DataBaseThread.h">
       <Filter>DBVerify</Filter>
     </ClInclude>
@@ -158,47 +112,11 @@
     <ClInclude Include="src\AppleVerifyManager.h">
       <Filter>AppleVerify</Filter>
     </ClInclude>
-    <ClInclude Include="src\json\autolink.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
-    <ClInclude Include="src\json\config.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
-    <ClInclude Include="src\json\features.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
-    <ClInclude Include="src\json\forwards.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
-    <ClInclude Include="src\json\json.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
-    <ClInclude Include="src\json\reader.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
-    <ClInclude Include="src\json\value.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
-    <ClInclude Include="src\json\writer.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
-    <ClInclude Include="src\lib_json\json_batchallocator.h">
-      <Filter>AppleVerify\Json</Filter>
-    </ClInclude>
     <ClInclude Include="src\DBVerifyManager.h">
       <Filter>DBVerify</Filter>
     </ClInclude>
     <ClInclude Include="src\VerifyApp.h">
       <Filter>App</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ConfigReader.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\IConfigFile.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\Utility.h">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCommon\mutex.h">
       <Filter>SvrCommon</Filter>
@@ -206,19 +124,7 @@
     <ClInclude Include="..\ServerCommon\Sem.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerConfig.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\ServerCommon\ThreadMod.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ISeverApp.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\Timer.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
     <ClInclude Include="src\MiVerifyManager.h">
@@ -245,19 +151,5 @@
     <ClInclude Include="src\Md5.h">
       <Filter>AppleVerify\MD5</Filter>
     </ClInclude>
-    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\lib_json\json_internalarray.inl">
-      <Filter>AppleVerify\Json</Filter>
-    </None>
-    <None Include="src\lib_json\json_internalmap.inl">
-      <Filter>AppleVerify\Json</Filter>
-    </None>
-    <None Include="src\lib_json\json_valueiterator.inl">
-      <Filter>AppleVerify\Json</Filter>
-    </None>
   </ItemGroup>
 </Project>

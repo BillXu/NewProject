@@ -102,6 +102,23 @@ public:
 	void onStateDuringTimeUp()override;
 protected:
 	CTaxasRoom* m_pRoom ;
+	uint8_t nStateWaiting ;  // 0 wait distribute card , 1 wait calculate insurance ; 
+};
+
+// buy insurance
+class CTaxasStateInsurance
+	:public IRoomState
+{
+public:
+	CTaxasStateInsurance(){ m_nState = eRoomState_TP_Insurance ; }
+	void setNextState( uint32_t nNextState ){ m_nNextState = nNextState ;} 
+	void enterState(IRoom* pRoom)override;
+	bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID )override;
+	void onStateDuringTimeUp()override;
+protected:
+	CTaxasRoom* m_pRoom ;
+	uint16_t m_nNeedBuyInsurancePlayerIdx ;
+	uint32_t m_nNextState ;
 };
 
 // game result 

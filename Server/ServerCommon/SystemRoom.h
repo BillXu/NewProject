@@ -596,8 +596,8 @@ bool CSystemRoom<TR>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 
 			m_nBufferLen = sizeof(msgBack) + msgBack.nJsonLen;
 			m_pRewardInfoBuffer = new char[m_nBufferLen] ;
-			memcpy(m_pRewardInfoBuffer,&msgBack,sizeof(msgBack));
-			memcpy(m_pRewardInfoBuffer + sizeof(msgBack),strDe.c_str(),msgBack.nJsonLen);
+			memcpy_s(m_pRewardInfoBuffer,m_nBufferLen,&msgBack,sizeof(msgBack));
+			memcpy_s(m_pRewardInfoBuffer + sizeof(msgBack),m_nBufferLen - sizeof(msgBack),strDe.c_str(),msgBack.nJsonLen);
 			m_pRoomMgr->sendMsg((stMsg*)m_pRewardInfoBuffer,m_nBufferLen,nPlayerSessionID) ;
 		}
 		break;

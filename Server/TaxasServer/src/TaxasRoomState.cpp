@@ -6,6 +6,7 @@
 #include "TaxasServerApp.h"
 #include <time.h>
 #include "TaxasPlayer.h"
+#include "InsuranceCheck.h"
 // start game private card
 void CTaxasStateStartGame::enterState(IRoom* pRoom )
 {
@@ -81,7 +82,7 @@ void CTaxasStatePlayerBet::onStateDuringTimeUp()
 		m_pRoom->OnPlayerActTimeOut() ;
 		return ;
 	}
- 
+	
 	// bet state end ;
 	if ( m_pRoom->getMostBetCoinThisRound() > 0 )
 	{
@@ -239,6 +240,20 @@ void CTaxasStateOneRoundBetEndResult::enterState(IRoom* pRoom)
 
 void CTaxasStateOneRoundBetEndResult::onStateDuringTimeUp()
 {
+	if ( m_pRoom->isNeedByInsurance() )
+	{
+		auto pS = (CTaxasStateInsurance*)m_pRoom->getRoomStateByID(eRoomState_TP_Insurance);
+		pS->setNextState(eRoomState_TP_PublicCard);
+		m_pRoom->goToState(eRoomState_TP_Insurance);
+		return ;
+	}
+
+	if ( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) <= 1 && m_pRoom->getDistributedPublicCardRound() > 0 )
+	{
+		Json::Value js ;
+		m_pRoom->sendRoomMsg(js,MSG_SKIP_BUY_INSURANCE);
+	}
+
 	uint8_t nWaitCaPlyCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_WaitCaculate);
 	if ( nWaitCaPlyCnt == 0 )
 	{
@@ -271,10 +286,37 @@ void CTaxasStatePublicCard::enterState(IRoom* pRoom)
 	m_pRoom = (CTaxasRoom*)pRoom ;
 	float fTime = TIME_DISTRIBUTE_ONE_PUBLIC_CARD * m_pRoom->DistributePublicCard() + 1.0f;
 	setStateDuringTime(fTime) ;
+	nStateWaiting = 0 ;
 }
 
 void CTaxasStatePublicCard::onStateDuringTimeUp()
 {
+	// check if any one buy insurance 
+	if ( 0 == nStateWaiting && m_pRoom->isAnyOneBuyInsurace() )
+	{
+		// do caculate 
+		m_pRoom->doCaculateInsurance();
+		nStateWaiting = 1 ;
+		setStateDuringTime(TIME_TAXAS_WAIT_CALCULATE_INSURANCE);
+		return ;
+	}
+	
+	// add this card , go on check can buy insurance 
+	if ( m_pRoom->isNeedByInsurance() )
+	{
+		// go to buy insurance state ;
+		auto pS = (CTaxasStateInsurance*)m_pRoom->getRoomStateByID(eRoomState_TP_Insurance);
+		pS->setNextState(eRoomState_TP_PublicCard);
+		m_pRoom->goToState(eRoomState_TP_Insurance);
+		return ;
+	}
+
+	if ( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) <= 1 && m_pRoom->getDistributedPublicCardRound() < 3 )
+	{
+		Json::Value js ;
+		m_pRoom->sendRoomMsg(js,MSG_SKIP_BUY_INSURANCE);
+	}
+
 	if ( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) >= 2 )
 	{
 		m_pRoom->PreparePlayersForThisRoundBet();
@@ -298,6 +340,131 @@ void CTaxasStatePublicCard::onStateDuringTimeUp()
 	{
 		m_pRoom->goToState(eRoomState_TP_GameResult) ;
 	}
+}
+
+// buy insurance
+void CTaxasStateInsurance::enterState(IRoom* pRoom)
+{
+	m_pRoom = (CTaxasRoom*)pRoom ;
+	m_pRoom->setInsuredPlayerIdx(-1) ;
+	setStateDuringTime(TIME_TAXAS_WAIT_BUY_INSURANCE) ;
+
+	// send insurance inform ;
+	auto pInsur = m_pRoom->getInsuranceCheck() ;
+	std::vector<uint8_t> vAllOuts ;
+	auto cnt = pInsur->getOuts(m_nNeedBuyInsurancePlayerIdx,vAllOuts);
+	assert(cnt > 0 && "why outs is 0 can buy insurance ?" );
+
+	// find all outs 
+	Json::Value jsAllOuts ;
+	for ( auto& ref : vAllOuts )
+	{
+		jsAllOuts[jsAllOuts.size()] = ref ;
+	}
+
+	// find outs per players ;
+	Json::Value jsPlayerOuts ;
+	for ( uint8_t nIdx = 0 ; nIdx < m_pRoom->getSeatCount(); ++nIdx )
+	{
+		if ( nIdx == m_nNeedBuyInsurancePlayerIdx )
+		{
+			continue;
+		}
+
+		auto pp = m_pRoom->getPlayerByIdx(nIdx) ;
+		if ( !pp || pp->isHaveState(eRoomPeer_WaitCaculate) == false )
+		{
+			continue;
+		}
+
+		Json::Value js ;
+		js["idx"] = nIdx ;
+		js["outs"] = pInsur->getOutsForPlayer(nIdx,nullptr) ;
+		jsPlayerOuts[jsPlayerOuts.size()] = js ;
+	}
+
+	auto pBuyer = (CTaxasPlayer*)m_pRoom->getPlayerByIdx(m_nNeedBuyInsurancePlayerIdx) ;
+	assert(pBuyer && "why insurance buyer is null");
+	Json::Value jsmsg ;
+	jsmsg["buyerIdx"] = m_nNeedBuyInsurancePlayerIdx ;
+	jsmsg["lowLimit"] = pInsur->getAmountNeedForPofit(pBuyer->getInsuranceLoseCoin()); 
+	jsmsg["outs"] = jsAllOuts ;
+	jsmsg["playerouts"] = jsPlayerOuts ;
+	m_pRoom->sendRoomMsg(jsmsg,MSG_INFORM_BUY_INSURANCE);
+}
+
+bool CTaxasStateInsurance::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID )
+{
+	if ( IRoomState::onMessage(prealMsg,nMsgType,eSenderPort,nSessionID) )
+	{
+		return true;
+	}
+
+	if ( nMsgType == MSG_PLAYER_SELECT_INSURED_AMOUNT )
+	{
+		auto pp = m_pRoom->getSitdownPlayerBySessionID(nSessionID) ;
+		if ( pp == nullptr || pp->getIdx() != m_nNeedBuyInsurancePlayerIdx || pp->isHaveState(eRoomPeer_WaitCaculate) == false  )
+		{
+			Json::Value jsback ;
+			jsback["ret"] = 1 ;
+			m_pRoom->sendMsgToPlayer(nSessionID,jsback,nMsgType) ;
+			return true ;
+		}
+
+		Json::Value jsmsg ;
+		jsmsg["buyerIdx"] = m_nNeedBuyInsurancePlayerIdx ;
+		jsmsg["amount"] = prealMsg["amount"].asUInt();
+		m_pRoom->sendRoomMsg(jsmsg,MSG_ROOM_SELECT_INSURED_AMOUNT) ;
+		return true ;
+	}
+
+	if ( nMsgType == MSG_CONFIRM_INSURED_AMOUNT )
+	{
+		uint32_t nAmount = prealMsg["amount"].asUInt() ;
+		auto pp = (CTaxasPlayer*)m_pRoom->getSitdownPlayerBySessionID(nSessionID) ;
+		if ( pp == nullptr || pp->getIdx() != m_nNeedBuyInsurancePlayerIdx || pp->isHaveState(eRoomPeer_WaitCaculate) == false )
+		{
+			Json::Value jsback ;
+			jsback["ret"] = 1 ;
+			m_pRoom->sendMsgToPlayer(nSessionID,jsback,nMsgType) ;
+			return true ;
+		}
+
+		if ( nAmount > pp->getAllBetCoin() * 0.3 || m_pRoom->getInsuranceCheck()->getInsuredProfit(nAmount) < pp->getInsuranceLoseCoin() )
+		{
+			Json::Value jsback ;
+			jsback["ret"] = 2 ;
+			m_pRoom->sendMsgToPlayer(nSessionID,jsback,nMsgType) ;
+			return true ;
+		}
+
+		Json::Value jsmsg ;
+		jsmsg["amount"] = nAmount;
+		jsmsg["idx"] = pp->getIdx();
+		m_pRoom->sendRoomMsg(jsmsg,MSG_ROOM_FINISHED_BUY_INSURANCE) ;
+
+		pp->setInsuredAmount(nAmount) ;
+		m_pRoom->setInsuredPlayerIdx(pp->getIdx()) ;
+		if ( nAmount == 0 )  // means give up 
+		{
+			m_pRoom->setInsuredPlayerIdx(-1) ;
+		}
+
+		m_pRoom->goToState(m_nNextState) ;
+		return true ;
+	}
+
+	return false ;
+}
+
+void CTaxasStateInsurance::onStateDuringTimeUp()
+{
+	Json::Value jsmsg ;
+	jsmsg["amount"] = 0;
+	jsmsg["idx"] = m_nNeedBuyInsurancePlayerIdx;
+	m_pRoom->sendRoomMsg(jsmsg,MSG_ROOM_FINISHED_BUY_INSURANCE) ;
+	m_pRoom->setInsuredPlayerIdx(-1) ;
+	m_pRoom->goToState(m_nNextState) ;
 }
 
 // game result 

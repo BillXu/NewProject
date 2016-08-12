@@ -16,6 +16,7 @@ public:
 	virtual void leaveState(){}
 	virtual void update(float fDeta);
 	virtual bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID ){ return false ;}
+	virtual bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID ){ return false ;}
 	uint16_t getStateID(){ return m_nState ; } ;
 	virtual void onStateDuringTimeUp(){}
 	void setStateDuringTime( float fTime ){ m_fStateDuring = fTime ;} 

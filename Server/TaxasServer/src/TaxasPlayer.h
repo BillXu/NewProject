@@ -23,6 +23,11 @@ public:
 	uint32_t getAllBetCoin(){ return nAllBetCoin ;}
 	int32_t getGameOffset()override ;
 	IPeerCard* getPeerCard(){ return &m_tPeerCard ; }
+	uint32_t getInsuranceLoseCoin(){ return nInsuranceLoseCoin ; }
+	void setInsuranceLoseCoin(uint32_t nLoseCoin ) { nInsuranceLoseCoin += nLoseCoin ; }
+	void setInsuredAmount(uint32_t nAmount ){ nBuyInsuredAmount = nAmount ; }
+	uint32_t getInsuredAmount(){ return nBuyInsuredAmount ;}
+	void addWinInsuredCoin(uint32_t nWinCoin);
 protected:
 	void zeroData();
 protected:
@@ -31,4 +36,6 @@ protected:
 	uint32_t nAllBetCoin ;  // used for tell win or lose
 	uint32_t nWinCoinThisGame ;    // used for tell win or lose
 	CTaxasPeerCardAdpater m_tPeerCard ;
+	uint32_t nBuyInsuredAmount ;
+	uint32_t nInsuranceLoseCoin ;
 };

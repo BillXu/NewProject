@@ -100,6 +100,7 @@ enum eRoomState
 	eRoomState_TP_PublicCard,
 	eRoomState_TP_GameResult,
 	eRoomState_TP_MAX,
+	eRoomState_TP_Insurance = eRoomState_TP_MAX,  // in case of changing below enum value ; i want add a insurance value ;
 
 	// state for Baccarat ;
 	eRoomState_BC_Shuffle,
@@ -318,6 +319,8 @@ enum eRoomLevel
 #define TIME_TAXAS_WIN_COIN_GOTO_PLAYER 1.2f
 #define TIME_TAXAS_CACULATE_PER_BET_POOL (TIME_TAXAS_WIN_COIN_GOTO_PLAYER+1.0f)
 #define TIME_TAXAS_SHOW_BEST_CARD 0.7f
+#define TIME_TAXAS_WAIT_BUY_INSURANCE 20
+#define TIME_TAXAS_WAIT_CALCULATE_INSURANCE 4
 
 #define MIN_PEERS_IN_ROOM_ROBOT 6
 #define MAX_PEERS_IN_TAXAS_ROOM 9
@@ -348,13 +351,13 @@ enum eRoomLevel
 #define TEMP_ACCOUNT "tempAccount"
 #define TEMP_PASSWORD "tempPassword"
 
-#define MUSIC_NAME "mp3/bgm2.mp3"
-#define SOUND_BET "mp3/bet.mp3"
-#define SOUND_PASS "mp3/check.mp3"
-#define SOUND_CLOCK "mp3/clock.mp3"
-#define SOUND_SHOW_PUBLIC "mp3/flop.mp3"
-#define SOUND_GIVE_UP "mp3/fold.mp3"
-#define SOUND_WIN_CHIP "mp3/movechips.mp3"
-#define SOUND_MY_TURN "mp3/myturn.mp3"
-#define SOUND_SHOW_SHOP "mp3/shopBell.mp3"
+//#define MUSIC_NAME "mp3/bgm2.mp3"
+//#define SOUND_BET "mp3/bet.mp3"
+//#define SOUND_PASS "mp3/check.mp3"
+//#define SOUND_CLOCK "mp3/clock.mp3"
+//#define SOUND_SHOW_PUBLIC "mp3/flop.mp3"
+//#define SOUND_GIVE_UP "mp3/fold.mp3"
+//#define SOUND_WIN_CHIP "mp3/movechips.mp3"
+//#define SOUND_MY_TURN "mp3/myturn.mp3"
+//#define SOUND_SHOW_SHOP "mp3/shopBell.mp3"
 

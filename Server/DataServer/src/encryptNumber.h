@@ -17,7 +17,6 @@ public:
 
 public:
 	CEncryptNumber(){ m_vAllRequest.clear(); m_pCurRequest = nullptr ;}
-	uint16_t getModuleType()override { return 100 ;}
 	bool onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)override ;
 	uint64_t generateNumber();
 	static bool isNumberValid(uint64_t nNumber );

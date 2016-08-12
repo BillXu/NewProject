@@ -16,6 +16,7 @@
 #ifndef USHORT_MAX
 #define USHORT_MAX 65535 
 #endif
+#include <cassert>
 CGameServerApp* CGameServerApp::s_GameServerApp = NULL ;
 CGameServerApp* CGameServerApp::SharedGameServerApp()
 {
@@ -24,7 +25,6 @@ CGameServerApp* CGameServerApp::SharedGameServerApp()
 
 CGameServerApp::~CGameServerApp()
 {
-	delete m_pPlayerManager ;
 	delete m_pConfigManager ;
 }
 
@@ -57,27 +57,51 @@ bool CGameServerApp::init()
 
 	m_pConfigManager = new CConfigManager ;
 	m_pConfigManager->LoadAllConfigFile("../configFile/") ;
-	// init component ;
-	m_pPlayerManager = new CPlayerManager ;
 
-	//auto pExc = new CExchangeCenter("../configFile/exchange.txt");
-	//registerModule(pExc);
-
-	auto robotC = new CRobotCenter ;
-	registerModule(robotC) ;
-
-	auto pEncryptNumber = new CEncryptNumber();
-	registerModule(pEncryptNumber) ;
-
-	auto group = new CGroup();
-	registerModule(group);
-	
-	auto grc = new CGameRoomCenter();
-	registerModule(grc);
+	// install module
+	for ( uint16_t nModule = eMod_None ; nModule < eMod_Max ; ++nModule )
+	{
+		auto b = installModule(nModule);
+		assert(b && "install this module failed " );
+		if ( !b )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("install module = %u failed",nModule ) ;
+		}
+	}
 
 	time_t tNow = time(NULL) ;
 	m_nCurDay = localtime(&tNow)->tm_mday ;
 	return true ;
+}
+
+CPlayerManager* CGameServerApp::GetPlayerMgr()
+{
+	auto p = (CPlayerManager*)getModuleByType(eMod_PlayerMgr) ;
+	return p ;
+}
+
+CRobotCenter* CGameServerApp::getRobotCenter()
+{
+	auto p = (CRobotCenter*)this->getModuleByType(eMod_RobotCenter);
+	return p ;
+}
+
+CEncryptNumber* CGameServerApp::getEncryptNumber()
+{
+	auto p = (CEncryptNumber*)this->getModuleByType(eMod_EncryptNumber);
+	return p ;
+}
+
+CGroup* CGameServerApp::getCroupMgr()
+{
+	auto p = (CGroup*)this->getModuleByType(eMod_Group);
+	return p ;
+}
+
+CGameRoomCenter* CGameServerApp::getGameRoomCenter()
+{
+	auto p = (CGameRoomCenter*)this->getModuleByType(eMod_GameRoomCenter);
+	return p ;
 }
 
 bool CGameServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
@@ -96,11 +120,6 @@ bool CGameServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 	{
 		return true ;
 	}
-
-	if ( m_pPlayerManager->OnMessage(prealMsg,eSenderPort,nSessionID ) )
-	{
-		return true ;
-	}
 	CLogMgr::SharedLogMgr()->ErrorLog("unprocess msg = %d , from port = %d , nsssionid = %d",prealMsg->usMsgType,eSenderPort,nSessionID ) ;
 	return true ;
 }
@@ -111,12 +130,6 @@ bool CGameServerApp::onLogicMsg( Json::Value& recvValue , uint16_t nmsgType, eMs
 	{
 		return true ;
 	}
-
-	if ( m_pPlayerManager->OnMessage(recvValue,nmsgType,eSenderPort,nSessionID ) )
-	{
-		return true ;
-	}
-	CLogMgr::SharedLogMgr()->ErrorLog("unprocess msg = %d , from port = %d , nsssionid = %d",nmsgType,eSenderPort,nSessionID ) ;
 	return false ;
 }
 
@@ -148,11 +161,9 @@ bool CGameServerApp::ProcessPublicMsg( stMsg* prealMsg , eMsgPort eSenderPort , 
 	return false ;
 }
 
-
 void CGameServerApp::update(float fdeta )
 {
 	IServerApp::update(fdeta);
-	m_pPlayerManager->Update(fdeta);	
 	CheckNewDay();
 }
 
@@ -175,8 +186,44 @@ void CGameServerApp::onConnectedToSvr()
 	m_tPokerCircle.readTopics();
 }
 
-void CGameServerApp::onExit()
+IGlobalModule* CGameServerApp::createModule( uint16_t eModuleType )
 {
-	IServerApp::onExit() ;
-	m_pPlayerManager->onExit() ;
+	IGlobalModule* pMod = IServerApp::createModule(eModuleType) ;
+	if ( pMod )
+	{
+		return pMod ;
+	}
+
+	switch (eModuleType)
+	{
+	case eMod_PlayerMgr:
+		{
+			pMod = new CPlayerManager() ;
+		}
+		break;
+	case eMod_RobotCenter:
+		{
+			pMod = new CRobotCenter();
+		}
+		break;
+	case eMod_EncryptNumber:
+		{
+			pMod = new CEncryptNumber();
+		}
+		break;
+	case eMod_Group:
+		{
+			pMod = new CGroup();
+		}
+		break;
+	case eMod_GameRoomCenter:
+		{
+			pMod = new CGameRoomCenter();
+		}
+		break;
+	default:
+		break;
+	}
+
+	return pMod ;
 }

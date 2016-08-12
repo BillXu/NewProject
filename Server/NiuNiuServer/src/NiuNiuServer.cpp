@@ -23,8 +23,7 @@ bool CNiuNiuServerApp::init()
 	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
 	CRewardConfig::getInstance()->LoadFile("../configFile/rewardConfig.txt");
 
-	auto* pMgr = new CNiuNiuRoomManager(&m_tMgr);
-	registerModule(pMgr);
+	installModule(eMod_RoomMgr);
 	return true ;
 }
 
@@ -33,3 +32,17 @@ uint16_t CNiuNiuServerApp::getLocalSvrMsgPortType()
 	return ID_MSG_PORT_NIU_NIU ;
 }
 
+IGlobalModule* CNiuNiuServerApp::createModule( uint16_t eModuleType )
+{
+	auto p = IServerApp::createModule(eModuleType);
+	if ( p )
+	{
+		return p;
+	}
+
+	if ( eModuleType == eMod_RoomMgr )
+	{
+		p = new CNiuNiuRoomManager(getRoomConfigMgr());
+	}
+	return p ;
+}

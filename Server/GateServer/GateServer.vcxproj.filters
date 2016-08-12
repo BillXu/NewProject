@@ -1,12 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Common">
-      <UniqueIdentifier>{f26cfe53-59d1-471b-b5a5-9d3c3648078b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SvrCommon">
-      <UniqueIdentifier>{aeb70d7d-6961-4979-97ee-a8af404199fe}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -16,24 +10,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\CommonDefine.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\ConfigReader.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\LogManager.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\MessageDefine.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\MessageIdentifer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Common\Utility.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="src\GateClient.h">
       <Filter>head</Filter>
     </ClInclude>
@@ -46,38 +22,8 @@
     <ClInclude Include="src\main.h">
       <Filter>head</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\IConfigFile.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerConfig.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ServerDefine.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\ISeverApp.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\Timer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h">
-      <Filter>SvrCommon</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\ConfigReader.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\LogManager.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\Utility.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="src\GateClient.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -89,21 +35,6 @@
     </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Common\IConfigFile.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ServerConfig.cpp">
-      <Filter>SvrCommon</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\ISeverApp.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\Timer.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp">
-      <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

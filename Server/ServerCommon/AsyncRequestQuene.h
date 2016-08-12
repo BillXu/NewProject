@@ -30,7 +30,6 @@ public:
 public:
 	void init( IServerApp* svrApp )override ;
 	bool onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)override;
-	uint16_t getModuleType()override { return eMode_AsyncRequestQueu ;} 
 	~CAsyncRequestQuene();
 	uint32_t pushAsyncRequest(uint8_t nTargetPortID, uint16_t nReqType,Json::Value& reqContent, async_req_call_back_func lpCallBack,Json::Value& jsUserData );
 	uint32_t pushAsyncRequest(uint8_t nTargetPortID, uint16_t nReqType,Json::Value& reqContent, async_req_call_back_func lpCallBack);

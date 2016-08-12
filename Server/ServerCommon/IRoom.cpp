@@ -190,7 +190,7 @@ void IRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer ,int8_t& nSubIdx
 		memset(pStandPlayer,0,sizeof(stStandPlayer));
 	}
 
-	memcpy(pStandPlayer,pEnterRoomPlayer,sizeof(stEnterRoomData));
+	memcpy_s(pStandPlayer,sizeof(stStandPlayer),pEnterRoomPlayer,sizeof(stEnterRoomData));
 	if ( getDelegate() && getDelegate()->isOmitNewPlayerHalo(this)  )
 	{
 		pStandPlayer->nNewPlayerHaloWeight = 0 ;
@@ -413,11 +413,13 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 		break;
 	case MSG_PLAYER_LEAVE_ROOM:
 		{
+			CLogMgr::SharedLogMgr()->PrintLog("player apply to leave ") ;
 			stMsgPlayerLeaveRoomRet msg ;
 			stStandPlayer* pp = getPlayerBySessionID(nPlayerSessionID) ;
 			if ( pp )
 			{
 				onPlayerWillLeaveRoom(pp) ;
+				CLogMgr::SharedLogMgr()->PrintLog("do leave remove object") ;
 				playerDoLeaveRoom(pp);
 				msg.nRet = 0 ;
 			}
@@ -427,6 +429,7 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 				CLogMgr::SharedLogMgr()->ErrorLog("session id not in this room how to leave session id = %d",nPlayerSessionID) ;
 			}
 			sendMsgToPlayer(&msg,sizeof(msg),nPlayerSessionID) ;
+			CLogMgr::SharedLogMgr()->PrintLog("finish leave room msg");
 		}
 		break;
 	default:
@@ -436,6 +439,14 @@ bool IRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayer
 	return true ;
 }
 
+bool IRoom::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID )
+{
+	if ( m_pCurRoomState && m_pCurRoomState->onMessage(prealMsg,nMsgType,eSenderPort,nSessionID) )
+	{
+		return true ;
+	}
+	return false ;
+}
 
 void IRoom::onTimeSave( )
 {

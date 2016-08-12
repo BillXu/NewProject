@@ -2,6 +2,7 @@
 #include "IGlobalModule.h"
 #include <algorithm>
 #include "httpRequest.h"
+#include <list>
 struct stGroupItem
 {
 	uint32_t nCreaterUID ;
@@ -40,7 +41,6 @@ public:
 	};
 public:
 	~CGroup();
-	uint16_t getModuleType()override{ return eMod_Group ;};
 	void init( IServerApp* svrApp )override ;
 	void onConnectedSvr()override ;
 	bool onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)override ;
@@ -52,7 +52,10 @@ public:
 	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg)override ;
 	void onTimeSave()override ;
 	void reqGroupMembers(stGroupItem* pGroup );
+	void sortGroup();
 protected:
 	MAP_GROUP m_vGroups ;
+	std::list<stGroupItem*> m_vSortedGroups ;
+	bool m_isSortDirty ;
 	CHttpRequest m_pGoTyeAPI;
 };

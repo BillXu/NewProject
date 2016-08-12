@@ -57,13 +57,13 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;SERVER;VERIFY_SERVER;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SERVER;VERIFY_SERVER;_DEBUG;_CONSOLE;JSON_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./src/;../../Common;../ServerCommon;../DBServer/src;../ServerCommon/pthreadLib;../DBServer/src/include;../NetworkUtility/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libmysql.lib;pthreadVC2.lib;libcurl_imp.lib;NetworkUtilityD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libmysql.lib;pthreadVC2.lib;libcurl_imp.lib;NetworkUtilityD.lib;ServerCommon_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -84,31 +84,20 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libmysql.lib;pthreadVC2.lib;libcurl_imp.lib;NetworkUtility.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libmysql.lib;pthreadVC2.lib;libcurl_imp.lib;NetworkUtility.lib;ServerCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\ConfigReader.cpp" />
-    <ClCompile Include="..\..\Common\IConfigFile.cpp" />
-    <ClCompile Include="..\..\Common\LogManager.cpp" />
-    <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="..\DBServer\src\DataBaseThread.cpp" />
     <ClCompile Include="..\DBServer\src\DBRequest.cpp" />
     <ClCompile Include="..\DBServer\src\MySqlData.cpp" />
-    <ClCompile Include="..\ServerCommon\AsyncRequestQuene.cpp" />
-    <ClCompile Include="..\ServerCommon\ISeverApp.cpp" />
     <ClCompile Include="..\ServerCommon\mutex.cpp" />
     <ClCompile Include="..\ServerCommon\Sem.cpp" />
-    <ClCompile Include="..\ServerCommon\ServerConfig.cpp" />
     <ClCompile Include="..\ServerCommon\ThreadMod.cpp" />
-    <ClCompile Include="..\ServerCommon\Timer.cpp" />
     <ClCompile Include="src\AppleVerifyManager.cpp" />
     <ClCompile Include="src\DBVerifyManager.cpp" />
     <ClCompile Include="src\HMAC_SHA1.cpp" />
-    <ClCompile Include="src\lib_json\json_reader.cpp" />
-    <ClCompile Include="src\lib_json\json_value.cpp" />
-    <ClCompile Include="src\lib_json\json_writer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Md5.cpp" />
     <ClCompile Include="src\MiVerifyManager.cpp" />
@@ -123,35 +112,16 @@
     <ClCompile Include="src\WeChatVerifyManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\ConfigReader.h" />
-    <ClInclude Include="..\..\Common\IConfigFile.h" />
-    <ClInclude Include="..\..\Common\LogManager.h" />
-    <ClInclude Include="..\..\Common\MessageIdentifer.h" />
-    <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\DBServer\src\DataBaseThread.h" />
     <ClInclude Include="..\DBServer\src\DBRequest.h" />
     <ClInclude Include="..\DBServer\src\DBRequestFlags.h" />
     <ClInclude Include="..\DBServer\src\MySqlData.h" />
-    <ClInclude Include="..\ServerCommon\AsyncRequestQuene.h" />
-    <ClInclude Include="..\ServerCommon\ISeverApp.h" />
     <ClInclude Include="..\ServerCommon\mutex.h" />
     <ClInclude Include="..\ServerCommon\Sem.h" />
-    <ClInclude Include="..\ServerCommon\ServerConfig.h" />
-    <ClInclude Include="..\ServerCommon\ServerMessageDefine.h" />
     <ClInclude Include="..\ServerCommon\ThreadMod.h" />
-    <ClInclude Include="..\ServerCommon\Timer.h" />
     <ClInclude Include="src\AppleVerifyManager.h" />
     <ClInclude Include="src\DBVerifyManager.h" />
     <ClInclude Include="src\HMAC_SHA1.h" />
-    <ClInclude Include="src\json\autolink.h" />
-    <ClInclude Include="src\json\config.h" />
-    <ClInclude Include="src\json\features.h" />
-    <ClInclude Include="src\json\forwards.h" />
-    <ClInclude Include="src\json\json.h" />
-    <ClInclude Include="src\json\reader.h" />
-    <ClInclude Include="src\json\value.h" />
-    <ClInclude Include="src\json\writer.h" />
-    <ClInclude Include="src\lib_json\json_batchallocator.h" />
     <ClInclude Include="src\Md5.h" />
     <ClInclude Include="src\MiVerifyManager.h" />
     <ClInclude Include="src\SHA1.h" />
@@ -161,11 +131,6 @@
     <ClInclude Include="src\VerifyRequest.h" />
     <ClInclude Include="src\WeChatShopItemOrder.h" />
     <ClInclude Include="src\WeChatVerifyManager.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="src\lib_json\json_internalarray.inl" />
-    <None Include="src\lib_json\json_internalmap.inl" />
-    <None Include="src\lib_json\json_valueiterator.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

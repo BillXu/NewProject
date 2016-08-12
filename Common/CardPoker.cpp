@@ -12,7 +12,7 @@ CCard::CCard(  unsigned char nCompositeNum  )
 
 CCard::~CCard()
 {
-
+	//printf("delete this card %u , addr = %u \n",m_nCardFaceNum,(unsigned int)this) ;
 }
 
 void CCard::RsetCardByCompositeNum( unsigned char nCompositeNum )
@@ -46,12 +46,12 @@ unsigned char CCard::GetCardCompositeNum()
 	return ( m_eType * 13 + m_nCardFaceNum );
 }
 
-void CCard::SetCard(eCardType etype, unsigned char nFaceNum )
+CCard& CCard::SetCard(eCardType etype, unsigned char nFaceNum )
 {
 	if ( etype < eCard_None || etype >= eCard_Max )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("unknown card type =%d", etype ) ;
-		return ;
+		return *this;
 	}
 
 	if ( nFaceNum <=0 ||nFaceNum >54 )
@@ -60,6 +60,7 @@ void CCard::SetCard(eCardType etype, unsigned char nFaceNum )
 	}
 	m_eType = etype ;
 	m_nCardFaceNum = nFaceNum ;
+	return *this;
 }
 
 void CCard::LogCardInfo()
@@ -68,16 +69,16 @@ void CCard::LogCardInfo()
 	switch ( m_eType )
 	{
 	case eCard_Heart:
-		pType = "红桃";
+		pType = "hong tao ";
 		break;
 	case eCard_Sword:
-		pType = "黑桃";
+		pType = "hei tao";
 		break;
 	case eCard_Club:
-		pType = "草花";
+		pType = "cao hua";
 		break;
 	case eCard_Diamond:
-		pType = "方块";
+		pType = "fang kuai";
 		break;
 	default:
         pType = "unknown";
@@ -178,6 +179,15 @@ unsigned char CPoker::GetCardWithCompositeNum()
 		RestAllPoker();
 	}
 	return m_vCards[m_nCurIdx++] ;
+}
+
+unsigned char CPoker::getCardNum( unsigned char nIdx )
+{
+	if ( m_nCardCount <= nIdx )
+	{
+		return 0 ;
+	}
+	return m_vCards[nIdx] ;
 }
 
 void CPoker::ComfirmKeepCard( unsigned char nCardLeft )

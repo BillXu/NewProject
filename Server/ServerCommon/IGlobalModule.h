@@ -5,20 +5,18 @@ class IServerApp ;
 class IGlobalModule
 {
 public:
-	enum  eModule
+	enum 
 	{
-		eMod_None,
-		eMod_Group,
-		eMode_AsyncRequestQueu,
-		eMod_RoomMgr,
-		eMod_RoomCenter,
-		eMod_Max
-	}; 
+		INVALID_MODULE_TYPE = (uint16_t)-1,
+	};
+
 public:
-	IGlobalModule(){ m_fTicket = 300; m_app = nullptr ;}
+	IGlobalModule(){ m_fTicket = 300; m_app = nullptr ; m_nModuleType = INVALID_MODULE_TYPE ; }
 	virtual ~IGlobalModule(){}
-	virtual uint16_t getModuleType() = 0 ;
 	IServerApp* getSvrApp(){ return m_app; }
+protected:
+	void setModuleType( uint8_t nModuleType ){ m_nModuleType = nModuleType ; }
+	uint16_t getModuleType(){ return m_nModuleType ; };
 	virtual void init( IServerApp* svrApp ) { m_app = svrApp ;}
 	virtual void onExit(){ onTimeSave() ;}
 	virtual bool onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID){ return false ;}
@@ -36,7 +34,10 @@ public:
 	virtual void onTimeSave(){}
 	virtual void onConnectedSvr(){}
 	virtual float getTimeSave(){ return 650; }
+public:
+	friend IServerApp ;
 private:
+	uint16_t m_nModuleType ;
 	IServerApp* m_app ;
 	float m_fTicket ;
 };
