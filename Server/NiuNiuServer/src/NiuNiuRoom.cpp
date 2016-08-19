@@ -181,7 +181,6 @@ uint8_t CNiuNiuRoom::getDistributeCardCnt()
 	switch (nState)
 	{
 	case eRoomState_NN_Disribute4Card:
-		return 4 ;
 	case eRoomState_NN_FinalCard:
 	case eRoomState_NN_CaculateCard:
 	case eRoomState_NN_GameResult:

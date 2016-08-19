@@ -124,14 +124,32 @@ bool IServerApp::OnMessage( Packet* pMsg )
 		char* pBuffer = (char*)preal ;
 		pBuffer += sizeof(stMsgJsonContent);
 		//#ifdef __DEBUG
-		char pLog[1024] = { 0 };
+		static char pLog[1024] = { 0 };
+		if ( pRet->nJsLen >= 1024 )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("session id = %u send a invalid len json msg, len = %u ",pData->nSessionID,pRet->nJsLen) ;
+			return true;
+		}
+		memset(pLog,0,sizeof(pLog)) ;
 		memcpy_s(pLog,sizeof(pLog),pBuffer,pRet->nJsLen);
 		CLogMgr::SharedLogMgr()->PrintLog("session id = %u rec : %s",pData->nSessionID,pLog);
 		//#endif // __DEBUG
 
 		Json::Reader reader ;
 		Json::Value rootValue ;
-		reader.parse(pBuffer,pBuffer + pRet->nJsLen,rootValue,false) ;
+		auto bRet = reader.parse(pBuffer,pBuffer + pRet->nJsLen,rootValue,false) ;
+		if ( !bRet )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("session id = %u send a invalid json msg format error ",pData->nSessionID ) ;
+			return true ;
+		}
+
+		if ( rootValue[JS_KEY_MSG_TYPE].isNull() || rootValue[JS_KEY_MSG_TYPE].isNumeric() == false )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("not have msg key type , session id = %u rec : %s",pData->nSessionID,pLog);
+			return true ;
+		}
+
 		uint16_t nMsgType = rootValue[JS_KEY_MSG_TYPE].asUInt() ;
 		if ( onLogicMsg(rootValue,nMsgType,(eMsgPort)pData->nSenderPort,pData->nSessionID) )
 		{

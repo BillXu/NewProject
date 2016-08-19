@@ -133,7 +133,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			Json::Reader jsReader ;
 			jsReader.parse(pJsBuffer,pJsBuffer + pRet->nJsLen,pRecorder->playerDetail) ;
 			addPrivateRoomRecorder(pRecorder,false) ;
-			CLogMgr::SharedLogMgr()->PrintLog("read game result is room id = %u",pRet->nRoomID ) ;
+			//CLogMgr::SharedLogMgr()->PrintLog("read game result is room id = %u",pRet->nRoomID ) ;
 		}
 		break ;
 	case MSG_REQUEST_PRIVATE_ROOM_RECORDER:
@@ -678,6 +678,7 @@ void IRoomManager::onExit()
 
 void IRoomManager::readRoomInfo(uint32_t nSeailNum )
 {
+	CLogMgr::SharedLogMgr()->PrintLog("read room info serail = %u",nSeailNum);
 	Json::Value jsreq ;
 	char pBuffer[256] = {0} ;
 	sprintf_s(pBuffer,sizeof(pBuffer),"select leftTime , jsCreateJson, roomState from rooms where serialNum = %u ;",nSeailNum );
@@ -723,9 +724,9 @@ void IRoomManager::readRoomInfo(uint32_t nSeailNum )
 
 void IRoomManager::onTimeSave()
 {
-#ifdef _DEBUG
-	return ;
-#endif
+//#ifdef _DEBUG
+//	return ;
+//#endif
 	IGlobalModule::onTimeSave();
 	MAP_ID_ROOM::iterator iter = m_vRooms.begin() ;
 	for ( ; iter != m_vRooms.end() ; ++iter )

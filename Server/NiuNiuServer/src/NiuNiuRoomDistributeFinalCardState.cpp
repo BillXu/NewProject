@@ -12,7 +12,7 @@ void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
 
 	setStateDuringTime(1 * TIME_NIUNIU_DISTRIBUTE_FINAL_CARD_PER_PLAYER );
-	CLogMgr::SharedLogMgr()->PrintLog("room id = %d distribute final card, already distribute all card",m_pRoom->getRoomID()) ;
+	//CLogMgr::SharedLogMgr()->PrintLog("room id = %d distribute final card, already distribute all card",m_pRoom->getRoomID()) ;
 	return ;
 	// distribute final card ;
 	uint8_t nPlayerCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ; ;

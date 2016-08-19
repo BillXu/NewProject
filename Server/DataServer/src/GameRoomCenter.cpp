@@ -53,7 +53,7 @@ void CGameRoomCenter::readRoomItemsInfo()
 	Json::Value jssql ;
 	uint32_t nOffset = m_vRoomIDKey.size() ;
 	char pBuffer[512] = {0};
-	sprintf(pBuffer,"select serialNum,roomID,belongClubID,creatorUID from gameroomcenter where isDelete = 0 limit 20 offset %u",nOffset);
+	sprintf(pBuffer,"select serialNum,roomID,belongClubID,creatorUID from gameroomcenter where isDelete = 0 order by createDate limit 20 offset %u",nOffset);
 	jssql["sql"] = pBuffer ;
 	getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Select,jssql,[this](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData){
 		uint8_t nRow = retContent["afctRow"].asUInt() ;

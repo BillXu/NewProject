@@ -17,7 +17,7 @@ public:
 protected:
 	void setModuleType( uint8_t nModuleType ){ m_nModuleType = nModuleType ; }
 	uint16_t getModuleType(){ return m_nModuleType ; };
-	virtual void init( IServerApp* svrApp ) { m_app = svrApp ;}
+	virtual void init( IServerApp* svrApp ) { m_app = svrApp ; m_fTicket = getTimeSave();}
 	virtual void onExit(){ onTimeSave() ;}
 	virtual bool onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID){ return false ;}
 	virtual bool onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID){ return false ;}

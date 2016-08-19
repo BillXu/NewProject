@@ -2,6 +2,7 @@
 #include "tinyxml/tinyxml.h"
 #include "Md5.h"
 #include<algorithm>
+#include "LogManager.h"
 size_t OnRecieveDataWeChat(void *buffer, size_t size, size_t count, void *user_p)
 {
 	stVerifyRequest* pRequest = (stVerifyRequest*)user_p ;
@@ -10,6 +11,7 @@ size_t OnRecieveDataWeChat(void *buffer, size_t size, size_t count, void *user_p
 	TiXmlDocument t ;
 	std::string str((char*)buffer,size * count);
 	t.Parse(str.c_str(),0,TIXML_ENCODING_UTF8);
+	CLogMgr::SharedLogMgr()->PrintLog("weChatPayRet : %s",str.c_str()) ;
 	TiXmlNode* pRoot = t.RootElement();
 	if ( pRoot )
 	{
@@ -23,10 +25,16 @@ size_t OnRecieveDataWeChat(void *buffer, size_t size, size_t count, void *user_p
 				TiXmlNode* pRet = pResultNode->FirstChild();
 				if ( strcmp(pRet->Value(),"SUCCESS") == 0 )
 				{
-					// success ;
-					pRequest->eResult = eVerify_Apple_Success ;
-					pAVM->AddProcessedResult(pRequest);
-					return size * count ;
+					TiXmlElement* pState = (TiXmlElement*)pRoot->FirstChild("trade_state");
+					TiXmlNode* pStateRet = pState->FirstChild();
+					if ( strcmp(pStateRet->Value(),"SUCCESS") == 0 )
+					{
+						CLogMgr::SharedLogMgr()->PrintLog("weChatVerfiy success ") ;
+						// success ;
+						pRequest->eResult = eVerify_Apple_Success ;
+						pAVM->AddProcessedResult(pRequest);
+						return size * count ;
+					}
 				}
 			}
 		}

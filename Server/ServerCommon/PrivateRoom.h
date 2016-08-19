@@ -275,6 +275,21 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	
 	m_nMaxTakeIn = m_pRoom->getMaxTakeIn();
 	CLogMgr::SharedLogMgr()->PrintLog("create 1 private room") ;
+
+	// read private room data 
+	stMsgReadPrivateRoomPlayer msgReadPrivate ;
+	msgReadPrivate.nRoomID = getRoomID() ;
+	msgReadPrivate.nRoomType = getRoomType() ;
+	m_pRoomMgr->sendMsg(&msgReadPrivate,sizeof(msgReadPrivate),getRoomID()) ;
+	CLogMgr::SharedLogMgr()->PrintLog("read room private item") ;
+
+	// read rank data 
+	stMsgReadRoomPlayer msgRead ;
+	msgRead.nRoomID = getRoomID();
+	msgRead.nRoomType = getRoomType() ;
+	msgRead.nTermNumber = 0 ;
+	m_pRoomMgr->sendMsg(&msgRead,sizeof(msgRead),getRoomID()) ;
+	CLogMgr::SharedLogMgr()->PrintLog("read room rank") ;
 	return true ;
 }
 
@@ -354,7 +369,7 @@ void CPrivateRoom<T>::serializationToDB()
 	//autoBuffer.addContent(strJson.c_str(),msgSave.nJsonLen) ;
 	//m_pRoomMgr->sendMsg((stMsg*)autoBuffer.getBufferPtr(),autoBuffer.getContentSize(),0) ;
 	char pBuffer[215] = {0};
-	sprintf_s(pBuffer,sizeof(pBuffer),"update rooms set leftTime = '%u' , roomState = '%u' where serialNum = '%u' ;",m_fLeftTimeSec,m_eState,m_nSerialNum);
+	sprintf_s(pBuffer,sizeof(pBuffer),"update rooms set leftTime = %u , roomState = %u where serialNum = %u ;",(uint32_t)m_fLeftTimeSec,(uint32_t)m_eState,m_nSerialNum);
 	Json::Value jsReq ;
 	jsReq["sql"] = pBuffer ;
 	m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Update,jsReq);
@@ -648,11 +663,35 @@ void CPrivateRoom<T>::onTimeSave()
 	// save private room player 
 
 	CAutoBuffer auBuffer( sizeof( stMsgSavePrivateRoomPlayer ) + 200 );
-	for ( auto refPrivatePlayer : m_mapPrivateRoomPlayers )
+	for ( auto& refPrivatePlayer : m_mapPrivateRoomPlayers )
 	{
-		if ( refPrivatePlayer.second->isDirty == false )
+		uint32_t nCoinInRoom = 0 ;
+		bool isPlayerInRoom = false ;
+		auto pSit = m_pRoom->getSitdownPlayerByUID(refPrivatePlayer.second->nUserUID);
+		if ( pSit )
+		{
+			nCoinInRoom = pSit->getCoin();
+			isPlayerInRoom = true ;
+		}
+		else
+		{
+			auto pp = m_pRoom->getPlayerByUserUID(refPrivatePlayer.second->nUserUID);
+			if ( pp )
+			{
+				isPlayerInRoom = true ;
+				nCoinInRoom = pp->nCoin ;
+			}
+		}
+
+		if ( refPrivatePlayer.second->isDirty == false && (!( isPlayerInRoom && nCoinInRoom != refPrivatePlayer.second->nCoinInRoom )) )
 		{
 			continue;
+		}
+
+
+		if ( isPlayerInRoom )
+		{
+			refPrivatePlayer.second->nCoinInRoom = nCoinInRoom ;
 		}
 
 		refPrivatePlayer.second->isDirty = true ;

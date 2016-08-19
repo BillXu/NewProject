@@ -177,6 +177,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	case MSG_READ_PRIVATE_ROOM_PLAYER:
 		{
 			stMsgReadPrivateRoomPlayer* pRet = (stMsgReadPrivateRoomPlayer*)pmsg ;
+			pdata->nExtenArg1 = pRet->nRoomID ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
 				"SELECT * FROM privateroomplayer WHERE roomID = '%u'and roomType = %u limit 80",pRet->nRoomID,pRet->nRoomType ) ;
@@ -1075,6 +1076,8 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 	case MSG_READ_PRIVATE_ROOM_PLAYER:
 		{
 			stMsgReadPrivateRoomPlayerRet msgBack ;
+			msgBack.cSysIdentifer = pdata->eFromPort ;
+			msgBack.nRoomID = pdata->nExtenArg1 ;
 			CAutoBuffer auBuffer (sizeof(msgBack) + 200 );
 			for ( uint16_t nIdx = 0 ; nIdx < pResult->nAffectRow; ++nIdx )
 			{

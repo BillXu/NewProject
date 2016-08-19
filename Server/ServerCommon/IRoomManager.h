@@ -63,6 +63,7 @@ public:
 	//bool requestChatRoomIDList();
 	//bool requestGotypeToken();
 	void onExit()override ;
+	//float getTimeSave()override{ return 10; }
 protected:
 	virtual bool onCrossServerRequest(stMsgCrossServerRequest* pRequest , eMsgPort eSenderPort,Json::Value* vJsValue = nullptr);
 	virtual IRoomInterface* doCreateRoomObject( eRoomType cRoomType,bool isPrivateRoom ) = 0 ;

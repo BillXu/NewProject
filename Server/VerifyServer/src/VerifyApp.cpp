@@ -249,7 +249,10 @@ bool CVerifyApp::onLogicMsg( stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSess
 		else if ( ePay_WeChat == pRequest->nChannel )
 		{
 			memcpy(pRequest->pBufferVerifyID,((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
-
+			if ( pRequest->nShopItemID > 1 )
+			{
+				pRequest->nShopItemID -= 1 ;
+			}
 			std::string strTradeNo(pRequest->pBufferVerifyID);
 			std::string shopItem = strTradeNo.substr(0,strTradeNo.find_first_of('E')) ;
 			if ( atoi(shopItem.c_str()) != pRequest->nShopItemID )
