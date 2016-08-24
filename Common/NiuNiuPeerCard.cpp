@@ -1,9 +1,10 @@
 #include "NiuNiuPeerCard.h"
 #ifndef SERVER
 #include "cocos2d.h"
-#include <iostream>
-#include "Language.h"
 USING_NS_CC;
+#include "Language.h"
+#include <iostream>
+
 #endif
 CNiuNiuPeerCard::CNiuNiuPeerCard(){
     m_nAddIdx = 0;

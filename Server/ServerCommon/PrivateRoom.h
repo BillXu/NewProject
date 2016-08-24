@@ -558,6 +558,29 @@ void CPrivateRoom<T>::onRoomDoClosed()
 		m_pRoomMgr->sendMsg(&msgResult,sizeof(msgResult),0);
 	}
 
+	// audients also have zhan ji 
+	if ( m_vSortedRankItems.empty() == false )
+	{
+		for (auto& ref : m_mapPrivateRoomPlayers )
+		{
+			auto pp = ref.second ;
+			if ( pp == nullptr || pp->nToTalBuyIn != 0 )  // not audients ;
+			{
+				continue;
+			}
+			// add target to apns 
+			CSendPushNotification::getInstance()->addTarget(pp->nUserUID);
+
+			msgResult.nOffset = 0 ;
+			msgResult.nTargetPlayerUID = pp->nUserUID ;
+			msgResult.nFinalCoin = 0 ;
+			msgResult.nBuyIn = 0 ;
+			msgResult.nBaseBet = m_nBaseBet ;
+
+			m_pRoomMgr->sendMsg(&msgResult,sizeof(msgResult),0);
+		}
+	}
+
 	if ( m_vSortedRankItems.empty() || pRecoder->playerDetail.isNull())
 	{
 		delete pRecoder ; 
@@ -1133,8 +1156,11 @@ template<class T >
 bool CPrivateRoom<T>::onPlayerWillDoLeaveRoom(IRoom* pRoom , IRoom::stStandPlayer* pPlayer )
 {
 	auto pRoomPlayer = getPlayerByUID(pPlayer->nUserUID) ;
-	pRoomPlayer->nCoinInRoom = pPlayer->nCoin ;
-	pRoomPlayer->isDirty = true ;
+	if ( pRoomPlayer->nCoinInRoom != pPlayer->nCoin )
+	{
+		pRoomPlayer->nCoinInRoom = pPlayer->nCoin ;
+		pRoomPlayer->isDirty = true ;
+	}
 
 	pPlayer->nCoin = pRoomPlayer->nToTalCoin ;
 	IRoomDelegate::onPlayerWillDoLeaveRoom(pRoom,pPlayer) ;

@@ -23,6 +23,7 @@ public:
 	void removeMember(uint32_t nMemberUID );
 	bool isHaveMember(uint32_t nMemberUID );
 	uint32_t getMemberCnt() ;
+	uint32_t getOwnerUID(){ return nCreaterUID ;}
 };
 
 class CGroup

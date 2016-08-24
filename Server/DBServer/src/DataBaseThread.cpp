@@ -23,11 +23,24 @@ bool CDataBaseThread::InitDataBase( const char* pIP,unsigned pPort , const char*
 		return false ;
 	}
 
-	if (!mysql_set_character_set(m_pMySql, "utf8"))
+	if (!mysql_set_character_set(m_pMySql, "utf8mb4"))
 	{
 		printf("New client character set: %s\n",
 			mysql_character_set_name(m_pMySql));
 	}
+	else
+	{
+		fprintf(stderr, "Failed to connect to database: Error: %s\n",
+			mysql_error(m_pMySql));
+	}
+
+	uint32_t nVer = mysql_get_client_version();
+	printf("mysql client ver : %u \n",nVer ) ;
+	nVer = mysql_get_server_version(m_pMySql);
+	printf("mysql server ver : %u \n",nVer ) ;
+
+	MY_CHARSET_INFO tep ;
+	mysql_get_character_set_info(m_pMySql,&tep);    
 
 	m_bRunning = true ;
 	//mysql_set_server_option( m_pMySql, MYSQL_OPTION_MULTI_STATEMENTS_ON ); s
@@ -61,7 +74,7 @@ void CDataBaseThread::__run()
 			if ( id != mysql_thread_id(m_pMySql) )
 			{
 				// reconnected ;
-				if (!mysql_set_character_set(m_pMySql, "utf8"))
+				if (!mysql_set_character_set(m_pMySql, "utf8mb4"))
 				{
 					printf("Reconnect !!! New client character set: %s\n",
 						mysql_character_set_name(m_pMySql));

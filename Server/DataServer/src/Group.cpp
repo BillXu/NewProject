@@ -182,6 +182,63 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 	
 	switch ( nMsgType )
 	{
+	case MSG_CREATE_CLUB:
+		{
+			auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID) ;
+			if ( pPlayer == nullptr )
+			{
+				CLogMgr::SharedLogMgr()->ErrorLog("session id = %u , player is null , can not create club",nSessionID) ;
+				return true ;
+			}
+
+			uint16_t nOwnClubCnt = getClubCntByUserUID(pPlayer->GetUserUID());
+			uint16_t nMaxCanCreate = pPlayer->GetBaseData()->getMaxCanCreateClubCount() ;
+
+			Json::Value jsMsgBack ;
+			jsMsgBack["newClubID"] = prealMsg["newClubID"].asUInt() ;
+			if ( nOwnClubCnt >= nMaxCanCreate )
+			{
+				jsMsgBack["ret"] = 1 ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,jsMsgBack,nMsgType) ;
+				return true ;
+			}
+			jsMsgBack["ret"] = 0 ;
+			stGroupItem* pItem = new stGroupItem() ;
+			pItem->nCityCode = prealMsg["cityCode"].asUInt() ;
+			pItem->nCreaterUID = pPlayer->GetUserUID() ;
+			pItem->nGroupID = prealMsg["newClubID"].asUInt() ;
+			pItem->addMember(pPlayer->GetUserUID());
+			addGroup(pItem) ;
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u create new club id = %u city code = %u",pPlayer->GetUserUID(),pItem->nGroupID,pItem->nCityCode) ;
+			CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,jsMsgBack,nMsgType) ;
+		}
+		break ;
+	case MSG_DISMISS_CLUB:
+		{
+			uint32_t nClubID = prealMsg["clubID"].asUInt() ;
+			auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID) ;
+			auto pClub = getGroupByID(nClubID) ;
+
+			Json::Value jsMsgBack ;
+			jsMsgBack["ret"] = 0 ;
+			if ( pClub == nullptr || pClub->nCreaterUID != pPlayer->GetUserUID() )
+			{
+				jsMsgBack["ret"] = 1 ;
+				CGameServerApp::SharedGameServerApp()->sendMsg( nSessionID,jsMsgBack,nMsgType) ;
+				return true ;
+			}
+
+			if ( pClub->isRoomKeepRunning() )
+			{
+				jsMsgBack["ret"] = 2 ;
+				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,jsMsgBack,nMsgType) ;
+				return true ;
+			}
+			dismissGroup(nClubID) ;
+			CGameServerApp::SharedGameServerApp()->sendMsg( nSessionID,jsMsgBack,nMsgType) ;
+			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u dismiss club id = %u",pPlayer->GetUserUID(),nClubID) ;
+		}
+		break ;
 	case MSG_REQ_PLAYER_JOINED_CLUBS:
 		{
 			uint32_t nReqUID = prealMsg["uid"].asUInt() ;
@@ -491,6 +548,98 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType);
 		}
 		break;
+	case MSG_CLUB_APPLY_TO_JOIN:
+		{
+			uint32_t nClubID = prealMsg["clubID"].asUInt() ;
+			auto text = prealMsg["text"].asString();
+			auto pClub = getGroupByID(nClubID);
+			uint8_t nRet = 0 ;
+			do 
+			{
+				if ( pClub == nullptr )
+				{
+					nRet = 1 ;
+					break;
+				}
+				
+				if ( pClub->isGroupFull() )
+				{
+					nRet = 2 ;
+					break; 
+				}
+
+				auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID);
+				if ( !pPlayer )
+				{
+					nRet = 3 ;
+					break;
+				}
+
+				if ( pClub->isHaveMember(pPlayer->GetUserUID()) )
+				{
+					nRet = 4 ;
+					break;
+				}
+				
+				Json::Value jArg ;
+				jArg["applicantUID"] = pPlayer->GetUserUID() ;
+				jArg["clubID"] = pClub ;
+				jArg["text"] = text ;
+			   CPlayerMailComponent::PostDlgNotice(eNotice_RecivedApplyToJoinClub,jArg,pClub->getOwnerUID() ) ;
+			} while (false);
+			prealMsg["ret"] = nRet ;
+			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType);
+		}
+		break;
+	case MSG_CLUB_REPLY_APPLY_TO_JOIN:
+		{
+			uint32_t nClubID = prealMsg["clubID"].asUInt();
+			uint32_t nApplyerUID = prealMsg["applicantUID"].asUInt() ;
+			uint8_t nIsAgree = prealMsg["isAgree"].asUInt();
+			auto text = prealMsg["text"].asString();
+			uint8_t nRet = 0 ;
+			do 
+			{
+				auto pGroup = getGroupByID(nClubID) ;
+				if ( !pGroup )
+				{
+					nRet = 2 ;
+					break;
+				}
+
+				if ( pGroup->isGroupFull() )
+				{
+					nRet = 1 ;
+					break ;
+				}
+
+				auto pp = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID) ;
+				if ( pp == nullptr || pGroup->getOwnerUID() != pp->GetUserUID() )
+				{
+					nRet = 3 ;
+					break; 
+				}
+
+				// check add 
+				if ( !nIsAgree )
+				{
+					break;
+				}
+
+				if ( pGroup->isHaveMember(nApplyerUID) )
+				{
+					nRet = 4 ;
+					break;
+				}
+
+				// do add 
+				CLogMgr::SharedLogMgr()->ErrorLog("do async http request ") ;
+				 
+			} while (false);
+			prealMsg["ret"] = nRet ;
+			getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType);
+		}
+		break ;
 	default:
 		return false ;
 	}

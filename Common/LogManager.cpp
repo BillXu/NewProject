@@ -34,7 +34,7 @@ CLogMgr::CLogMgr()
     bOutPutToFile = false ;
     bEnable = true ;
 	nSerialNum = 0 ;
-
+#ifndef POKER_CLIENT
 	char szPath[MAX_PATH] = { 0 };
 	::GetModuleFileNameA(NULL, szPath, MAX_PATH);
 	std::string strMoudleName = szPath ;
@@ -42,6 +42,7 @@ CLogMgr::CLogMgr()
 	auto nEndPos = strMoudleName.find_last_of('.');
 	strMoudleName = strMoudleName.substr(nStarPos + 1 , nEndPos - nStarPos - 1 ) ;
 	strFilePre = strMoudleName;
+#endif
 }
 
 CLogMgr::~CLogMgr()
@@ -107,7 +108,8 @@ void CLogMgr::Print(const char *sFormate, va_list va , eLogState eSate )
 	char* pstr = ctime(&t) ;
 	*(pstr + strlen(pstr)) = 0 ;
 	*(pstr + strlen(pstr)-1) = 0 ;
-	// 	
+	//
+#ifndef POKER_CLIENT
     if ( eSate == eLogState_Error )
     {
         sprintf_s(pBuffer,1024*3, "Error: [%s] %s\n",pstr,sFormate);
@@ -124,6 +126,7 @@ void CLogMgr::Print(const char *sFormate, va_list va , eLogState eSate )
 	{
 		sprintf_s(pBuffer,1024*3, "System: [%s] %s \n",pstr,sFormate);
 	}
+#endif
 #if defined(_WIN64) || defined( _WIN32)
 	switch ( eSate )
 	{
@@ -203,12 +206,15 @@ void CLogMgr::RefreshFileState()
 		time(&tCur);
 		tm t ;
 		t = *localtime(&tCur);
+#ifndef POKER_CLIENT
 		sprintf_s(pFileName,sizeof(pFileName),"./log/%s%d_%02d_%02d_%02dh%02dm%02ds",strFilePre.c_str(),1900+t.tm_year,t.tm_mon+1,t.tm_mday,t.tm_hour,t.tm_min,t.tm_sec);
 		strFilePre = pFileName ;
 		memset(pFileName,0,sizeof(pFileName));
+#endif
 	}
-
+#ifndef POKER_CLIENT
 	sprintf_s(pFileName,sizeof(pFileName),"%s_%d.txt",strFilePre.c_str(),nSerialNum++);
+#endif
 	pFile = fopen(pFileName, "w");
 	bOutPutToFile = pFile != nullptr ;
 	return ;

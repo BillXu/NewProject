@@ -1,4 +1,5 @@
 #include "httpRequest.h"
+#include "LogManager.h"
 CHttpRequest::~CHttpRequest()
 {
 	if ( m_pCurlList )
@@ -15,7 +16,7 @@ CHttpRequest::~CHttpRequest()
 	curl_global_cleanup();
 }
 
-bool CHttpRequest::init(const char* pBaseUrl )
+bool CHttpRequest::init(const char* pBaseUrl,const char* pContentType )
 {
 	m_pCurlList = nullptr;
 	m_pCURL = nullptr;
@@ -26,12 +27,17 @@ bool CHttpRequest::init(const char* pBaseUrl )
 	curl_easy_setopt(m_pCURL,CURLOPT_SSL_VERIFYHOST,0L);
 	curl_easy_setopt(m_pCURL,CURLOPT_WRITEFUNCTION,&CHttpRequest::onRecieveData );
 	curl_easy_setopt(m_pCURL,CURLOPT_WRITEDATA,this);
-#ifndef NDEBUG
-	curl_easy_setopt(m_pCURL,CURLOPT_VERBOSE,1L) ;
-#endif
+//#ifndef NDEBUG
+//	curl_easy_setopt(m_pCURL,CURLOPT_VERBOSE,1L) ;   
+//#endif
 	curl_easy_setopt(m_pCURL,CURLOPT_POST,1L) ;
-	m_pCurlList = curl_slist_append(m_pCurlList,"Content-Type:application/json") ;
-	curl_slist_append(m_pCurlList,"Accept:application/json") ;
+
+	std::string strCT = "Content-Type:" ;
+	std::string strAcpt = "Accept:";
+	strCT += pContentType ;
+	strAcpt += pContentType ;
+	m_pCurlList = curl_slist_append(m_pCurlList,strCT.c_str()) ;
+	curl_slist_append(m_pCurlList,strAcpt.c_str()) ;
 	return true ;
 }
 
@@ -54,7 +60,12 @@ bool CHttpRequest::performRequest(const char* pAddtionUrl , const char* pData , 
 	curl_easy_setopt(m_pCURL,CURLOPT_POSTFIELDSIZE,nLen);
 	urlRet = curl_easy_setopt(m_pCURL, CURLOPT_HEADER, 0L);
 
-	std::string strUrl = m_strBaseURL + pAddtionUrl ;
+	std::string strUrl = m_strBaseURL ;
+	if ( pAddtionUrl )
+	{
+		strUrl += pAddtionUrl ;
+	}
+
 	curl_easy_setopt(m_pCURL,CURLOPT_URL,strUrl.c_str()); 
 	urlRet = curl_easy_perform(m_pCURL) ;
 	if ( urlRet != CURLE_OK )
@@ -70,13 +81,16 @@ void CHttpRequest::setDelegate(CHttpRequestDelegate* pDelegate)
 	m_pDelegate = pDelegate ;
 }
 
-
 size_t CHttpRequest::onRecieveData(void *buffer, size_t size, size_t count, void *user_p)
 {
 	CHttpRequest* pRequest = (CHttpRequest*)user_p ;
 	if ( pRequest->m_pDelegate )
 	{
 		pRequest->m_pDelegate->onHttpCallBack((char*)buffer,size*count,pRequest->m_pUserData ,pRequest->m_nUserTypeArg) ;
+	}
+	else
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why htttp request call back delegate is null ") ;	
 	}
 	return size * count ;
 }

@@ -439,6 +439,31 @@ enum eMsgType
 
 	MSG_SKIP_BUY_INSURANCE,
 
+	MSG_CLUB_APPLY_TO_JOIN,
+	// client : { clubID : 2345 , text : 234524 }
+	// svr : { ret : 0 , clubID : 23452 }
+	// ret : 0 ,success , 1 club do not exsit , 2 club is full, 3 you are not login , 4 already in the club;
+
+	MSG_CLUB_REPLY_APPLY_TO_JOIN,
+	// client : { clubID : 2345 , applicantUID : 2345 , isAgree : 0, text : "do not apply again" } 
+	// svr : { ret : 0 , clubID : 2345 ,applicantUID : 2345 }
+	// ret : 0 success , 1 club is full , 2 club is not exist , 3 you are not the owner, 4 already in club;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

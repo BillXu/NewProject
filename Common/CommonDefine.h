@@ -162,6 +162,8 @@ enum eNoticeType
 	eNotice_ReplyTakeIn, // { roomID : 2345,roomName : "hello" , coin : 235 , isAgree : 0 }  // isAgree : 1 agree , 0 refuse ;
 	eNotice_BeAddedToClub, // { clubID : 2356 }
 	eNotice_BeRemoveFromClub, // { clubID : 2345 }
+	eNotice_RecivedApplyToJoinClub, // { applicantUID : 2345 , clubID : 2345 , text : "join me" }
+	eNotice_RecivedReplyForApplyForJoinClub, // { clubID : 23455 , isAgree : 1 , text : "text" }
 };
 
 enum eRoomSeat

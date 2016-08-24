@@ -92,11 +92,17 @@
     <ClCompile Include="..\DBServer\src\DataBaseThread.cpp" />
     <ClCompile Include="..\DBServer\src\DBRequest.cpp" />
     <ClCompile Include="..\DBServer\src\MySqlData.cpp" />
+    <ClCompile Include="..\ServerCommon\DBTask.cpp" />
+    <ClCompile Include="..\ServerCommon\httpRequest.cpp" />
     <ClCompile Include="..\ServerCommon\mutex.cpp" />
     <ClCompile Include="..\ServerCommon\Sem.cpp" />
+    <ClCompile Include="..\ServerCommon\TaskPool.cpp" />
     <ClCompile Include="..\ServerCommon\ThreadMod.cpp" />
-    <ClCompile Include="src\AppleVerifyManager.cpp" />
-    <ClCompile Include="src\DBVerifyManager.cpp" />
+    <ClCompile Include="..\ServerCommon\WorkThread.cpp" />
+    <ClCompile Include="src\AppleVerifyTask.cpp" />
+    <ClCompile Include="src\DBVerifyTask.cpp" />
+    <ClCompile Include="src\TaskPoolModule.cpp" />
+    <ClCompile Include="src\WeChatOrderTask.cpp" />
     <ClCompile Include="src\HMAC_SHA1.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Md5.cpp" />
@@ -108,19 +114,27 @@
     <ClCompile Include="src\tinyxml\tinyxmlparser.cpp" />
     <ClCompile Include="src\VerifyApp.cpp" />
     <ClCompile Include="src\VerifyRequest.cpp" />
-    <ClCompile Include="src\WeChatShopItemOrder.cpp" />
-    <ClCompile Include="src\WeChatVerifyManager.cpp" />
+    <ClCompile Include="src\WeChatVerifyTask.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\DBServer\src\DataBaseThread.h" />
     <ClInclude Include="..\DBServer\src\DBRequest.h" />
     <ClInclude Include="..\DBServer\src\DBRequestFlags.h" />
     <ClInclude Include="..\DBServer\src\MySqlData.h" />
+    <ClInclude Include="..\ServerCommon\DBTask.h" />
+    <ClInclude Include="..\ServerCommon\httpRequest.h" />
+    <ClInclude Include="..\ServerCommon\ITask.h" />
     <ClInclude Include="..\ServerCommon\mutex.h" />
     <ClInclude Include="..\ServerCommon\Sem.h" />
+    <ClInclude Include="..\ServerCommon\TaskPool.h" />
     <ClInclude Include="..\ServerCommon\ThreadMod.h" />
-    <ClInclude Include="src\AppleVerifyManager.h" />
-    <ClInclude Include="src\DBVerifyManager.h" />
+    <ClInclude Include="..\ServerCommon\WorkThread.h" />
+    <ClInclude Include="src\AppleVerifyTask.h" />
+    <ClInclude Include="src\DBVerifyTask.h" />
+    <ClInclude Include="src\IVerifyTask.h" />
+    <ClInclude Include="src\TaskPoolModule.h" />
+    <ClInclude Include="src\testTask.h" />
+    <ClInclude Include="src\WeChatOrderTask.h" />
     <ClInclude Include="src\HMAC_SHA1.h" />
     <ClInclude Include="src\Md5.h" />
     <ClInclude Include="src\MiVerifyManager.h" />
@@ -129,8 +143,7 @@
     <ClInclude Include="src\tinyxml\tinyxml.h" />
     <ClInclude Include="src\VerifyApp.h" />
     <ClInclude Include="src\VerifyRequest.h" />
-    <ClInclude Include="src\WeChatShopItemOrder.h" />
-    <ClInclude Include="src\WeChatVerifyManager.h" />
+    <ClInclude Include="src\WeChatVerifyTask.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

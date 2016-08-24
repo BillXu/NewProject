@@ -861,57 +861,6 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 {
 	switch ( nmsgType )
 	{
-	case MSG_CREATE_CLUB:
-		{
-			auto pg = CGameServerApp::SharedGameServerApp()->getCroupMgr() ;
-			uint16_t nOwnClubCnt = pg->getClubCntByUserUID(GetPlayer()->GetUserUID());
-			uint16_t nMaxCanCreate = getMaxCanCreateClubCount() ;
-
-			Json::Value jsMsgBack ;
-			jsMsgBack["newClubID"] = recvValue["newClubID"].asUInt() ;
-			if ( nOwnClubCnt >= nMaxCanCreate )
-			{
-				jsMsgBack["ret"] = 1 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
-				return true ;
-			}
-			jsMsgBack["ret"] = 0 ;
-			stGroupItem* pItem = new stGroupItem() ;
-			pItem->nCityCode = recvValue["cityCode"].asUInt() ;
-			pItem->nCreaterUID = GetPlayer()->GetUserUID() ;
-			pItem->nGroupID = recvValue["newClubID"].asUInt() ;
-			pItem->addMember(GetPlayer()->GetUserUID());
-			pg->addGroup(pItem) ;
-			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u create new club id = %u city code = %u",GetPlayer()->GetUserUID(),pItem->nGroupID,pItem->nCityCode) ;
-			CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
-		}
-		break ;
-	case MSG_DISMISS_CLUB:
-		{
-			uint32_t nClubID = recvValue["clubID"].asUInt() ;
-			auto pg = CGameServerApp::SharedGameServerApp()->getCroupMgr();
-			auto pClub = pg->getGroupByID(nClubID) ;
-
-			Json::Value jsMsgBack ;
-			jsMsgBack["ret"] = 0 ;
-			if ( pClub == nullptr || pClub->nCreaterUID != GetPlayer()->GetUserUID() )
-			{
-				jsMsgBack["ret"] = 1 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
-				return true ;
-			}
-
-			if ( pClub->isRoomKeepRunning() )
-			{
-				jsMsgBack["ret"] = 2 ;
-				CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
-				return true ;
-			}
-			pg->dismissGroup(nClubID) ;
-			CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetSessionID(),jsMsgBack,nmsgType) ;
-			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u dismiss club id = %u",GetPlayer()->GetUserUID(),nClubID) ;
-		}
-		break ;
 	default:
 		return false;
 	}

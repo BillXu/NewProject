@@ -1,0 +1,2 @@
+Error: [Wed Aug 24 18:12:52 2016] center svr config is null , so can not connected to !
+Error: [Wed Aug 24 18:12:52 2016] svr init error

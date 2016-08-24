@@ -13,7 +13,21 @@ struct stMsg
 public:
 	stMsg():cSysIdentifer( ID_MSG_PORT_NONE  ),usMsgType(MSG_NONE){}
 };
-
+//struct stMsgTransferData
+//:public stMsg
+//{
+//    stMsgTransferData()
+//    {
+//        cSysIdentifer = ID_MSG_TRANSFER ;
+//        usMsgType = MSG_TRANSER_DATA;
+//        bBroadCast = false ;
+//        nSessionID = 0 ;
+//    }
+//    uint16_t nSenderPort ; // who send this msg ;  eMsgPort
+//    uint32_t nSessionID ;
+//    bool bBroadCast ;
+//    char pData[0] ;
+//};
 // client reconnect ;
 struct stMsgReconnect
 	:public stMsg

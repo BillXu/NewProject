@@ -237,16 +237,18 @@ void CGateClientMgr::OnPeerDisconnected(CONNECT_ID nPeerDisconnected, ConnectInf
 
 void CGateClientMgr::AddClientGate(stGateClient* pGateClient )
 {
-	if ( m_vNetWorkIDGateClientIdx.find(pGateClient->nNetWorkID) != m_vNetWorkIDGateClientIdx.end() )
+	auto iter = m_vNetWorkIDGateClientIdx.find(pGateClient->nNetWorkID) ;
+	if ( iter != m_vNetWorkIDGateClientIdx.end() )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("why this pos already have data client") ;
-		m_vNetWorkIDGateClientIdx.erase(m_vNetWorkIDGateClientIdx.find(pGateClient->nNetWorkID));
+		RemoveClientGate(iter->second);
 	}
 
-	if ( m_vSessionGateClient.find(pGateClient->nSessionId) != m_vSessionGateClient.end() )
+	auto iterS = m_vSessionGateClient.find(pGateClient->nSessionId) ;
+	if ( iterS != m_vSessionGateClient.end() )
 	{
 		CLogMgr::SharedLogMgr()->ErrorLog("why this pos session id = %d had client data",pGateClient->nSessionId) ;
-		m_vSessionGateClient.erase(m_vSessionGateClient.find(pGateClient->nSessionId));
+		RemoveClientGate(iterS->second);
 	}
 
 	m_vNetWorkIDGateClientIdx[pGateClient->nNetWorkID] = pGateClient ;

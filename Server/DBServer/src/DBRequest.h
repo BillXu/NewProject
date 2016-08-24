@@ -32,8 +32,9 @@ struct stDBRequest
 	char pSqlBuffer[Max_Sql_String];
 	int nSqlBufferLen ;
 	void* pUserData ;
-protected:
+public:
 	stDBRequest(){ cOrder = 0 ;}
+	void reset(){ cOrder = 0 ;nRequestUID = 0 ; memset(pSqlBuffer,0,sizeof(pSqlBuffer));nSqlBufferLen = 0 ; pUserData = 0 ;}
 	friend class CDBRequestQueue;
 };
 
@@ -42,6 +43,19 @@ struct stDBResult
 public:
 	typedef std::vector<CMysqlRow*> VEC_MYSQLROW ;
 	~stDBResult();
+	void reset()
+	{
+		nRequestUID = 0 ;
+		VEC_MYSQLROW::iterator iter = vResultRows.begin();
+		for ( ; iter != vResultRows.end() ; ++iter )
+		{
+			delete *iter ;
+			*iter = NULL ;
+		}
+		vResultRows.clear() ;
+		nAffectRow = 0 ;
+		pUserData = nullptr ;
+	}
 public:
 	unsigned int nRequestUID ;
 	VEC_MYSQLROW vResultRows ;  
