@@ -851,11 +851,7 @@ void CSystemRoom<TR>::onRankPlayerChanged( uint32_t nUID , uint16_t nPreIdx , ui
 	char pBuffer[256] = {0} ;
 	sprintf_s(pBuffer,sizeof(pBuffer),CServerStringTable::getInstance()->getStringByID(nStrID),getRoomName());
 	CSendPushNotification::getInstance()->setContent(pBuffer,1);
-	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
-	if ( abf )
-	{
-		m_pRoomMgr->sendMsg((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID()) ;
-	}
+	CSendPushNotification::getInstance()->postApns( m_pRoomMgr->getSvrApp()->getAsynReqQueue(),false,"rank changed") ;
 	CLogMgr::SharedLogMgr()->PrintLog("send rank change apns uid = %u",nUID) ;
 }
 
@@ -1025,8 +1021,7 @@ void CSystemRoom<TR>::onRoomClose()
 		CSendPushNotification::getInstance()->addTarget(pp->nUserUID) ;
 	}
 
-	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
-	m_pRoomMgr->sendMsg((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID());
+	CSendPushNotification::getInstance()->postApns( m_pRoomMgr->getSvrApp()->getAsynReqQueue(),false,"room closed") ;
 	onTimeSave();
 }
 

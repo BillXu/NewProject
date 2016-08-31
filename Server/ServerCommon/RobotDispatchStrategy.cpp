@@ -77,6 +77,7 @@ void CRobotDispatchStrategy::onRobotLeave(uint32_t nSessioID )
 
 void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 {
+	return ;
 	if ( m_pRoom == nullptr )
 	{
 		return ;

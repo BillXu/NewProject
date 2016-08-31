@@ -99,6 +99,7 @@
     <ClCompile Include="..\ServerCommon\TaskPool.cpp" />
     <ClCompile Include="..\ServerCommon\ThreadMod.cpp" />
     <ClCompile Include="..\ServerCommon\WorkThread.cpp" />
+    <ClCompile Include="src\ApnsTask.cpp" />
     <ClCompile Include="src\AppleVerifyTask.cpp" />
     <ClCompile Include="src\DBVerifyTask.cpp" />
     <ClCompile Include="src\TaskPoolModule.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="..\ServerCommon\TaskPool.h" />
     <ClInclude Include="..\ServerCommon\ThreadMod.h" />
     <ClInclude Include="..\ServerCommon\WorkThread.h" />
+    <ClInclude Include="src\ApnsTask.h" />
     <ClInclude Include="src\AppleVerifyTask.h" />
     <ClInclude Include="src\DBVerifyTask.h" />
     <ClInclude Include="src\IVerifyTask.h" />

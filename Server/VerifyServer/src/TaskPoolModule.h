@@ -13,6 +13,7 @@ public:
 		eTask_AppleVerify,
 		eTask_WechatVerify,
 		eTask_DBVerify,
+		eTask_Apns,
 		eTask_Max,
 	};
 public:
@@ -21,10 +22,10 @@ public:
 	bool onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)override ;
 	bool onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID)override ;
 	void update(float fDeta )override ;
+	bool onAsyncRequest(uint16_t nRequestType , const Json::Value& jsReqContent, Json::Value& jsResult )override;
 	void testFunc();
 	ITask::ITaskPrt createTask( uint32_t nTaskID )override ;
 	CTaskPool& getPool(){ return m_tTaskPool ;}
-
 protected:
 	// logic 
 	void onWechatOrder( stMsg* pOrder, eMsgPort eSenderPort , uint32_t nSessionID );

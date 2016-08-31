@@ -71,7 +71,7 @@ protected:
 	void removeRoom(IRoomInterface* pRoom );
 	virtual eRoomType getMgrRoomType() = 0 ;
 	void readRoomSerails();;
-	void readRoomInfo(uint32_t nSeailNum );
+	void readRoomInfo(uint32_t nSeailNum, uint32_t nChatRoomID );
 protected:
 	MAP_ID_ROOM m_vRooms ;
 

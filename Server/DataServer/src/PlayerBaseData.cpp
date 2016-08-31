@@ -155,8 +155,7 @@ void CPlayerBaseData::onBeInviteBy(uint32_t nInviteUID )
 	CSendPushNotification::getInstance()->reset();
 	CSendPushNotification::getInstance()->addTarget(nInviteUID) ;
 	CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(5),1) ;
-	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer();
-	SendMsg((stMsg*)abf->getBufferPtr(),abf->getContentSize()) ;
+	CSendPushNotification::getInstance()->postApns(CGameServerApp::SharedGameServerApp()->getAsynReqQueue(),false,"invite") ;
 }
 
 bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
@@ -760,7 +759,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			pTimeCur = *localtime(&tNow);
 			time_t nLastTakeTime = m_stBaseData.tLastTakeCharityCoinTime;
 			pTimeLast = *localtime(&nLastTakeTime);
-			if ( pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_mon == pTimeLast.tm_mon && pTimeCur.tm_yday == pTimeLast.tm_yday ) // the same day ; do nothing
+			if ( pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_yday == pTimeLast.tm_yday ) // the same day ; do nothing
 			{
 
 			}
@@ -808,7 +807,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			pTimeCur = *localtime(&tNow);
 			time_t nLastTakeTime = m_stBaseData.tLastTakeCharityCoinTime;
 			pTimeLast = *localtime(&nLastTakeTime);
-			if ( pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_mon == pTimeLast.tm_mon && pTimeCur.tm_yday == pTimeLast.tm_yday ) // the same day ; do nothing
+			if ( pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_yday == pTimeLast.tm_yday ) // the same day ; do nothing
 			{
 
 			}
@@ -1045,7 +1044,7 @@ void CPlayerBaseData::OnProcessContinueLogin( bool bNewDay, time_t nLastLogin)
  			CLogMgr::SharedLogMgr()->ErrorLog("local time return null ?") ;
  		}
  		
- 		if ( pTimeCur.tm_year == pTimeLastLogin.tm_year && pTimeCur.tm_mon == pTimeLastLogin.tm_mon && pTimeCur.tm_yday == pTimeLastLogin.tm_yday )
+ 		if ( pTimeCur.tm_year == pTimeLastLogin.tm_year && pTimeCur.tm_yday == pTimeLastLogin.tm_yday )
  		{
  			m_stBaseData.tLastLoginTime = (unsigned int)nCur ;
  			m_bGivedLoginReward = true ;

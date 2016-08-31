@@ -1,7 +1,7 @@
 #pragma once
 #include "IGlobalModule.h"
 #include <algorithm>
-#include "httpRequest.h"
+//#include "httpRequest.h"
 #include <list>
 struct stGroupItem
 {
@@ -13,8 +13,9 @@ struct stGroupItem
 	bool isCntDirty ;
 	uint32_t m_tLevelRunOutTime ;
 	std::vector<uint32_t> vMembers ;
+	std::string strName ;
 public:
-	stGroupItem(){ nLevel = 0 ; m_tLevelRunOutTime = 0 ; isCntDirty = false ; isDirty = false ; vMembers.clear(); }
+	stGroupItem(){ nLevel = 0 ; m_tLevelRunOutTime = 0 ; isCntDirty = false ; isDirty = false ; vMembers.clear();strName = ""; }
 	bool isRoomKeepRunning();
 	bool isGroupFull();
 	uint32_t getCapacity();
@@ -24,22 +25,24 @@ public:
 	bool isHaveMember(uint32_t nMemberUID );
 	uint32_t getMemberCnt() ;
 	uint32_t getOwnerUID(){ return nCreaterUID ;}
+	void setName(const char* pName ){ strName = pName ; }
+	const char* getName(){ return strName.c_str() ;}
 };
 
 class CGroup
 	:public IGlobalModule
-	,public CHttpRequestDelegate
+	//,public CHttpRequestDelegate
 {
 public:
 	typedef std::map<uint32_t,stGroupItem*> MAP_GROUP ;
-	enum eHttpReq 
-	{
-		eReq_AddMember ,
-		eReq_DeleteMember,
-		eReq_RefreshCnt,
-		eReq_GroupMembers,
-		eReq_Max,
-	};
+	//enum eHttpReq 
+	//{
+	//	eReq_AddMember ,
+	//	eReq_DeleteMember,
+	//	eReq_RefreshCnt,
+	//	eReq_GroupMembers,
+	//	eReq_Max,
+	//};
 public:
 	~CGroup();
 	void init( IServerApp* svrApp )override ;
@@ -50,7 +53,7 @@ public:
 	void addGroup(stGroupItem* pItem );
 	void dismissGroup(uint32_t nGroupID );
 	uint16_t getClubCntByUserUID(uint32_t nUserUID);
-	void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg)override ;
+	/*void onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserData , size_t nUserTypeArg)override ;*/
 	void onTimeSave()override ;
 	void reqGroupMembers(stGroupItem* pGroup );
 	void sortGroup();
@@ -58,5 +61,5 @@ protected:
 	MAP_GROUP m_vGroups ;
 	std::list<stGroupItem*> m_vSortedGroups ;
 	bool m_isSortDirty ;
-	CHttpRequest m_pGoTyeAPI;
+	/*CHttpRequest m_pGoTyeAPI;*/
 };

@@ -9,6 +9,7 @@
 #include "AppleVerifyTask.h"
 #include "WeChatVerifyTask.h"
 #include "DBVerifyTask.h"
+#include "ApnsTask.h"
 void CTaskPoolModule::init( IServerApp* svrApp )
 {
 	IGlobalModule::init(svrApp) ;
@@ -16,8 +17,8 @@ void CTaskPoolModule::init( IServerApp* svrApp )
 
 	// test code 
 	//static CTimer tTim ;
-	//tTim.setInterval(15) ;
-	//tTim.setIsAutoRepeat(true);
+	//tTim.setInterval(2) ;
+	//tTim.setIsAutoRepeat(false);
 	//tTim.setCallBack([this](CTimer* p , float f ){ printf("timer invoker\n");testFunc();}) ;
 	//tTim.start();
 	// test code 
@@ -66,24 +67,40 @@ void CTaskPoolModule::update(float fDeta )
 	m_tTaskPool.update();
 }
 
+bool CTaskPoolModule::onAsyncRequest(uint16_t nRequestType , const Json::Value& jsReqContent, Json::Value& jsResult )
+{
+	if ( eAsync_Apns != nRequestType )
+	{
+		return false ;
+	}
+
+	auto p = getPool().getReuseTaskObjByID( eTask_Apns );
+	CApnsTask* pTest = (CApnsTask*)p.get();
+	pTest->setRequest(jsReqContent);
+	getPool().postTask(p);
+	return true ;
+}
+
 void CTaskPoolModule::testFunc()
 {
 	printf("task go \n") ;
-	uint32_t nCnt = 5 ;
+	uint32_t nCnt = 1 ;
 	while (nCnt--)
 	{
-		auto p = getPool().getReuseTaskObjByID( nCnt );
-		CTestTask* pTest = (CTestTask*)p.get();
-		pTest->nTimes = rand() % 2 + 3 ;
-		pTest->nreal = pTest->nTimes ;
-		pTest->setCallBack([](ITask::ITaskPrt ptr ){
-			CTestTask* pTest = (CTestTask*)ptr.get();
-			printf("id = %u , times = %u , call back \n",ptr->getTaskID(),pTest->nreal);
-		} ) ;
+		auto p = getPool().getReuseTaskObjByID( eTask_Apns );
+		CApnsTask* pTest = (CApnsTask*)p.get();
+		
+		Json::Value jsRequest, target ;
+		target[0u] = 12709990 ;
+		jsRequest["apnsType"] = 0 ;
+		jsRequest["targets"] = target;
+		jsRequest["content"] = "test sfhg" ;
+		jsRequest["msgID"] = "fs";
+		jsRequest["msgdesc"] = "fhsg" ;
+		pTest->setRequest(jsRequest);
+
 		getPool().postTask(p);
 	}
-
-	
 }
 
 ITask::ITaskPrt CTaskPoolModule::createTask( uint32_t nTaskID )
@@ -111,6 +128,12 @@ ITask::ITaskPrt CTaskPoolModule::createTask( uint32_t nTaskID )
 	case eTask_DBVerify:
 		{
 			std::shared_ptr<CDBVerfiyTask> pTask ( new CDBVerfiyTask(nTaskID)) ;
+			return pTask  ;
+		}
+		break;
+	case eTask_Apns:
+		{
+			std::shared_ptr<CApnsTask> pTask ( new CApnsTask(nTaskID)) ;
 			return pTask  ;
 		}
 		break;
@@ -239,11 +262,6 @@ void CTaskPoolModule::onVerifyMsg( stMsg* pMsg, eMsgPort eSenderPort , uint32_t 
 	ITask::ITaskPrt pTask = nullptr ;
 	if ( pRequest->nChannel == ePay_AppStore )
 	{
-		if ( pRequest->nShopItemID > 1 )
-		{
-			pRequest->nShopItemID -= 1 ;
-		}
-
 		std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
 		//std::string str = base64_encode(((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),20);
 		memcpy(pRequest->pBufferVerifyID,str.c_str(),strlen(str.c_str()));
@@ -252,10 +270,6 @@ void CTaskPoolModule::onVerifyMsg( stMsg* pMsg, eMsgPort eSenderPort , uint32_t 
 	else if ( ePay_WeChat == pRequest->nChannel )
 	{
 		memcpy(pRequest->pBufferVerifyID,((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
-		if ( pRequest->nShopItemID > 1 )
-		{
-			pRequest->nShopItemID -= 1 ;
-		}
 		std::string strTradeNo(pRequest->pBufferVerifyID);
 		std::string shopItem = strTradeNo.substr(0,strTradeNo.find_first_of('E')) ;
 		if ( atoi(shopItem.c_str()) != pRequest->nShopItemID )

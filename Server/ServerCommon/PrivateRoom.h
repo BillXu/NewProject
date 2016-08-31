@@ -430,17 +430,6 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 	m_pRoom->onPlayerEnterRoom(&refEnterData,nSubIdx) ;
 	sendRoomInfo(pEnterRoomPlayer->nUserSessionID);
 	CLogMgr::SharedLogMgr()->PrintLog("uid = %u , enter room id = %u , subIdx = %u inRoom coin = %u , total coin = %u",pEnterRoomPlayer->nUserUID, getRoomID(),0,pPlayerItem->nCoinInRoom,pPlayerItem->nToTalCoin) ;
-
-	// apns tell creator have player enter room 
-	CSendPushNotification::getInstance()->reset() ;
-	CSendPushNotification::getInstance()->addTarget(getOwnerUID()) ;
-	CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(11),1);
-	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
-	if ( abf )
-	{
-		m_pRoomMgr->sendMsg((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID()) ;
-	}
-	CLogMgr::SharedLogMgr()->PrintLog("send have player enter room  apns uid = %u",getOwnerUID()) ;
 }
 
 template<class T >
@@ -594,11 +583,7 @@ void CPrivateRoom<T>::onRoomDoClosed()
 				
 	// send apns tell close 
 	CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(10),1);
-	auto abf = CSendPushNotification::getInstance()->getNoticeMsgBuffer() ;
-	if ( abf )
-	{
-		m_pRoomMgr->sendMsg((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID()) ;
-	}
+	CSendPushNotification::getInstance()->postApns( m_pRoomMgr->getSvrApp()->getAsynReqQueue(),false,"room closed") ;
 	CLogMgr::SharedLogMgr()->PrintLog("send close end apns uid = %u",getRoomID()) ;
 
 	m_bRoomInfoDiry = true ;
@@ -979,10 +964,11 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 				{
 					pPrivatePlayer->nCheckedCoin = nTakeIn ;
 				}
-
+				 
 				if ( nTakeIn <= pPrivatePlayer->nCheckedCoin )
 				{
 					CLogMgr::SharedLogMgr()->PrintLog("uid = %u , do takeIn = %u , checkCoin = %u",pPrivatePlayer->nUserUID, nTakeIn,pPrivatePlayer->nCheckedCoin ) ;
+					nTakeIn = pPrivatePlayer->nCheckedCoin;
 					pPrivatePlayer->nCheckedCoin -= nTakeIn ;
 				}
 				else
@@ -1042,6 +1028,20 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			CLogMgr::SharedLogMgr()->PrintLog("uid = %u apply to take in coin = %u , do send notice dlg",pPrivatePlayer->nUserUID,nTakeIn) ;
 			jsMsgBack["isApply"] = 1 ;
 			m_pRoom->sendMsgToPlayer(nSessionID,jsMsgBack,nMsgType) ;
+
+			auto pp = m_pRoom->getPlayerByUserUID(getOwnerUID());
+			if ( !pp )
+			{
+				// apns tell creator have player enter room 
+				CSendPushNotification::getInstance()->reset() ;
+				CSendPushNotification::getInstance()->addTarget(getOwnerUID()) ;
+				CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(11),1);
+				CSendPushNotification::getInstance()->postApns( m_pRoomMgr->getSvrApp()->getAsynReqQueue(),false,"applyTakeIn") ;
+			}
+			else
+			{
+				CLogMgr::SharedLogMgr()->PrintLog("room owner in room , need not send apns") ;
+			}
 		}
 		break ;
 	case MSG_REPLY_APPLY_TAKE_IN:
@@ -1066,7 +1066,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			pPrivatePlayer->isApplyIng = false ;
 			if ( isAgree )
 			{
-				pPrivatePlayer->nCheckedCoin += nApplyCoin ;
+				pPrivatePlayer->nCheckedCoin = nApplyCoin ;
 			}
 			
 			// send dlg 

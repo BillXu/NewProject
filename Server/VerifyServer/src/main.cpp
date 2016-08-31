@@ -114,7 +114,7 @@ void  testFunc()
 #include "Application.h"
 int main()
 {
-	testFunc();
+	//testFunc();
 
 	CVerifyApp theApp ;
 	CApplication theAplication(&theApp);

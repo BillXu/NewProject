@@ -3,6 +3,10 @@
 #include "ServerCommon.h"
 #include "AsyncRequestQuene.h"
 #include "ISeverApp.h"
+#include "GameServerApp.h"
+#include "QingJiaModule.h"
+#include "SeverUtility.h"
+#include "ServerStringTable.h"
 CGameRoomCenter::~CGameRoomCenter()
 {
 	MAP_ROOM_ITEM m_vRoomIDKey ;
@@ -16,16 +20,85 @@ CGameRoomCenter::~CGameRoomCenter()
 	m_vPlayerOwners.clear() ;
 	m_nCurSerailNum = 0 ;
 	m_vWillUseRoomIDs.clear();
+	m_isFinishReadingChatRoomID = false ;
 }
 
 void CGameRoomCenter::init( IServerApp* svrApp )
 {
 	IGlobalModule::init(svrApp) ;
 	m_isFinishedReading = false ;
+	m_isFinishReadingChatRoomID = false ;
+}
+
+void CGameRoomCenter::reqChatRoomIDs()
+{
+	// get chat room ids ;
+	auto pMode = CGameServerApp::SharedGameServerApp()->getQinjiaModule() ;
+	Json::Value js ;
+	js["last_room_id"] = 0 ;
+	if ( m_vReserveChatRoomIDs.empty() == false )
+	{
+		auto p = m_vReserveChatRoomIDs.back();
+		js["last_room_id"] = p ;
+	}
+	js["count"] = 20 ;
+	pMode->sendQinJiaRequest("GetRooms",js,[this](Json::Value& jsResult , Json::Value& jsRet )
+	{
+		if ( jsResult.isNull() )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("req chat room ids is null result") ;
+			m_isFinishReadingChatRoomID = true ;
+			return ;
+		}
+
+		auto jsRooms = jsResult["rooms"];
+		if ( jsRooms.isNull() || jsRooms.size() == 0 )
+		{
+			CLogMgr::SharedLogMgr()->ErrorLog("req chat room ids , array is 0 or null") ;
+			m_isFinishReadingChatRoomID = true ;
+			return ;
+		}
+
+		for ( uint8_t nIdx = 0 ; nIdx < jsRooms.size() ; ++nIdx )
+		{
+			auto jsR = jsRooms[nIdx];
+			m_vReserveChatRoomIDs.push(jsR["room_id"].asUInt());
+		}
+
+		if ( jsRooms.size() >= 20 )
+		{
+			CLogMgr::SharedLogMgr()->PrintLog("go on req chat room ids ") ;
+			reqChatRoomIDs();
+		}
+		else
+		{
+			m_isFinishReadingChatRoomID = true ;
+			checkChatRoomIDReserve() ;
+			updateRoomItemChatRoomID();
+		}
+	},js);
+}
+
+void CGameRoomCenter::checkChatRoomIDReserve()
+{
+	if ( m_vReserveChatRoomIDs.size() > 5 )
+	{
+		CLogMgr::SharedLogMgr()->PrintLog("reserver chat room id cnt > 5 , ok") ;
+		return ;
+	}
+
+	CLogMgr::SharedLogMgr()->PrintLog("will create chat roomID cur = %u",m_vReserveChatRoomIDs.size()) ;
+	auto pMode = CGameServerApp::SharedGameServerApp()->getQinjiaModule() ;
+	Json::Value jsCreateChatRoom ;
+	jsCreateChatRoom["room_name"] = std::to_string(rand() % 100000 ) ;
+	jsCreateChatRoom["room_type"] = 1 ;
+	jsCreateChatRoom["room_create_type"] = 0 ;
+	pMode->sendQinJiaRequest("CreateRoom",jsCreateChatRoom,[this](Json::Value& jsResult , Json::Value& jsUs){ if (jsResult["room_id"].isNull() == false ){ m_vReserveChatRoomIDs.push(jsResult["room_id"].asUInt()) ; CLogMgr::SharedLogMgr()->PrintLog("create chat room ok size = %u",m_vReserveChatRoomIDs.size()) ; checkChatRoomIDReserve(); } },jsCreateChatRoom);
 }
 
 void CGameRoomCenter::onConnectedSvr()
 {
+	reqChatRoomIDs();
 	// read max serail number 
 	Json::Value jssql ;
 	jssql["sql"] = "select max(serialNum) as 'maxSerial' from gameroomcenter ;"  ;
@@ -77,8 +150,36 @@ void CGameRoomCenter::readRoomItemsInfo()
 		else
 		{
 			m_isFinishedReading = true ;
+			updateRoomItemChatRoomID();
 		}
 	});
+}
+
+void CGameRoomCenter::updateRoomItemChatRoomID()
+{
+	if ( m_isFinishedReading == false ||  false == m_isFinishReadingChatRoomID )
+	{
+		return ;
+	}
+
+	if ( m_vReserveChatRoomIDs.size() < m_vRoomIDKey.size() )
+	{
+		CLogMgr::SharedLogMgr()->ErrorLog("why chat id cnt is few than room items ") ;
+	}
+
+	for (auto& ref : m_vRoomIDKey )
+	{
+		if ( m_vReserveChatRoomIDs.empty() )
+		{
+			break; 
+		}
+		auto nCharRoomID = m_vReserveChatRoomIDs.front() ;
+		ref.second->nChatRoomID = nCharRoomID ;
+		m_vReserveChatRoomIDs.pop() ;
+	}
+
+	checkChatRoomIDReserve();
+	CLogMgr::SharedLogMgr()->PrintLog("assigne all room item chat room id ");
 }
 
 bool CGameRoomCenter::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
@@ -106,7 +207,7 @@ bool CGameRoomCenter::onAsyncRequest(uint16_t nRequestType , const Json::Value& 
 		break ;
 	case eAsync_ReqRoomSerials:
 		{
-			if ( m_isFinishedReading == false )
+			if ( m_isFinishedReading == false || m_isFinishReadingChatRoomID == false )
 			{
 				jsResult["ret"] = 1 ;
 				CLogMgr::SharedLogMgr()->PrintLog("still reading from db , please wait game center") ;
@@ -120,7 +221,10 @@ bool CGameRoomCenter::onAsyncRequest(uint16_t nRequestType , const Json::Value& 
 			auto iter = m_vRoomIDKey.begin();
 			while ( m_vRoomIDKey.end() != (iter = std::find_if(iter,m_vRoomIDKey.end(),[nRoomType](MAP_ROOM_ITEM::value_type& refValue){ return getRoomType(refValue.first) == nRoomType; }) ) )
 			{
-				jsRoomIDs[jsRoomIDs.size()] = iter->second->nSerialNumber ;
+				Json::Value js;
+				js["chatRoomID"] = iter->second->nChatRoomID;
+				js["serial"] = iter->second->nSerialNumber;
+				jsRoomIDs[jsRoomIDs.size()] = js ;
 				++iter ;
 			}
 			jsResult["serials"] = jsRoomIDs ;
@@ -152,6 +256,14 @@ void CGameRoomCenter::addRoomItem(stRoomItem* pItem , bool isNewAdd )
 	if ( pItem->nBelongsToClubUID != 0 )
 	{
 		addRoomItemToOwner(m_vClubsOwner,pItem->nBelongsToClubUID,pItem->nRoomID);
+	}
+	else
+	{
+		// tell club players ;
+		CSendPushNotification::getInstance()->reset() ;
+		CSendPushNotification::getInstance()->addTarget(pItem->nBelongsToClubUID) ;
+		CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(3),1);
+		CSendPushNotification::getInstance()->postApns( getSvrApp()->getAsynReqQueue(),true,"newRoom") ;
 	}
 
 	// remove from will use ids 
@@ -188,6 +300,13 @@ void CGameRoomCenter::deleteRoomItem( uint32_t nRoomID )
 		return ;
 	}
 
+	// recycle chat room id ;
+	auto nChatRoomID = iter->second->nChatRoomID ;
+	if ( nChatRoomID != 0 )
+	{
+		m_vReserveChatRoomIDs.push(nChatRoomID);
+	}
+	
 	uint32_t nClubID = iter->second->nBelongsToClubUID ;
 	uint32_t nCreatorID = iter->second->nCreator ;
 	uint32_t nSeailNum = iter->second->nSerialNumber ;
@@ -359,4 +478,17 @@ uint16_t CGameRoomCenter::getClubOwnRooms(std::vector<uint32_t>& vRoomIDs , uint
 		return vRoomIDs.size();
 	}
 	return 0 ;
+}
+
+uint32_t CGameRoomCenter::getReuseChatRoomID()
+{
+	if ( m_vReserveChatRoomIDs.empty() )
+	{
+		return 0 ;
+	}
+
+	auto iter = m_vReserveChatRoomIDs.front() ;
+	m_vReserveChatRoomIDs.pop() ;
+	checkChatRoomIDReserve();
+	return iter ;
 }

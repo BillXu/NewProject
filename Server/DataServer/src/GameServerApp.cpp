@@ -13,6 +13,7 @@
 #include "PlayerGameData.h"
 #include "Group.h"
 #include "GameRoomCenter.h"
+#include "QingJiaModule.h"
 #ifndef USHORT_MAX
 #define USHORT_MAX 65535 
 #endif
@@ -104,6 +105,12 @@ CGameRoomCenter* CGameServerApp::getGameRoomCenter()
 	return p ;
 }
 
+CQinJiaModule* CGameServerApp::getQinjiaModule()
+{
+	auto p = (CQinJiaModule*)this->getModuleByType(eMod_QinJia);
+	return p ;
+}
+
 bool CGameServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID )
 {
 	if ( IServerApp::onLogicMsg(prealMsg,eSenderPort,nSessionID) )
@@ -111,10 +118,10 @@ bool CGameServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 		return true ;
 	}
 
-	if ( m_tPokerCircle.onMessage(prealMsg,eSenderPort,nSessionID) )
-	{
-		return true ;
-	}
+	//if ( m_tPokerCircle.onMessage(prealMsg,eSenderPort,nSessionID) )
+	//{
+	//	return true ;
+	//}
 
 	if ( ProcessPublicMsg(prealMsg,eSenderPort,nSessionID ) )
 	{
@@ -180,12 +187,6 @@ void CGameServerApp::CheckNewDay()
 	}
 }
 
-void CGameServerApp::onConnectedToSvr()
-{
-	IServerApp::onConnectedToSvr() ;
-	m_tPokerCircle.readTopics();
-}
-
 IGlobalModule* CGameServerApp::createModule( uint16_t eModuleType )
 {
 	IGlobalModule* pMod = IServerApp::createModule(eModuleType) ;
@@ -221,6 +222,11 @@ IGlobalModule* CGameServerApp::createModule( uint16_t eModuleType )
 			pMod = new CGameRoomCenter();
 		}
 		break;
+	case eMod_QinJia:
+		{
+			pMod = new CQinJiaModule();
+		}
+		break ;
 	default:
 		break;
 	}

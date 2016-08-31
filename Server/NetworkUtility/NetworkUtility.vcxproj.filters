@@ -24,9 +24,6 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\depends\log4z\log4z.h">
-      <Filter>head\log4z</Filter>
-    </ClInclude>
     <ClInclude Include="src\NetWorkManager.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -50,9 +47,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\depends\log4z\log4z.cpp">
-      <Filter>head\log4z</Filter>
-    </ClCompile>
     <ClCompile Include="src\NetWorkManager.cpp">
       <Filter>src</Filter>
     </ClCompile>

@@ -145,6 +145,7 @@ void CPlayerMailComponent::OnOtherDoLogined()
 {
 	// send unread mail count to client ;
 	InformRecievedUnreadMails();
+	ProcessSpecailMail();
 }
 
 void CPlayerMailComponent::InformRecievedUnreadMails()
@@ -419,7 +420,7 @@ bool CPlayerMailComponent::ProcessMail( stRecievedMail& pMail)
 		{
 			Json::Value vRoot ;
 			Json::Reader reader ;
-			reader.parse(pMail.strContent,vRoot);
+			bool bRet = reader.parse(pMail.strContent,vRoot);
 			Json::Value nNotice = vRoot["notice"] ;
 
 			Json::StyledWriter sWrite ;
@@ -432,7 +433,7 @@ bool CPlayerMailComponent::ProcessMail( stRecievedMail& pMail)
 			msgBuffer.addContent(&msg,sizeof(msg)) ;
 			msgBuffer.addContent(strConetnt.c_str(),msg.nJsonLen) ;
 			GetPlayer()->SendMsgToClient(msgBuffer.getBufferPtr(),msgBuffer.getContentSize()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %u login on show offline dlg notice content = %s",GetPlayer()->GetUserUID(),strConetnt.c_str());
+			CLogMgr::SharedLogMgr()->PrintLog("uid = %u login on show offline dlg notice type = %u content = %s",GetPlayer()->GetUserUID(),msg.nNoticeType,strConetnt.c_str());
 		}
 		break;
 	default:
@@ -483,22 +484,19 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 		break;
 	case Event_SyncGameResult:
 		{
-			stMsgSyncPrivateRoomResult msgSyn ;
-			msgSyn.nCreatorUID = jArg["createUID"].asUInt() ;
-			msgSyn.nDuringTimeSeconds = jArg["duiringTime"].asUInt() ;
-			msgSyn.nFinalCoin = jArg["finalCoin"].asUInt() ;
-			msgSyn.nOffset = jArg["offset"].asInt();
-			msgSyn.nRoomID = jArg["roomID"].asUInt() ;
-			msgSyn.nBuyIn = jArg["buyIn"].asUInt() ;
-			msgSyn.nTargetPlayerUID = GetPlayer()->GetUserUID() ;
-			msgSyn.nBaseBet = jArg["baseBet"].asUInt() ;
-			msgSyn.nClubID = jArg["clubID"].asUInt() ;
-			auto strname = jArg["roomName"].asString();
-			msgSyn.cRoomName[strname.size()] = 0 ;
-			sprintf_s(msgSyn.cRoomName,sizeof(msgSyn.cRoomName),"%s",strname.c_str()) ;
-			uint16_t nType = CGameRoomCenter::getRoomType(msgSyn.nRoomID);
-			CLogMgr::SharedLogMgr()->PrintLog("do syn game result from offline event room id = %u, room type = %u , uid = %u",msgSyn.nRoomID,nType,msgSyn.nTargetPlayerUID);
-			GetPlayer()->OnMessage(&msgSyn, (eMsgPort)GetPlayer()->getMsgPortByRoomType(nType));
+			auto pRecorder = new CPlayerGameData::stPlayerGameRecorder() ;
+			pRecorder->nDuiringSeconds = jArg["duiringTime"].asUInt() ;
+			pRecorder->nFinishTime = jArg["finishTime"].asUInt() ;
+			pRecorder->nOffset = jArg["offset"].asInt() ;
+			pRecorder->nRoomID = jArg["roomID"].asUInt() ;
+			pRecorder->nCreateUID = jArg["createUID"].asUInt() ;
+			pRecorder->nBuyIn = jArg["buyIn"].asUInt() ;
+			pRecorder->nBaseBet = jArg["baseBet"].asUInt() ;
+			pRecorder->nClubID = jArg["clubID"].asUInt() ;
+			memcpy_s(pRecorder->cRoomName,sizeof(pRecorder->cRoomName),jArg["roomName"].asCString(),sizeof(jArg["roomName"].asCString()));
+			auto pGame = (CPlayerGameData*)GetPlayer()->GetComponent(ePlayerComponent_PlayerGameData);
+			pGame->addPlayerGameRecorder(pRecorder);
+			CLogMgr::SharedLogMgr()->PrintLog("do syn game result from offline event room id = %u, offset = %d , uid = %u",pRecorder->nRoomID,pRecorder->nOffset,GetPlayer()->GetUserUID());
 		}
 		break; 
 	default:

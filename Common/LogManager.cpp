@@ -158,7 +158,7 @@ void CLogMgr::Print(const char *sFormate, va_list va , eLogState eSate )
 	}
 #endif
 	
-    if ( bOutPutToFile && pFile && (eSate == eLogState_Error || eLogState_System == eSate ))
+    if ( bOutPutToFile && pFile/* && (eSate == eLogState_Error || eLogState_System == eSate )*/)
     {
         vfprintf(pFile, pBuffer, va) ;
 		fflush(pFile);

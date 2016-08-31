@@ -84,7 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ClientNetworkImp.h" />
-    <ClInclude Include="src\depends\log4z\log4z.h" />
     <ClInclude Include="src\InternalBuffer.h" />
     <ClInclude Include="src\NetworkDefine.h" />
     <ClInclude Include="src\NetWorkManager.h" />
@@ -94,7 +93,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ClientNetworkImp.cpp" />
-    <ClCompile Include="src\depends\log4z\log4z.cpp" />
     <ClCompile Include="src\NetWorkManager.cpp" />
     <ClCompile Include="src\ServerNetwork.cpp" />
     <ClCompile Include="src\Session.cpp" />

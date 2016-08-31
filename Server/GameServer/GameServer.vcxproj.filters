@@ -88,9 +88,6 @@
     <ClInclude Include="..\DataServer\src\PlayerFriend.h">
       <Filter>src\Player</Filter>
     </ClInclude>
-    <ClInclude Include="..\DataServer\src\PokerCircle.h">
-      <Filter>src\App</Filter>
-    </ClInclude>
     <ClInclude Include="..\DataServer\src\PlayerGameData.h">
       <Filter>src\Player</Filter>
     </ClInclude>
@@ -116,6 +113,24 @@
       <Filter>src\App</Filter>
     </ClInclude>
     <ClInclude Include="..\ServerCommon\httpRequest.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DataServer\src\QingJiaModule.h">
+      <Filter>src\App</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\mutex.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\Sem.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\TaskPool.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\ThreadMod.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ServerCommon\WorkThread.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
   </ItemGroup>
@@ -180,9 +195,6 @@
     <ClCompile Include="..\DataServer\src\PlayerFriend.cpp">
       <Filter>src\Player</Filter>
     </ClCompile>
-    <ClCompile Include="..\DataServer\src\PokerCircle.cpp">
-      <Filter>src\App</Filter>
-    </ClCompile>
     <ClCompile Include="..\DataServer\src\PlayerGameData.cpp">
       <Filter>src\Player</Filter>
     </ClCompile>
@@ -208,6 +220,24 @@
       <Filter>src\App</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\httpRequest.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DataServer\src\QingJiaModule.cpp">
+      <Filter>src\App</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\mutex.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\Sem.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\TaskPool.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\ThreadMod.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\WorkThread.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>

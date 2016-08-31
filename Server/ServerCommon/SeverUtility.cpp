@@ -1,11 +1,11 @@
 #include "SeverUtility.h"
 #include "AutoBuffer.h"
 #include "ServerMessageDefine.h"
+#include "AsyncRequestQuene.h"
 void CSendPushNotification::reset()
 {
 	m_arrayTargetIDs.clear() ;
-	m_tFinalContent.clear() ;
-	m_refAutoBuffer.clearBuffer();
+	m_strApns.clear() ;
 }
 
 void CSendPushNotification::addTarget(uint32_t nUserUID )
@@ -15,25 +15,21 @@ void CSendPushNotification::addTarget(uint32_t nUserUID )
 
 void CSendPushNotification::setContent(const char* pContent,uint32_t nFlag )
 {
-	m_tFinalContent["flag"] = nFlag ;
-	m_tFinalContent["content"] = pContent ;
+	m_strApns["content"] = pContent ;
 }
 
-CAutoBuffer* CSendPushNotification::getNoticeMsgBuffer()
+void CSendPushNotification::postApns( CAsyncRequestQuene* pAsync , bool isGroup, const char* pmsgID , const char* pmsgdesc )
 {
-	if ( m_tFinalContent.isNull() || m_arrayTargetIDs.isNull() )
+	if ( m_arrayTargetIDs.isNull() || m_strApns["content"].isNull() )
 	{
 		printf("push notice argument not finish\n") ;
-		return nullptr;
+		return ;
 	}
 
-	m_tFinalContent["targets"] = m_arrayTargetIDs ;
-	Json::StyledWriter writer ;
-	std::string str = writer.write(m_tFinalContent) ;
-	
-	stMsgPushNotice msgpush ;
-	msgpush.nJonsLen = str.size() ;
-	m_refAutoBuffer.addContent(&msgpush,sizeof(msgpush)) ;
-	m_refAutoBuffer.addContent(str.c_str(),msgpush.nJonsLen) ;
-	return &m_refAutoBuffer ;
+	m_strApns["apnsType"] = isGroup ? 0 : 1 ;
+	m_strApns["targets"] = m_arrayTargetIDs ;
+	m_strApns["msgID"] = pmsgID != nullptr ? pmsgID : "def" ;
+	m_strApns["msgdesc"] = pmsgdesc != nullptr ? pmsgdesc : "desc" ;
+	pAsync->pushAsyncRequest(ID_MSG_PORT_VERIFY,eAsync_Apns,m_strApns);
+	m_strApns.clear();
 }

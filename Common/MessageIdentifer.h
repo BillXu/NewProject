@@ -320,7 +320,7 @@ enum eMsgType
 	// Taxas Poker opts : { maxTakeIn : 2345, isInsured : 0  }
 	// Golden opts : { maxSingleBet : 20 }
 	// svr : { ret : 0 , roomID : 235 , clubID : 23 } ;
-	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error 
+	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error ; 4, req chat room id error ;
 	MSG_DELETE_ROOM, // ID_MSG_PORT_DATA ;
 	// client : { roomID : 2345 , clubID : 23  }
 	// svr : { ret : 0 }
@@ -367,7 +367,7 @@ enum eMsgType
 
 	MSG_CLUB_DELETE_MEMBER,
 	// client : { groupID : 2345 , userAccount : 2345 }  // gotpe user account , not game player user account 
-	// client { ret : 0 , groupID : 2345 , userAccount : 2345 } // ret : 1 can not find groupID ; 2 svr error ;
+	// client { ret : 0 , groupID : 2345 , userAccount : 2345 } // ret : 1 can not find groupID ; 2 not in clib , 3 svr error ;
 
 	MSG_REQ_CLUB_INFO,
 	//client : { groupID : 23455 }
@@ -449,7 +449,12 @@ enum eMsgType
 	// svr : { ret : 0 , clubID : 2345 ,applicantUID : 2345 }
 	// ret : 0 success , 1 club is full , 2 club is not exist , 3 you are not the owner, 4 already in club;
 
+	MSG_CLUB_CHAT_MESSAGE,   // to data svr 
+	// client : { clubID : 2355, type : 0 } 
+	// type : 0 text message , 1 voice message  , 2 emoji
 
+	MSG_CLUB_UPDATE_NAME, // to data svr 
+	// client : { clubID : 2345 , newName : "hello" }
 
 
 

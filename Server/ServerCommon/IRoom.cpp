@@ -99,6 +99,11 @@ bool IRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json
 	m_fDividFeeRate = 0 ;
 
 	m_nChatRoomID = 0;
+	if ( vJsValue["chatRoomID"].isNull() == false )
+	{
+		m_nChatRoomID = vJsValue["chatRoomID"].asUInt() ;
+		CLogMgr::SharedLogMgr()->PrintLog("already have chat room id = %u, chat id = %u" , getRoomID(),getChatRoomID() ) ;
+	}
 	m_nTotalProfit = 0 ;
 	prepareState();
 	return true ;

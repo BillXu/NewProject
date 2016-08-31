@@ -1,7 +1,7 @@
 #pragma once
 #include "IGlobalModule.h"
 #include <algorithm>
-#include <vector>
+#include <queue>
 class CGameRoomCenter
 	:public IGlobalModule
 {
@@ -12,7 +12,8 @@ public:
 		uint32_t nSerialNumber ;
 		uint32_t nCreator ;
 		uint32_t nBelongsToClubUID ;
-		stRoomItem(){ nRoomID = 0 ; nSerialNumber = 0 ; nCreator = 0 ; nBelongsToClubUID = 0 ; }
+		uint32_t nChatRoomID ;
+		stRoomItem(){ nRoomID = 0 ; nSerialNumber = 0 ; nCreator = 0 ; nBelongsToClubUID = 0 ; nChatRoomID = 0; }
 	};
 
 	struct stRoomOwnerInfo
@@ -22,6 +23,7 @@ public:
 	};
 	typedef std::map<uint32_t,stRoomItem*> MAP_ROOM_ITEM ;
 	typedef std::map<uint32_t,stRoomOwnerInfo*> MAP_ROOM_OWNERS ;
+	typedef std::queue<uint32_t> LIST_CHAT_ROOM_ID ;
 public:
 	~CGameRoomCenter();
 	void init( IServerApp* svrApp )override ;
@@ -37,10 +39,14 @@ public:
 	uint16_t getPlayerOwnRoomCnt(uint32_t nPlayerUID);
 	uint16_t getClubOwnRoomCnt(uint32_t nClubID );
 	uint16_t getClubOwnRooms(std::vector<uint32_t>& vRoomIDs , uint32_t nClubID );
+	uint32_t getReuseChatRoomID();
 protected:
 	bool addRoomItemToOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t nOwnerUID ,uint32_t nRoomID );
 	bool deleteRoomItemFromOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t nOwnerUID ,uint32_t nRoomID );
 	void readRoomItemsInfo();
+	void reqChatRoomIDs();
+	void checkChatRoomIDReserve();
+	void updateRoomItemChatRoomID();
 protected:
 	MAP_ROOM_ITEM m_vRoomIDKey ;
 	MAP_ROOM_OWNERS m_vClubsOwner ;
@@ -49,4 +55,7 @@ protected:
 	std::vector<uint32_t> m_vWillUseRoomIDs ;
 	uint32_t m_nCurSerailNum ;
 	bool m_isFinishedReading ;
+	bool m_isFinishReadingChatRoomID ;
+
+	LIST_CHAT_ROOM_ID m_vReserveChatRoomIDs ;
 };

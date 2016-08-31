@@ -26,6 +26,9 @@
     <Filter Include="Verify\Task">
       <UniqueIdentifier>{4d169d5e-7932-4719-b7a6-bbb85a2b36da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Apns">
+      <UniqueIdentifier>{13d50dcd-ca8c-482d-85ea-325988e77b29}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -105,6 +108,9 @@
     </ClCompile>
     <ClCompile Include="..\DBServer\src\MySqlData.cpp">
       <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ApnsTask.cpp">
+      <Filter>Apns</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -188,6 +194,9 @@
     </ClInclude>
     <ClInclude Include="..\DBServer\src\MySqlData.h">
       <Filter>SvrCommon</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ApnsTask.h">
+      <Filter>Apns</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

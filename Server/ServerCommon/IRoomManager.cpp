@@ -563,20 +563,22 @@ bool IRoomManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& jsR
 
 bool IRoomManager::reqeustChatRoomID(IRoom* pRoom)
 {
-#ifdef _DEBUG
-	return true ;
-#endif // _DEBUG
-
-	Json::Value cValue ;
-	cValue["email"] = "378569952@qq.com" ;
-	cValue["devpwd"] = "bill007" ;
-	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
-	cValue["room_name"] = pRoom->getRoomID() ;
-	cValue["room_type"] = 1;
-	cValue["room_create_type"] = 0 ;
-	Json::StyledWriter sWrite ;
-	std::string str = sWrite.write(cValue);
-	return m_pGoTyeAPI.performRequest("CreateRoom",str.c_str(),str.size(),pRoom,eHttpReq_CreateChatRoom);
+	// not use now 
+//#ifdef _DEBUG
+//	return true ;
+//#endif // _DEBUG
+//
+//	Json::Value cValue ;
+//	cValue["email"] = "378569952@qq.com" ;
+//	cValue["devpwd"] = "bill007" ;
+//	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
+//	cValue["room_name"] = pRoom->getRoomID() ;
+//	cValue["room_type"] = 1;
+//	cValue["room_create_type"] = 0 ;
+//	Json::StyledWriter sWrite ;
+//	std::string str = sWrite.write(cValue);
+//	return m_pGoTyeAPI.performRequest("CreateRoom",str.c_str(),str.size(),pRoom,eHttpReq_CreateChatRoom);
+	return false ;
 }
 
 //bool IRoomManager::requestChatRoomIDList()
@@ -659,7 +661,8 @@ void IRoomManager::readRoomSerails()
 		Json::Value jsSerails = retContent["serials"];
 		for ( uint32_t nIdx = 0 ; nIdx < jsSerails.size(); ++nIdx )
 		{
-			readRoomInfo(jsSerails[nIdx].asUInt()) ;
+			auto js = jsSerails[nIdx];
+			readRoomInfo(js["serial"].asUInt(),js["chatRoomID"].asUInt()) ;
 		}
 	}) ;
 }
@@ -676,7 +679,7 @@ void IRoomManager::onExit()
 	m_vRooms.clear() ;
 }
 
-void IRoomManager::readRoomInfo(uint32_t nSeailNum )
+void IRoomManager::readRoomInfo(uint32_t nSeailNum, uint32_t nChatRoomID )
 {
 	CLogMgr::SharedLogMgr()->PrintLog("read room info serail = %u",nSeailNum);
 	Json::Value jsreq ;
@@ -685,6 +688,7 @@ void IRoomManager::readRoomInfo(uint32_t nSeailNum )
 	jsreq["sql"] = pBuffer ;
 	Json::Value jsUserData ;
 	jsUserData["serial"] = nSeailNum ;
+	jsUserData["chatRoomID"] = nChatRoomID ;
 	getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Select,jsreq,[this](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData){
 		uint8_t nAftR = retContent["afctRow"].asUInt() ;
 		if ( nAftR < 1 )
@@ -707,7 +711,9 @@ void IRoomManager::readRoomInfo(uint32_t nSeailNum )
 		Json::Reader jsReader ;
 		Json::Value jsCreateRoomArg ;
 		jsReader.parse(strJs,jsCreateRoomArg,false) ;
+		jsCreateRoomArg["chatRoomID"] = jsUserData["chatRoomID"];
 
+		CLogMgr::SharedLogMgr()->PrintLog("crate room from db ok ") ;
 		// do create room ;
 		IRoomInterface* pRoom = doCreateInitedRoomObject(jsCreateRoomArg["roomID"].asUInt(),jsCreateRoomArg);
 		if ( pRoom == nullptr )

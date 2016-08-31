@@ -9,7 +9,6 @@
 #include "IGlobalModule.h"
 #include "AutoBuffer.h"
 #include "AsyncRequestQuene.h"
-
 #define TIME_WAIT_FOR_RECONNECT 5
 bool IServerApp::init()
 {

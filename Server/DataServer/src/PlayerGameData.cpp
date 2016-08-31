@@ -10,6 +10,7 @@
 #include "AsyncRequestQuene.h"
 #include "Group.h"
 #include "GameRoomCenter.h"
+#include "QingJiaModule.h"
 void CPlayerGameData::Reset()
 {
 	IPlayerComponent::Reset();
@@ -294,7 +295,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			pRecorder->nBaseBet = pRet->nBaseBet ;
 			pRecorder->nClubID = pRet->nClubID ;
 			memcpy(pRecorder->cRoomName,pRet->cRoomName,sizeof(pRet->cRoomName));
-			CLogMgr::SharedLogMgr()->PrintLog("read basebet = %u ",pRet->nBaseBet) ;
+			//CLogMgr::SharedLogMgr()->PrintLog("read basebet = %u ",pRet->nBaseBet) ;
 			addPlayerGameRecorder(pRecorder,false);
 		}
 		break ;
@@ -427,46 +428,87 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			// async create room ;
 			uint32_t nSerailNum = 0;
 			uint32_t nNewRoomID = pgameCenter->generateRoomID(eroomType,nSerailNum) ;
-			uint8_t nPortID = GetPlayer()->getMsgPortByRoomType(eroomType) ;
 			recvValue["roomID"] = nNewRoomID ;
 			recvValue["createUID"] = GetPlayer()->GetUserUID() ;
 			recvValue["serialNum"] = nSerailNum ;
+			auto nChatRoomID = pgameCenter->getReuseChatRoomID();
+			recvValue["chatRoomID"] = nChatRoomID ;
 
-			Json::Value jsUserData ;
-			jsUserData["roomID"] = nNewRoomID ;
-			jsUserData["clubID"] = nClubID ;
-			jsUserData["serialNum"] = nSerailNum ;
-			GetPlayer()->startAsyncReq() ;
-			CGameServerApp::SharedGameServerApp()->getAsynReqQueue()->pushAsyncRequest(nPortID,eAsync_CreateRoom,recvValue,[this,pgameCenter](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData)
+			auto createRoomFunc = [this,pgameCenter]( Json::Value& jsCreate )
 			{
-				uint8_t nRet = retContent["ret"].asUInt() ;
-				if ( nRet )
+				Json::Value jsUserData ;
+				jsUserData["roomID"] = jsCreate["roomID"] ;
+				jsUserData["clubID"] = jsCreate["clubID"] ;
+				jsUserData["serialNum"] = jsCreate["serialNum"] ;
+				jsUserData["chatRoomID"] = jsCreate["chatRoomID"];
+				GetPlayer()->startAsyncReq() ;
+
+				eRoomType eroomType = (eRoomType)jsCreate["roomType"].asUInt() ;
+				uint8_t nPort = GetPlayer()->getMsgPortByRoomType(eroomType);
+				CGameServerApp::SharedGameServerApp()->getAsynReqQueue()->pushAsyncRequest(nPort,eAsync_CreateRoom,jsCreate,[this,pgameCenter](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData)
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("why create room not success ?") ;
-				}
-				GetPlayer()->endAsyncReq() ;
-				
-				// add game room to room center ;
-				uint32_t nRoomID = jsUserData["roomID"].asUInt() ;
-				uint32_t nClubID = jsUserData["clubID"].asUInt() ;
+					uint8_t nRet = retContent["ret"].asUInt() ;
+					if ( nRet )
+					{
+						CLogMgr::SharedLogMgr()->ErrorLog("why create room not success ?") ;
+					}
+					GetPlayer()->endAsyncReq() ;
 
-				auto pRoomItem = new CGameRoomCenter::stRoomItem ;
-				pRoomItem->nBelongsToClubUID = nClubID;
-				pRoomItem->nRoomID = nRoomID ;
-				pRoomItem->nCreator = GetPlayer()->GetUserUID() ;
-				pRoomItem->nSerialNumber = jsUserData["serialNum"].asUInt();
-				pgameCenter->addRoomItem(pRoomItem,true);
+					// add game room to room center ;
+					uint32_t nRoomID = jsUserData["roomID"].asUInt() ;
+					uint32_t nClubID = jsUserData["clubID"].asUInt() ;
+					uint32_t nChatRoomID = jsUserData["chatRoomID"].asUInt();
 
-				// send msg 
-				Json::Value jsMsgBack ;
-				jsMsgBack["ret"] = 0 ;
-				jsMsgBack["clubID"] = nClubID ;
-				jsMsgBack["roomID"] = nRoomID ;
-				SendMsg(jsMsgBack,MSG_CREATE_ROOM);
-				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , create room ok ",GetPlayer()->GetUserUID()) ;
+					auto pRoomItem = new CGameRoomCenter::stRoomItem ;
+					pRoomItem->nBelongsToClubUID = nClubID;
+					pRoomItem->nRoomID = nRoomID ;
+					pRoomItem->nChatRoomID = nChatRoomID ;
+					pRoomItem->nCreator = GetPlayer()->GetUserUID() ;
+					pRoomItem->nSerialNumber = jsUserData["serialNum"].asUInt();
+					pgameCenter->addRoomItem(pRoomItem,true);
 
-			},jsUserData) ;
+					// send msg 
+					Json::Value jsMsgBack ;
+					jsMsgBack["ret"] = 0 ;
+					jsMsgBack["clubID"] = nClubID ;
+					jsMsgBack["roomID"] = nRoomID ;
+					SendMsg(jsMsgBack,MSG_CREATE_ROOM);
+					CLogMgr::SharedLogMgr()->PrintLog("uid = %u , create room ok ",GetPlayer()->GetUserUID()) ;
 
+				},jsUserData) ;
+			} ;
+
+			if ( nChatRoomID != 0 )
+			{
+				createRoomFunc(recvValue);
+				break;
+			}
+
+			// request chat room ;
+			CLogMgr::SharedLogMgr()->ErrorLog("no enough chat room id , go on request ") ;
+			auto pMode = CGameServerApp::SharedGameServerApp()->getQinjiaModule() ;
+			Json::Value jsCreateChatRoom ;
+			jsCreateChatRoom["room_name"] = std::to_string(rand() % 100000 ) ;
+			jsCreateChatRoom["room_type"] = 1 ;
+			jsCreateChatRoom["room_create_type"] = 0 ;
+			pMode->sendQinJiaRequest("CreateRoom",jsCreateChatRoom,[this,createRoomFunc](Json::Value& jsResult , Json::Value& jsUs)
+			{ 
+				if (jsResult["room_id"].isNull() )
+				{
+					CLogMgr::SharedLogMgr()->ErrorLog("create room failed , can not req chat roomID") ;
+					Json::Value jsMsgBack ;
+					jsMsgBack["ret"] = 4 ;
+					jsMsgBack["clubID"] = jsUs["clubID"] ;
+					jsMsgBack["roomID"] = jsUs["roomID"] ;
+					SendMsg(jsMsgBack,MSG_CREATE_ROOM);
+					return ;
+				} 
+
+				CLogMgr::SharedLogMgr()->PrintLog("req chat room id ok ,create room ok ") ;
+				auto nChatRoomID = jsResult["room_id"].asUInt() ;
+				jsUs["chatRoomID"] = nChatRoomID ;
+				createRoomFunc(jsUs);
+			},recvValue);
 		}
 		break;
 	case MSG_DELETE_ROOM:
