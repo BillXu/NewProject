@@ -1,7 +1,7 @@
 #include "NiuNiuServer.h"
 #include "MessageDefine.h"
 #include <ctime>
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerStringTable.h"
 #include "RewardConfig.h"
 bool CNiuNiuServerApp::init()
@@ -14,7 +14,7 @@ bool CNiuNiuServerApp::init()
 	stServerConfig* pConfig = stSvrConfigMgr.GetServerConfig(eSvrType_Center) ;
 	if ( pConfig == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null , so can not connected to !") ;
+		LOGFMTE("center svr config is null , so can not connected to !") ;
 		return false;
 	}
 	setConnectServerConfig(pConfig);

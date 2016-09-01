@@ -1,5 +1,5 @@
 #include "ContinueLoginConfig.h"
-#include "LogManager.h"
+#include "log4z.h"
 bool CContiuneLoginConfigMgr::OnPaser(CReaderRow& refReaderRow )
 {
 	stConLoginConfig* pConfig = new stConLoginConfig ;
@@ -13,7 +13,7 @@ bool CContiuneLoginConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	MAP_CON_LOGIN_CONFIGS::iterator iter = m_vAllConfigs.find(pConfig->nDayIdx );
 	if ( iter != m_vAllConfigs.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("double contiun login day idx = %d",pConfig->nDayIdx) ;
+		LOGFMTE("double contiun login day idx = %d",pConfig->nDayIdx) ;
 		delete pConfig ;
 		return false;
 	}

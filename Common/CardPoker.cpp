@@ -1,7 +1,7 @@
 #include "CardPoker.h"
 #include <assert.h>
 #include <stdlib.h>
-#include "LogManager.h"
+#include "log4z.h"
 // card 
 CCard::CCard(  unsigned char nCompositeNum  )
 	:m_eType(eCard_Heart)
@@ -20,7 +20,7 @@ void CCard::RsetCardByCompositeNum( unsigned char nCompositeNum )
 	assert(nCompositeNum > 0 && nCompositeNum <= 54 && "illegal composite Number" );
 	if ( (nCompositeNum > 0 && nCompositeNum <= 54) != true )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Illegal composite Number = %d",nCompositeNum );
+		LOGFMTE("Illegal composite Number = %d",nCompositeNum );
 		return ;
 	}
 
@@ -50,13 +50,13 @@ CCard& CCard::SetCard(eCardType etype, unsigned char nFaceNum )
 {
 	if ( etype < eCard_None || etype >= eCard_Max )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("unknown card type =%d", etype ) ;
+		LOGFMTE("unknown card type =%d", etype ) ;
 		return *this;
 	}
 
 	if ( nFaceNum <=0 ||nFaceNum >54 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("unlegal face number = %d",nFaceNum ) ;
+		LOGFMTE("unlegal face number = %d",nFaceNum ) ;
 	}
 	m_eType = etype ;
 	m_nCardFaceNum = nFaceNum ;
@@ -84,7 +84,7 @@ void CCard::LogCardInfo()
         pType = "unknown";
 		break; 
 	}
-	CLogMgr::SharedLogMgr()->PrintLog("this is %s : %d . Composite Number: %d",pType,m_nCardFaceNum, GetCardCompositeNum() );
+	LOGFMTD("this is %s : %d . Composite Number: %d",pType,m_nCardFaceNum, GetCardCompositeNum() );
 }
 
 // Poker
@@ -169,7 +169,7 @@ void CPoker::InitBaccarat()
 
 void CPoker::InitGolden()
 {
-	CLogMgr::SharedLogMgr()->ErrorLog("Implement this method please ");
+	LOGFMTE("Implement this method please ");
 }
 
 unsigned char CPoker::GetCardWithCompositeNum()
@@ -219,13 +219,13 @@ void CPoker::AddCard(unsigned char nCard )   // invoke when init
 {
 	if ( nCard < 0 || nCard > 54 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("unlegal card composite number = %d", nCard ) ;
+		LOGFMTE("unlegal card composite number = %d", nCard ) ;
 		return ;
 	}
 	
 	if ( m_nCurIdx >= m_nCardCount )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Poker room space is full , can not add more card ") ;
+		LOGFMTE("Poker room space is full , can not add more card ") ;
 	}
 	m_vCards[m_nCurIdx] = nCard ;
 	++m_nCurIdx ;
@@ -245,7 +245,7 @@ void CPoker::SetupCardCount(unsigned short nCount )
 
 void CPoker::LogCardInfo()
 {
-	CLogMgr::SharedLogMgr()->PrintLog("œ¥≈∆Ω·π˚»Áœ¬£∫   ");
+	LOGFMTD("œ¥≈∆Ω·π˚»Áœ¬£∫   ");
 	CCard stCard(2);
 	for ( int i = 0 ; i < m_nCardCount ; ++i )
 	{

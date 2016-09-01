@@ -1,6 +1,6 @@
 #include "TaxasPokerPeerCard.h"
 #include <algorithm>
-#include "LogManager.h"
+#include "log4z.h"
 #include <assert.h>
 #ifdef SERVER
 #include "NativeTypes.h"
@@ -60,7 +60,7 @@ bool CTaxasPokerPeerCard::removePublicCompsiteNum( unsigned char nCardNum )
 	auto iter = std::find_if(m_vDefaul.begin(),m_vDefaul.end(),[nCardNum]( CCard* pCard ){ return pCard->GetCardCompositeNum() == nCardNum ; }) ;
 	if ( iter != m_vDefaul.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("remove public card , but card = %u , is in hold card, please attention to add card sequence",nCardNum) ;
+		LOGFMTE("remove public card , but card = %u , is in hold card, please attention to add card sequence",nCardNum) ;
 	}
 
 	iter = std::find_if(m_vAllCard.begin(),m_vAllCard.end(),[nCardNum]( CCard* pCard ){ return pCard->GetCardCompositeNum() == nCardNum ; }) ;
@@ -207,8 +207,8 @@ void CTaxasPokerPeerCard::Reset()
 
 void CTaxasPokerPeerCard::LogInfo()
 {
-	CLogMgr::SharedLogMgr()->SystemLog("card Type = %s",m_strCardName.c_str() ) ;
-	CLogMgr::SharedLogMgr()->SystemLog("All card is :") ;
+	LOGFMTI("card Type = %s",m_strCardName.c_str() ) ;
+	LOGFMTI("All card is :") ;
 
 	
 	for ( unsigned int i= 0 ; i < m_vAllCard.size() ; ++i )	
@@ -216,7 +216,7 @@ void CTaxasPokerPeerCard::LogInfo()
 		m_vAllCard[i]->LogCardInfo();
 	}
 
-	CLogMgr::SharedLogMgr()->SystemLog("Final card is :") ;
+	LOGFMTI("Final card is :") ;
 	for ( unsigned int i= 0 ; i < m_vFinalCard.size() ; ++i )
 	{
 		m_vFinalCard[i]->LogCardInfo();
@@ -351,7 +351,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 
 	if ( m_vAllCard.size() < 5  )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Do nothing , card count < 5 ; ") ;
+		LOGFMTE("Do nothing , card count < 5 ; ") ;
 		return ;
 	}
 	m_isCardDirty = false ;
@@ -594,7 +594,7 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 				return ;
 			}
 		}
-		CLogMgr::SharedLogMgr()->ErrorLog("No enough card to fill !") ; 
+		LOGFMTE("No enough card to fill !") ; 
 	}
 	else if ( vPairs[2].size() == 3 ) 
 	{
@@ -682,12 +682,12 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		}
 
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog( "analys card error , unknown error !card info : " ) ;
+	LOGFMTE( "analys card error , unknown error !card info : " ) ;
 	for ( CCard* pcardnow : m_vAllCard )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("card type = %d , face = %d",pcardnow->GetType(),pcardnow->GetCardFaceNum() ) ;
+		LOGFMTE("card type = %d , face = %d",pcardnow->GetType(),pcardnow->GetCardFaceNum() ) ;
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("card end !!! ");
+	LOGFMTE("card end !!! ");
 	assert(0 && "fix error " );
 }
 

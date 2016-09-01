@@ -5,7 +5,7 @@
 
 #include <WinDef.h>
 #include <Dbghelp.h>
-#include "LogManager.h"
+#include "log4z.h"
 #pragma comment( lib, "DbgHelp" )
 #pragma comment(lib,"JsonDll.lib")
 //#include <vld.h>
@@ -72,7 +72,7 @@ int main()
 	//zsummer::log4z::ILog4zManager::GetInstance()->Config("server.cfg");
 	//zsummer::log4z::ILog4zManager::GetInstance()->Start();
 	CGateServer  theApp ;
-	CLogMgr::SharedLogMgr()->SetOutputFile("H5GateSvr");
+	//CLogMgr::SharedLogMgr()->SetOutputFile("H5GateSvr");
 	bool bok = theApp.init() ;
 	if (!bok )
 	{

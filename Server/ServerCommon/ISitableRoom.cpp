@@ -5,7 +5,7 @@
 #include "MessageDefine.h"
 #include "AutoBuffer.h"
 #include "ServerMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include <json/json.h>
 #include "ServerStringTable.h"
 #include "SeverUtility.h"
@@ -43,7 +43,7 @@ bool ISitableRoom::onFirstBeCreated(IRoomManager* pRoomMgr, uint32_t nRoomID, co
 	m_nSeatCnt = 4 ;
 	if ( vJsValue["seatCnt"].isNull() == true )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("create room seatCnt js key is null") ;
+		LOGFMTE("create room seatCnt js key is null") ;
 	}
 	else
 	{
@@ -159,7 +159,7 @@ void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 	
 	if ( pPlayer->isHaveState(eRoomPeer_StayThisRound) )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d invoke game end , before stand up",pPlayer->getUserUID()) ;
+		LOGFMTD("uid = %d invoke game end , before stand up",pPlayer->getUserUID()) ;
 		pPlayer->onGameEnd();
 	}
 
@@ -181,7 +181,7 @@ void ISitableRoom::playerDoStandUp( ISitableRoomPlayer* pPlayer )
 		{
 			standPlayer->nSingleWinMost = pPlayer->getSingleWinMost() ;
 		}
-		CLogMgr::SharedLogMgr()->PrintLog("player uid = %d just normal stand up ",pPlayer->getUserUID() ) ;
+		LOGFMTD("player uid = %d just normal stand up ",pPlayer->getUserUID() ) ;
 	}
 
 	stMsgRoomStandUp msgStandUp ;
@@ -196,7 +196,7 @@ void ISitableRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 	ISitableRoomPlayer* pSitPlayer = getSitdownPlayerByUID(pPlayer->nUserUID) ;
 	if ( pSitPlayer == nullptr )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("you don't sit down ,so skip this uid = %u",pPlayer->nUserUID) ;
+		LOGFMTD("you don't sit down ,so skip this uid = %u",pPlayer->nUserUID) ;
 		return ;
 	}
 
@@ -204,7 +204,7 @@ void ISitableRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 	pSitPlayer = getSitdownPlayerByUID(pPlayer->nUserUID) ;
 	if ( pSitPlayer == nullptr )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("player direct standup and can leave uid = %u",pPlayer->nUserUID) ;
+		LOGFMTD("player direct standup and can leave uid = %u",pPlayer->nUserUID) ;
 		return ;
 	}
 
@@ -214,11 +214,11 @@ void ISitableRoom::onPlayerWillLeaveRoom(stStandPlayer* pPlayer )
 	{
 		pSitPlayer->setCoin(nLeastLeftCoin) ;
 		pPlayer->nCoin += ( nCoin - nLeastLeftCoin );
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %u will leave take away coin = %u, left coin = %u",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
+		LOGFMTD("uid = %u will leave take away coin = %u, left coin = %u",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("need coin too many ,uid = %u will leave take away coin = %u, left coin = %u",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
+		LOGFMTD("need coin too many ,uid = %u will leave take away coin = %u, left coin = %u",pPlayer->nUserUID,pPlayer->nCoin,pSitPlayer->getCoin() ) ;
 	}
 }
 
@@ -359,7 +359,7 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 				stMsgReqRobotCurGameOffsetRet msgback ;
 				msgback.nCurGameOffset = pPlayer->getTotalGameOffset();
 				sendMsgToPlayer(&msgback,sizeof(msgback),nPlayerSessionID) ;
-				CLogMgr::SharedLogMgr()->PrintLog("robot req cur offset = %d , uid = %u",msgback.nCurGameOffset,pPlayer->getUserUID());
+				LOGFMTD("robot req cur offset = %d , uid = %u",msgback.nCurGameOffset,pPlayer->getUserUID());
 			}
 		}
 		break;
@@ -368,13 +368,13 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 			auto pPlayer = getPlayerBySessionID(nPlayerSessionID) ;
 			if ( pPlayer == nullptr )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("not in room player add temp halo session id = %u",nPlayerSessionID);
+				LOGFMTE("not in room player add temp halo session id = %u",nPlayerSessionID);
 				break;
 			}
 
 			//if ( pPlayer->nPlayerType == ePlayer_Normal )
 			//{
-			//	CLogMgr::SharedLogMgr()->ErrorLog("normal can not add temp halo");
+			//	LOGFMTE("normal can not add temp halo");
 			//	break;
 			//}
 
@@ -388,11 +388,11 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 			if ( psitpp )
 			{
 				psitpp->setTempHaloWeight(pRet->nTempHalo);
-				CLogMgr::SharedLogMgr()->PrintLog("uid = %u add temp halo = %u",pRet->nTargetUID,pRet->nTempHalo) ;
+				LOGFMTD("uid = %u add temp halo = %u",pRet->nTargetUID,pRet->nTempHalo) ;
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %u not sit down why add temp halo",pPlayer->nUserUID);
+				LOGFMTE("uid = %u not sit down why add temp halo",pPlayer->nUserUID);
 			}
 		}
 		break;
@@ -404,7 +404,7 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 			stStandPlayer* pPlayer = getPlayerBySessionID(nPlayerSessionID) ;
 			if ( !pPlayer )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("palyer session id = %d ,not in this room so , can not sit down",nPlayerSessionID) ;
+				LOGFMTE("palyer session id = %d ,not in this room so , can not sit down",nPlayerSessionID) ;
 				msgBack.nRet = 3 ;
 				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 				break; 
@@ -413,7 +413,7 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 			auto pp = getSitdownPlayerByUID(pPlayer->nUserUID);
 			if ( pp )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("session id = %d , already sit down , don't sit down again",nPlayerSessionID ) ;
+				LOGFMTE("session id = %d , already sit down , don't sit down again",nPlayerSessionID ) ;
 				msgBack.nRet = 4 ;
 				sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 				break;
@@ -459,7 +459,7 @@ bool ISitableRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t 
 
 			if ( pPlayer->nPlayerType == ePlayer_Robot )
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("robot uid = %d enter room",sitDownPlayer->getUserUID()) ;
+				LOGFMTD("robot uid = %d enter room",sitDownPlayer->getUserUID()) ;
 				m_pRobotDispatchStrage->onRobotJoin(sitDownPlayer->getSessionID());
 			}
 		}
@@ -497,7 +497,7 @@ void ISitableRoom::onGameDidEnd()
 		if ( pPlayer->isHaveState(eRoomPeer_StayThisRound) && getDelegate() )
 		{
 			getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),pPlayer->getGameOffset()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("update room peer offset uid = %u, offset = %d",pPlayer->getUserUID(),pPlayer->getGameOffset());
+			LOGFMTD("update room peer offset uid = %u, offset = %d",pPlayer->getUserUID(),pPlayer->getGameOffset());
 		}
 
 		if ( pPlayer->getNoneActTimes() >= getMaxNoneActTimeForStandUp() || (pPlayer->isDelayStandUp() || pPlayer->getCoin() < coinNeededToSitDown() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
@@ -555,7 +555,7 @@ void ISitableRoom::doProcessNewPlayerHalo()
 
 	if ( m_vSortByPeerCardsAsc.size() < 2 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why can act player count not bigger than 2 room id = %u",getRoomID()) ;
+		LOGFMTE("why can act player count not bigger than 2 room id = %u",getRoomID()) ;
 		return ;
 	}
 
@@ -597,12 +597,12 @@ void ISitableRoom::doProcessNewPlayerHalo()
 		}
 	}
 #ifndef NDEBUG
-	CLogMgr::SharedLogMgr()->PrintLog("room id = %u do halo result:",getRoomID());
+	LOGFMTD("room id = %u do halo result:",getRoomID());
 	for ( uint8_t nIdx = 0 ; nIdx < m_vSortByPeerCardsAsc.size() ; ++nIdx )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("idx = %u uid = %u",nIdx,m_vSortByPeerCardsAsc[nIdx]->getUserUID());
+		LOGFMTD("idx = %u uid = %u",nIdx,m_vSortByPeerCardsAsc[nIdx]->getUserUID());
 	}
-	CLogMgr::SharedLogMgr()->PrintLog("room id = %u halo end",getRoomID());
+	LOGFMTD("room id = %u halo end",getRoomID());
 #endif // !NDEBUG
 
 }
@@ -623,6 +623,6 @@ uint8_t ISitableRoom::GetFirstInvalidIdxWithState( uint8_t nIdxFromInclude , eRo
 			return nRealIdx ;
 		}
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("why don't have peer with state = %d",estate ) ;
+	LOGFMTE("why don't have peer with state = %d",estate ) ;
 	return 0 ;
 }

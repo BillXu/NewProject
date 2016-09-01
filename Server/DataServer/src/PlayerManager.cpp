@@ -1,6 +1,6 @@
 #include "PlayerManager.h"
 #include "ServerMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "Player.h"
 #include "CommonDefine.h"
 #include "GameServerApp.h"
@@ -17,7 +17,7 @@ void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* 
 {
 	if ( isContentData() )
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("already have player data uid = %d , recive twice ",pData->nUserUID );
+		LOGFMTI("already have player data uid = %d , recive twice ",pData->nUserUID );
 		return ;
 	}
 
@@ -48,7 +48,7 @@ void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* 
 		for ( auto pp : vBrifeSubscribers )
 		{
 			CGameServerApp::SharedGameServerApp()->sendMsg(pp.second.nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("send data detail profile to subscrible = %d",pp.second.nSessionID) ;
+			LOGFMTD("send data detail profile to subscrible = %d",pp.second.nSessionID) ;
 		}
 
 		vBrifeSubscribers.clear() ;
@@ -71,7 +71,7 @@ void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* 
 		for ( auto pp : vDetailSubscribers )
 		{
 			CGameServerApp::SharedGameServerApp()->sendMsg(pp.second.nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("send data profile detail to subscrible = %d",pp.second.nSessionID) ;
+			LOGFMTD("send data profile detail to subscrible = %d",pp.second.nSessionID) ;
 		}
 	}
 
@@ -134,13 +134,13 @@ void CSelectPlayerDataCacher::cachePlayerData(stMsgSelectPlayerDataRet* pmsg )
 {
 	if ( pmsg->nRet )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("cahe player data failed");
+		LOGFMTD("cahe player data failed");
 	}
 
 	stPlayerBrifData* pData = (stPlayerBrifData*)((char*)pmsg + sizeof(stMsgSelectPlayerDataRet));
 	if ( !pmsg->isDetail )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("here must is detail , uid = %d",pData->nUserUID ) ;
+		LOGFMTE("here must is detail , uid = %d",pData->nUserUID ) ;
 	}
 
 	if ( pmsg->nRet )
@@ -157,16 +157,16 @@ void CSelectPlayerDataCacher::cachePlayerData(stMsgSelectPlayerDataRet* pmsg )
 			pDataPri->nPlayerUID = pData->nUserUID ;
 			pDataPri->recivedData(pData);
 			m_vDetailData[pDataPri->nPlayerUID] = pDataPri  ;
-			CLogMgr::SharedLogMgr()->ErrorLog("why no cacher foot print uid = %d",pData->nUserUID) ;
+			LOGFMTE("why no cacher foot print uid = %d",pData->nUserUID) ;
 		}
 		else
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("what is this situation for data prifle uid = %d",pmsg->nDataPlayerUID) ;
+			LOGFMTE("what is this situation for data prifle uid = %d",pmsg->nDataPlayerUID) ;
 		}
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("recievd data prifle uid = %d",pData->nUserUID) ;
+		LOGFMTD("recievd data prifle uid = %d",pData->nUserUID) ;
 		iter->second->recivedData(pData) ;
 	}
 }
@@ -185,7 +185,7 @@ bool CSelectPlayerDataCacher::sendPlayerDataProfile(uint32_t nReqUID ,bool isDet
 		msgReq.isDetail = true ;
 		msgReq.nTargetPlayerUID = nReqUID ;
 		CGameServerApp::SharedGameServerApp()->sendMsg(nSubscriberSessionID,(char*)&msgReq,sizeof(msgReq)) ;
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d not online req form db , add session id = %d to subscrible list" , nReqUID,nSubscriberSessionID) ;
+		LOGFMTD("uid = %d not online req form db , add session id = %d to subscrible list" , nReqUID,nSubscriberSessionID) ;
 		pData->tRequestDataTime = time(nullptr) ;
 		return true ;
 	}
@@ -194,7 +194,7 @@ bool CSelectPlayerDataCacher::sendPlayerDataProfile(uint32_t nReqUID ,bool isDet
 	if ( pData->isContentData() == false )
 	{
 		pData->addSubscriber(nSubscriberSessionID,isDetail) ;
-		CLogMgr::SharedLogMgr()->PrintLog("already req uid = %d data , just add session id  = %d to subscrible list",nReqUID,nSubscriberSessionID) ;
+		LOGFMTD("already req uid = %d data , just add session id  = %d to subscrible list",nReqUID,nSubscriberSessionID) ;
 
 		time_t tNow = time(nullptr) ;
 		if ( (tNow - iter->second->tRequestDataTime) > 6 )
@@ -204,7 +204,7 @@ bool CSelectPlayerDataCacher::sendPlayerDataProfile(uint32_t nReqUID ,bool isDet
 			msgReq.nTargetPlayerUID = nReqUID ;
 			CGameServerApp::SharedGameServerApp()->sendMsg(nSubscriberSessionID,(char*)&msgReq,sizeof(msgReq)) ;
 			pData->tRequestDataTime = time(nullptr) ;
-			CLogMgr::SharedLogMgr()->PrintLog("request uid = %d data time out , request again",pData->nPlayerUID) ;
+			LOGFMTD("request uid = %d data time out , request again",pData->nPlayerUID) ;
 		}
 	}
 	else
@@ -218,7 +218,7 @@ bool CSelectPlayerDataCacher::sendPlayerDataProfile(uint32_t nReqUID ,bool isDet
 		uint16_t nLen = isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ;
 		auB.addContent((char*)pData->pData,nLen );
 		CGameServerApp::SharedGameServerApp()->sendMsg(nSubscriberSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
-		CLogMgr::SharedLogMgr()->PrintLog("send data profile uid = %d to subscrible = %d",nReqUID,nSubscriberSessionID) ;
+		LOGFMTD("send data profile uid = %d to subscrible = %d",nReqUID,nSubscriberSessionID) ;
 	}
 	return true ;
 }
@@ -286,11 +286,11 @@ bool CPlayerManager::onMsg( stMsg* pMessage , eMsgPort eSenderPort , uint32_t nS
 	{
 		if (pTargetPlayer == NULL )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("can not find session id = %d to process msg id = %d ,from = %d",nSessionID,pMessage->usMsgType,eSenderPort) ;
+			LOGFMTE("can not find session id = %d to process msg id = %d ,from = %d",nSessionID,pMessage->usMsgType,eSenderPort) ;
 		}
 		else
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog( "unprocess msg for player uid = %d , msg = %d ,from %d ",pTargetPlayer->GetUserUID(),pMessage->usMsgType,eSenderPort ) ;
+			LOGFMTE( "unprocess msg for player uid = %d , msg = %d ,from %d ",pTargetPlayer->GetUserUID(),pMessage->usMsgType,eSenderPort ) ;
 		}
 	}
 	return false ;
@@ -311,11 +311,11 @@ bool CPlayerManager::onMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort
 	{
 		if (pTargetPlayer == NULL )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("can not find session id = %d to process msg id = %d ,from = %d",nSessionID,nmsgType,eSenderPort) ;
+			LOGFMTE("can not find session id = %d to process msg id = %d ,from = %d",nSessionID,nmsgType,eSenderPort) ;
 		}
 		else
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog( "unprocess msg for player uid = %d , msg = %d ,from %d ",pTargetPlayer->GetUserUID(),nmsgType,eSenderPort ) ;
+			LOGFMTE( "unprocess msg for player uid = %d , msg = %d ,from %d ",pTargetPlayer->GetUserUID(),nmsgType,eSenderPort ) ;
 		}
 	}
 	return false ;
@@ -347,7 +347,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				{
 					return true ;
 				}
-				CLogMgr::SharedLogMgr()->ErrorLog("cross request type = %d , subType = %d ,unprocessed",pRet->nRequestType,pRet->nRequestSubType);
+				LOGFMTE("cross request type = %d , subType = %d ,unprocessed",pRet->nRequestType,pRet->nRequestSubType);
 				return false;
 			}
 
@@ -375,7 +375,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				{
 					return true ;
 				}
-				CLogMgr::SharedLogMgr()->ErrorLog("cross request result type = %d , subType = %d ,unprocessed",pRet->nRequestType,pRet->nRequestSubType);
+				LOGFMTE("cross request result type = %d , subType = %d ,unprocessed",pRet->nRequestType,pRet->nRequestSubType);
 				return false;
 			}
 			return true ;
@@ -387,11 +387,11 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
 			if (!pp)
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not process do leave room",pRet->nUserUID);
+				LOGFMTE("uid = %d not find , so can not process do leave room",pRet->nUserUID);
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("uid = %d do leave room ",pRet->nUserUID) ;
+				LOGFMTD("uid = %d do leave room ",pRet->nUserUID) ;
 				pp->OnMessage(prealMsg,eSenderPort);
 			}
 		}
@@ -402,7 +402,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			CPlayer* pp = GetPlayerByUserUID(pRet->nTargetPlayerUID) ;
 			if (!pp || pp->IsState(CPlayer::ePlayerState_Online) == false )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not process MSG_SYNC_PRIVATE_ROOM_RESULT ",pRet->nTargetPlayerUID);
+				LOGFMTE("uid = %d not find , so can not process MSG_SYNC_PRIVATE_ROOM_RESULT ",pRet->nTargetPlayerUID);
 				Json::Value jsArg ;
 				jsArg["createUID"] = pRet->nCreatorUID ;
 				jsArg["duiringTime"] = pRet->nDuringTimeSeconds ;
@@ -450,7 +450,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				//	msgReq.vArg[0] = pRet->nPlayerUID;
 				//	msgReq.vArg[1] = pRet->isDetail ;
 				//	CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,(char*)&msgReq,sizeof(msgReq)) ;
-				//	CLogMgr::SharedLogMgr()->PrintLog("select take in for player detail") ;
+				//	LOGFMTD("select take in for player detail") ;
 				//	return true ;
 				//}
 
@@ -485,7 +485,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			CPlayer* pPlayer = GetPlayerBySessionID(nSessionID) ;
 			if ( pPlayer != NULL && pPlayer->GetUserUID() == pmsgenter->nUserUID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("double nSession, this nSessionID already have player, already login , do not login again  id = %d? ",nSessionID) ;
+				LOGFMTE("double nSession, this nSessionID already have player, already login , do not login again  id = %d? ",nSessionID) ;
 				return true ;
 			}
 
@@ -525,12 +525,12 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			if ( pPlayer )
 			{
 				// post online event ;
-				CLogMgr::SharedLogMgr()->PrintLog("player disconnect session id = %d",nSessionID);
+				LOGFMTD("player disconnect session id = %d",nSessionID);
 				OnPlayerOffline(pPlayer) ;
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("client disconnect ! client is NULL session id = %d",nSessionID) ;
+				LOGFMTE("client disconnect ! client is NULL session id = %d",nSessionID) ;
 			}
 			//#ifdef _DEBUG
 			LogState();
@@ -543,7 +543,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 	//		CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
 	//		if (!pp)
 	//		{
-	//			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not inform leave",pRet->nUserUID);
+	//			LOGFMTE("uid = %d not find , so can not inform leave",pRet->nUserUID);
 	//		}
 	//		else
 	//		{
@@ -557,7 +557,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 	//		CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
 	//		if (!pp)
 	//		{
-	//			CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not inform leave",pRet->nUserUID);
+	//			LOGFMTE("uid = %d not find , so can not inform leave",pRet->nUserUID);
 	//		}
 	//		else
 	//		{
@@ -571,7 +571,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
 			if (!pp)
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not sys data",pRet->nUserUID);
+				LOGFMTE("uid = %d not find , so can not sys data",pRet->nUserUID);
 			}
 			else
 			{
@@ -585,7 +585,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			CPlayer* pp = GetPlayerByUserUID(pRet->nUserUID) ;
 			if (!pp)
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %d not find , so can not delay leave room",pRet->nUserUID);
+				LOGFMTE("uid = %d not find , so can not delay leave room",pRet->nUserUID);
 			}
 			else
 			{
@@ -643,7 +643,7 @@ void CPlayerManager::update(float fDeta )
 			 {
 				 pp->OnTimerSave(0,0) ;
 				 m_vOfflinePlayers.erase(m_vOfflinePlayers.find(pair.first)) ;
-				 CLogMgr::SharedLogMgr()->PrintLog("player uid = %d do delete player object",pp->GetUserUID() ) ;
+				 LOGFMTD("player uid = %d do delete player object",pp->GetUserUID() ) ;
 				 delete pp ;
 				 pp = nullptr ;
 
@@ -660,7 +660,7 @@ CPlayer* CPlayerManager::GetFirstActivePlayer()
 	MAP_SESSIONID_PLAYERS::iterator iter = m_vAllActivePlayers.begin() ;
 	if ( iter == m_vAllActivePlayers.end() || iter->second == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("first actvie player is NULL") ;
+		LOGFMTE("first actvie player is NULL") ;
 		return NULL ;
 	}
 	return iter->second ;
@@ -695,7 +695,7 @@ void CPlayerManager::OnPlayerOffline( CPlayer*pPlayer )
 {
 	if ( !pPlayer )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Can not Remove NULL player !") ;
+		LOGFMTE("Can not Remove NULL player !") ;
 		return ;
 	}
 
@@ -703,7 +703,7 @@ void CPlayerManager::OnPlayerOffline( CPlayer*pPlayer )
 	{
 		auto robotCenter = (CRobotCenter*)CGameServerApp::SharedGameServerApp()->getModuleByType(CRobotCenter::eModule_Type);
 		robotCenter->onRobotDisconnect(pPlayer->GetUserUID()) ;
-		CLogMgr::SharedLogMgr()->PrintLog("robot uid = %u disconnected",pPlayer->GetUserUID()) ;
+		LOGFMTD("robot uid = %u disconnected",pPlayer->GetUserUID()) ;
 	}
 
 	CEventCenter::SharedEventCenter()->PostEvent(eEvent_PlayerOffline,pPlayer) ;
@@ -712,7 +712,7 @@ void CPlayerManager::OnPlayerOffline( CPlayer*pPlayer )
 	MAP_SESSIONID_PLAYERS::iterator iter = m_vAllActivePlayers.find(pPlayer->GetSessionID() ) ;
 	if ( iter == m_vAllActivePlayers.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why pPlayer uid = %d , not active ? shuold active " , pPlayer->GetUserUID() ) ;
+		LOGFMTE("why pPlayer uid = %d , not active ? shuold active " , pPlayer->GetUserUID() ) ;
 		delete pPlayer ;
 		pPlayer = NULL ;
 		return ;
@@ -723,7 +723,7 @@ void CPlayerManager::OnPlayerOffline( CPlayer*pPlayer )
 	MAP_UID_PLAYERS::iterator iterOffline = m_vOfflinePlayers.find(pPlayer->GetUserUID()) ;
 	if ( iterOffline != m_vOfflinePlayers.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why player uid = %d already in offline list ? " , iterOffline->first ) ;
+		LOGFMTE("why player uid = %d already in offline list ? " , iterOffline->first ) ;
 		
 		delete pPlayer ;
 		pPlayer = NULL ;
@@ -736,13 +736,13 @@ void CPlayerManager::AddPlayer(CPlayer*pPlayer)
 {
 	if ( !pPlayer )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Can not Add NULL player !") ;
+		LOGFMTE("Can not Add NULL player !") ;
 		return ;
 	}
 	MAP_SESSIONID_PLAYERS::iterator iter = m_vAllActivePlayers.find(pPlayer->GetSessionID() ) ;
 	if ( iter != m_vAllActivePlayers.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Player to add had existed in active map ! , player UID = %d",pPlayer->GetUserUID() ) ;
+		LOGFMTE("Player to add had existed in active map ! , player UID = %d",pPlayer->GetUserUID() ) ;
 		delete pPlayer ;
 		pPlayer = NULL ;
 	}
@@ -754,7 +754,7 @@ void CPlayerManager::AddPlayer(CPlayer*pPlayer)
 
 void CPlayerManager::LogState()
 {
-	CLogMgr::SharedLogMgr()->SystemLog( "Active Player: %d   Offline Player: %d " ,m_vAllActivePlayers.size(),m_vOfflinePlayers.size() ) ;
+	LOGFMTI( "Active Player: %d   Offline Player: %d " ,m_vAllActivePlayers.size(),m_vOfflinePlayers.size() ) ;
 }
 
 bool CPlayerManager::ProcessIsAlreadyLogin(unsigned int nUserID ,unsigned nSessionID )
@@ -767,7 +767,7 @@ bool CPlayerManager::ProcessIsAlreadyLogin(unsigned int nUserID ,unsigned nSessi
 		pPlayer = iter_ma->second ;
 		if ( !pPlayer )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("Why empty active player here ?") ;
+			LOGFMTE("Why empty active player here ?") ;
 			continue; 
 		}
 
@@ -776,7 +776,7 @@ bool CPlayerManager::ProcessIsAlreadyLogin(unsigned int nUserID ,unsigned nSessi
 			pPlayer->OnAnotherClientLoginThisPeer(nSessionID) ;
 			m_vAllActivePlayers.erase(iter_ma) ;
 			AddPlayer(pPlayer) ;
-			CLogMgr::SharedLogMgr()->PrintLog("other decivec login");
+			LOGFMTD("other decivec login");
 			return true ;
 		}
 	}
@@ -794,7 +794,7 @@ bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eM
 	{
 		if ( vJsValue->isNull() )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why game over result is null room type = %d room id = %d",(uint32_t)pRequest->vArg[0],pRequest->nReqOrigID) ;
+			LOGFMTE("why game over result is null room type = %d room id = %d",(uint32_t)pRequest->vArg[0],pRequest->nReqOrigID) ;
 			return true ;
 		}
 
@@ -804,7 +804,7 @@ bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eM
 			pName = (*vJsValue)["roomName"].asCString();
 		}
 		
-		CLogMgr::SharedLogMgr()->PrintLog("%s game over ",pName);
+		LOGFMTD("%s game over ",pName);
 		Json::Value vPlayers = (*vJsValue)["players"];
 		for ( uint8_t nIdx = 0 ; nIdx < vPlayers.size(); ++nIdx )
 		{
@@ -814,12 +814,12 @@ bool CPlayerManager::onCrossServerRequest(stMsgCrossServerRequest* pRequest , eM
 			CPlayer* pp = GetPlayerByUserUID(nUID) ;
 			if ( pp && pp->IsState(CPlayer::ePlayerState_Online) )
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , get reward id = %u ",nUID,nRewardID ) ;
+				LOGFMTD("uid = %u , get reward id = %u ",nUID,nRewardID ) ;
 				pp->GetBaseData()->onGetReward(nIdx,nRewardID,(uint16_t)pRequest->vArg[0],pName) ;
 			}
 			else
 			{	
-				CLogMgr::SharedLogMgr()->PrintLog("uid = %u , not online post msg get reward id = %u ",nUID,nRewardID ) ;
+				LOGFMTD("uid = %u , not online post msg get reward id = %u ",nUID,nRewardID ) ;
 				Json::Value jEventArg ;
 				jEventArg["rewardID"] = nRewardID;
 				jEventArg["gameType"] = (uint16_t)pRequest->vArg[0];
@@ -845,7 +845,7 @@ bool CPlayerManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult
 		//CPlayer* pPlayer = GetPlayerByUserUID(pResult->vArg[0]);
 		//if ( pPlayer == nullptr )
 		//{
-		//	CLogMgr::SharedLogMgr()->ErrorLog("why this player is null , can not , funck!") ;
+		//	LOGFMTE("why this player is null , can not , funck!") ;
 		//	return true ;
 		//}
 
@@ -868,7 +868,7 @@ bool CPlayerManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult
 		//		}
 		//		else
 		//		{
-		//			CLogMgr::SharedLogMgr()->PrintLog("targe player not sit down uid = %llu",pResult->vArg[0]);
+		//			LOGFMTD("targe player not sit down uid = %llu",pResult->vArg[0]);
 		//		}
 		//	}
 		//	else
@@ -888,7 +888,7 @@ bool CPlayerManager::onCrossServerRequestRet(stMsgCrossServerRequestRet* pResult
 		//	auB.addContent(&msgBack,sizeof(msgBack));
 		//	auB.addContent(&stData,msgBack.isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
 		//	CGameServerApp::SharedGameServerApp()->sendMsg(pResult->nTargetID,auB.getBufferPtr(),auB.getContentSize()) ;
-		//	CLogMgr::SharedLogMgr()->PrintLog("select take in ret , send player data");
+		//	LOGFMTD("select take in ret , send player data");
 		//	return true ;
 		//}
 		//return true ;

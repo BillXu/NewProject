@@ -184,7 +184,7 @@ protected:
 
 
 // implement 
-#include "LogManager.h"
+#include "log4z.h"
 #include "RoomConfig.h"
 #include "ServerMessageDefine.h"
 #include "IRoomManager.h"
@@ -249,21 +249,21 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	if ( vJsValue["duringMin"].isNull() == false )
 	{
 		m_nDuringSeconds = vJsValue["duringMin"].asUInt() * 60 ;
-		CLogMgr::SharedLogMgr()->PrintLog("create private room duiring is = %u",m_nDuringSeconds) ;
+		LOGFMTD("create private room duiring is = %u",m_nDuringSeconds) ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("create private room duringMin is null ?") ;
+		LOGFMTE("create private room duringMin is null ?") ;
 	}
 
 	if ( vJsValue["createUID"].isNull() == false )
 	{
 		m_nOwnerUID = vJsValue["createUID"].asUInt() ;
-		CLogMgr::SharedLogMgr()->PrintLog("create private room ownerUID is = %u",m_nOwnerUID) ;
+		LOGFMTD("create private room ownerUID is = %u",m_nOwnerUID) ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("create private room ownerUID is null ?") ;
+		LOGFMTE("create private room ownerUID is null ?") ;
 	}
 
 	m_fLeftTimeSec = (float)m_nDuringSeconds ;
@@ -274,14 +274,14 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	m_pRoom->setDelegate(this);
 	
 	m_nMaxTakeIn = m_pRoom->getMaxTakeIn();
-	CLogMgr::SharedLogMgr()->PrintLog("create 1 private room") ;
+	LOGFMTD("create 1 private room") ;
 
 	// read private room data 
 	stMsgReadPrivateRoomPlayer msgReadPrivate ;
 	msgReadPrivate.nRoomID = getRoomID() ;
 	msgReadPrivate.nRoomType = getRoomType() ;
 	m_pRoomMgr->sendMsg(&msgReadPrivate,sizeof(msgReadPrivate),getRoomID()) ;
-	CLogMgr::SharedLogMgr()->PrintLog("read room private item") ;
+	LOGFMTD("read room private item") ;
 
 	// read rank data 
 	stMsgReadRoomPlayer msgRead ;
@@ -289,7 +289,7 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	msgRead.nRoomType = getRoomType() ;
 	msgRead.nTermNumber = 0 ;
 	m_pRoomMgr->sendMsg(&msgRead,sizeof(msgRead),getRoomID()) ;
-	CLogMgr::SharedLogMgr()->PrintLog("read room rank") ;
+	LOGFMTD("read room rank") ;
 	return true ;
 }
 
@@ -335,7 +335,7 @@ void CPrivateRoom<T>::serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfi
 	//msgReadPrivate.nRoomType = getRoomType() ;
 	//m_pRoomMgr->sendMsg(&msgReadPrivate,sizeof(msgReadPrivate),getRoomID()) ;
 
-	//CLogMgr::SharedLogMgr()->PrintLog("read room id = %u ternm = %u rank player",getRoomID(),0) ;
+	//LOGFMTD("read room id = %u ternm = %u rank player",getRoomID(),0) ;
 }
 
 template<class T >
@@ -429,7 +429,7 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 	refEnterData.nCoin = pPlayerItem->nCoinInRoom ;
 	m_pRoom->onPlayerEnterRoom(&refEnterData,nSubIdx) ;
 	sendRoomInfo(pEnterRoomPlayer->nUserSessionID);
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %u , enter room id = %u , subIdx = %u inRoom coin = %u , total coin = %u",pEnterRoomPlayer->nUserUID, getRoomID(),0,pPlayerItem->nCoinInRoom,pPlayerItem->nToTalCoin) ;
+	LOGFMTD("uid = %u , enter room id = %u , subIdx = %u inRoom coin = %u , total coin = %u",pEnterRoomPlayer->nUserUID, getRoomID(),0,pPlayerItem->nCoinInRoom,pPlayerItem->nToTalCoin) ;
 }
 
 template<class T >
@@ -486,7 +486,7 @@ bool CPrivateRoom<T>::isRoomClosed()
 template<class T >
 void CPrivateRoom<T>::onRoomDoClosed()
 {
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %d change do close, prepare recorders ",getRoomID() );
+	LOGFMTD("uid = %d change do close, prepare recorders ",getRoomID() );
 	if ( m_pRoom )
 	{
 		stMsgRoomEnterNewState msgNewState ;
@@ -574,7 +574,7 @@ void CPrivateRoom<T>::onRoomDoClosed()
 	{
 		delete pRecoder ; 
 		pRecoder = nullptr ;
-		CLogMgr::SharedLogMgr()->ErrorLog("private room log is null id = %u",getRoomID()) ;
+		LOGFMTE("private room log is null id = %u",getRoomID()) ;
 	}
 	else 
 	{
@@ -584,7 +584,7 @@ void CPrivateRoom<T>::onRoomDoClosed()
 	// send apns tell close 
 	CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(10),1);
 	CSendPushNotification::getInstance()->postApns( m_pRoomMgr->getSvrApp()->getAsynReqQueue(),false,"room closed") ;
-	CLogMgr::SharedLogMgr()->PrintLog("send close end apns uid = %u",getRoomID()) ;
+	LOGFMTD("send close end apns uid = %u",getRoomID()) ;
 
 	m_bRoomInfoDiry = true ;
 	onTimeSave();
@@ -642,7 +642,7 @@ void CPrivateRoom<T>::update(float fDelta)
 template<class T >
 void CPrivateRoom<T>::onTimeSave()
 {
-	CLogMgr::SharedLogMgr()->PrintLog("time save room info room id = %u",getRoomID());
+	LOGFMTD("time save room info room id = %u",getRoomID());
 	// save room rank ;
 	stMsgSaveRoomPlayer msgSave ;
 	msgSave.nRoomID = getRoomID() ;
@@ -660,7 +660,7 @@ void CPrivateRoom<T>::onTimeSave()
 		msgSave.savePlayer.nGameOffset = pp->nGameOffset ;
 		msgSave.savePlayer.nOtherOffset = pp->nOtherOffset ;
 		m_pRoomMgr->sendMsg(&msgSave,sizeof(msgSave),0) ;
-		CLogMgr::SharedLogMgr()->PrintLog("update rank uid = %u , offset = %d",pp->nUserUID,pp->nGameOffset) ;
+		LOGFMTD("update rank uid = %u , offset = %d",pp->nUserUID,pp->nGameOffset) ;
 	}
 
 	if ( m_bRoomInfoDiry == true )
@@ -746,11 +746,11 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			stMsgReadRoomPlayerRet* pRet = (stMsgReadRoomPlayerRet*)prealMsg ; 
 			if ( pRet->nTermNumber != 0 )
 			{
-				CLogMgr::SharedLogMgr()->SystemLog("recieved last wrong term player data , skip id  room id = %u",getRoomID()) ;
+				LOGFMTI("recieved last wrong term player data , skip id  room id = %u",getRoomID()) ;
 				break; 
 			}
 
-			CLogMgr::SharedLogMgr()->PrintLog("room id = %d recive room player data cnt = %d",getRoomID(),pRet->nCnt) ;
+			LOGFMTD("room id = %d recive room player data cnt = %d",getRoomID(),pRet->nCnt) ;
 			stSaveRoomPlayerEntry* pp = (stSaveRoomPlayerEntry*)(((char*)prealMsg) + sizeof(stMsgReadRoomPlayerRet));
 			while ( pRet->nCnt-- )
 			{
@@ -822,7 +822,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 				}
 			}
 
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d request rank room id = %u",nUserID,getRoomID());
+			LOGFMTD("uid = %d request rank room id = %u",nUserID,getRoomID());
 			// send room info to player ;
 			stMsgRequestRoomRankRet msgRet ;
 			msgRet.nCnt = vWillSend.size() ;
@@ -832,7 +832,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			for ( auto& itemSendPlayer : vWillSend )
 			{
 				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
-				CLogMgr::SharedLogMgr()->PrintLog("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
+				LOGFMTD("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
 			}
 			m_pRoomMgr->sendMsg((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
 		}
@@ -897,7 +897,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			Json::Value jsresult ;
 			jsresult["state"] = nst ;
 			m_pRoom->sendRoomMsg(jsresult,MSG_ROOM_GAME_STATE_CHANGED) ;
-			CLogMgr::SharedLogMgr()->PrintLog("room id = %u , set state to %u",getRoomID(),getRoomState()) ;
+			LOGFMTD("room id = %u , set state to %u",getRoomID(),getRoomState()) ;
 			m_bRoomInfoDiry = true ;
 
 			// temp code 
@@ -912,7 +912,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			auto stStandPlayer = m_pRoom->getPlayerBySessionID(nSessionID);
 			if ( !stStandPlayer )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("you are not in room ,can not take in ") ;
+				LOGFMTE("you are not in room ,can not take in ") ;
 				break;
 			}
 			assert( stStandPlayer && "not enter room how to rebuy ?" );
@@ -939,7 +939,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			{
 				jsMsgBack["ret"] = 4 ;
 				m_pRoom->sendMsgToPlayer(nSessionID,jsMsgBack,nMsgType) ;
-				//CLogMgr::SharedLogMgr()->ErrorLog("temp let double applying take in");
+				//LOGFMTE("temp let double applying take in");
 				break ; //(uint32_t)(float(nCoin) * 1.1 )
 			}
 
@@ -967,7 +967,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 				 
 				if ( nTakeIn <= pPrivatePlayer->nCheckedCoin )
 				{
-					CLogMgr::SharedLogMgr()->PrintLog("uid = %u , do takeIn = %u , checkCoin = %u",pPrivatePlayer->nUserUID, nTakeIn,pPrivatePlayer->nCheckedCoin ) ;
+					LOGFMTD("uid = %u , do takeIn = %u , checkCoin = %u",pPrivatePlayer->nUserUID, nTakeIn,pPrivatePlayer->nCheckedCoin ) ;
 					nTakeIn = pPrivatePlayer->nCheckedCoin;
 					pPrivatePlayer->nCheckedCoin -= nTakeIn ;
 				}
@@ -995,7 +995,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 					msgRoom.nFinalCoin = stiDownPlayer->getCoin() ;
 					msgRoom.nIdx = stiDownPlayer->getIdx() ;
 					m_pRoom->sendRoomMsg(&msgRoom,sizeof(msgRoom)) ;
-					CLogMgr::SharedLogMgr()->PrintLog("uid = %u ,sit down coin = %u , stand coin = %u , totalBuyin = %u , newBuyin = %u ",stStandPlayer->nUserUID,stiDownPlayer->getCoin(),stStandPlayer->nCoin,pPrivatePlayer->nToTalBuyIn,nTakeIn) ;
+					LOGFMTD("uid = %u ,sit down coin = %u , stand coin = %u , totalBuyin = %u , newBuyin = %u ",stStandPlayer->nUserUID,stiDownPlayer->getCoin(),stStandPlayer->nCoin,pPrivatePlayer->nToTalBuyIn,nTakeIn) ;
 					jsMsgBack["inRoomCoin"] = msgRoom.nFinalCoin ;
 				}
 				else
@@ -1025,7 +1025,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			jsReqContent["arg"] = jsDlgArg ;
 			m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DATA,eAsync_PostDlgNotice,jsReqContent) ;
 
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %u apply to take in coin = %u , do send notice dlg",pPrivatePlayer->nUserUID,nTakeIn) ;
+			LOGFMTD("uid = %u apply to take in coin = %u , do send notice dlg",pPrivatePlayer->nUserUID,nTakeIn) ;
 			jsMsgBack["isApply"] = 1 ;
 			m_pRoom->sendMsgToPlayer(nSessionID,jsMsgBack,nMsgType) ;
 
@@ -1040,7 +1040,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("room owner in room , need not send apns") ;
+				LOGFMTD("room owner in room , need not send apns") ;
 			}
 		}
 		break ;
@@ -1053,14 +1053,14 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			auto iter = m_mapPrivateRoomPlayers.find(nReplyUID) ;
 			if ( iter == m_mapPrivateRoomPlayers.end() )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("reply take in  uid = %u , not exist",nReplyUID) ;
+				LOGFMTE("reply take in  uid = %u , not exist",nReplyUID) ;
 				break ;
 			}
 
 			stPrivateRoomPlayerItem* pPrivatePlayer = iter->second ;
 			if ( pPrivatePlayer->isApplyIng == false )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid = %u not applying , why reply to it",nReplyUID) ;
+				LOGFMTE("uid = %u not applying , why reply to it",nReplyUID) ;
 				break ;
 			}
 			pPrivatePlayer->isApplyIng = false ;
@@ -1080,7 +1080,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			jsDlgArg["roomName"] = m_strRoomName ;
 			jsReqContent["arg"] = jsDlgArg ;
 			m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DATA,eAsync_PostDlgNotice,jsReqContent) ;
-			CLogMgr::SharedLogMgr()->PrintLog("room id = %u reply uid = %u , result = %u , coin = %u",getRoomID(),nReplyUID,isAgree,nApplyCoin) ;
+			LOGFMTD("room id = %u reply uid = %u , result = %u , coin = %u",getRoomID(),nReplyUID,isAgree,nApplyCoin) ;
 		}
 		break ;
 	default:
@@ -1165,7 +1165,7 @@ bool CPrivateRoom<T>::onPlayerWillDoLeaveRoom(IRoom* pRoom , IRoom::stStandPlaye
 	pPlayer->nCoin = pRoomPlayer->nToTalCoin ;
 	IRoomDelegate::onPlayerWillDoLeaveRoom(pRoom,pPlayer) ;
 	pRoomPlayer->nToTalCoin = 0 ;
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %u leave private room sys coin = %u , coin in this room = %u",pPlayer->nUserUID,pPlayer->nCoin, pRoomPlayer->nCoinInRoom ) ;
+	LOGFMTD("uid = %u leave private room sys coin = %u , coin in this room = %u",pPlayer->nUserUID,pPlayer->nCoin, pRoomPlayer->nCoinInRoom ) ;
 	return true ;
 }
 
@@ -1179,7 +1179,7 @@ bool CPrivateRoom<T>::onDelayPlayerWillLeaveRoom(IRoom* pRoom , ISitableRoomPlay
 	pPlayer->setCoin( 0 );
 	IRoomDelegate::onDelayPlayerWillLeaveRoom(pRoom,pPlayer) ;
 
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %u leave DELAY private room sys coin = %u , coin in this room = %u",pPlayer->getUserUID(),pPlayer->getCoin(), pRoomPlayer->nCoinInRoom ) ;
+	LOGFMTD("uid = %u leave DELAY private room sys coin = %u , coin in this room = %u",pPlayer->getUserUID(),pPlayer->getCoin(), pRoomPlayer->nCoinInRoom ) ;
 	return true ;
 }
 
@@ -1189,7 +1189,7 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	typename REAL_ROOM_PTR pRoom = m_pRoom ;
 	if ( pRoom == nullptr )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("session id = %u request room info room id = %u, subIdx = %d is null",nSessionID , getRoomID(),0) ;
+		LOGFMTE("session id = %u request room info room id = %u, subIdx = %d is null",nSessionID , getRoomID(),0) ;
 		return ;
 	}
 

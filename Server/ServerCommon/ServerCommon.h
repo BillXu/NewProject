@@ -139,7 +139,7 @@ enum eCrossSvrReqSubType
 {\
 	if (sizeof(CHECK_MSG) > (nLen) ) \
 {\
-	CLogMgr::SharedLogMgr()->ErrorLog("Msg Size Unlegal msg") ;	\
+	LOGFMTE("Msg Size Unlegal msg") ;	\
 	return false; \
 	}\
 	}
@@ -148,7 +148,7 @@ enum eCrossSvrReqSubType
 {\
 	if (sizeof(CHECK_MSG) > (nLen) ) \
 {\
-	CLogMgr::SharedLogMgr()->ErrorLog("Msg Size Unlegal msg") ;	\
+	LOGFMTE("Msg Size Unlegal msg") ;	\
 	return; \
 	}\
 	}

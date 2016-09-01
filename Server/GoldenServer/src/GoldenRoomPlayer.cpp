@@ -1,6 +1,6 @@
 #include "GoldenRoomPlayer.h"
 #include <cassert>
-#include "LogManager.h"
+#include "log4z.h"
 void CGoldenRoomPlayer::reset(IRoom::stStandPlayer* pPlayer)
 {
 	ISitableRoomPlayer::reset(pPlayer);
@@ -15,7 +15,7 @@ void CGoldenRoomPlayer::onGameEnd()
 	ISitableRoomPlayer::onGameEnd() ;
 	if (  getState() != eRoomPeer_Ready )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("uid = %d , should come here , ready when other state ? ",getUserUID()) ;
+		LOGFMTE("uid = %d , should come here , ready when other state ? ",getUserUID()) ;
 		setState(eRoomPeer_WaitNextGame) ;
 	}
 

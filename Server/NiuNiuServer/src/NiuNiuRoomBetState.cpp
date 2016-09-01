@@ -3,14 +3,14 @@
 #include "NiuNiuRoom.h"
 #include "NiuNiuMessageDefine.h"
 #include "NiuNiuRoomPlayer.h"
-#include "LogManager.h"
+#include "log4z.h"
 void CNiuNiuRoomBetState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (CNiuNiuRoom*)pRoom ;	
 	setStateDuringTime(TIME_NIUNIU_PLAYER_BET) ;
 	vWaitBetPlayerIdxs.clear() ;
 	m_pRoom->getPlayersWillBetPlayer(vWaitBetPlayerIdxs) ;
-	CLogMgr::SharedLogMgr()->PrintLog("room id = %d start bet ",m_pRoom->getRoomID()) ;
+	LOGFMTD("room id = %d start bet ",m_pRoom->getRoomID()) ;
 }
 
 void CNiuNiuRoomBetState::onStateDuringTimeUp()
@@ -62,7 +62,7 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 		if ( iterF == vWaitBetPlayerIdxs.end() )
 		{
 			msgBack.nRet = 4 ;
-			CLogMgr::SharedLogMgr()->PrintLog("session id = %u , you already bet , don't bet twice",pPlayer->getSessionID()) ;
+			LOGFMTD("session id = %u , you already bet , don't bet twice",pPlayer->getSessionID()) ;
 		}
 		else
 		{
@@ -75,7 +75,7 @@ bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , ui
 			msgRoomBet.nPlayerIdx = pPlayer->getIdx() ;
 			m_pRoom->sendRoomMsg(&msgRoomBet,sizeof(msgRoomBet)) ;
 			//m_pRoom->setBankCoinLimitForBet(m_pRoom->getBankCoinLimitForBet() - nBetCoin ) ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid = %d bet times = %d, ret = %d",pPlayer->getUserUID(),pBet->nBetTimes,msgBack.nRet) ;
+			LOGFMTD("uid = %d bet times = %d, ret = %d",pPlayer->getUserUID(),pBet->nBetTimes,msgBack.nRet) ;
 		}
 	}
 

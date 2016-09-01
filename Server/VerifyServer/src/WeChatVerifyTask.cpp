@@ -4,7 +4,7 @@
 #include "tinyxml/tinyxml.h"
 #include "Md5.h"
 #include<algorithm>
-#include "LogManager.h"
+#include "log4z.h"
 CWechatVerifyTask::CWechatVerifyTask( uint32_t nTaskID ) 
 	:IVerifyTask(nTaskID)
 {
@@ -99,7 +99,7 @@ void CWechatVerifyTask::onHttpCallBack(char* pResultData, size_t nDatalen , void
 	TiXmlDocument t ;
 	std::string str( pResultData,nDatalen );
 	t.Parse(str.c_str(),0,TIXML_ENCODING_UTF8);
-	CLogMgr::SharedLogMgr()->PrintLog("weChatPayRet : %s",str.c_str()) ;
+	LOGFMTD("weChatPayRet : %s",str.c_str()) ;
 	TiXmlNode* pRoot = t.RootElement();
 	if ( pRoot )
 	{
@@ -117,7 +117,7 @@ void CWechatVerifyTask::onHttpCallBack(char* pResultData, size_t nDatalen , void
 					TiXmlNode* pStateRet = pState->FirstChild();
 					if ( strcmp(pStateRet->Value(),"SUCCESS") == 0 )
 					{
-						CLogMgr::SharedLogMgr()->PrintLog("weChatVerfiy success ") ;
+						LOGFMTD("weChatVerfiy success ") ;
 						// success ;
 						pRequest->eResult = eVerify_Apple_Success ;
 						return  ;

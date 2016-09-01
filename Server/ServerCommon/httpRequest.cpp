@@ -1,5 +1,5 @@
 #include "httpRequest.h"
-#include "LogManager.h"
+#include "log4z.h"
 CHttpRequest::~CHttpRequest()
 {
 	if ( m_pCurlList )
@@ -90,7 +90,7 @@ size_t CHttpRequest::onRecieveData(void *buffer, size_t size, size_t count, void
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why htttp request call back delegate is null ") ;	
+		LOGFMTE("why htttp request call back delegate is null ") ;	
 	}
 	return size * count ;
 }

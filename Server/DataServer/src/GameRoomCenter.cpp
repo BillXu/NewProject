@@ -1,5 +1,5 @@
 #include "GameRoomCenter.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerCommon.h"
 #include "AsyncRequestQuene.h"
 #include "ISeverApp.h"
@@ -46,7 +46,7 @@ void CGameRoomCenter::reqChatRoomIDs()
 	{
 		if ( jsResult.isNull() )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("req chat room ids is null result") ;
+			LOGFMTE("req chat room ids is null result") ;
 			m_isFinishReadingChatRoomID = true ;
 			return ;
 		}
@@ -54,7 +54,7 @@ void CGameRoomCenter::reqChatRoomIDs()
 		auto jsRooms = jsResult["rooms"];
 		if ( jsRooms.isNull() || jsRooms.size() == 0 )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("req chat room ids , array is 0 or null") ;
+			LOGFMTE("req chat room ids , array is 0 or null") ;
 			m_isFinishReadingChatRoomID = true ;
 			return ;
 		}
@@ -67,7 +67,7 @@ void CGameRoomCenter::reqChatRoomIDs()
 
 		if ( jsRooms.size() >= 20 )
 		{
-			CLogMgr::SharedLogMgr()->PrintLog("go on req chat room ids ") ;
+			LOGFMTD("go on req chat room ids ") ;
 			reqChatRoomIDs();
 		}
 		else
@@ -83,17 +83,17 @@ void CGameRoomCenter::checkChatRoomIDReserve()
 {
 	if ( m_vReserveChatRoomIDs.size() > 5 )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("reserver chat room id cnt > 5 , ok") ;
+		LOGFMTD("reserver chat room id cnt > 5 , ok") ;
 		return ;
 	}
 
-	CLogMgr::SharedLogMgr()->PrintLog("will create chat roomID cur = %u",m_vReserveChatRoomIDs.size()) ;
+	LOGFMTD("will create chat roomID cur = %u",m_vReserveChatRoomIDs.size()) ;
 	auto pMode = CGameServerApp::SharedGameServerApp()->getQinjiaModule() ;
 	Json::Value jsCreateChatRoom ;
 	jsCreateChatRoom["room_name"] = std::to_string(rand() % 100000 ) ;
 	jsCreateChatRoom["room_type"] = 1 ;
 	jsCreateChatRoom["room_create_type"] = 0 ;
-	pMode->sendQinJiaRequest("CreateRoom",jsCreateChatRoom,[this](Json::Value& jsResult , Json::Value& jsUs){ if (jsResult["room_id"].isNull() == false ){ m_vReserveChatRoomIDs.push(jsResult["room_id"].asUInt()) ; CLogMgr::SharedLogMgr()->PrintLog("create chat room ok size = %u",m_vReserveChatRoomIDs.size()) ; checkChatRoomIDReserve(); } },jsCreateChatRoom);
+	pMode->sendQinJiaRequest("CreateRoom",jsCreateChatRoom,[this](Json::Value& jsResult , Json::Value& jsUs){ if (jsResult["room_id"].isNull() == false ){ m_vReserveChatRoomIDs.push(jsResult["room_id"].asUInt()) ; LOGFMTD("create chat room ok size = %u",m_vReserveChatRoomIDs.size()) ; checkChatRoomIDReserve(); } },jsCreateChatRoom);
 }
 
 void CGameRoomCenter::onConnectedSvr()
@@ -107,13 +107,13 @@ void CGameRoomCenter::onConnectedSvr()
 		Json::Value jsData = retContent["data"];
 		if ( nRow == 0 )
 		{
-			CLogMgr::SharedLogMgr()->PrintLog("do not read max serial number") ;
+			LOGFMTD("do not read max serial number") ;
 		}
 		else
 		{
 			Json::Value jsRow = jsData[(uint32_t)0];
 			m_nCurSerailNum = jsRow["maxSerial"].asUInt();
-			CLogMgr::SharedLogMgr()->PrintLog("read max serial number = %u",m_nCurSerailNum);
+			LOGFMTD("read max serial number = %u",m_nCurSerailNum);
 		}
 	});
 
@@ -144,7 +144,7 @@ void CGameRoomCenter::readRoomItemsInfo()
 
 		if ( nRow >= 20 ) // go on read more 
 		{
-			CLogMgr::SharedLogMgr()->PrintLog("go on reader more clubs") ;
+			LOGFMTD("go on reader more clubs") ;
 			readRoomItemsInfo();
 		}
 		else
@@ -164,7 +164,7 @@ void CGameRoomCenter::updateRoomItemChatRoomID()
 
 	if ( m_vReserveChatRoomIDs.size() < m_vRoomIDKey.size() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why chat id cnt is few than room items ") ;
+		LOGFMTE("why chat id cnt is few than room items ") ;
 	}
 
 	for (auto& ref : m_vRoomIDKey )
@@ -179,7 +179,7 @@ void CGameRoomCenter::updateRoomItemChatRoomID()
 	}
 
 	checkChatRoomIDReserve();
-	CLogMgr::SharedLogMgr()->PrintLog("assigne all room item chat room id ");
+	LOGFMTD("assigne all room item chat room id ");
 }
 
 bool CGameRoomCenter::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
@@ -201,7 +201,7 @@ bool CGameRoomCenter::onAsyncRequest(uint16_t nRequestType , const Json::Value& 
 			uint32_t nRoomID = jsReqContent["roomID"].asUInt() ;
 			//uint32_t nOwnerUID = jsReqContent["ownerUID"].asUInt() ;
 			//uint32_t nClubID = jsReqContent["clubID"].asUInt() ;
-			CLogMgr::SharedLogMgr()->PrintLog("room id = %u do deleted",nRoomID) ;
+			LOGFMTD("room id = %u do deleted",nRoomID) ;
 			deleteRoomItem(nRoomID);
 		}
 		break ;
@@ -210,7 +210,7 @@ bool CGameRoomCenter::onAsyncRequest(uint16_t nRequestType , const Json::Value& 
 			if ( m_isFinishedReading == false || m_isFinishReadingChatRoomID == false )
 			{
 				jsResult["ret"] = 1 ;
-				CLogMgr::SharedLogMgr()->PrintLog("still reading from db , please wait game center") ;
+				LOGFMTD("still reading from db , please wait game center") ;
 				break ;
 			}
 
@@ -228,7 +228,7 @@ bool CGameRoomCenter::onAsyncRequest(uint16_t nRequestType , const Json::Value& 
 				++iter ;
 			}
 			jsResult["serials"] = jsRoomIDs ;
-			CLogMgr::SharedLogMgr()->PrintLog("req back roomType = %u , roomCnt = %u",nRoomType,jsRoomIDs.size()) ;
+			LOGFMTD("req back roomType = %u , roomCnt = %u",nRoomType,jsRoomIDs.size()) ;
 		}
 		break ;
 	default:
@@ -242,7 +242,7 @@ void CGameRoomCenter::addRoomItem(stRoomItem* pItem , bool isNewAdd )
 	auto iter = m_vRoomIDKey.find(pItem->nRoomID) ;
 	if ( iter != m_vRoomIDKey.end() )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("already have this room id object id = %u, create by uid = %u ",pItem->nRoomID,iter->second->nCreator ) ;
+		LOGFMTD("already have this room id object id = %u, create by uid = %u ",pItem->nRoomID,iter->second->nCreator ) ;
 		delete pItem ;
 		pItem = nullptr ;
 		return ;
@@ -276,13 +276,13 @@ void CGameRoomCenter::addRoomItem(stRoomItem* pItem , bool isNewAdd )
 	{
 		if ( isNewAdd )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why this room id = %u , not in will use list ?",pItem->nRoomID) ;
+			LOGFMTE("why this room id = %u , not in will use list ?",pItem->nRoomID) ;
 		};
 	}
 
 	if ( isNewAdd ) // save to db 
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("save this item to db ") ;
+		LOGFMTD("save this item to db ") ;
 		Json::Value jssql ;
 		char pBuffer[512] = {0};
 		sprintf(pBuffer,"insert into gameroomcenter ( serialNum,roomID,roomType,belongClubID,creatorUID,createDate ) values ('%u','%u','%u','%u','%u',now());",pItem->nSerialNumber,pItem->nRoomID,getRoomType(pItem->nRoomID),pItem->nBelongsToClubUID,pItem->nCreator);
@@ -296,7 +296,7 @@ void CGameRoomCenter::deleteRoomItem( uint32_t nRoomID )
 	auto iter = m_vRoomIDKey.find(nRoomID) ;
 	if ( iter == m_vRoomIDKey.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("can not find room id = %u to delete",nRoomID) ;
+		LOGFMTE("can not find room id = %u to delete",nRoomID) ;
 		return ;
 	}
 
@@ -326,7 +326,7 @@ void CGameRoomCenter::deleteRoomItem( uint32_t nRoomID )
 	bool b = deleteRoomItemFromOwner(m_vPlayerOwners,nCreatorID,nRoomID) ;
 	if ( b == false )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("delete room from player owner uid = %u , roomId = %u , failed",nCreatorID,nRoomID) ;
+		LOGFMTE("delete room from player owner uid = %u , roomId = %u , failed",nCreatorID,nRoomID) ;
 	}
 
 	if ( nClubID == 0 )
@@ -337,7 +337,7 @@ void CGameRoomCenter::deleteRoomItem( uint32_t nRoomID )
 	b = deleteRoomItemFromOwner(m_vClubsOwner,nClubID,nRoomID) ;
 	if ( !b )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("delete room from nClub owner is failed club id = %u , room id = %u",nClubID,nRoomID) ;
+		LOGFMTE("delete room from nClub owner is failed club id = %u , room id = %u",nClubID,nRoomID) ;
 	}
 }
 
@@ -363,7 +363,7 @@ bool CGameRoomCenter::addRoomItemToOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t nOwn
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why already add this room id = %u",nRoomID) ;
+		LOGFMTE("why already add this room id = %u",nRoomID) ;
 	}
 	return true ;
 }
@@ -374,7 +374,7 @@ bool CGameRoomCenter::deleteRoomItemFromOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t
 	auto iterOwner = vOwners.find(nOwnerUID) ;
 	if (iterOwner == vOwners.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why do not have the creator uid = %u recorder in owner container ? roomID = %u " , nOwnerUID,nRoomID ) ;
+		LOGFMTE("why do not have the creator uid = %u recorder in owner container ? roomID = %u " , nOwnerUID,nRoomID ) ;
 		return false;
 	}
 
@@ -392,7 +392,7 @@ bool CGameRoomCenter::deleteRoomItemFromOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("uid = %u ,do not own room id = %u , why delete it ",nOwnerUID,nRoomID) ;
+		LOGFMTE("uid = %u ,do not own room id = %u , why delete it ",nOwnerUID,nRoomID) ;
 	}
 	return true ;
 }
@@ -423,7 +423,7 @@ uint32_t CGameRoomCenter::generateRoomID(eRoomType eType,uint32_t& nserailNum )
 		++nTryTimes ;
 		if ( nTryTimes > 1 )
 		{
-			CLogMgr::SharedLogMgr()->PrintLog("try times = %u to generate room id ",nTryTimes);
+			LOGFMTD("try times = %u to generate room id ",nTryTimes);
 		}
 
 		if ( !m_vWillUseRoomIDs.empty() )

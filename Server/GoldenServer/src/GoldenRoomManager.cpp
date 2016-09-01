@@ -1,6 +1,6 @@
 #include "GoldenRoomManager.h"
 #include "GoldenServer.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "SystemRoom.h"
 #include "PrivateRoom.h"
 #include "GoldenRoom.h"

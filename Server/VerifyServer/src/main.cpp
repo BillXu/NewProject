@@ -1,6 +1,6 @@
 //#include "VerifyApp.h"
 //#include "catch_dump_file.h"
-//#include "LogManager.h"
+//#include "log4z.h"
 ////#include "HMAC_SHA1.h"
 ////#include "Md5.h"
 ////#include<algorithm>
@@ -14,7 +14,7 @@
 //	}
 //	__except(CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
 //	{
-//		CLogMgr::SharedLogMgr()->SystemLog("try to recover from exception") ;
+//		LOGFMTI("try to recover from exception") ;
 //		pApp->run() ;
 //	}
 //}

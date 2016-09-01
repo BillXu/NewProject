@@ -9,7 +9,7 @@
 #include "NiuNiuRoomGameResult.h"
 #include "NiuNiuMessageDefine.h"
 #include "ServerMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "AutoBuffer.h"
 #include "CardPoker.h"
 #include "NiuNiuRoomPlayerCaculateCardState.h"
@@ -93,7 +93,7 @@ uint32_t CNiuNiuRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp
 	//{
 	//	uint8_t nCnt = getPlayerCntWithState(eRoomPeer_CanAct) - 1 ;
 	//	uint32_t nNeedCoin = ( getBaseBet() * m_nBetBottomTimes * getMaxRate() * 25 ) * nCnt ;
-	//	CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup but is banker BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+	//	LOGFMTD("uid = %d will standup but is banker BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
 	//	return nNeedCoin ;
 	//}
 	//else
@@ -101,7 +101,7 @@ uint32_t CNiuNiuRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp
 	//	if ( m_nBetBottomTimes != 0 )
 	//	{
 	//		uint32_t nNeedCoin = getBaseBet() * m_nBetBottomTimes * getMaxRate() *( pPlayer->getBetTimes() > 5 ? pPlayer->getBetTimes() : 5 )  ;
-	//		CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+	//		LOGFMTD("uid = %d will standup BankeTimes = %d , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
 	//		return nNeedCoin ;
 	//	}
 	//	else
@@ -110,7 +110,7 @@ uint32_t CNiuNiuRoom::getLeastCoinNeedForCurrentGameRound(ISitableRoomPlayer* pp
 	//		uint32_t nWhenBankNeed = ( getBaseBet() * 1 * getMaxRate() * 25 ) * nCnt ;
 	//		uint32_t nWhenNotBanker = getBaseBet() * 4 * getMaxRate() * 5 ;
 	//		uint32_t nNeedCoin = nWhenNotBanker > nWhenBankNeed ? nWhenNotBanker : nWhenBankNeed ;
-	//		CLogMgr::SharedLogMgr()->PrintLog("uid = %d will standup BankeTimes not decide , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
+	//		LOGFMTD("uid = %d will standup BankeTimes not decide , need Coin = %d",pPlayer->getUserUID(),m_nBetBottomTimes,nNeedCoin) ;
 	//		return nNeedCoin ;
 	//	}
  //
@@ -159,7 +159,7 @@ void CNiuNiuRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 	}
 
 	sendMsgToPlayer((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID) ;
-	CLogMgr::SharedLogMgr()->PrintLog("send room info to session id = %d, player cnt = %d ", nSessionID,msgInfo.nPlayerCnt) ;
+	LOGFMTD("send room info to session id = %d, player cnt = %d ", nSessionID,msgInfo.nPlayerCnt) ;
 }
 
 void CNiuNiuRoom::setBankerIdx(uint8_t nIdx )
@@ -234,7 +234,7 @@ void CNiuNiuRoom::onGameWillBegin()
 	{
 		setBankerIdx(m_nBankerIdx);
 	}
-	CLogMgr::SharedLogMgr()->PrintLog("room game begin");
+	LOGFMTD("room game begin");
 }
 
 void CNiuNiuRoom::onGameDidEnd()
@@ -292,7 +292,7 @@ void CNiuNiuRoom::onGameDidEnd()
 	sendMsgToPlayer((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),getRoomID()) ;
 
 	ISitableRoom::onGameDidEnd();
-	CLogMgr::SharedLogMgr()->PrintLog("room game End");
+	LOGFMTD("room game End");
 }
 
 void CNiuNiuRoom::prepareCards()
@@ -325,7 +325,7 @@ void CNiuNiuRoom::caculateGameResult()
 	// caculate result ;
 	CNiuNiuRoomPlayer* pBanker = (CNiuNiuRoomPlayer*)getPlayerByIdx(getBankerIdx()) ;
 	assert(pBanker && "why banker is null ?");
-	CLogMgr::SharedLogMgr()->PrintLog("banker coin = %u",pBanker->getCoin()) ;
+	LOGFMTD("banker coin = %u",pBanker->getCoin()) ;
 	
 	bool isBankerHaveNiu = pBanker->isHaveNiu() ;
 	bool isLoseToAll = true ;
@@ -353,7 +353,7 @@ void CNiuNiuRoom::caculateGameResult()
 		if ( nLoseCoin > pNNP->getCoin() )
 		{
 			nLoseCoin = pNNP->getCoin() ;
-			CLogMgr::SharedLogMgr()->ErrorLog("you do not have coin why you bet so many coin , uid = %d",pNNP->getUserUID());
+			LOGFMTE("you do not have coin why you bet so many coin , uid = %d",pNNP->getUserUID());
 		}
 
 		nBankerOffset += nLoseCoin ;
@@ -365,7 +365,7 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nOffsetCoin = -1* nLoseCoin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
-		CLogMgr::SharedLogMgr()->PrintLog("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pNNP->getUserUID(),item.nOffsetCoin);
+		LOGFMTD("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pNNP->getUserUID(),item.nOffsetCoin);
 		pNNP->setGameOffset(item.nOffsetCoin);
 
 		isLoseToAll = false ;
@@ -395,14 +395,14 @@ void CNiuNiuRoom::caculateGameResult()
 		float nWithoutTaxWin = nBankerLoseCoin - fTaxFee ;
 
 		pNNP->setCoin(pNNP->getCoin() + (int32_t)nWithoutTaxWin ) ;
-		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , uid = %u without tax win = %0.3f",getRoomID(),pNNP->getUserUID(),nWithoutTaxWin) ;
+		LOGFMTD("room id = %u , uid = %u without tax win = %0.3f",getRoomID(),pNNP->getUserUID(),nWithoutTaxWin) ;
 
 		stNNGameResultItem item ;
 		item.nFinalCoin = pNNP->getCoin() ;
 		item.nOffsetCoin = (int32_t)nWithoutTaxWin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
 		auBuffer.addContent(&item,sizeof(item)) ;
-		CLogMgr::SharedLogMgr()->PrintLog("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pNNP->getUserUID(),item.nOffsetCoin);
+		LOGFMTD("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pNNP->getUserUID(),item.nOffsetCoin);
 		pNNP->setGameOffset(item.nOffsetCoin);
 	}
 
@@ -411,7 +411,7 @@ void CNiuNiuRoom::caculateGameResult()
 		float fTaxFee = (float)nBankerOffset * getChouShuiRate();
 		addTotoalProfit((uint32_t)fTaxFee);
 		nBankerOffset = nBankerOffset - (int32_t)fTaxFee ;
-		CLogMgr::SharedLogMgr()->PrintLog("room id = %u , banker uid = %u without tax win = %d",getRoomID(),pBanker->getUserUID(),nBankerOffset) ;
+		LOGFMTD("room id = %u , banker uid = %u without tax win = %d",getRoomID(),pBanker->getUserUID(),nBankerOffset) ;
 	}
 
 	stNNGameResultItem item ;
@@ -420,8 +420,8 @@ void CNiuNiuRoom::caculateGameResult()
 	item.nPlayerIdx = pBanker->getIdx() ;
 	auBuffer.addContent(&item,sizeof(item)) ;
 	pBanker->setGameOffset(item.nOffsetCoin);
-	CLogMgr::SharedLogMgr()->PrintLog("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pBanker->getUserUID(),item.nOffsetCoin);
-	CLogMgr::SharedLogMgr()->PrintLog("result player idx = %d , finalCoin = %d, offset coin = %d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
+	LOGFMTD("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pBanker->getUserUID(),item.nOffsetCoin);
+	LOGFMTD("result player idx = %d , finalCoin = %d, offset coin = %d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
 
 	sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
 
@@ -429,7 +429,7 @@ void CNiuNiuRoom::caculateGameResult()
 	if ( pBanker->getCoin() < getLeastCoinNeedForBeBanker(1) )
 	{
 		m_nBankerIdx = -1 ;
-		CLogMgr::SharedLogMgr()->SystemLog("coin is not enough , so resign banker uid = %u",pBanker->getUserUID()) ;
+		LOGFMTI("coin is not enough , so resign banker uid = %u",pBanker->getUserUID()) ;
 	}
 	// decide banker ;
 	 // // 0 no niu leave banker , 1 lose to all  leave banker ;
@@ -437,7 +437,7 @@ void CNiuNiuRoom::caculateGameResult()
 	{
 		m_nBankerIdx = -1 ;
 		m_isWillManualLeaveBanker = false ;
-		CLogMgr::SharedLogMgr()->PrintLog("resign banker ctrl = %u , isBankerHaveNiu = %u , isLoseToAll = %u",m_nResignBankerCtrl,isBankerHaveNiu,isLoseToAll) ;
+		LOGFMTD("resign banker ctrl = %u , isBankerHaveNiu = %u , isLoseToAll = %u",m_nResignBankerCtrl,isBankerHaveNiu,isLoseToAll) ;
 	}
 }
 

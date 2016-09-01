@@ -1,5 +1,5 @@
 #include "NoticePlayerManager.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "PushNotificationServer.h"
 #include "PushRequestQueue.h"
 #include "json/json.h"
@@ -7,7 +7,7 @@ void stNoticePlayer::pushNotice(const char* pNotices , uint32_t nNoticFlag)
 {
 	if ( strlen(pNotices) > 218 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("uid = %u, notice is too long . %s ",this->nUserUID, pNotices) ;
+		LOGFMTE("uid = %u, notice is too long . %s ",this->nUserUID, pNotices) ;
 		return ;
 	}
 
@@ -31,7 +31,7 @@ void stNoticePlayer::pushNotice(const char* pNotices , uint32_t nNoticFlag)
 	p->nBadge = 1 ;
 	sprintf_s(p->pAlert,sizeof(p->pAlert),"%s",pNotices) ;
 	CPushRequestQueue::SharedPushRequestQueue()->PushNotice(p) ;
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %d push notice: %s",this->nUserUID,pNotices) ;
+	LOGFMTD("uid = %d push notice: %s",this->nUserUID,pNotices) ;
 }
 
 void stNoticePlayer::doReadData()
@@ -80,13 +80,13 @@ bool CNoticePlayerManager::onMsg(stMsg* pmsg,uint32_t nSessionID )
 			auto pp = getNoticePlayer(pRet->tPlayerEntery.nUserUID) ;
 			if ( !pp )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("why read notice player uid = null ret = %d",pRet->nRet) ;
+				LOGFMTE("why read notice player uid = null ret = %d",pRet->nRet) ;
 				break; 
 			}
 
 			if ( pp->bReadingData == false )
 			{
-				CLogMgr::SharedLogMgr()->SystemLog("read player data , but flag not reading uid = %d , disable when reading ?",pp->nUserUID) ;
+				LOGFMTI("read player data , but flag not reading uid = %d , disable when reading ?",pp->nUserUID) ;
 				pp->doReadData() ;
 				break; 
 			}
@@ -101,7 +101,7 @@ bool CNoticePlayerManager::onMsg(stMsg* pmsg,uint32_t nSessionID )
 				memcpy(pp,&pRet->tPlayerEntery,sizeof(pRet->tPlayerEntery));
 			}
 			pp->doReadData() ;
-			CLogMgr::SharedLogMgr()->SystemLog("read uid = %d player data ok ,flag = %d",pp->nUserUID,pp->nNoticeFlag) ;
+			LOGFMTI("read uid = %d player data ok ,flag = %d",pp->nUserUID,pp->nNoticeFlag) ;
 		}
 		break;
 	case MSG_PUSH_NOTICE:
@@ -114,7 +114,7 @@ bool CNoticePlayerManager::onMsg(stMsg* pmsg,uint32_t nSessionID )
 			target = jsRoot["targets"];
 			if (target.isNull())
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("push target is null , skip ") ;
+				LOGFMTE("push target is null , skip ") ;
 				break; 
 			}
 
@@ -145,11 +145,11 @@ bool CNoticePlayerManager::onMsg(stMsg* pmsg,uint32_t nSessionID )
 				 msgSave.nOpt = 1 ;
 				 msgSave.tPlayer.nUserUID = pRet->nUserUID ;
 				 CPushNotificationServer::getInstance()->sendMsg(0,(char*)&msgSave,sizeof(msgSave));
-				 CLogMgr::SharedLogMgr()->PrintLog(" uid = %d remove token",pRet->nUserUID) ;
+				 LOGFMTD(" uid = %d remove token",pRet->nUserUID) ;
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->PrintLog(" uid = %d add token",pRet->nUserUID) ;
+				LOGFMTD(" uid = %d add token",pRet->nUserUID) ;
 				stMsgSaveNoticePlayer msgSave ;
 				msgSave.nOpt = 0 ;
 				msgSave.tPlayer.nUserUID = pRet->nUserUID ;
@@ -186,7 +186,7 @@ void CNoticePlayerManager::pushNotice(uint32_t nUserUID , const char* pNoticeCon
 		stMsgReadNoticePlayer msg ;
 		msg.nUserUID = nUserUID ;
 		CPushNotificationServer::getInstance()->sendMsg(0,(char*)&msg,sizeof(msg));
-		CLogMgr::SharedLogMgr()->PrintLog("start to read uid = %d token data ",msg.nUserUID ) ;
+		LOGFMTD("start to read uid = %d token data ",msg.nUserUID ) ;
 	}
 
 	pp->pushNotice(pNoticeContent,nNoticFlag) ;
@@ -200,7 +200,7 @@ void CNoticePlayerManager::pushNotice(uint32_t nUserUID , const char* pNoticeCon
 			msg.nUserUID = nUserUID ;
 			CPushNotificationServer::getInstance()->sendMsg(0,(char*)&msg,sizeof(msg));
 			pp->tStartReadingTime = time(nullptr);
-			CLogMgr::SharedLogMgr()->PrintLog("read uid = %d token data time out try agian",msg.nUserUID ) ;
+			LOGFMTD("read uid = %d token data time out try agian",msg.nUserUID ) ;
 		}
 	}
 }

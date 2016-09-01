@@ -3,7 +3,7 @@
 #include "testTask.h"
 #include "Timer.h"
 #include "ServerMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ISeverApp.h"
 #include "VerifyRequest.h"
 #include "AppleVerifyTask.h"
@@ -165,7 +165,7 @@ void CTaskPoolModule::onWechatOrder( stMsg* pMsg, eMsgPort eSenderPort , uint32_
 			msgRet.nChannel = pOrder->nChannel ;
 			msgRet.nRet = pOrder->nRet ;
 			getSvrApp()->sendMsg(pOrder->nSessionID,(char*)&msgRet,sizeof(msgRet));
-			CLogMgr::SharedLogMgr()->SystemLog("finish order for sessionid = %d, ret = %d ",pOrder->nSessionID,pOrder->nRet) ;
+			LOGFMTI("finish order for sessionid = %d, ret = %d ",pOrder->nSessionID,pOrder->nRet) ;
 		}
 		) ;
 	}
@@ -249,13 +249,13 @@ void CTaskPoolModule::onVerifyMsg( stMsg* pMsg, eMsgPort eSenderPort , uint32_t 
 	pRequest->nSessionID = nSessionID ;
 	pRequest->nMiUserUID = pReal->nMiUserUID ;
 
-	CLogMgr::SharedLogMgr()->PrintLog("received a transfaction need to verify shop id = %u userUID = %u channel = %d\n",pReal->nShopItemID,pReal->nBuyerPlayerUserUID,pReal->nChannel );
+	LOGFMTD("received a transfaction need to verify shop id = %u userUID = %u channel = %d\n",pReal->nShopItemID,pReal->nBuyerPlayerUserUID,pReal->nChannel );
 
 	if ( pRequest->nMiUserUID && pRequest->nChannel == ePay_XiaoMi )
 	{
 		memcpy(pRequest->pBufferVerifyID,((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
 		//m_MiVerifyMgr.AddRequest(pRequest) ;
-		CLogMgr::SharedLogMgr()->ErrorLog("we don't have xiao mi channel") ;
+		LOGFMTE("we don't have xiao mi channel") ;
 		return ;
 	}
 	
@@ -286,13 +286,13 @@ void CTaskPoolModule::onVerifyMsg( stMsg* pMsg, eMsgPort eSenderPort , uint32_t 
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("unknown pay channecl = %d, uid = %d",pRequest->nChannel,pReal->nBuyerPlayerUserUID ) ;
+		LOGFMTE("unknown pay channecl = %d, uid = %d",pRequest->nChannel,pReal->nBuyerPlayerUserUID ) ;
 		return ;
 	}
 
 	if ( !pTask )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why verify task is null ? ") ;
+		LOGFMTE("why verify task is null ? ") ;
 		return ;
 	}
 
@@ -304,13 +304,13 @@ void CTaskPoolModule::onVerifyMsg( stMsg* pMsg, eMsgPort eSenderPort , uint32_t 
 		auto pResult = pAready->getVerifyResult() ;
 		if ( eVerify_Apple_Error == pResult->eResult )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("apple verify Error  uid = %u, channel = %u,shopItem id = %u",pResult->nFromPlayerUserUID,pResult->nChannel,pResult->nShopItemID) ;
+			LOGFMTE("apple verify Error  uid = %u, channel = %u,shopItem id = %u",pResult->nFromPlayerUserUID,pResult->nChannel,pResult->nShopItemID) ;
 			// send to client ;
 			sendVerifyResult(pResult) ;
 			return ;
 		}
 
-		CLogMgr::SharedLogMgr()->SystemLog("apple verify success  uid = %u, channel = %u,shopItem id = %u,go on DB verify",pResult->nFromPlayerUserUID,pResult->nChannel,pResult->nShopItemID) ;
+		LOGFMTI("apple verify success  uid = %u, channel = %u,shopItem id = %u,go on DB verify",pResult->nFromPlayerUserUID,pResult->nChannel,pResult->nShopItemID) ;
 		auto pDBTask = getPool().getReuseTaskObjByID(eTask_DBVerify);
 		auto pDBVerifyTask = (IVerifyTask*)pDBTask.get() ;
 
@@ -329,5 +329,5 @@ void CTaskPoolModule::sendVerifyResult(std::shared_ptr<stVerifyRequest> & pResul
 	msg.nBuyerPlayerUserUID = pResult->nFromPlayerUserUID ;
 	msg.nBuyForPlayerUserUID = pResult->nBuyedForPlayerUserUID ;
 	getSvrApp()->sendMsg(pResult->nSessionID,(char*)&msg,sizeof(msg));
-	CLogMgr::SharedLogMgr()->SystemLog( "finish verify transfaction shopid = %u ,uid = %d ret = %d",msg.nShopItemID,msg.nBuyerPlayerUserUID,msg.nRet ) ;
+	LOGFMTI( "finish verify transfaction shopid = %u ,uid = %d ret = %d",msg.nShopItemID,msg.nBuyerPlayerUserUID,msg.nRet ) ;
 }

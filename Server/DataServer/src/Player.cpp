@@ -1,5 +1,5 @@
 #include "Player.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "PlayerManager.h"
 #include "GameServerApp.h"
 #include "PlayerBaseData.h"
@@ -111,7 +111,7 @@ bool CPlayer::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 		}
 	}
 
-	CLogMgr::SharedLogMgr()->ErrorLog("Unprocessed msg id = %d, from = %d  uid = %d",pMsg->usMsgType,eSenderPort,GetUserUID() ) ;
+	LOGFMTE("Unprocessed msg id = %d, from = %d  uid = %d",pMsg->usMsgType,eSenderPort,GetUserUID() ) ;
 
 	return false ;
 
@@ -146,7 +146,7 @@ bool CPlayer::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 // 			//	return ;
 // 			//}
 // 
-// 			//CLogMgr::SharedLogMgr()->ErrorLog("do you have create private room card ? " ) ;
+// 			//LOGFMTE("do you have create private room card ? " ) ;
 // 			//CPlayerItemComponent* pItemMgr = (CPlayerItemComponent*)GetComponent(ePlayerComponent_PlayerItemMgr);	
 // 			//if ( !pItemMgr->OnUserItem(ITEM_ID_CREATE_ROOM) )
 // 			//{
@@ -158,7 +158,7 @@ bool CPlayer::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 // 			//CRoomBase* pBase = CGameServerApp::SharedGameServerApp()->GetRoomMgr()->CreateRoom(eRoom_TexasPoker_Private,eRoomLevel_Junior) ;
 // 			//if ( !pBase )
 // 			//{
-// 			//	CLogMgr::SharedLogMgr()->ErrorLog("create room failed") ;
+// 			//	LOGFMTE("create room failed") ;
 // 			//	msgBack.nRet = 5 ;
 // 			//	SendMsgToClient((char*)&msgBack,sizeof(msgBack) ) ;
 // 			//	pItemMgr->AddItemByID(ITEM_ID_CREATE_ROOM);
@@ -239,7 +239,7 @@ bool CPlayer::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eS
 		}
 	}
 
-	CLogMgr::SharedLogMgr()->ErrorLog("Unprocessed msg id = %d, from = %d  uid = %d",nmsgType,eSenderPort,GetUserUID() ) ;
+	LOGFMTE("Unprocessed msg id = %d, from = %d  uid = %d",nmsgType,eSenderPort,GetUserUID() ) ;
 
 	return false ;
 }
@@ -261,7 +261,7 @@ void CPlayer::OnPlayerDisconnect()
 	m_tTimerSave.canncel() ;
 
 	SetState(ePlayerState_Offline) ;
-	CLogMgr::SharedLogMgr()->ErrorLog("player disconnect should inform other sever");
+	LOGFMTE("player disconnect should inform other sever");
 
 	// save log 
 	stMsgSaveLog msgLog ;
@@ -295,7 +295,7 @@ void CPlayer::SendMsgToClient(const char* pBuffer, unsigned short nLen,bool bBro
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),pBuffer,nLen,bBrocat) ;
 		return ;
 	}
-	CLogMgr::SharedLogMgr()->PrintLog("player uid = %d not online so , can not send msg" ,GetUserUID() ) ;
+	LOGFMTD("player uid = %d not online so , can not send msg" ,GetUserUID() ) ;
 }
 
 void CPlayer::SendMsgToClient(Json::Value& jsMsg, uint16_t nMsgType ,bool bBrocat )
@@ -305,7 +305,7 @@ void CPlayer::SendMsgToClient(Json::Value& jsMsg, uint16_t nMsgType ,bool bBroca
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),jsMsg,nMsgType,ID_MSG_PORT_CLIENT,bBrocat) ;
 		return ;
 	}
-	CLogMgr::SharedLogMgr()->PrintLog("player uid = %d not online so , can not send msg" ,GetUserUID() ) ;
+	LOGFMTD("player uid = %d not online so , can not send msg" ,GetUserUID() ) ;
 }
 
 bool CPlayer::IsState( ePlayerState eState )
@@ -323,7 +323,7 @@ void CPlayer::OnAnotherClientLoginThisPeer(unsigned int nSessionID )
 	stMsgPlayerOtherLogin msg ;
 	SendMsgToClient((char*)&msg,sizeof(msg)) ;
 
-	CLogMgr::SharedLogMgr()->ErrorLog("pls remember inform other server this envent OnAnotherClientLoginThisPeer ") ;
+	LOGFMTE("pls remember inform other server this envent OnAnotherClientLoginThisPeer ") ;
 
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
@@ -421,7 +421,7 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 // 			else
 // 			{
 // 				msg.nRet = 1 ;
-// 				CLogMgr::SharedLogMgr()->ErrorLog(" you have no la ba") ;
+// 				LOGFMTE(" you have no la ba") ;
 // 			}
 // 			SendMsgToClient((char*)&msg,sizeof(msg)) ;
 // 		}
@@ -473,7 +473,7 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 // 			//}
 // 			//else
 // 			//{
-// 			//	CLogMgr::SharedLogMgr()->PrintLog("the one who invite me had offline , his uid = %d",pMsgRet->nReplyToUserUID) ;
+// 			//	LOGFMTD("the one who invite me had offline , his uid = %d",pMsgRet->nReplyToUserUID) ;
 // 			//}
 // 		}
 // 		break;
@@ -507,7 +507,7 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 // 			CRoomBaseNew* pStateRoom = pTargetPlayer->GetRoomCurStateIn() ;
 // 			if ( !pStateRoom )
 // 			{
-// 				CLogMgr::SharedLogMgr()->ErrorLog("follow to a null room , but target player is not free , how , why ?") ;
+// 				LOGFMTE("follow to a null room , but target player is not free , how , why ?") ;
 // 				msgBack.nRet = 2 ;
 // 				SendMsgToClient((char*)&msgBack,sizeof(msgBack)) ;
 // 				break;
@@ -601,7 +601,7 @@ void CPlayer::PushTestAPNs()
 #endif
 	//if ( GetBaseData()->bPlayerEnableAPNs == false )
 	//{
-	//	CLogMgr::SharedLogMgr()->ErrorLog("you not enable apns ") ;
+	//	LOGFMTE("you not enable apns ") ;
 	//	return ;
 	//}
 	//char* pString = "\"you disconnected \"" ;
@@ -622,7 +622,7 @@ void CPlayer::PushTestAPNs()
 
 void CPlayer::OnReactive(uint32_t nSessionID )
 {
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %d reactive with session id = %d", GetUserUID(), nSessionID) ;
+	LOGFMTD("uid = %d reactive with session id = %d", GetUserUID(), nSessionID) ;
 	m_nSessionID = nSessionID ;
 	SetState(ePlayerState_Online) ;
 	m_nDisconnectTime = 0 ;
@@ -686,7 +686,7 @@ uint8_t CPlayer::getMsgPortByRoomType(uint8_t nType )
 void CPlayer::delayDelete()
 { 
 	m_nDisconnectTime = time(nullptr) + TIME_DELAY_DELETE ;
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %d delay delete player object" , GetUserUID() ) ;
+	LOGFMTD("uid = %d delay delete player object" , GetUserUID() ) ;
 }
 
 

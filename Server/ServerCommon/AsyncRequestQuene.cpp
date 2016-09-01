@@ -3,7 +3,7 @@
 #include <ctime>
 #include "AutoBuffer.h"
 #include "ISeverApp.h"
-#include "LogManager.h"
+#include "log4z.h"
 #define  TIME_CHECK_REQ_STATE 10
 void CAsyncRequestQuene::init( IServerApp* svrApp )
 {
@@ -31,7 +31,7 @@ bool CAsyncRequestQuene::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		pBuffer += sizeof(stMsgAsyncRequestRet);
 		Json::Reader jsReader ;
 		jsReader.parse(pBuffer,pBuffer + pRet->nResultContentLen,jsResultContent) ;
-		//CLogMgr::SharedLogMgr()->PrintLog("as str : %s",pBuffer);
+		//LOGFMTD("as str : %s",pBuffer);
 	}
  
 	auto pReqIter = m_mapRunningRequest.find(pRet->nReqSerailID) ;
@@ -44,12 +44,12 @@ bool CAsyncRequestQuene::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		}
 		else
 		{
-			CLogMgr::SharedLogMgr()->PrintLog("type = %u , serial num = %u , request func is null" , pReq->nReqType,pReq->nReqSerialNum) ;
+			LOGFMTD("type = %u , serial num = %u , request func is null" , pReq->nReqType,pReq->nReqSerialNum) ;
 		}
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("serial num = %u , already canncel" , pRet->nReqSerailID) ;
+		LOGFMTD("serial num = %u , already canncel" , pRet->nReqSerailID) ;
 		return true;
 	}
 
@@ -171,7 +171,7 @@ void CAsyncRequestQuene::timerCheckReqState(CTimer* pTimer, float fTick )
 		{
 			Json::StyledWriter jsWrite ;
 			auto str = jsWrite.write(pReq->jsReqContent);
-			CLogMgr::SharedLogMgr()->ErrorLog("req type = %u , target port = %u  str = %s, tried too many times = %u , why ",pReq->nReqType,pReq->nTargetPortID,str.c_str(),pReq->nSendTimes) ;
+			LOGFMTE("req type = %u , target port = %u  str = %s, tried too many times = %u , why ",pReq->nReqType,pReq->nTargetPortID,str.c_str(),pReq->nSendTimes) ;
 		}
 	}
 }

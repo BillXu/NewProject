@@ -1,5 +1,5 @@
 #include "ShopConfg.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ConfigManager.h"
 #include "ItemConfig.h"
 #ifndef SERVER
@@ -26,7 +26,7 @@ bool CShopConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	{
 		delete pItem ;
 		pItem = NULL ;
-		CLogMgr::SharedLogMgr()->ErrorLog("have two shop id the same") ;
+		LOGFMTE("have two shop id the same") ;
 		return false;
 	}
 #ifndef GAME_SERVER

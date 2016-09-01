@@ -1,6 +1,6 @@
 #include "commonCmdScene.h"
 #include "MessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 //#include "ClientRobot.h"
 #include "cmdCenter.h"
 #include "Client.h"
@@ -55,19 +55,19 @@ bool commonCmdScene::onMessage(stMsg* pmsg)
 				pString = "Check account Error : unknown Error !" ;
 			}
 
-			CLogMgr::SharedLogMgr()->SystemLog("%s ret = %d, account type = %d ",pString,pRetMsg->nRet,pRetMsg->nAccountType ) ;
+			LOGFMTI("%s ret = %d, account type = %d ",pString,pRetMsg->nRet,pRetMsg->nAccountType ) ;
 			return true ;
 		}
 		break;
 	case MSG_PLAYER_BASE_DATA:
 		{
 			stMsgPlayerBaseData* pRet = (stMsgPlayerBaseData*)pmsg;
-			CLogMgr::SharedLogMgr()->PrintLog("received base data : ");
-			CLogMgr::SharedLogMgr()->PrintLog("name : %s",pRet->stBaseData.cName) ;
-			CLogMgr::SharedLogMgr()->PrintLog("uid : %u",pRet->stBaseData.nUserUID) ;
-			CLogMgr::SharedLogMgr()->PrintLog("coin : %u ",pRet->stBaseData.nCoin) ;
-			CLogMgr::SharedLogMgr()->PrintLog("diamond: %u" ,pRet->stBaseData.nDiamoned) ;
-			CLogMgr::SharedLogMgr()->PrintLog("sessionID: %u" ,pRet->nSessionID) ;
+			LOGFMTD("received base data : ");
+			LOGFMTD("name : %s",pRet->stBaseData.cName) ;
+			LOGFMTD("uid : %u",pRet->stBaseData.nUserUID) ;
+			LOGFMTD("coin : %u ",pRet->stBaseData.nCoin) ;
+			LOGFMTD("diamond: %u" ,pRet->stBaseData.nDiamoned) ;
+			LOGFMTD("sessionID: %u" ,pRet->nSessionID) ;
 		}
 		break; ;
 	default:

@@ -1,6 +1,6 @@
 #include "PlayerFriend.h"
 #include "MessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "GameServerApp.h"
 #include "PlayerManager.h"
 #include "Player.h"
@@ -42,7 +42,7 @@ bool CPlayerFriend::OnMessage(stMsg* pMsg, eMsgPort eSenderPort )
 					m_vAllFriends.insert(arrayValue[nIdx].asUInt());
 				}
 			}
-			CLogMgr::SharedLogMgr()->PrintLog("read friend list ok uid = %d",GetPlayer()->GetUserUID());
+			LOGFMTD("read friend list ok uid = %d",GetPlayer()->GetUserUID());
 		}
 		break;
 	case MSG_REQUEST_FRIEND_LIST:
@@ -66,12 +66,12 @@ bool CPlayerFriend::OnMessage(stMsg* pMsg, eMsgPort eSenderPort )
 			if ( IsFriendListFull() )
 			{
 				msg.nRet = 2 ;
-				CLogMgr::SharedLogMgr()->PrintLog("friend list is full, can not add");
+				LOGFMTD("friend list is full, can not add");
 			}
 			else if ( isPlayerUIDFriend(pMsgRet->nTargetUID) )
 			{
 				msg.nRet = 5 ;
-				CLogMgr::SharedLogMgr()->PrintLog("already your friend , can not add");
+				LOGFMTD("already your friend , can not add");
 			}
 			else if ( pTargetPlayer == nullptr )
 			{
@@ -129,14 +129,14 @@ bool CPlayerFriend::OnMessage(stMsg* pMsg, eMsgPort eSenderPort )
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("%d uid offline can not reply add friend ",pMsgRet->nReplayToPlayerUserUID);
+				LOGFMTE("%d uid offline can not reply add friend ",pMsgRet->nReplayToPlayerUserUID);
 				msgBack.nRet = 3 ;
 			}
 
 			if ( pMsgRet->bAgree )
 			{
 				SendMsg(&msgBack,sizeof(msgBack)) ;
-				CLogMgr::SharedLogMgr()->PrintLog("uid = %u msg type = stMsgPlayerBeAddedFriendReplyRet, typeid = %s",GetPlayer()->GetUserUID(),typeid(stMsgPlayerBeAddedFriendReplyRet)) ;
+				LOGFMTD("uid = %u msg type = stMsgPlayerBeAddedFriendReplyRet, typeid = %s",GetPlayer()->GetUserUID(),typeid(stMsgPlayerBeAddedFriendReplyRet)) ;
 			}
 		}
 		break;
@@ -165,7 +165,7 @@ bool CPlayerFriend::OnMessage(stMsg* pMsg, eMsgPort eSenderPort )
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("no online tell mail to delete friend");
+				LOGFMTE("no online tell mail to delete friend");
 			}
 		}
 		break;
@@ -258,7 +258,7 @@ void CPlayerFriend::OnOtherReplayMeAboutAddItbeFriend(bool bAgree,CPlayerFriend*
 	}
 
 	SendMsg(&msg,sizeof(msg)) ;
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %d send msg stMsgPlayerAddFriendRet",GetPlayer()->GetUserUID());
+	LOGFMTD("uid = %d send msg stMsgPlayerAddFriendRet",GetPlayer()->GetUserUID());
 }
 
 void CPlayerFriend::TimerSave()
@@ -302,7 +302,7 @@ void CPlayerFriend::TimerSave()
 		auBf.addContent((char*)&nValue,sizeof(nValue)) ;
 	}
 	CGameServerApp::SharedGameServerApp()->sendMsg(GetPlayer()->GetUserUID(),auBf.getBufferPtr(),auBf.getContentSize()) ;
-	CLogMgr::SharedLogMgr()->PrintLog("save friend list uid = %d friend cnt = %d",GetPlayer()->GetUserUID(),m_vAllFriends.size());
+	LOGFMTD("save friend list uid = %d friend cnt = %d",GetPlayer()->GetUserUID(),m_vAllFriends.size());
 }
 
 void CPlayerFriend::RemoveFriendByUID(unsigned int nPlayerUID )
@@ -324,7 +324,7 @@ void CPlayerFriend::AddFriend(unsigned int nFriendUserUID)
 #ifdef DEBUG
 	if ( isPlayerUIDFriend(nFriendUserUID) )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("error already friend");
+		LOGFMTE("error already friend");
 		return ;
 	}
 #endif

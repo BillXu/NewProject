@@ -1,7 +1,7 @@
 #include "IScene.h"
 #include "MessageDefine.h"
 #include "Client.h"
-#include "LogManager.h"
+#include "log4z.h"
 void IScene::OnEnterScene()
 {
 	if ( m_bRunning )return ;

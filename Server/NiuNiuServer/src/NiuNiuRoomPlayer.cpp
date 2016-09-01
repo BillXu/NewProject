@@ -1,6 +1,6 @@
 #include "NiuNiuRoomPlayer.h"
 #include <string>
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerMessageDefine.h"
 void CNiuNiuRoomPlayer::reset(IRoom::stStandPlayer* pPlayer)
 {
@@ -44,7 +44,7 @@ void CNiuNiuRoomPlayer::onGetCard( uint8_t nIdx , uint8_t nCard )
 {
 	if ( nIdx >= NIUNIU_HOLD_CARD_COUNT )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("uid = %d ,on get card idx invalid idx = %d",getUserUID(),nIdx);
+		LOGFMTE("uid = %d ,on get card idx invalid idx = %d",getUserUID(),nIdx);
 		return ;
 	}
 	getPeerCard()->addCompositCardNum(nCard);
@@ -54,7 +54,7 @@ uint8_t CNiuNiuRoomPlayer::getCardByIdx(uint8_t nIdx )
 {
 	if ( nIdx >= NIUNIU_HOLD_CARD_COUNT )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("uid = %d , get card idx invalid idx = %d",getUserUID(),nIdx);
+		LOGFMTE("uid = %d , get card idx invalid idx = %d",getUserUID(),nIdx);
 		return 0 ;
 	}
 	return m_tPeerCard.getCardByIdx(nIdx) ;

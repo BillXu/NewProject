@@ -1,5 +1,5 @@
 #include "BoxConfig.h"
-#include "LogManager.h"
+#include "log4z.h"
 bool CBoxConfigMgr::OnPaser(CReaderRow& refReaderRow )
 {
 	stBoxConfig* pConfig = new stBoxConfig ;
@@ -10,7 +10,7 @@ bool CBoxConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	pConfig->nRewardDiamond  = refReaderRow["RewardDiamoned"]->IntValue();
 	if ( GetBoxConfigByBoxID(pConfig->nBoxID) )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("already have boxid = %d , in box config",pConfig->nBoxID) ;
+		LOGFMTE("already have boxid = %d , in box config",pConfig->nBoxID) ;
 		return false;
 	}
 	m_vAllBoxConfig[pConfig->nBoxID] = pConfig ;

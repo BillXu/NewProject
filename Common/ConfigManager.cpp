@@ -1,7 +1,7 @@
 #include "ConfigManager.h"
 #include <string>
 #include "ContinueLoginConfig.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ItemConfig.h"
 #ifdef DATA_SERVER
 #include "../Server/DataServer/src/InformConfig.h"
@@ -28,7 +28,7 @@ CConfigManager::~CConfigManager()
 
 void CConfigManager::LoadAllConfigFile( const char* pConfigRootPath )
 {
-	CLogMgr::SharedLogMgr()->SystemLog("load all config") ;
+	LOGFMTI("load all config") ;
 
 	std::string strCL = pConfigRootPath ;
 	if (strCL.at(strCL.size() -1 ) != '/')

@@ -1,9 +1,9 @@
 #include "LoginApp.h"
-#include "LogManager.h"
 #include "ServerMessageDefine.h"
 #include "LoginDBManager.h"
 #include "DataBaseThread.h"
 #include "DBRequest.h"
+#include "log4z.h"
 CLoginApp::CLoginApp()
 {
 	m_pDBThread = NULL ;
@@ -29,7 +29,7 @@ CLoginApp::~CLoginApp()
 bool CLoginApp::init()
 {
 	IServerApp::init();
-	CLogMgr::SharedLogMgr()->SetOutputFile("LoginSvr");
+	//CLogMgr::SharedLogMgr()->SetOutputFile("LoginSvr");
 	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
 	
 	time_t tSeed = time(NULL);
@@ -40,7 +40,7 @@ bool CLoginApp::init()
 	stServerConfig* pSvrConfigItem = m_stSvrConfigMgr.GetServerConfig(eSvrType_DataBase );
 	if ( pSvrConfigItem == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Data base config is null , can not start login svr ") ;
+		LOGFMTE("Data base config is null , can not start login svr ") ;
 		return false;
 	}
 	m_pDBThread = new CDataBaseThread ;
@@ -48,13 +48,13 @@ bool CLoginApp::init()
 	if ( bRet )
 	{
 		m_pDBThread->Start() ;
-		CLogMgr::SharedLogMgr()->SystemLog("start db thread ok") ;
+		LOGFMTI("start db thread ok") ;
 	}
 	else
 	{	
 		delete m_pDBThread ;
 		m_pDBThread = NULL ;
-		CLogMgr::SharedLogMgr()->ErrorLog("start db thread errror ") ;
+		LOGFMTE("start db thread errror ") ;
 		return false;
 	}
 
@@ -65,7 +65,7 @@ bool CLoginApp::init()
 	pSvrConfigItem = m_stSvrConfigMgr.GetServerConfig(eSvrType_Center );
 	if ( pSvrConfigItem == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null so can not start svr ") ;
+		LOGFMTE("center svr config is null so can not start svr ") ;
 		return false;
 	}
 	setConnectServerConfig(pSvrConfigItem);

@@ -3,7 +3,7 @@
 #include "NiuNiuRoom.h"
 #include "NiuNiuRoomPlayer.h"
 #include "NiuNiuMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 void CNiuNiuRoomRandBankerState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
@@ -71,7 +71,7 @@ void CNiuNiuRoomRandBankerState::enterState(IRoom* pRoom)
 	msgBanker.nBankerBetTimes = m_pRoom->getBetBottomTimes() ;
 	m_pRoom->sendRoomMsg(&msgBanker,sizeof(msgBanker)) ;
 
-	CLogMgr::SharedLogMgr()->PrintLog("rand banker idx = %d, betTimes = %d",msgBanker.nBankerIdx,msgBanker.nBankerBetTimes) ;
+	LOGFMTD("rand banker idx = %d, betTimes = %d",msgBanker.nBankerIdx,msgBanker.nBankerBetTimes) ;
 }
 
 void CNiuNiuRoomRandBankerState::onStateDuringTimeUp()

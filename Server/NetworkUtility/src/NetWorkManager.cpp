@@ -12,7 +12,7 @@
 #include "NetWorkManager.h"
 #include "ClientNetworkImp.h"
 //#include "log4z.h"
-//#include "LogManager.h"
+//#include "log4z.h"
 //#include "MessageDefine.h"
 #include "NetworkDefine.h"
 int CNetWorkMgr::s_nCurrentDataSize = 0 ;
@@ -336,7 +336,7 @@ void CNetWorkMgr::ProcessDelegateAddRemove()
                 continue;
 			if ( IsAlreadyAdded(pDelegate) )
 			{
-				//CLogMgr::SharedLogMgr()->PrintLog("duplicate add network delegate") ;
+				//LOGFMTD("duplicate add network delegate") ;
 				continue;
 			}
             pDelegate->SetNetWorkMgr(this) ;

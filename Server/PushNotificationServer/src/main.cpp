@@ -1,7 +1,7 @@
 //#include "PushNotificationServer.h"
 //#include "catch_dump_file.h"
 //#pragma comment(lib,"JsonDll.lib")
-//#include "LogManager.h"
+//#include "log4z.h"
 //void RunFunc ( )
 //{
 //	// exception 
@@ -11,7 +11,7 @@
 //	}
 //	__except(CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
 //	{
-//		CLogMgr::SharedLogMgr()->SystemLog("try to recover from exception") ;
+//		LOGFMTI("try to recover from exception") ;
 //		CPushNotificationServer::getInstance()->run();
 //	}
 //}

@@ -1,6 +1,6 @@
 #include "TaxasServerApp.h"
 #include "CommonDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerMessageDefine.h"
 #include "RoomManager.h"
 #include "ServerStringTable.h"
@@ -30,7 +30,7 @@ bool CTaxasServerApp::init()
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Taxas Server App can not be init more than once !") ;
+		LOGFMTE("Taxas Server App can not be init more than once !") ;
 		return false;
 	}
 
@@ -41,7 +41,7 @@ bool CTaxasServerApp::init()
 	stServerConfig* pConfig = stSvrConfigMgr.GetServerConfig(eSvrType_Center) ;
 	if ( pConfig == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null , so can not connected to !") ;
+		LOGFMTE("center svr config is null , so can not connected to !") ;
 		return false;
 	}
 	setConnectServerConfig(pConfig);

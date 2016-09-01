@@ -1,5 +1,5 @@
 #include "TaxasPlayer.h"
-#include "LogManager.h"
+#include "log4z.h"
 void CTaxasPlayer::willStandUp()
 {
 	ISitableRoomPlayer::willStandUp() ;
@@ -33,7 +33,7 @@ uint8_t CTaxasPlayer::getPeerCardByIdx(uint8_t nIdx )
 	{
 		return m_tPeerCard.getCardByIdx(nIdx) ;
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("peer idx = %d must < 2" , nIdx ) ;
+	LOGFMTE("peer idx = %d must < 2" , nIdx ) ;
 	return 0 ;
 }
 
@@ -52,7 +52,7 @@ void CTaxasPlayer::addPeerCard(uint8_t nIdx , uint8_t nCardNum )
 		m_tPeerCard.addCompositCardNum(nCardNum) ;
 		return ;
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("uid = %d add peer card idx error" , getUserUID()) ;
+	LOGFMTE("uid = %d add peer card idx error" , getUserUID()) ;
 }
 
 bool CTaxasPlayer::betCoin( uint32_t nBetCoin )
@@ -64,7 +64,7 @@ bool CTaxasPlayer::betCoin( uint32_t nBetCoin )
 		setCoin(getCoin() - nBetCoin ) ;
 		return true ;
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("player uid = %d bet coin error , must fix", getUserUID() ) ;
+	LOGFMTE("player uid = %d bet coin error , must fix", getUserUID() ) ;
 	return false ;
 }
 

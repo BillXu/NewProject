@@ -3,7 +3,7 @@
 #include "Md5.h"
 #include<algorithm>
 #include "VerifyRequest.h"
-#include "LogManager.h"
+#include "log4z.h"
 CWeChatOrderTask::CWeChatOrderTask( uint32_t nTaskID)
 	:ITask(nTaskID)
 {
@@ -24,7 +24,7 @@ uint8_t CWeChatOrderTask::performTask()
 #ifdef _DEBUG
 	pRequest->nPrize = 1 ;
 #endif
-	CLogMgr::SharedLogMgr()->ErrorLog("temp set prize = 1 ") ;
+	LOGFMTE("temp set prize = 1 ") ;
 
 	TiXmlElement *xmlRoot = new TiXmlElement("xml"); 
 

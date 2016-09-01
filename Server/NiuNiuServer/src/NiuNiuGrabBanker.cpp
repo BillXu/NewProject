@@ -4,7 +4,7 @@
 #include "NiuNiuRoomPlayer.h"
 #include "NiuNiuRoomBetState.h"
 #include "NiuNiuRoomRandBankerState.h"
-#include "LogManager.h"
+#include "log4z.h"
 void CNiuNiuRoomGrabBanker::enterState(IRoom* pRoom)
 {
 	m_vGrabedIdx.clear() ;
@@ -17,15 +17,15 @@ void CNiuNiuRoomGrabBanker::enterState(IRoom* pRoom)
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("no one can be banker ?") ;
+		LOGFMTD("no one can be banker ?") ;
 		setStateDuringTime(1);
 	}
 
 	if ( m_pRoom->isHaveBanker() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("already have banker why come here ? grab banker ?") ;
+		LOGFMTE("already have banker why come here ? grab banker ?") ;
 	}
-	CLogMgr::SharedLogMgr()->PrintLog("room id = %d , try banker ",m_pRoom->getRoomID());
+	LOGFMTD("room id = %d , try banker ",m_pRoom->getRoomID());
 }
 
 bool CNiuNiuRoomGrabBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
@@ -43,7 +43,7 @@ bool CNiuNiuRoomGrabBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , 
 	stMsgNNPlayerTryBankerRet msgBack ;
 	stMsgNNPlayerTryBanker* pTryBanker = (stMsgNNPlayerTryBanker*)prealMsg ;
 	CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID) ;
-	//SCLogMgr::SharedLogMgr()->PrintLog("try banker uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+	//SLOGFMTD("try banker uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
 	if ( pPlayer == nullptr )
 	{
 		msgBack.nRet = 3 ;
@@ -53,14 +53,14 @@ bool CNiuNiuRoomGrabBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , 
 	else if ( pPlayer->isHaveState(eRoomPeer_CanAct) == false )
 	{
 		msgBack.nRet = 1 ;
-		CLogMgr::SharedLogMgr()->PrintLog("try banker state error uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+		LOGFMTD("try banker state error uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
 		m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 		return true ;
 	}
 	else if ( pPlayer->getCoin() < m_pRoom->getLeastCoinNeedForBeBanker( 1 ) )
 	{
 		msgBack.nRet = 2 ;
-		CLogMgr::SharedLogMgr()->PrintLog("try banker coin not enough uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+		LOGFMTD("try banker coin not enough uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
 		m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 		return true ;
 	}
@@ -68,7 +68,7 @@ bool CNiuNiuRoomGrabBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , 
 	auto iter = std::find(m_vWaitIdxs.begin(),m_vWaitIdxs.end(),pPlayer->getIdx());
 	if ( iter ==  m_vWaitIdxs.end() )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("you already grabed banker") ;
+		LOGFMTD("you already grabed banker") ;
 		msgBack.nRet = 4 ;
 		m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 		return true ;
@@ -79,7 +79,7 @@ bool CNiuNiuRoomGrabBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , 
 	msgTry.nTryBankerBetTimes = pTryBanker->nTryBankerBetTimes ;
 	msgTry.nTryerIdx = pPlayer->getIdx() ;
 	m_pRoom->sendRoomMsg(&msgTry,sizeof(msgTry)) ;
-	CLogMgr::SharedLogMgr()->PrintLog("try banker ok uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
+	LOGFMTD("try banker ok uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
 
 	// if erveryone have bet , then end this state 
 	if ( pTryBanker->nTryBankerBetTimes  > 0 )
@@ -95,7 +95,7 @@ bool CNiuNiuRoomGrabBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , 
 	{
 		onStateDuringTimeUp();
 	}
-	//CLogMgr::SharedLogMgr()->PrintLog("try banker uid = %d ",pPlayer->getUserUID() ) ;
+	//LOGFMTD("try banker uid = %d ",pPlayer->getUserUID() ) ;
 	return true ;
 }
 
@@ -125,7 +125,7 @@ void CNiuNiuRoomGrabBanker::onStateDuringTimeUp()
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("no body can be banker , candidates are leave room ") ;
+		LOGFMTD("no body can be banker , candidates are leave room ") ;
 		m_pRoom->goToState(eRoomState_WaitJoin);
 		return ;
 	}
@@ -135,7 +135,7 @@ void CNiuNiuRoomGrabBanker::onStateDuringTimeUp()
 
 	if ( nRandBankerCandidateCnt > 1 )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("go to rand banker state , candidate cnt = %u",nRandBankerCandidateCnt);
+		LOGFMTD("go to rand banker state , candidate cnt = %u",nRandBankerCandidateCnt);
 		auto pp = (CNiuNiuRoomRandBankerState*)m_pRoom->getRoomStateByID(eRoomState_NN_RandBanker);
 		pp->setRandCnt(nRandBankerCandidateCnt);
 		m_pRoom->goToState(eRoomState_NN_RandBanker);
@@ -148,5 +148,5 @@ void CNiuNiuRoomGrabBanker::onStateDuringTimeUp()
 	m_pRoom->sendRoomMsg(&msgBanker,sizeof(msgBanker)) ;
 	m_pRoom->goToState(eRoomState_NN_StartBet);
 
-	CLogMgr::SharedLogMgr()->PrintLog("new banker idx = %u",msgBanker.nBankerIdx) ;
+	LOGFMTD("new banker idx = %u",msgBanker.nBankerIdx) ;
 }

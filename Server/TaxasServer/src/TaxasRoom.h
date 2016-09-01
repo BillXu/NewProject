@@ -1,6 +1,6 @@
 #pragma once
 #include "ServerMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "RoomConfig.h"
 #include "CommonData.h"
 #include "CardPoker.h"
@@ -52,7 +52,7 @@ struct stTaxasPeerData
 			nTakeInMoney -= nBetCoin ;
 			nAllBetCoin += nBetCoin ;
 			nBetCoinThisRound += nBetCoin ;
-			CLogMgr::SharedLogMgr()->SystemLog("uid= %d , betCoin = %lld, nBetThisRound = %lld",nUserUID,nBetCoin,nBetCoinThisRound);
+			LOGFMTI("uid= %d , betCoin = %lld, nBetThisRound = %lld",nUserUID,nBetCoin,nBetCoinThisRound);
 			return true ;
 		} 
 		return false ;

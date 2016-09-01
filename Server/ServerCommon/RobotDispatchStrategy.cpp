@@ -1,6 +1,6 @@
 #include "RobotDispatchStrategy.h"
 #include <ctime>
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerMessageDefine.h"
 #include "IRoomState.h"
 #ifdef _DEBUG
@@ -107,7 +107,7 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 		{
 			if ( nSitDownCnt > 4 || bClosed )
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("robot session id = %u , time up shuld leave room" ) ;
+				LOGFMTD("robot session id = %u , time up shuld leave room" ) ;
 				stMsgTellRobotLeaveRoom msgLeave ;
 				m_pRoom->sendMsgToPlayer(&msgLeave,sizeof(msgLeave),pPlayer->nSessionID) ;
 				m_vMayDelayLeaveRobot[pPlayer->nSessionID] = 1 ;
@@ -123,7 +123,7 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 				msgreq.nRoomType = m_pRoom->getRoomType() ;
 				msgreq.nSubRoomIdx = m_nSubRoomIdx ;
 				m_pRoom->sendMsgToPlayer(&msgreq,sizeof(msgreq),0) ;
-				//CLogMgr::SharedLogMgr()->PrintLog("too few player robot session id = %u delay leave, and req new player to join than leave",pPlayer->nSessionID) ;
+				//LOGFMTD("too few player robot session id = %u delay leave, and req new player to join than leave",pPlayer->nSessionID) ;
 			}
 		}
 	}
@@ -147,7 +147,7 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 		msgreq.nRoomType = m_pRoom->getRoomType() ;
 		msgreq.nSubRoomIdx = m_nSubRoomIdx ;
 		m_pRoom->sendMsgToPlayer(&msgreq,sizeof(msgreq),0) ;
-		//CLogMgr::SharedLogMgr()->PrintLog("too few robot so req more , room id = %u",m_nRoomID) ;
+		//LOGFMTD("too few robot so req more , room id = %u",m_nRoomID) ;
 		return ;
 	}
 
@@ -168,7 +168,7 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 				delete pPlayerLeave ;
 				pPlayerLeave = nullptr ;
 				m_vPlayingRobot.pop_front() ;
-				CLogMgr::SharedLogMgr()->PrintLog("no real player so just need 2 robot , other just leave room id = %u",m_nRoomID);
+				LOGFMTD("no real player so just need 2 robot , other just leave room id = %u",m_nRoomID);
 			}
 		}
 	}

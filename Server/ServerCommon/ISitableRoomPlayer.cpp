@@ -1,5 +1,5 @@
 #include "ISitableRoomPlayer.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerCommon.h"
 #include "IPeerCard.h"
 void ISitableRoomPlayer::reset(IRoom::stStandPlayer* pPlayer)
@@ -56,7 +56,7 @@ bool ISitableRoomPlayer::isHaveHalo()
 	m_nHaloState = nRate <= getTotalHaloWeight() ? 1 : 2 ;
 	if ( m_nHaloState == 1 )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %u invoke halo tempHalo = %u",getUserUID(),nTempHaloWeight);
+		LOGFMTD("uid = %u invoke halo tempHalo = %u",getUserUID(),nTempHaloWeight);
 	}
 	nTempHaloWeight = 0 ;
 	return m_nHaloState == 1 ;
@@ -72,17 +72,17 @@ void ISitableRoomPlayer::switchPeerCard(ISitableRoomPlayer* pPlayer )
 void ISitableRoomPlayer::removeState( uint32_t nStateFlag )
 {
 	m_nState &=(~nStateFlag);
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %u state = %u remove state = %u",getUserUID(),getState(),nStateFlag) ;
+	LOGFMTD("uid = %u state = %u remove state = %u",getUserUID(),getState(),nStateFlag) ;
 }
 
 void ISitableRoomPlayer::addState( uint32_t nStateFlag )
 {
 	m_nState |=(nStateFlag); 
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %u state = %u add state = %u",getUserUID(),getState(),nStateFlag) ;
+	LOGFMTD("uid = %u state = %u add state = %u",getUserUID(),getState(),nStateFlag) ;
 }
 
 void ISitableRoomPlayer::setState( uint32_t nStateFlag )
 { 
 	m_nState = nStateFlag ;
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %u state = %u set state",getUserUID(),getState()) ;
+	LOGFMTD("uid = %u state = %u set state",getUserUID(),getState()) ;
 }

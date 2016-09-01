@@ -148,7 +148,7 @@
 #include <errno.h>
 #include <stdio.h>
 #ifdef WIN32
-#include <WinSock2.h>
+//#include <WinSock2.h>
 #include <Windows.h>
 #endif
 
@@ -201,7 +201,7 @@ typedef int LoggerId;
 //! default logger month dir used status
 #define LOG4Z_DEFAULT_MONTHDIR false
 //! default logger output file limit size, unit M byte.
-#define LOG4Z_DEFAULT_LIMITSIZE 100
+#define LOG4Z_DEFAULT_LIMITSIZE 10
 
 ///////////////////////////////////////////////////////////////////////////
 //! -----------------------------------------------------------------------

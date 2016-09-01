@@ -1,6 +1,6 @@
 #include <windows.h>
 #include "CenterServer.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerMessageDefine.h"
 #include <synchapi.h>
 CCenterServerApp* CCenterServerApp::s_GateServer = NULL ;
@@ -35,7 +35,7 @@ bool CCenterServerApp:: Init()
 {
 	if ( s_GateServer )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("can not have too instance of CenterServerApp") ;
+		LOGFMTE("can not have too instance of CenterServerApp") ;
 		return false ;
 	}
 	s_GateServer = this ;
@@ -45,7 +45,7 @@ bool CCenterServerApp:: Init()
 	stServerConfig* pSvrConfig = m_stSvrConfigMgr.GetServerConfig(eSvrType_Center); 
 	if ( pSvrConfig == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("can not find center server config so start up failed ") ;
+		LOGFMTE("can not find center server config so start up failed ") ;
 		return  false ;
 	}
 	m_pNetwork = new CServerNetwork ;
@@ -60,7 +60,7 @@ bool CCenterServerApp:: Init()
 	m_uGateCounts = m_stSvrConfigMgr.GetServerConfigCnt(eSvrType_Gate);
 	if ( m_uGateCounts == 0 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("gate server config count = 0 , start up failed ") ;
+		LOGFMTE("gate server config count = 0 , start up failed ") ;
 		return false ;
 	}
 
@@ -69,7 +69,7 @@ bool CCenterServerApp:: Init()
 	{
 		m_vGateInfos[nIdx].Reset();
 	}
-	CLogMgr::SharedLogMgr()->SystemLog("start center server !");
+	LOGFMTI("start center server !");
 	return true ;
 }
 
@@ -105,104 +105,104 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 		{
 			if ( m_vTargetServers[eSvrType_APNS] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_APNS close pre connect ") ;
+				LOGFMTE("eSvrType_APNS close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_APNS]);
 			}
 
 			m_vTargetServers[eSvrType_APNS] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("apns server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("apns server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_VERIYF:
 		{
 			if ( m_vTargetServers[eSvrType_Verify] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Verify close pre connect ") ;
+				LOGFMTE("eSvrType_Verify close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_APNS]);
 			}
 
 			m_vTargetServers[eSvrType_Verify] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("verify server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("verify server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_LOGIN:
 		{
 			if ( m_vTargetServers[eSvrType_Login] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Login close pre connect ") ;
+				LOGFMTE("eSvrType_Login close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Login]);
 			}
 			m_vTargetServers[eSvrType_Login] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("login server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("login server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_LOG:
 		{
 			if ( m_vTargetServers[eSvrType_Log] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Log close pre connect ") ;
+				LOGFMTE("eSvrType_Log close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Log]);
 			}
 
 			m_vTargetServers[eSvrType_Log] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("log server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("log server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_DB:
 		{
 			if ( m_vTargetServers[eSvrType_DB] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_DB close pre connect ") ;
+				LOGFMTE("eSvrType_DB close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_DB]);
 			}
 
 			m_vTargetServers[eSvrType_DB] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("DB server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("DB server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_DATA:
 		{
 			if ( m_vTargetServers[eSvrType_Data] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Data close pre connect ") ;
+				LOGFMTE("eSvrType_Data close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Data]);
 			}
 
 			m_vTargetServers[eSvrType_Data] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("Data server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("Data server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_GOLDEN:
 		{
 			if ( m_vTargetServers[eSvrType_Golden] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Taxas close pre connect ") ;
+				LOGFMTE("eSvrType_Taxas close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Golden]);
 			}
 			m_vTargetServers[eSvrType_Golden] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("Golden server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("Golden server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_TAXAS:
 		{
 			if ( m_vTargetServers[eSvrType_Taxas] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_Taxas close pre connect ") ;
+				LOGFMTE("eSvrType_Taxas close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Taxas]);
 			}
 			m_vTargetServers[eSvrType_Taxas] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("Taxas server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("Taxas server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_NIU_NIU:
 		{
 			if ( m_vTargetServers[eSvrType_NiuNiu] != INVALID_CONNECT_ID )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("eSvrType_NiuNiu close pre connect ") ;
+				LOGFMTE("eSvrType_NiuNiu close pre connect ") ;
 				m_pNetwork->ClosePeerConnection(m_vTargetServers[eSvrType_Taxas]);
 			}
 			m_vTargetServers[eSvrType_NiuNiu] = pData->_connectID;
-			CLogMgr::SharedLogMgr()->SystemLog("Niu Niu server connected ip = %s",strIP.c_str()) ;
+			LOGFMTI("Niu Niu server connected ip = %s",strIP.c_str()) ;
 		}
 		break;
 	case MSG_VERIFY_GATE:
@@ -218,14 +218,14 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 					msg.uIdx = nIdx;
 					m_vGateInfos[nIdx].nIdx = nIdx ;
 					m_vGateInfos[nIdx].nNetworkID = pData->_connectID ; 
-					CLogMgr::SharedLogMgr()->SystemLog("Gate server started idx = %d connected ip = %s",nIdx,strIP.c_str()) ;
+					LOGFMTI("Gate server started idx = %d connected ip = %s",nIdx,strIP.c_str()) ;
 					break;
 				}
 			}
 
 			if ( msg.bIsGateFull )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("gate is full can not accept more gate ip = %s",strIP.c_str()) ;
+				LOGFMTE("gate is full can not accept more gate ip = %s",strIP.c_str()) ;
 			}
 
 			m_pNetwork->SendMsg((char*)&msg,sizeof(msg),pData->_connectID) ;
@@ -242,7 +242,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			stGateInfo* pGateInfo = GetGateInfoByNetworkID(pData->_connectID);
 			if ( pGateInfo == NULL )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("why no gate , this peer is not gate ip = %s",strIP.c_str()) ;
+				LOGFMTE("why no gate , this peer is not gate ip = %s",strIP.c_str()) ;
 				return true ;
 			}
 			pGateInfo->AddSessionID(pC->nNewSessionID) ;
@@ -256,7 +256,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 			stGateInfo* pGateInfo = GetGateInfoByNetworkID(pData->_connectID);
 			if ( pGateInfo == NULL )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("why no gate , this peer is not gate ip = %s",strIP.c_str()) ;
+				LOGFMTE("why no gate , this peer is not gate ip = %s",strIP.c_str()) ;
 				return true ;
 			}
 			pGateInfo->RemoveSessionID(pRet->nSeesionID) ;
@@ -275,7 +275,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				}
 				else
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("send msg = %d to client but nSession id = %d have no gate, inform this session id disconnect ",pReal->usMsgType,pTransfer->nSessionID) ;
+					LOGFMTE("send msg = %d to client but nSession id = %d have no gate, inform this session id disconnect ",pReal->usMsgType,pTransfer->nSessionID) ;
 					SendClientDisconnectMsg(pTransfer->nSessionID) ;
 					if ( pInfo )
 					{
@@ -288,17 +288,17 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 				eServerType svr = GetServerTypeByMsgTarget(pReal->cSysIdentifer);
 				if ( eSvrType_Center == svr )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("why msg = %d process here should process above send port = %d ",pReal->usMsgType,pTransfer->nSenderPort ) ;
+					LOGFMTE("why msg = %d process here should process above send port = %d ",pReal->usMsgType,pTransfer->nSenderPort ) ;
 				}
 				else if ( eSvrType_Max == svr )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("unknown msg target = %d , msg = %d",pReal->cSysIdentifer ,pReal->usMsgType) ;
+					LOGFMTE("unknown msg target = %d , msg = %d",pReal->cSysIdentifer ,pReal->usMsgType) ;
 				}
 				else
 				{
 					if ( m_vTargetServers[svr] == INVALID_CONNECT_ID )
 					{
-						CLogMgr::SharedLogMgr()->ErrorLog("%s is not connecting,so can not transfer msg to it  ",GetServerDescByType(svr)) ;
+						LOGFMTE("%s is not connecting,so can not transfer msg to it  ",GetServerDescByType(svr)) ;
 					}
 					else
 					{
@@ -310,7 +310,7 @@ bool  CCenterServerApp::OnMessage( Packet* pData )
 		break;
 	default:
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("unknown msg id = %d , csysIdentifer = %d, ip = %s",pMsg->usMsgType,pMsg->cSysIdentifer,strIP.c_str()) ;
+			LOGFMTE("unknown msg id = %d , csysIdentifer = %d, ip = %s",pMsg->usMsgType,pMsg->cSysIdentifer,strIP.c_str()) ;
 		}
 	}
 	return true ;
@@ -320,11 +320,11 @@ void  CCenterServerApp::OnNewPeerConnected( CONNECT_ID nNewPeer, ConnectInfo* Ip
 {
 	if ( IpInfo )
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("a peer connected ip = %s , port = %d connect id = %d",IpInfo->strAddress,IpInfo->nPort ,nNewPeer );
+		LOGFMTI("a peer connected ip = %s , port = %d connect id = %d",IpInfo->strAddress,IpInfo->nPort ,nNewPeer );
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("a peer connected ip = NULL, connect id = %d", nNewPeer) ;
+		LOGFMTI("a peer connected ip = NULL, connect id = %d", nNewPeer) ;
 	}
 }
 
@@ -333,7 +333,7 @@ void CCenterServerApp::OnGateDisconnected(CONNECT_ID& nNetworkID )
 	stGateInfo* pGate = GetGateInfoByNetworkID(nNetworkID);
 	if ( pGate == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("this is not gate , info = NULL ip = %s",m_pNetwork->GetIPInfoByConnectID(nNetworkID)) ;
+		LOGFMTE("this is not gate , info = NULL ip = %s",m_pNetwork->GetIPInfoByConnectID(nNetworkID)) ;
 		return ;
 	}
 
@@ -350,7 +350,7 @@ void CCenterServerApp::OnGateDisconnected(CONNECT_ID& nNetworkID )
 		{
 			m_vGateInfos[nIdx].nIdx = nIdx ;
 			m_vGateInfos[nIdx].nNetworkID = INVALID_CONNECT_ID ; 
-			CLogMgr::SharedLogMgr()->SystemLog("Gate server disconnected idx = %d ",nIdx) ;
+			LOGFMTI("Gate server disconnected idx = %d ",nIdx) ;
 			break;
 		}
 	}
@@ -382,11 +382,11 @@ void  CCenterServerApp::OnPeerDisconnected( CONNECT_ID nPeerDisconnected, Connec
 	{
 		if ( IpInfo )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("a gate idx = %d ,disconnected , ip = %s , port = %d",pinfo->nIdx,IpInfo->strAddress,IpInfo->nPort ) ;
+			LOGFMTE("a gate idx = %d ,disconnected , ip = %s , port = %d",pinfo->nIdx,IpInfo->strAddress,IpInfo->nPort ) ;
 		}
 		else
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("a gate idx = %d ,disconnected , ip = %s",pinfo->nIdx,m_pNetwork->GetIPInfoByConnectID(nPeerDisconnected)) ;
+			LOGFMTE("a gate idx = %d ,disconnected , ip = %s",pinfo->nIdx,m_pNetwork->GetIPInfoByConnectID(nPeerDisconnected)) ;
 		}
 		OnGateDisconnected(nPeerDisconnected);
 		pinfo->Reset();
@@ -398,7 +398,7 @@ void  CCenterServerApp::OnPeerDisconnected( CONNECT_ID nPeerDisconnected, Connec
 	{
 		if ( m_vTargetServers[nIdx] == nPeerDisconnected )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("%s disconnected ", GetServerDescByType((eServerType)nIdx) ) ;
+			LOGFMTE("%s disconnected ", GetServerDescByType((eServerType)nIdx) ) ;
 			m_vTargetServers[nIdx] = INVALID_CONNECT_ID ;
 			return ;
 		}
@@ -406,11 +406,11 @@ void  CCenterServerApp::OnPeerDisconnected( CONNECT_ID nPeerDisconnected, Connec
 
 	if ( IpInfo )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog( "a unknown peer dis conntcted ip = %s port = %d",IpInfo->strAddress,IpInfo->nPort ) ;
+		LOGFMTE( "a unknown peer dis conntcted ip = %s port = %d",IpInfo->strAddress,IpInfo->nPort ) ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("a unknown peer disconnect ip = unknown") ;
+		LOGFMTE("a unknown peer disconnect ip = unknown") ;
 	}
 }
 
@@ -468,9 +468,9 @@ void CCenterServerApp::SendClientDisconnectMsg(uint32_t nSessionID )
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("data svr is disconnected") ;
+		LOGFMTE("data svr is disconnected") ;
 	}
-	CLogMgr::SharedLogMgr()->PrintLog("send dis connect msg session id = %d",nSessionID);
+	LOGFMTD("send dis connect msg session id = %d",nSessionID);
 }
 eServerType CCenterServerApp::GetServerTypeByMsgTarget(uint16_t nTarget)
 {

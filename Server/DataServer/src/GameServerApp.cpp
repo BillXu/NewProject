@@ -3,7 +3,7 @@
 #include <ctime>
 #include "PlayerMail.h"
 #include "EventCenter.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "RewardConfig.h"
 #include "ServerStringTable.h"
 #include "ExchangeCenter.h"
@@ -38,7 +38,7 @@ bool CGameServerApp::init()
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Game Server App can not be init more than once !") ;
+		LOGFMTE("Game Server App can not be init more than once !") ;
 		return false;
 	}
 	srand((unsigned int)time(0));
@@ -48,7 +48,7 @@ bool CGameServerApp::init()
 	stServerConfig* pConfig = SvrConfigMgr.GetServerConfig(eSvrType_Center) ;
 	if ( pConfig == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null , so can not connected to !") ;
+		LOGFMTE("center svr config is null , so can not connected to !") ;
 		return false;
 	}
 	setConnectServerConfig(pConfig);
@@ -66,7 +66,7 @@ bool CGameServerApp::init()
 		assert(b && "install this module failed " );
 		if ( !b )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("install module = %u failed",nModule ) ;
+			LOGFMTE("install module = %u failed",nModule ) ;
 		}
 	}
 
@@ -127,7 +127,7 @@ bool CGameServerApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 	{
 		return true ;
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("unprocess msg = %d , from port = %d , nsssionid = %d",prealMsg->usMsgType,eSenderPort,nSessionID ) ;
+	LOGFMTE("unprocess msg = %d , from port = %d , nsssionid = %d",prealMsg->usMsgType,eSenderPort,nSessionID ) ;
 	return true ;
 }
 
@@ -154,7 +154,7 @@ bool CGameServerApp::onAsyncRequest(uint16_t nRequestType , const Json::Value& j
 			uint32_t nTargetUID = jsReqContent["targetUID"].asUInt() ;
 			auto jsArg = jsReqContent["arg"];
 			CPlayerMailComponent::PostDlgNotice(eType,jsArg,nTargetUID) ;
-			CLogMgr::SharedLogMgr()->PrintLog("do async post dlg notice etype = %u ,targetUID = %u",eType,nTargetUID) ;
+			LOGFMTD("do async post dlg notice etype = %u ,targetUID = %u",eType,nTargetUID) ;
 		}
 		break ;
 	default:

@@ -1,6 +1,6 @@
 #include "LoginScene.h"
 #include "MessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "PaiJiuMessageDefine.h"
 #include "PaiJiuScene.h"
  
@@ -61,11 +61,11 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 			stMsgRegisterRet* pRet = (stMsgRegisterRet*)pMsg ;
 			if ( pRet->nRet == 0 )
 			{
-				CLogMgr::SharedLogMgr()->SystemLog("register sucess accout = %s , password = %s,uid = %d",pRet->cAccount,pRet->cPassword ,pRet->nUserID ) ;
+				LOGFMTI("register sucess accout = %s , password = %s,uid = %d",pRet->cAccount,pRet->cPassword ,pRet->nUserID ) ;
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("register error code = %d",pRet->nRet );
+				LOGFMTE("register error code = %d",pRet->nRet );
 			}
 		}
 		break;
@@ -91,7 +91,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 				pString = "Check account Error : unknown Error !" ;
 			}
 
-			CLogMgr::SharedLogMgr()->SystemLog("%s ret = %d, account type = %d ",pString,pRetMsg->nRet,pRetMsg->nAccountType ) ;
+			LOGFMTI("%s ret = %d, account type = %d ",pString,pRetMsg->nRet,pRetMsg->nAccountType ) ;
 
 // 			stMsgModifyPassword msg ;
 // 			msg.nUserUID = 1201;
@@ -114,13 +114,13 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 	case MSG_PLAYER_BIND_ACCOUNT:
 		{
 			stMsgRebindAccountRet* pRet = (stMsgRebindAccountRet*)pMsg ;
-			CLogMgr::SharedLogMgr()->SystemLog("bind account ret = %d",pRet->nRet ) ;
+			LOGFMTI("bind account ret = %d",pRet->nRet ) ;
 		}
 		break;
 	case MSG_MODIFY_PASSWORD:
 		{
 			stMsgModifyPasswordRet* pRet = (stMsgModifyPasswordRet*)pMsg ;
-			CLogMgr::SharedLogMgr()->SystemLog("modify password ret = %d ",pRet->nRet);
+			LOGFMTI("modify password ret = %d ",pRet->nRet);
 		}
 		break;
 	case MSG_ROBOT_ORDER_TO_ENTER_ROOM:
@@ -289,7 +289,7 @@ bool CLoginScene::OnMessage( Packet* pPacket )
 		break ;
 	default:
 		{
-			CLogMgr::SharedLogMgr()->SystemLog("%s Unknown message CLoginScene msg = %d!",m_pClient->GetPlayerData()->GetName(),pMsg->usMsgType ) ;
+			LOGFMTI("%s Unknown message CLoginScene msg = %d!",m_pClient->GetPlayerData()->GetName(),pMsg->usMsgType ) ;
 		}
 		break;
 	}

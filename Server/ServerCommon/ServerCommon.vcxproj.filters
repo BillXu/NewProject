@@ -39,9 +39,6 @@
     <ClCompile Include="ServerStringTable.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\LogManager.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="ISeverApp.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -52,6 +49,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Common\Utility.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="log4z.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,9 +95,6 @@
     <ClInclude Include="ServerStringTable.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\LogManager.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\NativeTypes.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -123,6 +120,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\MessageIdentifer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="log4z.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

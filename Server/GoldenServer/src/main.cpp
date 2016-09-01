@@ -4,7 +4,7 @@
 //#include <WinDef.h>
 //#include "catch_dump_file.h"
 //#pragma comment(lib,"JsonDll.lib")
-//#include "LogManager.h"
+//#include "log4z.h"
 //
 //DWORD WINAPI ThreadProc(LPVOID lpParam)
 //{
@@ -62,7 +62,7 @@
 //	}
 //	__except(CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
 //	{
-//		CLogMgr::SharedLogMgr()->SystemLog("try to recover from exception") ;
+//		LOGFMTI("try to recover from exception") ;
 //		pApp->run() ;
 //	}
 //}

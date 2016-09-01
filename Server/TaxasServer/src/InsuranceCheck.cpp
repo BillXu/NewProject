@@ -1,5 +1,5 @@
 #include "InsuranceCheck.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include <cassert>
 #include <algorithm>
 CInsuranceCheck::CInsuranceCheck()
@@ -21,7 +21,7 @@ void CInsuranceCheck::addCheckPeer(uint16_t nIdx , uint16_t nPeerCard0, uint16_t
 	auto iter = m_vAllPeers.find(nIdx) ;
 	if ( iter != m_vAllPeers.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("nidx = %u alredy add to insurance check",nIdx) ;
+		LOGFMTE("nidx = %u alredy add to insurance check",nIdx) ;
 		return ;
 	}
 
@@ -80,7 +80,7 @@ uint8_t CInsuranceCheck::getOutsForPlayer( uint16_t nIdx ,std::vector<uint8_t>* 
 	auto iter = m_vAllPeers.find(nIdx) ;
 	if ( iter == m_vAllPeers.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("idx = %u not in check outs player vec", nIdx ) ;
+		LOGFMTE("idx = %u not in check outs player vec", nIdx ) ;
 		return 0 ;
 	}
 
@@ -108,7 +108,7 @@ void CInsuranceCheck::caculateResult()
 
 	if ( m_vAllPeers.size() < 2 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("check peer is too few ") ;
+		LOGFMTE("check peer is too few ") ;
 		return  ;
 	}
 	// check all player card state ;
@@ -118,7 +118,7 @@ void CInsuranceCheck::caculateResult()
 		auto refValue = ref.second ;
 		if ( refValue.m_pPeerCard->getAllCardCnt() < 5 )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why this player do not have 5 cards") ;
+			LOGFMTE("why this player do not have 5 cards") ;
 			assert(0 && "why this player do not have 5 cards");
 		}
 	}

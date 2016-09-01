@@ -87,10 +87,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\ConfigReader.cpp" />
-    <ClCompile Include="..\..\Common\IConfigFile.cpp" />
-    <ClCompile Include="..\..\Common\LogManager.cpp" />
-    <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="..\ServerCommon\mutex.cpp" />
     <ClCompile Include="..\ServerCommon\Sem.cpp" />
     <ClCompile Include="..\ServerCommon\ThreadMod.cpp" />
@@ -102,12 +98,6 @@
     <ClCompile Include="src\MySqlData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\ConfigReader.h" />
-    <ClInclude Include="..\..\Common\IConfigFile.h" />
-    <ClInclude Include="..\..\Common\LogManager.h" />
-    <ClInclude Include="..\..\Common\MessageDefine.h" />
-    <ClInclude Include="..\..\Common\MessageIdentifer.h" />
-    <ClInclude Include="..\..\Common\Utility.h" />
     <ClInclude Include="..\ServerCommon\mutex.h" />
     <ClInclude Include="..\ServerCommon\Sem.h" />
     <ClInclude Include="..\ServerCommon\ThreadMod.h" />

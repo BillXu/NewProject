@@ -3,7 +3,7 @@
 #include "NiuNiuRoom.h"
 #include "NiuNiuMessageDefine.h"
 #include "NiuNiuRoomPlayer.h"
-#include "LogManager.h"
+#include "log4z.h"
 #define ROOM_LIST_ITEM_CNT_PER_PAGE 5 
 #include "AutoBuffer.h"
 #include "SystemRoom.h"

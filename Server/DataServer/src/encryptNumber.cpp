@@ -1,7 +1,7 @@
 #include "encryptNumber.h"
 #include <ctime>
 #include "ServerMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include <cassert>
 #include "ISeverApp.h"
 bool CEncryptNumber::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
@@ -51,7 +51,7 @@ bool CEncryptNumber::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSe
 				m_pCurRequest = nullptr ;
 				if ( m_vAllRequest.empty() )
 				{
-					CLogMgr::SharedLogMgr()->SystemLog("create encrypt number ok ") ;
+					LOGFMTI("create encrypt number ok ") ;
 					return true ;
 				}
 
@@ -78,7 +78,7 @@ void CEncryptNumber::doGenerateNumber(stEncryptRequest* pReq )
 	msgSave.nEncryptNumber = generateNumber() ;
 	while ( msgSave.nEncryptNumber <= 999999999999999 )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("number = %llu not 16 bit, try again",msgSave.nEncryptNumber);
+		LOGFMTD("number = %llu not 16 bit, try again",msgSave.nEncryptNumber);
 		msgSave.nEncryptNumber = generateNumber() ;
 	}
 	msgSave.nNumberType = pReq->nType ;
@@ -89,11 +89,11 @@ void CEncryptNumber::doGenerateNumber(stEncryptRequest* pReq )
 #ifdef  _DEBUG
 	if ( isNumberValid(msgSave.nEncryptNumber) )
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("nuber = %lld ok",msgSave.nEncryptNumber);
+		LOGFMTD("nuber = %lld ok",msgSave.nEncryptNumber);
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("nuber = %lld invalid",msgSave.nEncryptNumber);
+		LOGFMTE("nuber = %lld invalid",msgSave.nEncryptNumber);
 		assert("number error " && 0 );
 	}
 #endif //  _DEBUG
@@ -123,7 +123,7 @@ uint64_t CEncryptNumber::generateNumber()
 
 	uint64_t nFinalNumber = nCheckSum << 49 | nHourMinSec << 33 | nRandModule << 22 | nYearMDM;
 
-	CLogMgr::SharedLogMgr()->PrintLog(" nYearMDM = %lld , hourMin = %lld , rand = %lld , checkSum = %lld",nYearMDM,nHourMinSec,nRandModule,nCheckSum) ;
+	LOGFMTD(" nYearMDM = %lld , hourMin = %lld , rand = %lld , checkSum = %lld",nYearMDM,nHourMinSec,nRandModule,nCheckSum) ;
 	return nFinalNumber ;
 }
 
@@ -134,6 +134,6 @@ bool CEncryptNumber::isNumberValid(uint64_t nNumber )
 	uint64_t nRandModule = ( nNumber & (uint64_t)0x7FF << 22 ) >> 22;
 	uint64_t nYearMDM = nNumber & 0x3FFFFF ;
 
-	CLogMgr::SharedLogMgr()->PrintLog(" nYearMDM = %lld , hourMin = %lld , rand = %lld , checkSum = %lld",nYearMDM,nHourMinSec,nRandModule,nCheckSum) ;
+	LOGFMTD(" nYearMDM = %lld , hourMin = %lld , rand = %lld , checkSum = %lld",nYearMDM,nHourMinSec,nRandModule,nCheckSum) ;
 	return ( ( nYearMDM + nRandModule + nHourMinSec) % 0xF + 1 == nCheckSum );
 }

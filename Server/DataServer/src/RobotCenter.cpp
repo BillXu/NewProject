@@ -1,5 +1,5 @@
 #include "RobotCenter.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerMessageDefine.h"
 #include "ISeverApp.h"
 CRobotCenter::CRobotCenter()
@@ -43,7 +43,7 @@ bool CRobotCenter::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSess
 				pR->nUserUID = pRet->nRobotUID ;
 				m_vIdleRobots.push_back(pR) ;
 			}
-			CLogMgr::SharedLogMgr()->PrintLog("a robot uid = %u enter idle ",pRet->nRobotUID ) ;
+			LOGFMTD("a robot uid = %u enter idle ",pRet->nRobotUID ) ;
 			processRobotReq();
 		}
 		break;
@@ -76,7 +76,7 @@ bool CRobotCenter::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSess
 				m_vReqRobotCmdCacher.push_back(cmd) ;
 			}
 
-			CLogMgr::SharedLogMgr()->PrintLog("received req from room id = %u , type = %u",pRet->nRoomID,pRet->nRoomType) ;
+			LOGFMTD("received req from room id = %u , type = %u",pRet->nRoomID,pRet->nRoomType) ;
 			processRobotReq();
 		}
 		break;
@@ -144,7 +144,7 @@ void CRobotCenter::processRobotReq()
 				msgBack.nRoomType = cmd->nRoomType ;
 				msgBack.nSubRoomIdx = cmd->nSubRoomIdx ;
 				getSvrApp()->sendMsg((*iter)->nSessionID,(char*)&msgBack,sizeof(msgBack));
-				CLogMgr::SharedLogMgr()->PrintLog("order robot uid = %u to enter room type = %u , room id = %u, sbuIdx = %u",(*iter)->nUserUID,cmd->nRoomType,cmd->nRoomID,cmd->nSubRoomIdx) ;
+				LOGFMTD("order robot uid = %u to enter room type = %u , room id = %u, sbuIdx = %u",(*iter)->nUserUID,cmd->nRoomType,cmd->nRoomID,cmd->nSubRoomIdx) ;
 
 				delete (*iter) ;
 				(*iter) = nullptr ;
@@ -166,7 +166,7 @@ void CRobotCenter::processRobotReq()
 		{
 			if ( (*iterDel) == delRef )
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("finish req form room type = %u ,id = %u and delete it",delRef->nRoomType,delRef->nRoomID) ;
+				LOGFMTD("finish req form room type = %u ,id = %u and delete it",delRef->nRoomType,delRef->nRoomID) ;
 				delete (*iterDel) ;
 				m_vReqRobotCmdCacher.erase(iterDel) ;
 				break; 

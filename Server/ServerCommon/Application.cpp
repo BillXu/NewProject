@@ -1,10 +1,10 @@
 #include "Application.h"
-#include "LogManager.h"
+#include "log4z.h"
 #pragma comment(lib,"JsonDll.lib")
 #include <cassert>
 CApplication::CApplication(IServerApp* pApp )
 {
-	CLogMgr::SharedLogMgr()->SetOutputFile(nullptr);
+	//CLogMgr::SharedLogMgr()->SetOutputFile(nullptr);
 	m_pApp = pApp ;
 }
 
@@ -26,12 +26,12 @@ bool& CApplication::isRunning()
 void CApplication::startApp()
 {
 	_CrtSetReportMode(_CRT_ASSERT, 0);
-
+	zsummer::log4z::ILog4zManager::GetInstance()->Start() ;
 	auto nRet = m_pApp->init();
 	assert(nRet && "init svr error");
 	if ( nRet == false )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("svr init error") ;
+		LOGFMTE("svr init error") ;
 		m_pApp = nullptr ;
 		return ;
 	}
@@ -48,9 +48,10 @@ void CApplication::startApp()
 	{
 		++nRunloop ;
 		runAppLoop();
-		CLogMgr::SharedLogMgr()->PrintLog("try another loop = %u",nRunloop) ;
+		LOGFMTD("try another loop = %u",nRunloop) ;
 		Sleep(800);
 	}
+	zsummer::log4z::ILog4zManager::GetInstance()->Stop();
 }
 
 void CApplication::runAppLoop()
@@ -61,7 +62,7 @@ void CApplication::runAppLoop()
 	}
 	__except(CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("try to recover from exception") ;
+		LOGFMTI("try to recover from exception") ;
 	}
 }
 

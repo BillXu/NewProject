@@ -1,5 +1,5 @@
 #include "IRoomDelegate.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include <ctime>
 #include "ISitableRoomPlayer.h"
 #include "ServerMessageDefine.h"
@@ -23,7 +23,7 @@ void IRoomDelegate::onUpdatePlayerGameResult( IRoom* pRoom, uint32_t nUserUID , 
 		targ->second->nGameOffset += nOffsetGame ;
 		targ->second->nOtherOffset += nOtherOffset ;
 		targ->second->bIsDiryt = true ;
-		CLogMgr::SharedLogMgr()->PrintLog("uid = %d update offset = %d , final = %d",nUserUID,nOffsetGame,targ->second->nGameOffset) ;
+		LOGFMTD("uid = %d update offset = %d , final = %d",nUserUID,nOffsetGame,targ->second->nGameOffset) ;
 		return ;
 	}
 	stRoomRankItem* p = new stRoomRankItem ;
@@ -34,7 +34,7 @@ void IRoomDelegate::onUpdatePlayerGameResult( IRoom* pRoom, uint32_t nUserUID , 
 	m_vRoomRankHistroy[p->nUserUID] = p ;
 	m_vSortedRankItems.push_back(p) ;
 
-	CLogMgr::SharedLogMgr()->PrintLog("uid = %d update offset = %d , final = %d",nUserUID,nOffsetGame,nOffsetGame) ;
+	LOGFMTD("uid = %d update offset = %d , final = %d",nUserUID,nOffsetGame,nOffsetGame) ;
 }
 
 uint8_t IRoomDelegate::canPlayerEnterRoom( IRoom* pRoom,stEnterRoomData* pEnterRoomPlayer )  // return 0 means ok ;
@@ -92,11 +92,11 @@ bool IRoomDelegate::onDelayPlayerWillLeaveRoom(IRoom* pRoom , ISitableRoomPlayer
 		msgdoLeave.nUserUID = pPlayer->getUserUID() ;
 		msgdoLeave.nGameOffset = pPlayer->getTotalGameOffset() ;
 		pRoom->sendMsgToPlayer(&msgdoLeave,sizeof(msgdoLeave),pPlayer->getSessionID()) ;
-		CLogMgr::SharedLogMgr()->PrintLog("player uid = %d game end stand up sys coin = %d to data svr ",pPlayer->getUserUID(),pPlayer->getCoin()) ;
+		LOGFMTD("player uid = %d game end stand up sys coin = %d to data svr ",pPlayer->getUserUID(),pPlayer->getCoin()) ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("player uid = %d just stand up dely leave , but no coin",pPlayer->getUserUID() ) ;
+		LOGFMTD("player uid = %d just stand up dely leave , but no coin",pPlayer->getUserUID() ) ;
 	}
 
 	return true ;

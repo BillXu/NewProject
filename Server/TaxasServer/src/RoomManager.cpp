@@ -1,6 +1,6 @@
 #include "RoomManager.h"
 #include "TaxasServerApp.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "TaxasRoom.h"
 #include "ServerMessageDefine.h"
 #include "RoomConfig.h"

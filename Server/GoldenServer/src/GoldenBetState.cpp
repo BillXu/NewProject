@@ -1,7 +1,7 @@
 #include "GoldenBetState.h"
 #include "GoldenRoom.h"
 #include "GoldenMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "GoldenRoomPlayer.h"
 #include <cassert>
 void CGoldenBetState::enterState(IRoom* pRoom)
@@ -19,7 +19,7 @@ void CGoldenBetState::onStateDuringTimeUp()
 	act.nValue = 0 ;
 	auto pp = m_pRoom->getPlayerByIdx(m_pRoom->getCurActIdx()) ;
 	assert(pp && "why current act player is null ?" );
-	CLogMgr::SharedLogMgr()->PrintLog("player not act so give up idx = %u",m_pRoom->getCurActIdx()) ;
+	LOGFMTD("player not act so give up idx = %u",m_pRoom->getCurActIdx()) ;
 	onMessage(&act,ID_MSG_PORT_CLIENT,pp->getSessionID());
 }
 
@@ -70,7 +70,7 @@ bool CGoldenBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			auto pPlayer = m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID) ;
 			if ( pPlayer == nullptr )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("session id = %u not in this room do act room id = %u",nPlayerSessionID,m_pRoom->getRoomID()) ;
+				LOGFMTE("session id = %u not in this room do act room id = %u",nPlayerSessionID,m_pRoom->getRoomID()) ;
 				msgBack.nRet = 2 ;
 				m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 				break ;

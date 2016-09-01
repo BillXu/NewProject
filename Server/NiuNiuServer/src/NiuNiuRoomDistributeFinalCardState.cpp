@@ -4,15 +4,15 @@
 #include "NiuNiuRoomPlayerCaculateCardState.h"
 #include "NiuNiuMessageDefine.h"
 #include "AutoBuffer.h"
-#include "LogManager.h"
+#include "log4z.h"
 void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 {
-	CLogMgr::SharedLogMgr()->PrintLog("room id = %d start final card ",pRoom->getRoomID()) ;
+	LOGFMTD("room id = %d start final card ",pRoom->getRoomID()) ;
 
 	m_pRoom = (CNiuNiuRoom*)pRoom ;
 
 	setStateDuringTime(1 * TIME_NIUNIU_DISTRIBUTE_FINAL_CARD_PER_PLAYER );
-	//CLogMgr::SharedLogMgr()->PrintLog("room id = %d distribute final card, already distribute all card",m_pRoom->getRoomID()) ;
+	//LOGFMTD("room id = %d distribute final card, already distribute all card",m_pRoom->getRoomID()) ;
 	return ;
 	// distribute final card ;
 	uint8_t nPlayerCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ; ;
@@ -31,7 +31,7 @@ void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 			item.nCardCompsitNum = pRoomPlayer->getCardByIdx(4) ;
 			item.nPlayerIdx = pRoomPlayer->getIdx() ;
 			auBuffer.addContent(&item,sizeof(item)) ;
-			CLogMgr::SharedLogMgr()->PrintLog("final card for idx = %d , card = %d",item.nPlayerIdx,item.nCardCompsitNum) ;
+			LOGFMTD("final card for idx = %d , card = %d",item.nPlayerIdx,item.nCardCompsitNum) ;
 		}
 	}
 	m_pRoom->sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;

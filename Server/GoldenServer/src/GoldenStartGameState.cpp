@@ -1,6 +1,6 @@
 #include "GoldenStartGameState.h"
 #include "AutoBuffer.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "GoldenMessageDefine.h"
 #include "GoldenRoomPlayer.h"
 #include "GoldenRoom.h"
@@ -23,11 +23,11 @@ void CGoldenStartGameState::enterState(IRoom* pRoom)
 		{
 			stGoldenHoldPeerCard item ;
 			item.nIdx = pRoomPlayer->getIdx();
-			CLogMgr::SharedLogMgr()->PrintLog("send player card :idx = %d",item.nIdx);
+			LOGFMTD("send player card :idx = %d",item.nIdx);
 			for ( uint8_t nIdx = 0 ; nIdx < GOLDEN_PEER_CARD ; ++nIdx )
 			{
 				item.vCard[nIdx] = pRoomPlayer->getCardByIdx(nIdx);
-				CLogMgr::SharedLogMgr()->PrintLog("idx = % u , card = %u",nIdx,item.vCard[nIdx]);
+				LOGFMTD("idx = % u , card = %u",nIdx,item.vCard[nIdx]);
 			}
 			buffer.addContent(&item,sizeof(item)) ;
 		}
@@ -36,7 +36,7 @@ void CGoldenStartGameState::enterState(IRoom* pRoom)
 	m_pRoom->sendRoomMsg((stMsg*)buffer.getBufferPtr(),buffer.getContentSize()) ;
 
 	setStateDuringTime( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) * TIME_GOLDEN_DISTRIBUTE_CARD_PER_PLAYER + 1 );
-	CLogMgr::SharedLogMgr()->PrintLog("player cnt = %d room id = %d , distribute card",nPlayerCnt,m_pRoom->getRoomID());
+	LOGFMTD("player cnt = %d room id = %d , distribute card",nPlayerCnt,m_pRoom->getRoomID());
 }
 
 void CGoldenStartGameState::onStateDuringTimeUp()

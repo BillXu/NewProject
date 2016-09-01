@@ -1,5 +1,5 @@
 #include "EventCenter.h"
-#include "LogManager.h"
+#include "log4z.h"
 CEventCenter::CEventCenter()
 {
 
@@ -33,13 +33,13 @@ void CEventCenter::PostEvent(stEventArg* pEventArg )
 	ProcessRemoveAnddAdd();
 	if ( pEventArg == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("event arg is NULL ") ;
+		LOGFMTE("event arg is NULL ") ;
 		return ;
 	}
 
 	if ( pEventArg->cEvent >= eEvent_Max )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("event type error !") ;
+		LOGFMTE("event type error !") ;
 		return ;
 	}
 
@@ -59,7 +59,7 @@ void CEventCenter::RegisterEventListenner(eEventType eEvent , void* pUserData, l
 {
 	if ( eEvent >= eEvent_Max )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("event type error !RegisterEventListenner" ) ;
+		LOGFMTE("event type error !RegisterEventListenner" ) ;
 		return ;
 	}
 
@@ -75,7 +75,7 @@ void CEventCenter::RemoveEventListenner(eEventType eEvent , void* pUserData, lpE
 {
 	if ( eEvent >= eEvent_Max )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("event type error !RemoveEventListenner") ;
+		LOGFMTE("event type error !RemoveEventListenner") ;
 		return ;
 	}
 

@@ -1,5 +1,5 @@
 #include "PushNotificationServer.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerMessageDefine.h"
 CPushNotificationServer::~CPushNotificationServer()
 {
@@ -9,31 +9,31 @@ CPushNotificationServer::~CPushNotificationServer()
 bool CPushNotificationServer::init()
 {
 	IServerApp::init();
-	CLogMgr::SharedLogMgr()->SetOutputFile("ApnsSvr");
+	//CLogMgr::SharedLogMgr()->SetOutputFile("ApnsSvr");
 	m_stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
 
 	stServerConfig* pSvrConfigItem = m_stSvrConfigMgr.GetServerConfig(eSvrType_DataBase );
 	if ( pSvrConfigItem == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("Data base config is null , can not start login svr ") ;
+		LOGFMTE("Data base config is null , can not start login svr ") ;
 		return false;
 	}
 
 	m_nPushThread.InitSSLContex();
 	if ( m_nPushThread.ConnectToAPNs() == false )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("connect to apns svr failed") ;
+		LOGFMTE("connect to apns svr failed") ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("connect to apns svr success") ;
+		LOGFMTI("connect to apns svr success") ;
 	}
 
 	// connected to center ;
 	pSvrConfigItem = m_stSvrConfigMgr.GetServerConfig(eSvrType_Center );
 	if ( pSvrConfigItem == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null so can not start svr ") ;
+		LOGFMTE("center svr config is null so can not start svr ") ;
 		return false;
 	}
 	setConnectServerConfig(pSvrConfigItem);

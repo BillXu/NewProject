@@ -1,24 +1,24 @@
 #include "VerifyApp.h"
 #include "CommonDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "TaskPoolModule.h"
 
 bool CVerifyApp::init()
 {
 	IServerApp::init();
-	CLogMgr::SharedLogMgr()->SetOutputFile("VerifySvr");
+	//CLogMgr::SharedLogMgr()->SetOutputFile("VerifySvr");
 
 	CSeverConfigMgr stSvrConfigMgr ;
 	stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
 	stServerConfig* pConfig = stSvrConfigMgr.GetServerConfig(eSvrType_Center) ;
 	if ( pConfig == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null , so can not connected to !") ;
+		LOGFMTE("center svr config is null , so can not connected to !") ;
 		return false;
 	}
 	setConnectServerConfig(pConfig);
 
-	CLogMgr::SharedLogMgr()->SystemLog("START verify server !") ;
+	LOGFMTI("START verify server !") ;
 
 	installModule(eMod_Pool);
 	return true;

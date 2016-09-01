@@ -42,9 +42,6 @@
     <ClInclude Include="..\..\Common\IConfigFile.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\LogManager.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Common\MessageDefine.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -63,6 +60,9 @@
     <ClInclude Include="..\ServerCommon\catch_dump_file.h">
       <Filter>SvrCommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\log4z.h">
+      <Filter>SvrCommon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -77,9 +77,6 @@
     <ClCompile Include="..\..\Common\IConfigFile.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\LogManager.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="src\CenterServer.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -87,6 +84,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\ServerCommon\catch_dump_file.cpp">
+      <Filter>SvrCommon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ServerCommon\log4z.cpp">
       <Filter>SvrCommon</Filter>
     </ClCompile>
   </ItemGroup>

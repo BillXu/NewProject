@@ -4,7 +4,7 @@
 #include "DBRequest.h"
 #include "ServerMessageDefine.h"
 #include "CommonDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 CDBServerApp::CDBServerApp()
 {
 	m_pDBManager = NULL ;
@@ -32,7 +32,7 @@ bool CDBServerApp::init()
 	stServerConfig* pCenter = m_stSvrConfigMgr.GetServerConfig(eSvrType_Center);
 	if ( pCenter == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null canont start DB server") ;
+		LOGFMTE("center svr config is null canont start DB server") ;
 		return false;
 	}
 	setConnectServerConfig(pCenter);
@@ -40,7 +40,7 @@ bool CDBServerApp::init()
 	stServerConfig* pDatabase = m_stSvrConfigMgr.GetServerConfig(eSvrType_DataBase);
 	if ( pDatabase == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("data base config is null, cant not start server") ;
+		LOGFMTE("data base config is null, cant not start server") ;
 		return false;
 	}
 
@@ -52,7 +52,7 @@ bool CDBServerApp::init()
 	m_pDBManager = new CDBManager(this) ;
 	m_pDBManager->Init();
 
-	CLogMgr::SharedLogMgr()->SystemLog("DBServer Start!");
+	LOGFMTI("DBServer Start!");
 	return true ;
 }
 void CDBServerApp::update(float fDeta )
@@ -84,14 +84,14 @@ bool CDBServerApp::OnMessage( Packet* pMsg )
 	stMsg* pmsg = (stMsg*)pMsg->_orgdata ;
 	if ( pmsg->cSysIdentifer == ID_MSG_VERIFY )
 	{
-		CLogMgr::SharedLogMgr()->SystemLog("no need recieve verify msg") ;
+		LOGFMTI("no need recieve verify msg") ;
 		return true ;
 	}
 
 	stMsg* pRet = pmsg;
 	if ( pRet->usMsgType != MSG_TRANSER_DATA )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why msg type is not transfer data , type = %d",pRet->usMsgType ) ;
+		LOGFMTE("why msg type is not transfer data , type = %d",pRet->usMsgType ) ;
 		return true;
 	}
 
@@ -113,7 +113,7 @@ bool CDBServerApp::OnMessage( Packet* pMsg )
 
 		if ( !m_pDBManager->onAsyncRequest(pRet->nReqType,pRet->nReqSerailID,pData->nSenderPort,jsReqContent) )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("async request type = %u , not process from port = %u",pRet->nReqType,pData->nSenderPort) ;
+			LOGFMTE("async request type = %u , not process from port = %u",pRet->nReqType,pData->nSenderPort) ;
 			assert(0 && "must process the req" );
 		}
 		return true ;
@@ -125,5 +125,5 @@ bool CDBServerApp::OnMessage( Packet* pMsg )
 void CDBServerApp::onExit()
 {
 	m_pDBWorkThread->StopWork();
-	CLogMgr::SharedLogMgr()->SystemLog("DBServer ShutDown!");
+	LOGFMTI("DBServer ShutDown!");
 }

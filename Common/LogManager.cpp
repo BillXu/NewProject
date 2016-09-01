@@ -6,7 +6,7 @@
 //
 //
 #pragma warning(disable:4996)
-#include "LogManager.h"
+#include "log4z.h"
 #include <stdarg.h>
 #include <time.h>
 #ifndef SERVER

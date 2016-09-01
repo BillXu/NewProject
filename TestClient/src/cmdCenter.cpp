@@ -1,5 +1,5 @@
 #include "cmdCenter.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "MessageDefine.h"
 #include "Client.h"
 #include "NetWorkManager.h"
@@ -35,7 +35,7 @@ bool CCmdCenter::init()
 	//}
 	//else
 	//{
-	//	CLogMgr::SharedLogMgr()->ErrorLog("can not create one more cmd center") ;
+	//	LOGFMTE("can not create one more cmd center") ;
 	//	assert(0 && "can not create more than one ccmd center");
 	//	return false;
 	//}
@@ -76,7 +76,7 @@ bool CCmdCenter::registerCmd(std::string strMoudle , stCmd* pcmd )
 
 	if ( pmodule->getCmdByName(pcmd->strName) )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("already added cmd = %s , to module = %s",pcmd->strName.c_str(),pmodule->strModuleName.c_str()) ;
+		LOGFMTE("already added cmd = %s , to module = %s",pcmd->strName.c_str(),pmodule->strModuleName.c_str()) ;
 		return false ;
 	}
 	pmodule->vCmds.insert(std::make_pair(pcmd->strName,pcmd)) ;
@@ -206,7 +206,7 @@ void CCmdCenter::showCmd( std::string& strModule , std::string& cmdName )
 
 	if ( nullptr == pcmd )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("can not find cmd with name = %s ",cmdName.c_str()) ;
+		LOGFMTE("can not find cmd with name = %s ",cmdName.c_str()) ;
 		return ;
 	}
 	printf("\ncmd : %s\n",cmdName.c_str());
@@ -223,7 +223,7 @@ void CCmdCenter::ShowModule( std::string& strModule  )
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->PrintLog("can not find module = %s",strModule.c_str()) ;
+		LOGFMTD("can not find module = %s",strModule.c_str()) ;
 		return ;
 	}
 

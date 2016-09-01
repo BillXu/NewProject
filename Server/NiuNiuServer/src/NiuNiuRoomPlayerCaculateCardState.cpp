@@ -3,13 +3,13 @@
 #include "NiuNiuMessageDefine.h"
 #include "NiuNiuRoomGameResult.h"
 #include "ISitableRoomPlayer.h"
-#include "LogManager.h"
+#include "log4z.h"
 void CNiuNiuRoomStatePlayerCaculateCardState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (ISitableRoom*)pRoom;
 	m_nWaitOperPlayerCnt = (uint8_t)m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) ;
 	setStateDuringTime(TIME_NIUNIU_PLAYER_CACULATE_CARD) ;
-	CLogMgr::SharedLogMgr()->PrintLog("enter cacualte card state");
+	LOGFMTD("enter cacualte card state");
 	m_vOperoateRecord.clear();
 }
 
@@ -32,19 +32,19 @@ bool CNiuNiuRoomStatePlayerCaculateCardState::onMessage( stMsg* prealMsg , eMsgP
 			ISitableRoomPlayer* pPlayer = m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID) ;
 			if ( pPlayer == nullptr )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("you are not sit down how to caculate card session id = %d",nPlayerSessionID) ;
+				LOGFMTE("you are not sit down how to caculate card session id = %d",nPlayerSessionID) ;
 				return true ;
 			}
 
 			if ( pPlayer->isHaveState(eRoomPeer_CanAct) == false )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("you are not player in this game , how to cacuate card session id = %d", nPlayerSessionID ) ;
+				LOGFMTE("you are not player in this game , how to cacuate card session id = %d", nPlayerSessionID ) ;
 				return true ;
 			}
 
 			if ( m_vOperoateRecord.find(nPlayerSessionID) != m_vOperoateRecord.end() )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("don't do twice cacualte card session id %d",nPlayerSessionID ) ;
+				LOGFMTE("don't do twice cacualte card session id %d",nPlayerSessionID ) ;
 				return true ;
 			}
 			m_vOperoateRecord[nPlayerSessionID] = 1 ;

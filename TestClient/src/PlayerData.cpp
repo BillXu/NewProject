@@ -1,6 +1,6 @@
 #include "PlayerData.h"
 #include "MessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 bool CPlayerData::OnMessage( Packet* pMsg )
 {
 	stMsg* pmsg = (stMsg*)pMsg->_orgdata ;

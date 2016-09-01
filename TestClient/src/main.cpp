@@ -4,7 +4,7 @@
 #include <iostream>
 #include "Client.h"
 #include "RobotConfig.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "RobotAIConfig.h"
 #include "cmdCenter.h"
 #include <crtdbg.h>
@@ -290,6 +290,7 @@ void CTempTest::setValue(T* v ,int nlen )
 #include <regex>
 int main()
 {
+	zsummer::log4z::ILog4zManager::GetInstance()->Start() ;
 	//time_t nTen = 60*60*24 - 10*60 ; // wait 10 miniter 	
 	//time_t nFive = 60*60*24 - 5*60 ; // wait 5 miniter 	
 	//time_t tNow = time(nullptr);

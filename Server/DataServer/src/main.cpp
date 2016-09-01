@@ -2,7 +2,7 @@
 //#include "GameServerApp.h"
 //#include <iostream>
 //#include <WinDef.h>
-//#include "LogManager.h"
+//#include "log4z.h"
 //#include "catch_dump_file.h"
 //#pragma comment(lib,"JsonDll.lib")
 //
@@ -62,7 +62,7 @@
 //	}
 //	__except(CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
 //	{
-//		CLogMgr::SharedLogMgr()->SystemLog("try to recover from exception") ;
+//		LOGFMTI("try to recover from exception") ;
 //		pApp->run() ;
 //	}
 //}
@@ -81,7 +81,7 @@
 //	//	{
 //	//		assert(0&&"error");
 //	//	}
-//	//	CLogMgr::SharedLogMgr()->PrintLog(" room id = %u" , nRID) ;
+//	//	LOGFMTD(" room id = %u" , nRID) ;
 //	//}
 //
 //	//nCnt = 10 ;
@@ -92,7 +92,7 @@
 //	//	{
 //	//		assert(0&&"error");
 //	//	}
-//	//	CLogMgr::SharedLogMgr()->PrintLog(" room id = %u" , nRID) ;
+//	//	LOGFMTD(" room id = %u" , nRID) ;
 //	//}
 //
 //	//nCnt = 10 ;
@@ -103,7 +103,7 @@
 //	//	{
 //	//		assert(0&&"error");
 //	//	}
-//	//	CLogMgr::SharedLogMgr()->PrintLog(" room id = %u" , nRID) ;
+//	//	LOGFMTD(" room id = %u" , nRID) ;
 //	//}
 //	//-----
 //	//char p[20] = {0} ;
@@ -120,12 +120,12 @@
 //	//CTimer* pTimer1 = new CTimer ;
 //	//pTimer1->setInterval( 1 );
 //	//pTimer1->setIsAutoRepeat(true) ;
-//	//pTimer1->setCallBack([](CTimer* pTimer , float fD){ CLogMgr::SharedLogMgr()->PrintLog("invoker timer 1") ;} ) ;
+//	//pTimer1->setCallBack([](CTimer* pTimer , float fD){ LOGFMTD("invoker timer 1") ;} ) ;
 //
 //	//CTimer tRimer ;
 //	//tRimer.setInterval(2) ;
 //	//tRimer.setIsAutoRepeat(true) ;
-//	//tRimer.setCallBack([&pTimer1](CTimer* pTimer , float fD){ uint8_t nRand = rand() % 100 ;CLogMgr::SharedLogMgr()->PrintLog("invoker timer 2, %u",nRand ) ;  if (pTimer1)pTimer1->canncel(); delete pTimer1; pTimer1 = nullptr ;} ) ;
+//	//tRimer.setCallBack([&pTimer1](CTimer* pTimer , float fD){ uint8_t nRand = rand() % 100 ;LOGFMTD("invoker timer 2, %u",nRand ) ;  if (pTimer1)pTimer1->canncel(); delete pTimer1; pTimer1 = nullptr ;} ) ;
 //	//tRimer.start() ;
 //	//pTimer1->start() ;
 //	if ( !bok )

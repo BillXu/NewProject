@@ -1,5 +1,5 @@
 #include "ServerConfig.h"
-#include "LogManager.h"
+#include "log4z.h"
 CSeverConfigMgr::CSeverConfigMgr()
 {
 	memset(m_vAllSvrConfig,0,sizeof(m_vAllSvrConfig)) ;
@@ -15,7 +15,7 @@ bool CSeverConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	unsigned char cSvrType = refReaderRow["svrType"]->IntValue();
 	if ( cSvrType >= eSvrType_Max )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("server config error , type error , type = %d",cSvrType) ;
+		LOGFMTE("server config error , type error , type = %d",cSvrType) ;
 		return false;
 	}
 
@@ -25,7 +25,7 @@ bool CSeverConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	configItem.nSvrType = cSvrType;
 	if (strlen(refReaderRow["svrIP"]->StringValue().c_str()) >= 16 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("too long ip address = %s",refReaderRow["svrIP"]->StringValue().c_str()) ;
+		LOGFMTE("too long ip address = %s",refReaderRow["svrIP"]->StringValue().c_str()) ;
 		return false ;
 	}
 	memcpy_s(configItem.strIPAddress,sizeof(configItem.strIPAddress),refReaderRow["svrIP"]->StringValue().c_str(),strlen(refReaderRow["svrIP"]->StringValue().c_str()));

@@ -1,5 +1,5 @@
 #include "QingJiaModule.h"
-#include "LogManager.h"
+#include "log4z.h"
 void CQinJiaModule::init( IServerApp* svrApp )
 {
 	IGlobalModule::init(svrApp);
@@ -69,13 +69,13 @@ void CQinjiaTask::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUse
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("club gotyp request failed type = %u ",nUserTypeArg) ;
+		LOGFMTE("club gotyp request failed type = %u ",nUserTypeArg) ;
 		return ;
 	}
 
 	if ( m_jsResultData["errcode"].asUInt() != 200 )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("club gotype request failed error code = %u type = %u", m_jsResultData["errcode"].asUInt(),nUserTypeArg) ;
+		LOGFMTE("club gotype request failed error code = %u type = %u", m_jsResultData["errcode"].asUInt(),nUserTypeArg) ;
 		return ;
 	}
 }

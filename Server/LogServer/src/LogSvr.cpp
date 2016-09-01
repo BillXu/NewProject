@@ -4,7 +4,7 @@
 #include "DBRequest.h"
 #include "ServerMessageDefine.h"
 #include "CommonDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 CLogSvrApp::CLogSvrApp()
 {
 	m_pDBManager = NULL ;
@@ -34,7 +34,7 @@ bool CLogSvrApp::init()
 	stServerConfig* pConfig = stSvrConfigMgr.GetServerConfig(eSvrType_Center);
 	if ( pConfig == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null , so can not connected to !") ;
+		LOGFMTE("center svr config is null , so can not connected to !") ;
 		return false;
 	}
 	setConnectServerConfig(pConfig);
@@ -48,7 +48,7 @@ bool CLogSvrApp::init()
 	m_pDBManager = new CDBManager() ;
 	m_pDBManager->Init();
 
-	CLogMgr::SharedLogMgr()->SystemLog("log server Start!");
+	LOGFMTI("log server Start!");
 	return true ;
 }
 void CLogSvrApp::update(float fDeta)
@@ -91,7 +91,7 @@ bool CLogSvrApp::onLogicMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 void CLogSvrApp::onExit()
 {
 	m_pDBWorkThread->StopWork();
-	CLogMgr::SharedLogMgr()->SystemLog("log svr ShutDown!");
+	LOGFMTI("log svr ShutDown!");
 }
 
 uint16_t CLogSvrApp::getLocalSvrMsgPortType()

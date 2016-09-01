@@ -1,6 +1,6 @@
 #include "PushNotificationThread.h"
 #include "PushRequestQueue.h"
-#include "LogManager.h"
+#include "log4z.h"
 #pragma comment(lib, "ws2_32.lib")
 #define RECONNECT_TIME (60*26)
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
@@ -43,19 +43,19 @@ bool CPushNotificationThread::InitSSLContex()
 
 	if (SSL_CTX_use_certificate_file(m_pctx, CERTF, SSL_FILETYPE_PEM) <= 0)   
 	{  
-		CLogMgr::SharedLogMgr()->ErrorLog("客户端证书检查失败！！\n");
+		LOGFMTE("客户端证书检查失败！！\n");
 		return false;  
 	}  
 
 	if (SSL_CTX_use_PrivateKey_file(m_pctx, KEYF, SSL_FILETYPE_PEM) <= 0)   
 	{  
-		CLogMgr::SharedLogMgr()->ErrorLog("客户端key检查失败！\n");
+		LOGFMTE("客户端key检查失败！\n");
 		return false;  
 	}  
 
 	if (!SSL_CTX_check_private_key(m_pctx))   
 	{  
-		CLogMgr::SharedLogMgr()->ErrorLog("客户端证书和key不匹配!\n");
+		LOGFMTE("客户端证书和key不匹配!\n");
 		return false;  
 	}
 	return true ;
@@ -79,7 +79,7 @@ bool CPushNotificationThread::ConnectToAPNs()
 	m_nSocket = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);   
 	if(m_nSocket == INVALID_SOCKET)  
 	{  
-		CLogMgr::SharedLogMgr()->ErrorLog("套接字创建失败!\n");
+		LOGFMTE("套接字创建失败!\n");
 		return false ;
 	}  
 
@@ -88,7 +88,7 @@ bool CPushNotificationThread::ConnectToAPNs()
 	struct hostent *hp; 
 	if(!(hp=gethostbyname(HOST_NAME))) 
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("GET HOST BY NAME EEROR , name = %s\n",HOST_NAME) ;
+		LOGFMTE("GET HOST BY NAME EEROR , name = %s\n",HOST_NAME) ;
 		return false ;
 	}
 	sa.sin_family = AF_INET;  
@@ -100,19 +100,19 @@ bool CPushNotificationThread::ConnectToAPNs()
 	err = connect(m_nSocket, (struct sockaddr*) &sa,sizeof(sa));  
 	if(err == -1)  
 	{  
-		CLogMgr::SharedLogMgr()->ErrorLog( "TCP连接失败！\n");
+		LOGFMTE( "TCP连接失败！\n");
 		return false;  
 	}  
 	else  
 	{  
-		CLogMgr::SharedLogMgr()->SystemLog( "TCP连接成功！\n");
+		LOGFMTI( "TCP连接成功！\n");
 	}  
 	//SSL连接  
 	//新建SSL  
 	m_pSSL = SSL_new (m_pctx);   
 	if(m_pSSL == NULL)  
 	{  
-		CLogMgr::SharedLogMgr()->ErrorLog("新建SSL失败!\n");
+		LOGFMTE("新建SSL失败!\n");
 		return false ;
 	}  
 	//套接字和SSL绑定  
@@ -122,12 +122,12 @@ bool CPushNotificationThread::ConnectToAPNs()
 	if(err <= 0 )  
 	{  
 		int nRet = SSL_get_error(m_pSSL,err);
-		CLogMgr::SharedLogMgr()->ErrorLog("SSL连接失败 nRet = %d \n",nRet) ;
+		LOGFMTE("SSL连接失败 nRet = %d \n",nRet) ;
 		return false ;
 	}  
 	else  
 	{  
-		CLogMgr::SharedLogMgr()->SystemLog("SSL连接成功\n") ;
+		LOGFMTI("SSL连接成功\n") ;
 	}  
 	//打印连接信息  
 #ifndef NDEBUG
@@ -137,14 +137,14 @@ bool CPushNotificationThread::ConnectToAPNs()
 	CHK_NULL(server_cert);
 	if (server_cert != NULL)
 	{  
-		CLogMgr::SharedLogMgr()->SystemLog("服务器证书:\n");
-		CLogMgr::SharedLogMgr()->SystemLog("subject: %s \n",X509_NAME_oneline (X509_get_subject_name (server_cert),0,0));
-		CLogMgr::SharedLogMgr()->SystemLog("issuer: %s",X509_NAME_oneline(X509_get_issuer_name(server_cert),0,0)); 
+		LOGFMTI("服务器证书:\n");
+		LOGFMTI("subject: %s \n",X509_NAME_oneline (X509_get_subject_name (server_cert),0,0));
+		LOGFMTI("issuer: %s",X509_NAME_oneline(X509_get_issuer_name(server_cert),0,0)); 
 		X509_free (server_cert);/*如不再需要,需将证书释放 */  
 	}  
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("服务器没有证书信息！\n") ;//服务器端认证失败  
+		LOGFMTE("服务器没有证书信息！\n") ;//服务器端认证失败  
 	}
 #endif
 	return true;
@@ -168,7 +168,7 @@ void CPushNotificationThread::ProcessWork()
 			nTimeIdle = nCurNow - nLastActive;
 			if (  nTimeIdle > RECONNECT_TIME )
 			{
-				CLogMgr::SharedLogMgr()->SystemLog("idle too long , we reconnected ; idle Time = %d ",nTimeIdle ) ;
+				LOGFMTI("idle too long , we reconnected ; idle Time = %d ",nTimeIdle ) ;
 				Reconnect();
 			}
 			pNotice = *iter ;
@@ -180,7 +180,7 @@ void CPushNotificationThread::ProcessWork()
 				while( m_pSSL == nullptr || SSL_write(m_pSSL, pBuffer, nLen) <= 0 )  // maybe disconnect ;
 				{
 					time_t nRunnedTime = time(NULL) - nLastActive ;
-					CLogMgr::SharedLogMgr()->SystemLog("SSL connect to APNS Disconnected , trying to Reconnect times = %d ! runned time = %d",nTryTimes,nRunnedTime ) ;
+					LOGFMTI("SSL connect to APNS Disconnected , trying to Reconnect times = %d ! runned time = %d",nTryTimes,nRunnedTime ) ;
 					Reconnect();
 					++nTryTimes ;
 					if ( nTryTimes >= 5 )

@@ -5,7 +5,7 @@
 //#include "catch_dump_file.h"
 //#pragma comment(lib,"JsonDll.lib")
 //CLoginApp* pTheApp = NULL ;
-//#include "LogManager.h"
+//#include "log4z.h"
 //
 ////void DisableSetUnhandledExceptionFilter()
 ////
@@ -80,7 +80,7 @@
 //	}
 //	__except(CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
 //	{
-//		CLogMgr::SharedLogMgr()->SystemLog("try to recover from exception") ;
+//		LOGFMTI("try to recover from exception") ;
 //		pApp->run() ;
 //	}
 //}

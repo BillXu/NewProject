@@ -1,5 +1,5 @@
 #include "SystemRoom.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "RoomConfig.h"
 #include "ServerMessageDefine.h"
 #include "IRoomManager.h"
@@ -95,7 +95,7 @@
 //		nSubRoomCnt = vJsValue["subRoomCnt"].asInt();
 //		if ( nSubRoomCnt <= 0 )
 //		{
-//			CLogMgr::SharedLogMgr()->ErrorLog("why set sub room cnt = 0 ") ;
+//			LOGFMTE("why set sub room cnt = 0 ") ;
 //			nSubRoomCnt = 3 ;
 //		}
 //	}
@@ -138,7 +138,7 @@
 //	msgRead.nTermNumber = m_nTermNumber ;
 //	m_pRoomMgr->sendMsg(&msgRead,sizeof(msgRead),getRoomID()) ;
 //
-//	CLogMgr::SharedLogMgr()->PrintLog("read room id = %u ternm = %u rank player",getRoomID(),m_nTermNumber) ;
+//	LOGFMTD("read room id = %u ternm = %u rank player",getRoomID(),m_nTermNumber) ;
 //	if ( m_nTermNumber > 0 )
 //	{
 //		stMsgReadRoomPlayer msgRead ;
@@ -146,7 +146,7 @@
 //		msgRead.nRoomType = getRoomType() ;
 //		msgRead.nTermNumber = m_nTermNumber - 1 ;
 //		m_pRoomMgr->sendMsg(&msgRead,sizeof(msgRead),getRoomID()) ;
-//		CLogMgr::SharedLogMgr()->PrintLog("read room id = %u last rank players ",getRoomID()) ;
+//		LOGFMTD("read room id = %u last rank players ",getRoomID()) ;
 //	}
 //}
 //
@@ -193,7 +193,7 @@
 //{
 //	if ( pEnterRoomPlayer->nPlayerType == ePlayer_Robot )
 //	{
-//		CLogMgr::SharedLogMgr()->ErrorLog("temp let robot enter any room");
+//		LOGFMTE("temp let robot enter any room");
 //		return 0 ;
 //	}
 //
@@ -201,26 +201,26 @@
 //	{
 //		if ( pEnterRoomPlayer->isRegisted == false )
 //		{
-//			CLogMgr::SharedLogMgr()->PrintLog("player is visitor , son can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
+//			LOGFMTD("player is visitor , son can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
 //			return 2 ; // not register player  can not enter ;
 //		}
 //	}
 //
 //	if ( m_pConfig->nCoinLowLimit > pEnterRoomPlayer->nCoin )
 //	{
-//		CLogMgr::SharedLogMgr()->PrintLog("player coin is too few so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
+//		LOGFMTD("player coin is too few so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
 //		return 3 ; // player coin is too few ;
 //	}
 //
 //	if ( m_pConfig->nCoinTopLimit && m_pConfig->nCoinTopLimit < pEnterRoomPlayer->nCoin )
 //	{
-//		CLogMgr::SharedLogMgr()->PrintLog("player coin is too many, so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
+//		LOGFMTD("player coin is too many, so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
 //		return 4 ; // player coin is too many ;
 //	}
 //
 //	if ( isPlayerLoseReachMax(nullptr,pEnterRoomPlayer->nUserUID) )
 //	{
-//		CLogMgr::SharedLogMgr()->PrintLog("player lose reach limit, so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
+//		LOGFMTD("player lose reach limit, so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
 //		return 5 ; // lose too many ;
 //	}
 //
@@ -228,7 +228,7 @@
 //	auto alReadyRoom2 = getRoomByUID(pEnterRoomPlayer->nUserUID);
 //	if ( alReadyRoom != nullptr || alReadyRoom2 != nullptr )
 //	{
-//		CLogMgr::SharedLogMgr()->PrintLog("you already in some room, so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
+//		LOGFMTD("you already in some room, so can not enter room , uid = %d",pEnterRoomPlayer->nUserUID);
 //		return 1 ;
 //	}
 //	return 0 ;
@@ -285,7 +285,7 @@
 //			if ( tNow >= getCloseTime() )
 //			{
 //				m_eState = eRoomState_WillClose ;
-//				CLogMgr::SharedLogMgr()->PrintLog("uid = %d change do will close",getRoomID() );
+//				LOGFMTD("uid = %d change do will close",getRoomID() );
 //			}
 //		}
 //		break;
@@ -294,7 +294,7 @@
 //			if ( isSubRoomClosed() )
 //			{
 //				m_eState = eRoomState_Close ;
-//				CLogMgr::SharedLogMgr()->PrintLog("uid = %d change do close",getRoomID() );
+//				LOGFMTD("uid = %d change do close",getRoomID() );
 //				onRoomClose();
 //			}
 //		}
@@ -305,7 +305,7 @@
 //			if ( tNow >= m_tOpenTime )
 //			{
 //				m_eState = eRoomState_Opening ;
-//				CLogMgr::SharedLogMgr()->PrintLog("uid = %d change do open",getRoomID() );
+//				LOGFMTD("uid = %d change do open",getRoomID() );
 //				onRoomOpen();
 //			}
 //		}
@@ -314,7 +314,7 @@
 //		{
 //			if ( isSubRoomClosed() )
 //			{
-//				CLogMgr::SharedLogMgr()->PrintLog("uid = %d change do dead",getRoomID() );
+//				LOGFMTD("uid = %d change do dead",getRoomID() );
 //				m_eState = eRoomState_Dead ;
 //				for ( auto uu : m_vRooms )
 //				{
@@ -331,7 +331,7 @@
 //		}
 //		break;
 //	default:
-//		CLogMgr::SharedLogMgr()->ErrorLog("unknonw room state = %u room id = %u",getRoomState(),getRoomID()) ;
+//		LOGFMTE("unknonw room state = %u room id = %u",getRoomState(),getRoomID()) ;
 //		break;
 //	}
 //}
@@ -339,7 +339,7 @@
 //template<class TR >
 //void CSystemRoom<TR>::onTimeSave()
 //{
-//	CLogMgr::SharedLogMgr()->PrintLog("time save room info room id = %u",getRoomID());
+//	LOGFMTD("time save room info room id = %u",getRoomID());
 //	// save room rank ;
 //	stMsgSaveRoomPlayer msgSave ;
 //	msgSave.nRoomID = getRoomID() ;
@@ -373,7 +373,7 @@
 //	{
 //	case MSG_REQUEST_ROOM_REWARD_INFO:
 //		{
-//			CLogMgr::SharedLogMgr()->PrintLog("session id = %u request room id = %u reward info",nPlayerSessionID,getRoomID()) ;
+//			LOGFMTD("session id = %u request room id = %u reward info",nPlayerSessionID,getRoomID()) ;
 //			if ( nullptr != m_pRewardInfoBuffer )
 //			{
 //				m_pRoomMgr->sendMsg((stMsg*)m_pRewardInfoBuffer,m_nBufferLen,nPlayerSessionID) ;
@@ -413,17 +413,17 @@
 //			stMsgReadRoomPlayerRet* pRet = (stMsgReadRoomPlayerRet*)prealMsg ; 
 //			if ( pRet->nTermNumber + 1 < m_nTermNumber )
 //			{
-//				CLogMgr::SharedLogMgr()->SystemLog("recieved last last term player data , skip id  room id = %u",getRoomID()) ;
+//				LOGFMTI("recieved last last term player data , skip id  room id = %u",getRoomID()) ;
 //				break; 
 //			}
 //
 //			if ( pRet->bIsLast && m_nTermNumber == pRet->nTermNumber )
 //			{
-//				CLogMgr::SharedLogMgr()->SystemLog("room id = %u read ok ",getRoomID()) ;
+//				LOGFMTI("room id = %u read ok ",getRoomID()) ;
 //				m_bReadOk = true ;
 //			}
 //
-//			CLogMgr::SharedLogMgr()->PrintLog("room id = %d recive room player data cnt = %d",getRoomID(),pRet->nCnt) ;
+//			LOGFMTD("room id = %d recive room player data cnt = %d",getRoomID(),pRet->nCnt) ;
 //			stSaveRoomPlayerEntry* pp = (stSaveRoomPlayerEntry*)(((char*)prealMsg) + sizeof(stMsgReadRoomPlayerRet));
 //			while ( pRet->nCnt-- )
 //			{
@@ -443,7 +443,7 @@
 //				}
 //				else
 //				{
-//					CLogMgr::SharedLogMgr()->ErrorLog("recived too old rank data room id = %u",getRoomID());
+//					LOGFMTE("recived too old rank data room id = %u",getRoomID());
 //					return true ;
 //				}
 //
@@ -455,7 +455,7 @@
 //				extern bool sortFuncRankItem(IRoomDelegate::stRoomRankItem* pLeft , IRoomDelegate::stRoomRankItem* pRight );
 //
 //				m_vLastGameRank.sort(sortFuncRankItem);
-//				CLogMgr::SharedLogMgr()->PrintLog("sort last rank player room id = %u",getRoomID());
+//				LOGFMTD("sort last rank player room id = %u",getRoomID());
 //			}
 //		}
 //		break;
@@ -511,7 +511,7 @@
 //				}
 //			}
 //
-//			CLogMgr::SharedLogMgr()->PrintLog("uid = %d request rank room id = %u",nUserID,getRoomID());
+//			LOGFMTD("uid = %d request rank room id = %u",nUserID,getRoomID());
 //			// send room info to player ;
 //			stMsgRequestRoomRankRet msgRet ;
 //			msgRet.nCnt = vWillSend.size() ;
@@ -521,7 +521,7 @@
 //			for ( auto& itemSendPlayer : vWillSend )
 //			{
 //				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
-//				CLogMgr::SharedLogMgr()->PrintLog("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
+//				LOGFMTD("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
 //			}
 //			m_pRoomMgr->sendMsg((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
 //		}
@@ -553,7 +553,7 @@
 //				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
 //			}
 //			m_pRoomMgr->sendMsg((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
-//			CLogMgr::SharedLogMgr()->PrintLog("session id = %u request last game rank , room id = %u",nPlayerSessionID,getRoomID());
+//			LOGFMTD("session id = %u request last game rank , room id = %u",nPlayerSessionID,getRoomID());
 //		}
 //		break;
 //	default:
@@ -642,7 +642,7 @@
 //	{
 //		m_pRoomMgr->sendMsg((stMsg*)abf->getBufferPtr(),abf->getContentSize(),getRoomID()) ;
 //	}
-//	CLogMgr::SharedLogMgr()->PrintLog("send rank change apns uid = %u",nUID) ;
+//	LOGFMTD("send rank change apns uid = %u",nUID) ;
 //}
 //
 //template<class TR >
@@ -664,21 +664,21 @@
 //{
 //	m_eState = eRoomState_Opening ;
 //	m_tCloseTime = m_tOpenTime + m_nDuringSeconds ;
-//	CLogMgr::SharedLogMgr()->SystemLog("room id = %d opened",getRoomID());
+//	LOGFMTI("room id = %d opened",getRoomID());
 //	// refresh last game rank ;
 //	refreshLastGameRank();
 //	// remove all histroy 
 //	removeAllRankItemPlayer();
 //	++m_nTermNumber ;
 //	m_bRoomInfoDiry = true ;
-//	CLogMgr::SharedLogMgr()->SystemLog("room id = %u star to termNumber = %u",getRoomID(),m_nTermNumber) ;
+//	LOGFMTI("room id = %u star to termNumber = %u",getRoomID(),m_nTermNumber) ;
 //}
 //
 //template<class TR >
 //void CSystemRoom<TR>::onRoomClose()
 //{
 //	m_eState = eRoomState_Close ;
-//	CLogMgr::SharedLogMgr()->SystemLog("room id = %d closed",getRoomID());
+//	LOGFMTI("room id = %d closed",getRoomID());
 //	sortRoomRankItem();
 //
 //	m_tOpenTime = time(nullptr) + TIME_DURING_ROOM_CLOSE ; // half an hour later reopen ;
@@ -723,7 +723,7 @@
 //	aub.addContent(&msgReq,sizeof(msgReq)) ;
 //	aub.addContent(strJson.c_str(),msgReq.nJsonsLen) ;
 //	m_pRoomMgr->sendMsg((stMsg*)aub.getBufferPtr(),aub.getContentSize(),0) ;
-//	CLogMgr::SharedLogMgr()->PrintLog("room id = %d game over , result js = %s",getRoomID(),strJson.c_str()) ;
+//	LOGFMTD("room id = %d game over , result js = %s",getRoomID(),strJson.c_str()) ;
 //
 //	// save log ;
 //	stMsgSaveLog msgLog ;
@@ -769,7 +769,7 @@
 //	sprintf_s(pBuffer,sizeof(pBuffer),pContent,getRoomName()) ;
 //	if ( strlen(pBuffer) > 219 )
 //	{
-//		CLogMgr::SharedLogMgr()->ErrorLog("msg too len : %s",pBuffer) ;
+//		LOGFMTE("msg too len : %s",pBuffer) ;
 //		onTimeSave();
 //		return ;
 //	}

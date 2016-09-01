@@ -1,5 +1,5 @@
 #include "Timer.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include <time.h>
 #include <cassert>
 // timer
@@ -18,7 +18,7 @@ CTimer::~CTimer()
 {
 	if ( eTimerState_Runing == m_eState )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("you should canncel the time , befor delete it") ;
+		LOGFMTE("you should canncel the time , befor delete it") ;
 		canncel() ;
 	}
 }
@@ -31,7 +31,7 @@ void CTimer::canncel()
 		CTimerManager::getInstance()->canncelTimer(this) ;
 		return ;
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("timer is not running how to canncel !") ;
+	LOGFMTE("timer is not running how to canncel !") ;
 }
 
 void CTimer::setIsAutoRepeat( bool isRepeat )
@@ -55,7 +55,7 @@ void CTimer::start()
 	assert( m_lpFunc != nullptr && "please set timer func first");
 	if ( m_eState == eTimerState_Runing )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("timer already running , don't runed it again") ;
+		LOGFMTE("timer already running , don't runed it again") ;
 		return ;
 	}
 	m_eState = eTimerState_Runing ;

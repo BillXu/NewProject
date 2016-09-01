@@ -4,7 +4,7 @@
 //#include <iostream>
 //#include "ThreadMod.h"
 //#pragma comment(lib,"JsonDll.lib")
-//#include "LogManager.h"
+//#include "log4z.h"
 ////#include "mutex.h"
 ////#include <my_global.h>
 ////#include "mysql.h"
@@ -62,7 +62,7 @@
 //	}
 //	__except(CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
 //	{
-//		CLogMgr::SharedLogMgr()->SystemLog("try to recover from exception") ;
+//		LOGFMTI("try to recover from exception") ;
 //		pApp->run() ;
 //	}
 //}

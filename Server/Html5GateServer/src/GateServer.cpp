@@ -1,7 +1,7 @@
 #include "GateServer.h"
 #include "CommonDefine.h"
 #include "ServerMessageDefine.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "GateClient.h"
 #include <assert.h>
 #include "ClientNetworkImp.h"
@@ -116,7 +116,7 @@ bool CGateServer::OnMessage( Packet* pPacket )
 		}
 		else
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("wrong msg send to gate, target port = %d, msgType = %d",pReal->cSysIdentifer, pReal->usMsgType ) ;
+			LOGFMTE("wrong msg send to gate, target port = %d, msgType = %d",pReal->cSysIdentifer, pReal->usMsgType ) ;
 		}
 	}
 	else if ( MSG_GATESERVER_INFO == pMsg->usMsgType )
@@ -124,7 +124,7 @@ bool CGateServer::OnMessage( Packet* pPacket )
 		stMsgGateServerInfo* pInfo = (stMsgGateServerInfo*)pMsg ;
 		if ( pInfo->bIsGateFull )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("gate is full , can not setup more gate, plase colse this exe");
+			LOGFMTE("gate is full , can not setup more gate, plase colse this exe");
 			m_pNetWorkForClients = NULL ;
 			return true ;
 		}
@@ -140,12 +140,12 @@ bool CGateServer::OnMessage( Packet* pPacket )
 			m_pNetWorkForClients->addDelegate(m_pGateManager) ;
 		}
 
-		CLogMgr::SharedLogMgr()->SystemLog("setup network for clients to client ok " );
-		CLogMgr::SharedLogMgr()->SystemLog("Gate Server Start ok idx = %d port = %u!",m_nSvrIdx,pGateConfig->nPort ) ;
+		LOGFMTI("setup network for clients to client ok " );
+		LOGFMTI("Gate Server Start ok idx = %d port = %u!",m_nSvrIdx,pGateConfig->nPort ) ;
 	}
 	else
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("unknown msg = %d , from = %d",pMsg->usMsgType, pMsg->cSysIdentifer ) ;
+		LOGFMTE("unknown msg = %d , from = %d",pMsg->usMsgType, pMsg->cSysIdentifer ) ;
 	}
 
 	return true ;
@@ -159,7 +159,7 @@ void CGateServer::OnMsgFromOtherSrvToGate( stMsg* pmsg , uint16_t eSendPort , ui
 		stMsgLoginSvrInformGateSaveLog* preal = (stMsgLoginSvrInformGateSaveLog*)pmsg ;
 		if ( NULL == pClient )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("big error !!!! can not send msg to session id = %d , client is null , msg = %d",uTargetSessionID,preal->usMsgType  ) ;
+			LOGFMTE("big error !!!! can not send msg to session id = %d , client is null , msg = %d",uTargetSessionID,preal->usMsgType  ) ;
 			return  ;
 		}
 

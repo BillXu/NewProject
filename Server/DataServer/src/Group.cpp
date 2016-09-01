@@ -1,5 +1,5 @@
 #include "Group.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "ISeverApp.h"
 #include "AsyncRequestQuene.h"
 #include "GameServerApp.h"
@@ -71,7 +71,7 @@ void stGroupItem::addMember(uint32_t nMemberUID )
 #ifdef _DEBUG
 	if ( isHaveMember(nMemberUID) )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("already have member uid = %u , why add twice ? group id = %u",nMemberUID,nGroupID) ;
+		LOGFMTE("already have member uid = %u , why add twice ? group id = %u",nMemberUID,nGroupID) ;
 		return ;
 	}
 #endif // _DEBUG
@@ -145,12 +145,12 @@ void CGroup::onConnectedSvr()
 				m_vGroups[prt->nGroupID] = prt ;
 				jsClubsIDs[jsClubsIDs.size()] = prt->nGroupID ;
 
-				CLogMgr::SharedLogMgr()->PrintLog("request room members group id = %u",prt->nGroupID) ;
+				LOGFMTD("request room members group id = %u",prt->nGroupID) ;
 				reqGroupMembers(prt) ;
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("read from db , already have club id = %u",prt->nGroupID) ;
+				LOGFMTE("read from db , already have club id = %u",prt->nGroupID) ;
 				delete prt ;
 				prt = nullptr ;
 			}
@@ -165,7 +165,7 @@ void CGroup::onConnectedSvr()
 			pQinJia->sendQinJiaRequest("GetGroupDetail",jsReq,[this]( Json::Value& jsResult, Json::Value& jsUserData ){
 				if ( jsResult.isNull() )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("get club detail error") ;
+					LOGFMTE("get club detail error") ;
 					return ;
 				}
 
@@ -191,7 +191,7 @@ void CGroup::onConnectedSvr()
 					}
 					else
 					{
-						CLogMgr::SharedLogMgr()->ErrorLog("can not set club name , club id = %u , is null ",nClubID);
+						LOGFMTE("can not set club name , club id = %u , is null ",nClubID);
 					}
 
 				}
@@ -200,7 +200,7 @@ void CGroup::onConnectedSvr()
 
 		if ( nRow >= 10 ) // go on read more 
 		{
-			CLogMgr::SharedLogMgr()->PrintLog("go on reader more clubs") ;
+			LOGFMTD("go on reader more clubs") ;
 			onConnectedSvr();
 		}
 		else
@@ -235,7 +235,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID) ;
 			if ( pPlayer == nullptr )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("session id = %u , player is null , can not create club",nSessionID) ;
+				LOGFMTE("session id = %u , player is null , can not create club",nSessionID) ;
 				return true ;
 			}
 
@@ -257,7 +257,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			pItem->nGroupID = prealMsg["newClubID"].asUInt() ;
 			pItem->addMember(pPlayer->GetUserUID());
 			addGroup(pItem) ;
-			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u create new club id = %u city code = %u",pPlayer->GetUserUID(),pItem->nGroupID,pItem->nCityCode) ;
+			LOGFMTD("player uid = %u create new club id = %u city code = %u",pPlayer->GetUserUID(),pItem->nGroupID,pItem->nCityCode) ;
 			CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,jsMsgBack,nMsgType) ;
 		}
 		break ;
@@ -284,7 +284,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			}
 			dismissGroup(nClubID) ;
 			CGameServerApp::SharedGameServerApp()->sendMsg( nSessionID,jsMsgBack,nMsgType) ;
-			CLogMgr::SharedLogMgr()->PrintLog("player uid = %u dismiss club id = %u",pPlayer->GetUserUID(),nClubID) ;
+			LOGFMTD("player uid = %u dismiss club id = %u",pPlayer->GetUserUID(),nClubID) ;
 		}
 		break ;
 	case MSG_REQ_PLAYER_JOINED_CLUBS:
@@ -411,12 +411,12 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 				auto nActUID =  CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID)->GetUserUID() ;
 				if ( jsResult.isNull() )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("del member club gotype request result is null , uid = %u ,clubID = %u", nUID,nClubID) ;
+					LOGFMTE("del member club gotype request result is null , uid = %u ,clubID = %u", nUID,nClubID) ;
 					return ;
 				}
 				if ( jsResult["errcode"].asUInt() != 200 )
 				{
-					CLogMgr::SharedLogMgr()->ErrorLog("del member club gotype request failed error code = %u,uid = %u ,clubID = %u", jsResult["errcode"].asUInt(), nUID,nClubID) ;
+					LOGFMTE("del member club gotype request failed error code = %u,uid = %u ,clubID = %u", jsResult["errcode"].asUInt(), nUID,nClubID) ;
 					return ;
 				}
 				auto pClub = getGroupByID(nClubID);
@@ -426,7 +426,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 					CPlayerMailComponent::PostDlgNotice(eNotice_BeRemoveFromClub,jsUserData,nUID ) ;
 				}
 	
-				CLogMgr::SharedLogMgr()->PrintLog("del club = %u member ok uid = %u ",nClubID,nUID) ;
+				LOGFMTD("del club = %u member ok uid = %u ",nClubID,nUID) ;
 				m_isSortDirty = true ;
 				getSvrApp()->sendMsg(nSessionID,jsmsgBack,MSG_CLUB_DELETE_MEMBER) ;
 			},jUserData) ;
@@ -437,7 +437,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			//	//{
 			//	//	prealMsg["ret"] = 3 ;
 			//	//	getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
-			//	//	CLogMgr::SharedLogMgr()->PrintLog("group is full") ;
+			//	//	LOGFMTD("group is full") ;
 			//	//	break ;
 			//	//}
 
@@ -445,7 +445,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			//	//{
 			//	//	prealMsg["ret"] = 4 ;
 			//	//	getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
-			//	//	CLogMgr::SharedLogMgr()->PrintLog("already in group ") ;
+			//	//	LOGFMTD("already in group ") ;
 			//	//	break ;
 			//	//}
 
@@ -455,7 +455,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			//	//pArg->pOwenClub = pClub ;
 
 			//	//m_pGoTyeAPI.performRequest("AddGroupMember",str.c_str(),str.size(),pArg,eReq_AddMember );
-			//	//CLogMgr::SharedLogMgr()->PrintLog("add member accountUid  = %u",nAccountUID) ;
+			//	//LOGFMTD("add member accountUid  = %u",nAccountUID) ;
 			//}
 			//else
 			//{
@@ -467,7 +467,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			//	pArg->pOwenClub = pClub ;
 
 			//	m_pGoTyeAPI.performRequest("DelGroupMember",str.c_str(),str.size(),pArg,eReq_DeleteMember );
-			//	CLogMgr::SharedLogMgr()->PrintLog("delete member accountUid  = %u",nAccountUID) ;
+			//	LOGFMTD("delete member accountUid  = %u",nAccountUID) ;
 			//}
 		}
 		break ;
@@ -507,7 +507,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			{
 				prealMsg["ret"] = 3 ;
 				getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
-				CLogMgr::SharedLogMgr()->ErrorLog("session id = %u not online , so can not do this operate") ;
+				LOGFMTE("session id = %u not online , so can not do this operate") ;
 				break ;
 			}
 
@@ -756,19 +756,19 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 
 					if ( jsResult.isNull() )
 					{
-						CLogMgr::SharedLogMgr()->ErrorLog("add member club gotype request result is null , uid = %u ,clubID = %u", nUID,nClubID) ;
+						LOGFMTE("add member club gotype request result is null , uid = %u ,clubID = %u", nUID,nClubID) ;
 						return ;
 					}
 					if ( jsResult["errcode"].asUInt() != 200 )
 					{
-						CLogMgr::SharedLogMgr()->ErrorLog("add member club gotype request failed error code = %u,uid = %u ,clubID = %u", jsResult["errcode"].asUInt(), nUID,nClubID) ;
+						LOGFMTE("add member club gotype request failed error code = %u,uid = %u ,clubID = %u", jsResult["errcode"].asUInt(), nUID,nClubID) ;
 						return ;
 					}
 					auto pClub = getGroupByID(nClubID);
 					pClub->addMember(nUID);
 					m_isSortDirty = true ;
 					CPlayerMailComponent::PostDlgNotice(eNotice_RecivedReplyForApplyForJoinClub,jsUserData,nUID ) ;
-					CLogMgr::SharedLogMgr()->PrintLog("add club member ok uid = %u ",nUID) ;
+					LOGFMTD("add club member ok uid = %u ",nUID) ;
 
 					auto ppApplyer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerByUserUID(nUID) ;
 					if ( !ppApplyer )
@@ -795,24 +795,24 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID) ;
 			if ( !pPlayer )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("player session = %u , is null can not update club name",nSessionID) ;
+				LOGFMTE("player session = %u , is null can not update club name",nSessionID) ;
 				break ;
 			}
 
 			if ( pClub == nullptr )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("club is null how to update name player uid  = %u  ",pPlayer->GetUserUID() ) ;
+				LOGFMTE("club is null how to update name player uid  = %u  ",pPlayer->GetUserUID() ) ;
 				break ;
 			}
 
 			if ( pClub->getOwnerUID() != pPlayer->GetUserUID() )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("player uid = %u , is not club id = %u , owner ,so can not update club name",pPlayer->GetUserUID(),nClubID);
+				LOGFMTE("player uid = %u , is not club id = %u , owner ,so can not update club name",pPlayer->GetUserUID(),nClubID);
 				break ;
 			}
 
 			pClub->setName(pName);
-			CLogMgr::SharedLogMgr()->PrintLog("club id = %u update name to new = %s",pName) ;
+			LOGFMTD("club id = %u update name to new = %s",pName) ;
 		}
 		break;
 	case MSG_CLUB_CHAT_MESSAGE:
@@ -822,20 +822,20 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID) ;
 			if ( !pPlayer )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("player session id = %u not online , why chat msg",nSessionID ) ;
+				LOGFMTE("player session id = %u not online , why chat msg",nSessionID ) ;
 				break;
 			}
 
 			auto pClub = getGroupByID( nClubID );
 			if ( !pClub )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("club is not exist how can speak id = %u",nClubID ) ;
+				LOGFMTE("club is not exist how can speak id = %u",nClubID ) ;
 				break;
 			}
 
 			if ( !pClub->isHaveMember(pPlayer->GetUserUID() ) )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("uid id = %u not in club id = %u , can not chat",pPlayer->GetUserUID(),nClubID) ;
+				LOGFMTE("uid id = %u not in club id = %u , can not chat",pPlayer->GetUserUID(),nClubID) ;
 				break;
 			}
 
@@ -863,7 +863,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			jsapns["msgID"] = "clubChat";
 			jsapns["msgdesc"] = std::to_string(nClubID) ;
 			pAsync->pushAsyncRequest(ID_MSG_PORT_VERIFY,eAsync_Apns,jsapns);
-			CLogMgr::SharedLogMgr()->PrintLog("apns club id = %u chat msg = %s",nClubID , pContent) ;
+			LOGFMTD("apns club id = %u chat msg = %s",nClubID , pContent) ;
 		}
 		break;
 	default:
@@ -887,7 +887,7 @@ void CGroup::addGroup(stGroupItem* pItem )
 	auto iter = m_vGroups.find(pItem->nGroupID) ;
 	if ( iter != m_vGroups.end() )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("already exist group id = %u  , can not add again",pItem->nGroupID) ; 
+		LOGFMTE("already exist group id = %u  , can not add again",pItem->nGroupID) ; 
 		delete pItem ;
 		pItem = nullptr ;
 		return ;
@@ -913,7 +913,7 @@ void CGroup::dismissGroup(uint32_t nGroupID )
 		auto siter = std::find(m_vSortedGroups.begin(),m_vSortedGroups.end(),iter->second) ;
 		if ( siter == m_vSortedGroups.end() )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("why can not find the group in sorted list") ;
+			LOGFMTE("why can not find the group in sorted list") ;
 		}
 		else
 		{
@@ -932,7 +932,7 @@ void CGroup::dismissGroup(uint32_t nGroupID )
 		getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Update,jssql);
 		return ;
 	}
-	CLogMgr::SharedLogMgr()->ErrorLog("can not find dismiss group id = %u",nGroupID) ;
+	LOGFMTE("can not find dismiss group id = %u",nGroupID) ;
 }
 
 uint16_t CGroup::getClubCntByUserUID(uint32_t nUserUID)
@@ -959,13 +959,13 @@ uint16_t CGroup::getClubCntByUserUID(uint32_t nUserUID)
 //	//}
 //	//else
 //	//{
-//	//	CLogMgr::SharedLogMgr()->ErrorLog("club gotyp request failed type = %u ",nUserTypeArg) ;
+//	//	LOGFMTE("club gotyp request failed type = %u ",nUserTypeArg) ;
 //	//	return ;
 //	//}
 //
 //	//if ( jsResult["errcode"].asUInt() != 200 )
 //	//{
-//	//	CLogMgr::SharedLogMgr()->ErrorLog("club gotype request failed error code = %u type = %u", jsResult["errcode"].asUInt(),nUserTypeArg) ;
+//	//	LOGFMTE("club gotype request failed error code = %u type = %u", jsResult["errcode"].asUInt(),nUserTypeArg) ;
 //	//	return ;
 //	//}
 //
@@ -978,7 +978,7 @@ uint16_t CGroup::getClubCntByUserUID(uint32_t nUserUID)
 //	//	delete pArg  ;
 //	//	pArg = nullptr ;
 //	//	 
-//	//	CLogMgr::SharedLogMgr()->PrintLog("delete club member ok, uid = %u ",nUID) ;
+//	//	LOGFMTD("delete club member ok, uid = %u ",nUID) ;
 //	//	m_isSortDirty = true ;
 //	//}
 //	//else if ( eReq_AddMember == nUserTypeArg )
@@ -989,7 +989,7 @@ uint16_t CGroup::getClubCntByUserUID(uint32_t nUserUID)
 //	//	pClub->addMember(nUID);
 //	//	delete pArg  ;
 //	//	pArg = nullptr ;
-//	//	CLogMgr::SharedLogMgr()->PrintLog("add club member ok uid = %u ",nUID) ;
+//	//	LOGFMTD("add club member ok uid = %u ",nUID) ;
 //	//	m_isSortDirty = true ;
 //	//}
 //	//else if ( eReq_RefreshCnt == nUserTypeArg )
@@ -1000,7 +1000,7 @@ uint16_t CGroup::getClubCntByUserUID(uint32_t nUserUID)
 //	//	//	auto jsginfo = jsGropList[nIdx] ;
 //	//	//	uint32_t nClubID = jsginfo["group_id"].asUInt() ;
 //	//	//	uint32_t nCnt = jsginfo["number"].asUInt() ;
-//	//	//	CLogMgr::SharedLogMgr()->PrintLog("refresh cnt result club id = %u, curCnt = %u",nClubID,nCnt) ;
+//	//	//	LOGFMTD("refresh cnt result club id = %u, curCnt = %u",nClubID,nCnt) ;
 //
 //	//	//	auto gGr = getGroupByID(nClubID) ;
 //	//	//	if ( gGr && gGr->nCurCnt != nCnt )
@@ -1020,19 +1020,19 @@ uint16_t CGroup::getClubCntByUserUID(uint32_t nUserUID)
 //	//	{
 //	//		auto jsM = jsMembers[nIdx] ;
 //	//		uint32_t nUID = atoi(jsM.asCString()) ;
-//	//		CLogMgr::SharedLogMgr()->PrintLog("req member to add group id = %u , uid = %u",pClub->nGroupID,nUID);
+//	//		LOGFMTD("req member to add group id = %u , uid = %u",pClub->nGroupID,nUID);
 //	//		pClub->addMember(nUID) ;
 //	//	}
 //
 //	//	//if ( jsMembers.size() >= REQ_PAGE_MEMBER_CNT_OF_CLUB )
 //	//	//{
-//	//	//	CLogMgr::SharedLogMgr()->PrintLog("req next page member cnt for club id = %u",pClub->nGroupID) ;
+//	//	//	LOGFMTD("req next page member cnt for club id = %u",pClub->nGroupID) ;
 //	//	//	reqGroupMembers(pClub) ;
 //	//	//}
 //	//}
 //	//else 
 //	//{
-//	//	CLogMgr::SharedLogMgr()->PrintLog("unknown club req type") ;
+//	//	LOGFMTD("unknown club req type") ;
 //	//}
 //}
 
@@ -1108,7 +1108,7 @@ void CGroup::reqGroupMembers(stGroupItem* pGroup )
 
 		if ( jsResult.isNull() || jsResult["errcode"].asUInt() != 200 )
 		{
-			CLogMgr::SharedLogMgr()->ErrorLog("req club = %u, member list error ",nClubID) ;
+			LOGFMTE("req club = %u, member list error ",nClubID) ;
 			return ;
 		}
 
@@ -1117,7 +1117,7 @@ void CGroup::reqGroupMembers(stGroupItem* pGroup )
 		{
 			auto jsM = jsMembers[nIdx] ;
 			uint32_t nUID = atoi(jsM.asCString()) ;
-			CLogMgr::SharedLogMgr()->PrintLog("req member to add group id = %u , uid = %u",pClub->nGroupID,nUID);
+			LOGFMTD("req member to add group id = %u , uid = %u",pClub->nGroupID,nUID);
 			pClub->addMember(nUID) ;
 		}
 	},cValue) ;

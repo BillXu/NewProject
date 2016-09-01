@@ -5,7 +5,7 @@
 #include <json/json.h>
 #include "GoldenMessageDefine.h"
 #include "AutoBuffer.h"
-#include "LogManager.h"
+#include "log4z.h"
 #include "GoldenBetState.h"
 #include "GoldenGameResultState.h"
 #include "GoldenPKState.h"
@@ -81,7 +81,7 @@ bool CGoldenRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 					}
 					else
 					{
-						CLogMgr::SharedLogMgr()->ErrorLog("you are playing game , why set ready sate ?");
+						LOGFMTE("you are playing game , why set ready sate ?");
 						msgBack.nRet = 3 ;
 						sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 					}
@@ -89,7 +89,7 @@ bool CGoldenRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 				else
 				{
 					msgBack.nRet = 3 ;
-					CLogMgr::SharedLogMgr()->ErrorLog("you are not sit down can not ready session id = %u",nPlayerSessionID);
+					LOGFMTE("you are not sit down can not ready session id = %u",nPlayerSessionID);
 					sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
 
 				}
@@ -112,7 +112,7 @@ void CGoldenRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["mainPool"] = m_nMailPool;
 	vOutJsValue["curActIdx"] = m_nCurActIdx ;
 	vOutJsValue["betRound"] = m_nBetRound ;
-	CLogMgr::SharedLogMgr()->ErrorLog("temp set bet round = 0 ") ;
+	LOGFMTE("temp set bet round = 0 ") ;
 }
 
 void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
@@ -141,12 +141,12 @@ void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 				item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx) ;
 			}
 			auBuffer.addContent(&item,sizeof(item)) ;
-			CLogMgr::SharedLogMgr()->PrintLog("send players uid = %u, state = %u",item.nUserUID,item.nStateFlag);
+			LOGFMTD("send players uid = %u, state = %u",item.nUserUID,item.nStateFlag);
 		}
 	}
 
 	sendMsgToPlayer((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID) ;
-	CLogMgr::SharedLogMgr()->PrintLog("send room info to session id = %d, player cnt = %d ", nSessionID,msgInfo.nPlayerCnt) ;
+	LOGFMTD("send room info to session id = %d, player cnt = %d ", nSessionID,msgInfo.nPlayerCnt) ;
 }
 
 uint32_t CGoldenRoom::getBaseBet() // ji chu di zhu ;
@@ -251,7 +251,7 @@ void CGoldenRoom::caculateGameResult()
 	assert(pPlayer && "win player can not be null") ;
 	if ( pPlayer == nullptr )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("why win player is null ?") ;
+		LOGFMTE("why win player is null ?") ;
 		return ;
 	}
 	
@@ -261,7 +261,7 @@ void CGoldenRoom::caculateGameResult()
 	pPlayer->addWinCoin(m_nMailPool - nTax );
 	setBankerIdx(pPlayer->getIdx());  // winner is next banker 
 	msgResult.nFinalCoin = pPlayer->getCoin();
-	CLogMgr::SharedLogMgr()->PrintLog("room id = %u uid = %u win game , tax = %u , win = %u , final = %u",getRoomID(),pPlayer->getUserUID(),nTax,msgResult.nWinCoin,msgResult.nFinalCoin);
+	LOGFMTD("room id = %u uid = %u win game , tax = %u , win = %u , final = %u",getRoomID(),pPlayer->getUserUID(),nTax,msgResult.nWinCoin,msgResult.nFinalCoin);
 
 	sendRoomMsg(&msgResult,sizeof(msgResult)) ;
 }
@@ -278,7 +278,7 @@ uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoo
 
 	if ( pPlayer->isHaveState(eRoomPeer_CanAct) == false )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("can not do act , you are not can act uid = %u",pPlayer->getUserUID()) ;
+		LOGFMTE("can not do act , you are not can act uid = %u",pPlayer->getUserUID()) ;
 		return 3 ;
 	}
 
@@ -294,7 +294,7 @@ uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoo
 
 			if ( nNeedCoin > pPlayer->getCoin() )
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("coin not enough can not add , uid = %u",pPlayer->getUserUID()) ;
+				LOGFMTD("coin not enough can not add , uid = %u",pPlayer->getUserUID()) ;
 				return 6 ; 
 			}
 
@@ -313,7 +313,7 @@ uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoo
 
 			if ( nNeedCoin > pPlayer->getCoin() )
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("coin not enough can not Follow , uid = %u",pPlayer->getUserUID()) ;
+				LOGFMTD("coin not enough can not Follow , uid = %u",pPlayer->getUserUID()) ;
 				return 6 ; 
 			}
 

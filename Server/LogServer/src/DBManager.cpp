@@ -1,9 +1,9 @@
 #pragma warning(disable:4800)
 #include "DBManager.h"
-#include "LogManager.h"
 #include "DBRequest.h"
 #include "ServerMessageDefine.h"
 #include "DataBaseThread.h"
+#include "log4z.h"
 CDBManager::CDBManager( )
 {
 	m_vReserverArgData.clear();
@@ -97,13 +97,13 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 	default:
 		{
 			m_vReserverArgData.push_back(pdata) ;
-			CLogMgr::SharedLogMgr()->ErrorLog("unknown msg type = %d",pmsg->usMsgType ) ;
+			LOGFMTE("unknown msg type = %d",pmsg->usMsgType ) ;
 		}
 	}
 
 	if ( pRequest->nSqlBufferLen == 0 || pRequest->eType == eRequestType_Max )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("a request sql len = 0 , msg = %d" , pRequest->nRequestUID ) ;
+		LOGFMTE("a request sql len = 0 , msg = %d" , pRequest->nRequestUID ) ;
 		
 		CDBRequestQueue::VEC_DBREQUEST v ;
 		v.push_back(pRequest) ;
@@ -125,11 +125,11 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 		{
 			if ( pResult->nAffectRow != 1 )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("save log error",pdata->nExtenArg1) ;
+				LOGFMTE("save log error",pdata->nExtenArg1) ;
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->PrintLog("save log success");
+				LOGFMTD("save log success");
 			}
 		}
 		break;
@@ -137,11 +137,11 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 		{
 			if ( pResult->nAffectRow <= 0 )
 			{
-				CLogMgr::SharedLogMgr()->ErrorLog("unprocessed db result msg id = %d , row cnt = %d  ", pResult->nRequestUID,pResult->nAffectRow );
+				LOGFMTE("unprocessed db result msg id = %d , row cnt = %d  ", pResult->nRequestUID,pResult->nAffectRow );
 			}
 			else
 			{
-				CLogMgr::SharedLogMgr()->SystemLog("unprocessed db result msg id = %d , row cnt = %d  ", pResult->nRequestUID,pResult->nAffectRow );
+				LOGFMTI("unprocessed db result msg id = %d , row cnt = %d  ", pResult->nRequestUID,pResult->nAffectRow );
 			}
 		}
 	}

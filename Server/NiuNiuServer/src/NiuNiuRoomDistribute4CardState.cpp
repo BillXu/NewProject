@@ -4,7 +4,7 @@
 #include "NiuNiuRoomPlayer.h"
 #include "NiuNiuMessageDefine.h"
 #include "AutoBuffer.h"
-#include "LogManager.h"
+#include "log4z.h"
 void CNiuNiuRoomDistribute4CardState::enterState(IRoom* pRoom)
 {
 	m_pRoom = (ISitableRoom*)pRoom ;
@@ -34,7 +34,7 @@ void CNiuNiuRoomDistribute4CardState::enterState(IRoom* pRoom)
 	m_pRoom->sendRoomMsg((stMsg*)buffer.getBufferPtr(),buffer.getContentSize()) ;
 
 	setStateDuringTime( m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) * TIME_NIUNIU_DISTRIBUTE_4_CARD_PER_PLAYER );
-	CLogMgr::SharedLogMgr()->PrintLog("player cnt = %d room id = %d , distribute 4 card",nPlayerCnt,m_pRoom->getRoomID());
+	LOGFMTD("player cnt = %d room id = %d , distribute 4 card",nPlayerCnt,m_pRoom->getRoomID());
 }
 
 void CNiuNiuRoomDistribute4CardState::onStateDuringTimeUp()

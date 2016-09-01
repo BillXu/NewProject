@@ -1,7 +1,7 @@
 #include "GoldenServer.h"
 #include "MessageDefine.h"
 #include <ctime>
-#include "LogManager.h"
+#include "log4z.h"
 #include "ServerStringTable.h"
 #include "RewardConfig.h"
 #include "GoldenRoomManager.h"
@@ -15,7 +15,7 @@ bool CGoldenServerApp::init()
 	stServerConfig* pConfig = stSvrConfigMgr.GetServerConfig(eSvrType_Center) ;
 	if ( pConfig == NULL )
 	{
-		CLogMgr::SharedLogMgr()->ErrorLog("center svr config is null , so can not connected to !") ;
+		LOGFMTE("center svr config is null , so can not connected to !") ;
 		return false;
 	}
 	setConnectServerConfig(pConfig);

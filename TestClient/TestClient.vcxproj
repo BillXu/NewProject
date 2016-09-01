@@ -93,11 +93,11 @@
     <ClCompile Include="..\Common\CardPoker.cpp" />
     <ClCompile Include="..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\Common\IConfigFile.cpp" />
-    <ClCompile Include="..\Common\LogManager.cpp" />
     <ClCompile Include="..\Common\MemoryManager.cpp" />
     <ClCompile Include="..\Common\PeerCard.cpp" />
     <ClCompile Include="..\Common\TaxasPokerPeerCard.cpp" />
     <ClCompile Include="..\Common\Utility.cpp" />
+    <ClCompile Include="..\Server\ServerCommon\log4z.cpp" />
     <ClCompile Include="..\Server\ServerCommon\mutex.cpp" />
     <ClCompile Include="..\Server\ServerCommon\Sem.cpp" />
     <ClCompile Include="..\Server\ServerCommon\ThreadMod.cpp" />
@@ -135,7 +135,6 @@
     <ClInclude Include="..\Common\ConfigReader.h" />
     <ClInclude Include="..\Common\GoldenMessageDefine.h" />
     <ClInclude Include="..\Common\IConfigFile.h" />
-    <ClInclude Include="..\Common\LogManager.h" />
     <ClInclude Include="..\Common\MemoryManager.h" />
     <ClInclude Include="..\Common\MessageDefine.h" />
     <ClInclude Include="..\Common\MessageIdentifer.h" />
@@ -144,6 +143,7 @@
     <ClInclude Include="..\Common\TaxasMessageDefine.h" />
     <ClInclude Include="..\Common\TaxasPokerPeerCard.h" />
     <ClInclude Include="..\Common\Utility.h" />
+    <ClInclude Include="..\Server\ServerCommon\log4z.h" />
     <ClInclude Include="..\Server\ServerCommon\mutex.h" />
     <ClInclude Include="..\Server\ServerCommon\Sem.h" />
     <ClInclude Include="..\Server\ServerCommon\ThreadMod.h" />

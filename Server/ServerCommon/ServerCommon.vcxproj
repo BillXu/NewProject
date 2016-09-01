@@ -84,12 +84,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\Common\ConfigReader.cpp" />
     <ClCompile Include="..\..\Common\IConfigFile.cpp" />
-    <ClCompile Include="..\..\Common\LogManager.cpp" />
     <ClCompile Include="..\..\Common\Utility.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="AsyncRequestQuene.cpp" />
     <ClCompile Include="catch_dump_file.cpp" />
     <ClCompile Include="ISeverApp.cpp" />
+    <ClCompile Include="log4z.cpp" />
     <ClCompile Include="ServerConfig.cpp" />
     <ClCompile Include="ServerStringTable.cpp" />
     <ClCompile Include="SeverUtility.cpp" />
@@ -100,7 +100,6 @@
     <ClInclude Include="..\..\Common\CommonDefine.h" />
     <ClInclude Include="..\..\Common\ConfigReader.h" />
     <ClInclude Include="..\..\Common\IConfigFile.h" />
-    <ClInclude Include="..\..\Common\LogManager.h" />
     <ClInclude Include="..\..\Common\MessageDefine.h" />
     <ClInclude Include="..\..\Common\MessageIdentifer.h" />
     <ClInclude Include="..\..\Common\NativeTypes.h" />
@@ -111,6 +110,7 @@
     <ClInclude Include="catch_dump_file.h" />
     <ClInclude Include="IGlobalModule.h" />
     <ClInclude Include="ISeverApp.h" />
+    <ClInclude Include="log4z.h" />
     <ClInclude Include="ServerCommon.h" />
     <ClInclude Include="ServerConfig.h" />
     <ClInclude Include="ServerDefine.h" />
