@@ -351,7 +351,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			if ( pRet->eType == eMail_Sys_End )
 			{
 				pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-					"UPDATE mail SET state = '1' WHERE userUID = '%u' and mailType < '%d' and state = '0' ",pRet->nUserUID,eMail_Sys_End) ;
+					"UPDATE mail SET state = '1' WHERE userUID = '%u' and mailType < '%d' and postTime <= %u and state = '0' ",pRet->nUserUID,eMail_Sys_End,pRet->nTimeLatest) ;
 				LOGFMTD("reset mail state for uid = %d offline sys ",pRet->nUserUID);
 			}
 			else if ( pRet->eType == eMail_RealMail_Begin )

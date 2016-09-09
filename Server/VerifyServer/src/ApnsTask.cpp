@@ -119,7 +119,7 @@ void CApnsTask::apns(const char* pAppKey , const char* pSvrkey, bool isIOS )
 	jsApns["description"] = pmsgDesc ;
 	jsApns["thirdparty_id"] = pmsgID ;
 
-	jsApns["production_mode"] = "false";
+	jsApns["production_mode"] = "true";
 
 	Json::StyledWriter jsWriter ;
 	auto jsString  = jsWriter.write(jsApns);
@@ -144,6 +144,6 @@ void CApnsTask::getAndriodPayload( Json::Value& jsValueOut , const char* pConten
 	Json::Value jsBody ;
 	jsBody["ticker"] = "ticker";
 	jsBody["title"] = "PaiyouQuan";
-	jsBody["text"] = "text";
+	jsBody["text"] = pContent;
 	jsValueOut["body"] = jsBody ;
 }

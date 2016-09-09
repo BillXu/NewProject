@@ -386,14 +386,20 @@ void CPlayerMailComponent::ProcessSpecailMail()
 		return ;
 	}
 	// process sys mail 
+	uint32_t nTimeLatest = 0 ;
 	for ( stRecievedMail& refMail : vNeedProcess )
 	{
+		if ( refMail.nRecvTime > nTimeLatest )
+		{
+			nTimeLatest = refMail.nRecvTime ;
+		}
 		ProcessMail(refMail);
 	}
 
 	stMsgResetMailsState msgReset ;
 	msgReset.nUserUID = GetPlayer()->GetUserUID() ;
 	msgReset.eType = eMail_Sys_End ;
+	msgReset.nTimeLatest = nTimeLatest ;
 	SendMsg(&msgReset,sizeof(msgReset)) ;
 }
 
@@ -515,12 +521,14 @@ void CPlayerMailComponent::onPlayerReconnected()
 
 void CPlayerMailComponent::saveReadTimeTag()
 {
+	m_tReadTimeTag = time(nullptr) ;
 	// tell db set state 
 	stMsgResetMailsState msgReset ;
 	msgReset.nUserUID = GetPlayer()->GetUserUID() ;
 	msgReset.eType = eMail_RealMail_Begin ;
+	msgReset.nTimeLatest = 0 ;
 	SendMsg(&msgReset,sizeof(msgReset)) ;
-	m_tReadTimeTag = time(nullptr) ;
+	
 
 	m_vAllMail.clear() ;
 

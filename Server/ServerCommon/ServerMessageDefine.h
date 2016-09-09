@@ -859,6 +859,7 @@ struct stMsgResetMailsState
 	stMsgResetMailsState(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_PLAYER_SET_MAIL_STATE ; }
 	uint32_t nUserUID ;
 	uint8_t eType ; 
+	uint32_t nTimeLatest ;
 };
 
 struct  stMsgSavePlayerAdvice
