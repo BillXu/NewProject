@@ -2,6 +2,7 @@
 #include <json/json.h>
 #include "VerifyRequest.h"
 #include <cassert>
+#include "log4z.h"
 CAppleVerifyTask::CAppleVerifyTask( uint32_t nTaskID ) 
 	:IVerifyTask(nTaskID)
 {
@@ -61,6 +62,13 @@ void CAppleVerifyTask::onHttpCallBack(char* pResultData, size_t nDatalen , void*
 		Json::Value receipt = rootValue["receipt"] ;
 		memset(pResult->pBufferVerifyID,0,sizeof(pResult->pBufferVerifyID)) ;
 		sprintf(pResult->pBufferVerifyID,"%s",receipt["transaction_id"].asCString());
+		//LOGFMTD("Bundle  id = %s \n",receipt["bundle_id"].asCString());
+		LOGFMTD("BUY OK product_id = %s \n",receipt["product_id"].asCString());
+		//if ( strcmp(receipt["bundle_id"].asCString(),"com.youhoo.paiyouquan" ) != 0 )
+		//{
+		//	//bCheckOk = false ;
+		//	LOGE("you should not have the bill cation");
+		//}
 	}
 
 	pResult->eResult = bCheckOk ? eVerify_Apple_Success : eVerify_Apple_Error;

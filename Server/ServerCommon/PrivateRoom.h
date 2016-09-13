@@ -424,6 +424,21 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 
 	pPlayerItem->nToTalCoin = pEnterRoomPlayer->nCoin ;
 
+	// check offline checked coin 
+	if ( pPlayerItem->nCheckedCoin > 0 )
+	{
+		auto bRet = pPlayerItem->buyIn(pPlayerItem->nCheckedCoin);
+		if ( bRet == false )
+		{
+			LOGFMTE("when you not in the room owener allow you coin = %u , but now you do not have enought coin to take in uid = %u ",pPlayerItem->nCheckedCoin,pPlayerItem->nUserUID);
+		}
+		else
+		{
+			pPlayerItem->nCoinInRoom += pPlayerItem->nCheckedCoin ;
+			pPlayerItem->nCheckedCoin = 0 ;
+		}
+	}
+
 	stEnterRoomData refEnterData ;
 	memcpy_s(&refEnterData,sizeof(stEnterRoomData),pEnterRoomPlayer,sizeof(stEnterRoomData));
 	refEnterData.nCoin = pPlayerItem->nCoinInRoom ;
@@ -1001,6 +1016,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 				else
 				{
 					stStandPlayer->nCoin += nTakeIn ;
+		
 					jsMsgBack["inRoomCoin"] = stStandPlayer->nCoin ;
 				}
 
@@ -1066,7 +1082,66 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			pPrivatePlayer->isApplyIng = false ;
 			if ( isAgree )
 			{
-				pPrivatePlayer->nCheckedCoin = nApplyCoin ;
+
+				ISitableRoomPlayer* stiDownPlayer = m_pRoom->getSitdownPlayerByUID(pPrivatePlayer->nUserUID);
+				auto pStandPlayer = m_pRoom->getPlayerByUserUID(pPrivatePlayer->nUserUID);
+				if ( stiDownPlayer )
+				{
+					Json::Value jsMsgBack ;
+					jsMsgBack["ret"] = 0 ;
+					if ( pPrivatePlayer->buyIn(nApplyCoin) == false )
+					{
+						pPrivatePlayer->nCheckedCoin = nApplyCoin ;
+						jsMsgBack["ret"] = 3 ;
+						LOGFMTE("UID = %u need buy coin = %u",pPrivatePlayer->nUserUID,nApplyCoin);
+						m_pRoom->sendMsgToPlayer(stiDownPlayer->getSessionID(),jsMsgBack,MSG_APPLY_TAKE_IN) ;
+						break ;
+					}
+
+					stiDownPlayer->setCoin(stiDownPlayer->getCoin() + nApplyCoin ) ;
+
+					stMsgPrivateRoomReBuyIn msgRoom ;
+					msgRoom.nBuyInCoin = nApplyCoin ;
+					msgRoom.nFinalCoin = stiDownPlayer->getCoin() ;
+					msgRoom.nIdx = stiDownPlayer->getIdx() ;
+					m_pRoom->sendRoomMsg(&msgRoom,sizeof(msgRoom)) ;
+					LOGFMTD("reply uid = %u ,sit down coin = %u , stand coin = %u , totalBuyin = %u , newBuyin = %u ",pPrivatePlayer->nUserUID,stiDownPlayer->getCoin(),0,pPrivatePlayer->nToTalBuyIn,nApplyCoin) ;
+					
+
+					jsMsgBack["isApply"] = 0 ;
+			
+					jsMsgBack["inRoomCoin"] = msgRoom.nFinalCoin ;
+					//m_pRoom->sendMsgToPlayer(stiDownPlayer->getSessionID(),jsMsgBack,MSG_APPLY_TAKE_IN) ;
+					LOGFMTD("room id = %u reply uid = %u , result = %u , coin = %u in room direct give",getRoomID(),nReplyUID,isAgree,nApplyCoin) ;
+					pPrivatePlayer->nCheckedCoin = 0 ;
+					//break;
+				}
+				else if ( pStandPlayer )
+				{
+					Json::Value jsMsgBack ;
+					jsMsgBack["ret"] = 0 ;
+					if ( pPrivatePlayer->buyIn(nApplyCoin) == false )
+					{
+						pPrivatePlayer->nCheckedCoin = nApplyCoin ;
+						jsMsgBack["ret"] = 3 ;
+						LOGFMTE("UID = %u need buy coin = %u",pPrivatePlayer->nUserUID,nApplyCoin);
+						m_pRoom->sendMsgToPlayer(pStandPlayer->nUserSessionID,jsMsgBack,MSG_APPLY_TAKE_IN) ;
+						break ;
+					}
+					pPrivatePlayer->nCheckedCoin = 0 ;
+
+					pStandPlayer->nCoin += nApplyCoin ;
+
+					jsMsgBack["isApply"] = 0 ;
+					jsMsgBack["inRoomCoin"] = pStandPlayer->nCoin ;
+					m_pRoom->sendMsgToPlayer(pStandPlayer->nUserSessionID,jsMsgBack,MSG_APPLY_TAKE_IN) ;
+					// add tag for give back coin , when closed 
+					onUpdatePlayerGameResult(m_pRoom,pPrivatePlayer->nUserUID,0);
+				}
+				else
+				{
+					pPrivatePlayer->nCheckedCoin = nApplyCoin ;
+				}
 			}
 			
 			// send dlg 

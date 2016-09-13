@@ -773,16 +773,16 @@ void IRoomManager::deleteRoomChatID( uint32_t nChatID )
 	return ;
 #endif // _DEBUG
 	// delete chat room id ;
-	Json::Value cValue ;
-	cValue["email"] = "378569952@qq.com" ;
-	cValue["devpwd"] = "bill007" ;
-	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
-	cValue["room_id"] = nChatID ;
-	Json::StyledWriter sWrite ;
-	std::string str = sWrite.write(cValue);
-	m_pGoTyeAPI.performRequest("DeleteRoom",str.c_str(),str.size(),nullptr,eHttpReq_DeleteChatRoomID );
+	//Json::Value cValue ;
+	//cValue["email"] = "378569952@qq.com" ;
+	//cValue["devpwd"] = "bill007" ;
+	//cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
+	//cValue["room_id"] = nChatID ;
+	//Json::StyledWriter sWrite ;
+	//std::string str = sWrite.write(cValue);
+	//m_pGoTyeAPI.performRequest("DeleteRoom",str.c_str(),str.size(),nullptr,eHttpReq_DeleteChatRoomID );
 
-	LOGFMTD("delte chat room id = %u",nChatID) ;
+	//LOGFMTD("delte chat room id = %u",nChatID) ;
 }
 
 void IRoomManager::addPrivateRoomRecorder(stPrivateRoomRecorder* pRecorder, bool isSaveDB )
