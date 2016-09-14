@@ -41,7 +41,7 @@ bool CLogSvrApp::init()
 	// set up data base thread 
 	m_pDBWorkThread = new CDataBaseThread ;
 	stServerConfig* pDatabase = stSvrConfigMgr.GetServerConfig(eSvrType_LogDataBase);
-	m_pDBWorkThread->InitDataBase(pDatabase->strIPAddress,pDatabase->nPort,pDatabase->strAccount,pDatabase->strPassword,"taxpokerlogdb");
+	m_pDBWorkThread->InitDataBase(pDatabase->strIPAddress,pDatabase->nPort,pDatabase->strAccount,pDatabase->strPassword,"niuniulog");
 	m_pDBWorkThread->Start();
 
 	// dbManager ;

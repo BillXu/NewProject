@@ -23,8 +23,8 @@ uint8_t CWeChatOrderTask::performTask()
 	auto pRequest = m_ptrCurRequest;
 #ifdef _DEBUG
 	pRequest->nPrize = 1 ;
-#endif
 	LOGFMTE("temp set prize = 1 ") ;
+#endif
 
 	TiXmlElement *xmlRoot = new TiXmlElement("xml"); 
 
@@ -111,8 +111,12 @@ uint8_t CWeChatOrderTask::performTask()
 	pNode->LinkEndChild(pValue);
 	strForMd5 += "&trade_type=APP" ;
 
+	// st to 
+	//std::string strAppKey = "5fc4164aee7ba3360452c4e0e5d02d9d";
+	//transform(strAppKey.begin(), strAppKey.end(), strAppKey.begin(),  toupper);
 	// and key value 
 	strForMd5 += "&key=E97ED2537D229C0E967042D2E7F1C936" ;
+	//strForMd5 += strAppKey ;
 	printf("formd5Str: %s\n",strForMd5.c_str());
 	CMD5 md5 ;
 	md5.GenerateMD5((unsigned char*)strForMd5.c_str(),strlen(strForMd5.c_str())) ;
@@ -190,7 +194,7 @@ void CWeChatOrderTask::onHttpCallBack(char* pResultData, size_t nDatalen , void*
 		}
 	}
 	pRequest->nRet = 1 ;
-	printf("we chat order failed \n") ;
+	LOGFMTE("we chat order failed : %s \n",str.c_str()) ;
 	t.SaveFile("reT.xml");
 }
 

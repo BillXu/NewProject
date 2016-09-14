@@ -45,7 +45,7 @@ bool CDBServerApp::init()
 	}
 
 	m_pDBWorkThread = new CDataBaseThread ;
-	m_pDBWorkThread->InitDataBase(pDatabase->strIPAddress,pDatabase->nPort,pDatabase->strAccount,pDatabase->strPassword,"taxpokerdb");
+	m_pDBWorkThread->InitDataBase(pDatabase->strIPAddress,pDatabase->nPort,pDatabase->strAccount,pDatabase->strPassword,"niuniu365");
 	m_pDBWorkThread->Start();
 
 	// dbManager ;

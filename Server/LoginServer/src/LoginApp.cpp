@@ -44,7 +44,7 @@ bool CLoginApp::init()
 		return false;
 	}
 	m_pDBThread = new CDataBaseThread ;
-	bool bRet = m_pDBThread->InitDataBase(pSvrConfigItem->strIPAddress,pSvrConfigItem->nPort,pSvrConfigItem->strAccount,pSvrConfigItem->strPassword,"taxpokerdb");
+	bool bRet = m_pDBThread->InitDataBase(pSvrConfigItem->strIPAddress,pSvrConfigItem->nPort,pSvrConfigItem->strAccount,pSvrConfigItem->strPassword,"niuniu365");
 	if ( bRet )
 	{
 		m_pDBThread->Start() ;

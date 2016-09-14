@@ -775,7 +775,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 					{
 						// send push notification ;
 						CSendPushNotification::getInstance()->reset();
-						CSendPushNotification::getInstance()->addTarget(pClub->getOwnerUID()) ;
+						CSendPushNotification::getInstance()->addTarget(nUID) ;
 						CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(1),1) ;
 						CSendPushNotification::getInstance()->postApns(CGameServerApp::SharedGameServerApp()->getAsynReqQueue(),false,"reply Apply") ;
 					}

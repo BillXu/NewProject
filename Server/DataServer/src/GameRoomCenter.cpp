@@ -7,6 +7,7 @@
 #include "QingJiaModule.h"
 #include "SeverUtility.h"
 #include "ServerStringTable.h"
+#include "Player.h"
 CGameRoomCenter::~CGameRoomCenter()
 {
 	MAP_ROOM_ITEM m_vRoomIDKey ;
@@ -184,7 +185,48 @@ void CGameRoomCenter::updateRoomItemChatRoomID()
 
 bool CGameRoomCenter::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
 {
-	return false ;
+	switch (prealMsg->usMsgType )
+	{
+	case MSG_REQUEST_MY_OWN_ROOMS:
+		{
+			stMsgRequestMyOwnRooms* pRet = (stMsgRequestMyOwnRooms*)prealMsg ;
+			if ( pRet->nRoomType >= eRoom_Max )
+			{
+				return false;
+			}
+
+			auto pPlayer = CGameServerApp::SharedGameServerApp()->GetPlayerMgr()->GetPlayerBySessionID(nSessionID) ;
+			if ( nullptr == pPlayer )
+			{
+				LOGFMTE("session id = %u not login in how to request self create room ",nSessionID);
+				break; 
+			}
+
+			stMsgRequestMyOwnRoomsRet msgRet ;
+			msgRet.nRoomType = pRet->nRoomType ;
+
+			std::vector<uint32_t> vOutRooms ;
+			msgRet.nCnt = getPlayerOwenRooms(vOutRooms,pPlayer->GetUserUID()) ;
+			if ( msgRet.nCnt == 0 )
+			{
+				getSvrApp()->sendMsg(nSessionID,(char*)&msgRet,sizeof(msgRet));
+				return true ;
+			}
+
+			CAutoBuffer autoBuffer(sizeof(msgRet) + sizeof(uint32_t)* msgRet.nCnt);
+			autoBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
+			for ( auto& ref : vOutRooms )
+			{
+				autoBuffer.addContent(&ref,sizeof(uint32_t));
+			}
+			getSvrApp()->sendMsg(nSessionID,autoBuffer.getBufferPtr(),autoBuffer.getContentSize());
+			LOGFMTD("send uid = %u create room to it , cnt = %u",pPlayer->GetUserUID(),msgRet.nCnt);
+		}
+		break;
+	default: 
+		return false ;
+	}
+	return true  ;
 }
 
 bool CGameRoomCenter::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID)
@@ -491,4 +533,17 @@ uint32_t CGameRoomCenter::getReuseChatRoomID()
 	m_vReserveChatRoomIDs.pop() ;
 	checkChatRoomIDReserve();
 	return iter ;
+}
+
+uint16_t CGameRoomCenter::getPlayerOwenRooms( std::vector<uint32_t>& vRoomIDs , uint32_t nPlayerUID )
+{
+	auto iter = m_vPlayerOwners.find(nPlayerUID) ;
+	if ( iter != m_vPlayerOwners.end() )
+	{
+		auto pOwnInfor = iter->second ;
+		vRoomIDs.clear();
+		vRoomIDs.assign(pOwnInfor->vRoomIDs.begin(),pOwnInfor->vRoomIDs.end()) ;
+		return vRoomIDs.size();
+	}
+	return 0 ;
 }

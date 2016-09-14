@@ -40,6 +40,7 @@ public:
 	uint16_t getClubOwnRoomCnt(uint32_t nClubID );
 	uint16_t getClubOwnRooms(std::vector<uint32_t>& vRoomIDs , uint32_t nClubID );
 	uint32_t getReuseChatRoomID();
+	uint16_t getPlayerOwenRooms( std::vector<uint32_t>& vRoomIDs , uint32_t nPlayerUID );
 protected:
 	bool addRoomItemToOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t nOwnerUID ,uint32_t nRoomID );
 	bool deleteRoomItemFromOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t nOwnerUID ,uint32_t nRoomID );

@@ -20,6 +20,7 @@ struct stPrivateRoomPlayerItem
 	uint32_t nCheckedCoin ;
 	bool isApplyIng ;
 	bool isDirty ;
+	uint8_t nPayDeskFeeState ;  // 0 not pay , 1 paying , 2  paied 
 
 	stPrivateRoomPlayerItem(uint32_t nPlayerUID, uint32_t nAllCoin )
 	{
@@ -31,8 +32,16 @@ struct stPrivateRoomPlayerItem
 		isDirty = false ;
 		isApplyIng = false ;
 		nCheckedCoin = 0 ;
+		nPayDeskFeeState = 0 ;
 	}
 
+	bool isPayingDeskFee(){ return nPayDeskFeeState == 1 ;}
+	bool isPayedDeskFee(){ return 2 == nPayDeskFeeState ; }
+	void doPayingDeskFee(){ if ( isPayedDeskFee() == false ){ nPayDeskFeeState = 1 ; return ;} LOGFMTE("can not do paying more than once"); } ;
+	void doPayedDeskFee(){ if (isPayingDeskFee() ){ nPayDeskFeeState = 2 ; return ;} LOGFMTE("not paying desk fee , how to already pay");}
+	void payDeskFeeFailed(){ if (isPayingDeskFee() ){ nPayDeskFeeState = 0 ; return ;} LOGFMTE("not paying desk fee  how to pay failed"); }
+
+	uint16_t getBuyEntryCnt(){ return vBuyInRecord.size() ;}
 	void toJsvalue(Json::Value& jsValue )
 	{
 		jsValue["nUserUID"] = nUserUID ;
@@ -142,6 +151,7 @@ public:
 	uint32_t getRoomState(){ return m_eState ; }
 	bool isRoomClosed();
 	void sendRoomInfo(uint32_t nSessionID );
+	uint32_t getCardNeed(){ return (( m_nDuringSeconds / 60 / 15 ) ) ;}
 	stPrivateRoomPlayerItem* getPlayerByUID(uint32_t nUserUID )
 	{
 		auto iter = m_mapPrivateRoomPlayers.find(nUserUID) ;
@@ -436,6 +446,7 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 		{
 			pPlayerItem->nCoinInRoom += pPlayerItem->nCheckedCoin ;
 			pPlayerItem->nCheckedCoin = 0 ;
+			onUpdatePlayerGameResult(m_pRoom,pPlayerItem->nUserUID,0);
 		}
 	}
 
@@ -743,6 +754,107 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 {
 	switch ( prealMsg->usMsgType )
 	{
+	case MSG_PLAYER_SITDOWN:
+		{
+			stMsgPlayerSitDown* pRet = (stMsgPlayerSitDown*)prealMsg ;
+			auto stStandPlayer = m_pRoom->getPlayerBySessionID(nPlayerSessionID);
+			if ( !stStandPlayer )
+			{
+				LOGFMTE("you are not in room ,how to sit down ") ;
+				if ( m_pRoom )
+				{
+					return m_pRoom->onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
+				}
+				return false;
+			}
+
+			ISitableRoomPlayer* stiDownPlayer = m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID);
+			auto iter = m_mapPrivateRoomPlayers.find(stStandPlayer->nUserUID) ;
+			if ( iter == m_mapPrivateRoomPlayers.end() )
+			{
+				LOGE("not at entry player how to sit dwon ?");
+				if ( m_pRoom )
+				{
+					return m_pRoom->onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
+				}
+				return true;
+			}
+			assert(iter != m_mapPrivateRoomPlayers.end() && "not at entry player how to rebuy ?" );
+			stPrivateRoomPlayerItem* pPrivatePlayer = iter->second ;
+			if ( pPrivatePlayer->isPayedDeskFee() || stStandPlayer->nCoin < m_pRoom->coinNeededToSitDown() || m_pRoom->getPlayerByIdx(pRet->nIdx) )
+			{
+				if ( m_pRoom )
+				{
+					return m_pRoom->onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
+				}
+				return true;
+			}
+			else if ( pPrivatePlayer->isPayingDeskFee() )
+			{
+				LOGI("already doing pay desk fee , don't do more than once ");
+				return true ;
+			}
+			else // do pay
+			{
+				pPrivatePlayer->doPayingDeskFee();
+				auto pAsync = m_pRoomMgr->getSvrApp()->getAsynReqQueue();
+
+				Json::Value jsUserData ;
+				jsUserData["session"] = nPlayerSessionID ;
+				jsUserData["idx"] = pRet->nIdx ;
+				jsUserData["uid"] = pPrivatePlayer->nUserUID ;
+				
+				Json::Value jsReqData ;
+				jsReqData["targetUID"] = pPrivatePlayer->nUserUID ;
+				jsReqData["diamond"] = getCardNeed() ;
+
+				pAsync->pushAsyncRequest(ID_MSG_PORT_DATA,eAsync_ComsumDiamond,jsReqData,[this,pAsync,pPrivatePlayer](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData){
+					uint32_t nDiamond = retContent["diamond"].asUInt() ;
+					uint32_t nRet = retContent["ret"].asUInt();
+
+					uint32_t nSessionID = jsUserData["session"].asUInt() ;
+					uint32_t nIdx = jsUserData["idx"].asUInt();
+					uint32_t nUID = jsUserData["uid"].asUInt();
+					
+					auto stStandPlayer = m_pRoom->getPlayerBySessionID(nSessionID);
+					auto pSitDown = m_pRoom->getPlayerByIdx(nIdx);
+					bool bSitSuccess = nRet == 0 && stStandPlayer && pSitDown == nullptr && m_pRoom && getRoomState() != eRoomState_Close ;
+					if ( bSitSuccess )
+					{
+						stMsgPlayerSitDown msg ;
+						msg.nIdx = nIdx ;
+						msg.nTakeInCoin = 0 ;
+						msg.nRoomID = getRoomID() ;
+						if ( m_pRoom )
+						{
+							m_pRoom->onMessage(&msg,ID_MSG_PORT_CLIENT,nSessionID) ;
+						}
+						pPrivatePlayer->doPayedDeskFee() ;
+						return  ;
+					}
+					else
+					{
+						pPrivatePlayer->payDeskFeeFailed() ;
+						if ( nRet == 0 )
+						{
+							// give back diamond 
+							Json::Value jsReq ;
+							jsReq["targetUID"] = nUID ;
+							jsReq["diamond"] = nDiamond ;
+							pAsync->pushAsyncRequest(ID_MSG_PORT_DATA,eAsync_GiveBackDiamond,jsReq);
+						}
+
+						stMsgPlayerSitDownRet msgBack ;
+						msgBack.nRet = 5 ;
+						m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nSessionID);
+						LOGFMTE("player sit down failed daimond casue uid = %u",nUID);
+					}
+
+				},jsUserData);
+				return true ;
+			}
+		}
+		break;
 	case MSG_READ_PRIVATE_ROOM_PLAYER:
 		{
 			stMsgReadPrivateRoomPlayerRet* pRet = (stMsgReadPrivateRoomPlayerRet*)prealMsg ;
@@ -866,7 +978,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			}
 			else
 			{
-				 
+
 			}
 		}
 		return false ;
@@ -1274,6 +1386,8 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	jsMsgRoomInfo["seatCnt"] = (uint8_t)pRoom->getSeatCount();
 	jsMsgRoomInfo["chatID"] = pRoom->getChatRoomID();
 	jsMsgRoomInfo["curState"] = getRoomState();
+	jsMsgRoomInfo["cardNeed"] = getCardNeed(); ;
+	LOGFMTD("card need = %u",getCardNeed());
 	if ( getRoomState() == eRoomState_Opening )
 	{
 		jsMsgRoomInfo["curState"] = pRoom->getCurRoomState()->getStateID() ;
@@ -1290,6 +1404,7 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	assert(iter != m_mapPrivateRoomPlayers.end() && "why this is null ?" );
 	jsMsgRoomInfo["selfCoin"] = iter->second->nCoinInRoom ;
 	jsMsgRoomInfo["baseTakeIn"] = m_nBaseTakeIn;
+	jsMsgRoomInfo["isCtrlTakeIn"] = (uint32_t)this->m_isControlTakeIn ;
 
 	Json::Value jsGame ;
 	pRoom->roomInfoVisitor(jsGame);

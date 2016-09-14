@@ -87,7 +87,7 @@ void CQinjiaTask::setRequest( const char* pApi,Json::Value& jsReqData ,CQinJiaMo
 	m_jsReqData["email"] = "378569952@qq.com" ;
 	m_jsReqData["devpwd"] = "bill007" ;
 #ifndef NDEBUG
-	m_jsReqData["appkey"] = "e87f31bb-e86c-4d87-a3f3-57b3da76b3d6";
+	m_jsReqData["appkey"] = "8276e6d3-5e96-44e2-9243-97a40f019bb3";
 #else
 	m_jsReqData["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
 #endif // DEBUG

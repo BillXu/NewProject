@@ -60,6 +60,7 @@ public:
 	void update(float fDeta )override ;
 	CPlayer* GetFirstActivePlayer();
 	void onExit()override ;
+	bool onAsyncRequest(uint16_t nRequestType , const Json::Value& jsReqContent, Json::Value& jsResult )override ;
 protected:
 	void OnPlayerOffline(CPlayer* pOfflinePlayer);
 	bool ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID );

@@ -104,6 +104,8 @@ enum eAsyncReq
 	eAsync_Db_Delete,	// { sql : "select * from table where uid = 345" , order : 0 } // order [ 0 - 3 ] biger first process ,  result : { afctRow : 1 , data : [row0,row1] }/// row { tile0 : value , title 0 ;}
 	eAsync_ReqRoomSerials, // {roomType : 2 }  // result :  { ret : 0 , serials : [{ serial : 0 , chatRoomID : 2345} , { serial : 0 , chatRoomID : 2345} ,{ serial : 0 , chatRoomID : 2345} ] }  // ret : 0 success , 1 svr is reading from db wait a moment ; 
 	eAsync_Apns, // { apnsType : 0 , targets : [234,2345,23,4] , content : "hello this is" ,msgID : "fs" ,msgdesc : "shfsg" }  apnsType : 0 , group type . 1 , target persions ;
+	eAsync_ComsumDiamond, // { targetUID : 2345 , diamond : 23 } // ret : { ret : 0 , diamond : 23 } // ret : 0 success , 1 not enough diamond ;
+	eAsync_GiveBackDiamond, // { targetUID : 2345 , diamond : 23 } ;
 	eAsync_Max,
 };
 

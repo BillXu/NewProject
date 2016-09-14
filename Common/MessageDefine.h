@@ -858,7 +858,7 @@ struct stMsgPlayerSitDownRet
 	:public stMsg
 {
 	stMsgPlayerSitDownRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_SITDOWN ; }
-	uint8_t nRet ; // 0 success , 1 coin not engouht , 2 target have player , 3 not in room , 4 you already sit down ;
+	uint8_t nRet ; // 0 success , 1 coin not engouht , 2 target have player , 3 not in room , 4 you already sit down, 5 diamond error  ;
 };
 
 struct stMsgRoomSitDown

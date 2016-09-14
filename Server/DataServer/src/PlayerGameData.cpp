@@ -343,34 +343,6 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			sendGameDataToClient();
 		}
 		break;
-	case MSG_REQUEST_MY_OWN_ROOMS:
-		{
-			stMsgRequestMyOwnRooms* pRet = (stMsgRequestMyOwnRooms*)pMessage ;
-			if ( pRet->nRoomType >= eRoom_Max )
-			{
-				return false;
-			}
-
-			//stMsgRequestMyOwnRoomsRet msgRet ;
-			//msgRet.nRoomType = pRet->nRoomType ;
-			//msgRet.nCnt = 0 ;
-			//if ( msgRet.nCnt == 0 )
-			//{
-			//	SendMsg(&msgRet,sizeof(msgRet)) ;
-			//	return true ;
-			//}
-
-			//CAutoBuffer autoBuffer(sizeof(msgRet) + sizeof(uint32_t)* msgRet.nCnt);
-			//autoBuffer.addContent((char*)&msgRet,sizeof(msgRet)) ;
-			//MAP_ID_MYROOW::iterator iter = m_vMyOwnRooms[pRet->nRoomType].begin() ;
-			//for ( ; iter != m_vMyOwnRooms[pRet->nRoomType].end() ; ++iter )
-			//{
-			//	uint32_t n = iter->first ;
-			//	autoBuffer.addContent((char*)&n,sizeof(uint32_t));
-			//}
-			//SendMsg((stMsg*)autoBuffer.getBufferPtr(),autoBuffer.getContentSize()) ;
-		}
-		break;
 	default:
 		return false;
 	}

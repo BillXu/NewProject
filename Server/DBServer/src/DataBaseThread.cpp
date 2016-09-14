@@ -1,5 +1,6 @@
 #include "DataBaseThread.h"
 #include "DBRequest.h"
+#include "log4z.h"
 #define  MYSQL_PING_TIME (3600*8 + 30)
 //CDataBaseThread* CDataBaseThread::SharedDBThread()
 //{
@@ -123,7 +124,7 @@ bool CDataBaseThread::ProcessRequest()
 		pResult->nAffectRow = 0 ;
 		if ( mysql_real_query(m_pMySql,pRequest->pSqlBuffer,pRequest->nSqlBufferLen) )
 		{
-			printf("query DB Error Info , Operate UID = %d : %s . sql: = %s\n", pRequest->nRequestUID, mysql_error(m_pMySql),pRequest->pSqlBuffer);
+			LOGFMTE("query DB Error Info , Operate UID = %d : %s . sql: = %s\n", pRequest->nRequestUID, mysql_error(m_pMySql),pRequest->pSqlBuffer);
 			pResult->nAffectRow = 0 ;
 			continue; 
 		}

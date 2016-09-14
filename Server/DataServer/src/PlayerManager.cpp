@@ -600,6 +600,51 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 	return true ;
 }
 
+bool CPlayerManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& jsReqContent, Json::Value& jsResult )
+{
+	switch (nRequestType)
+	{
+	case eAsync_ComsumDiamond:
+		{
+			uint32_t nUID = jsReqContent["targetUID"].asUInt() ;
+			uint32_t nDiamond = jsReqContent["diamond"].asUInt();
+			auto pPlayer = GetPlayerByUserUID(nUID);	
+			jsResult["diamond"] = nDiamond ;
+			if ( pPlayer == nullptr || pPlayer->GetBaseData()->GetAllDiamoned() < nDiamond )
+			{
+				jsResult["ret"] = 1 ;
+				LOGFMTW("palyer uid = %u , consum diamond error , cnt = %u",nUID,nDiamond );
+			}
+			else
+			{
+				pPlayer->GetBaseData()->decressMoney(nDiamond,true ) ;
+				jsResult["ret"] = 0 ;
+				LOGFMTD("palyer uid = %u , consum diamond success , cnt = %u",nUID,nDiamond );
+			}
+		}
+		break;
+	case eAsync_GiveBackDiamond:
+		{
+			uint32_t nUID = jsReqContent["targetUID"].asUInt() ;
+			uint32_t nDiamond = jsReqContent["diamond"].asUInt();
+			auto pPlayer = GetPlayerByUserUID(nUID);	
+			if ( pPlayer == nullptr )
+			{
+				LOGFMTE("uid = %u not online can not give back diamond = %u ",nUID,nDiamond);
+			}
+			else
+			{
+				pPlayer->GetBaseData()->AddMoney(nDiamond,true);
+				LOGFMTD("give back diamond uid = %u , cnt = %u",nUID,nDiamond);
+			}
+		}
+		break ;
+	default:
+		return false;
+	}
+	return true ;
+}
+
 CPlayer* CPlayerManager::GetPlayerBySessionID( unsigned int nSessionID , bool bInclueOffline )
 {
 	MAP_SESSIONID_PLAYERS::iterator iter = m_vAllActivePlayers.find(nSessionID) ;
