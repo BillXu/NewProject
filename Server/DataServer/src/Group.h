@@ -13,6 +13,7 @@ struct stGroupItem
 	bool isCntDirty ;
 	uint32_t m_tLevelRunOutTime ;
 	std::vector<uint32_t> vMembers ;
+protected:
 	std::string strName ;
 public:
 	stGroupItem(){ nLevel = 0 ; m_tLevelRunOutTime = 0 ; isCntDirty = false ; isDirty = false ; vMembers.clear();strName = ""; }
@@ -25,7 +26,7 @@ public:
 	bool isHaveMember(uint32_t nMemberUID );
 	uint32_t getMemberCnt() ;
 	uint32_t getOwnerUID(){ return nCreaterUID ;}
-	void setName(const char* pName ){ strName = pName ; }
+	void setName(const char* pName );
 	const char* getName(){ return strName.c_str() ;}
 };
 

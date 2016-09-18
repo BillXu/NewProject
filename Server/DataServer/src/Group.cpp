@@ -31,6 +31,22 @@ bool stGroupItem::isGroupFull()
 	return getMemberCnt() >= getCapacity() ; 
 }
 
+void stGroupItem::setName(const char* pName )
+{
+	strName = pName ;
+	Json::Reader jsR ;
+	Json::Value jsRoot ;
+	if ( jsR.parse(strName,jsRoot,false) )
+	{
+		if ( jsRoot.isNull() == false && jsRoot["n"].isNull() == false && jsRoot["n"].isString() )
+		{
+			strName = jsRoot["n"].asString();
+			return ;
+		}
+	}
+	strName = pName ;
+}
+
 uint32_t stGroupItem::getCapacity()
 {
 	if ( m_tLevelRunOutTime )
@@ -775,7 +791,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 					{
 						// send push notification ;
 						CSendPushNotification::getInstance()->reset();
-						CSendPushNotification::getInstance()->addTarget(pClub->getOwnerUID()) ;
+						CSendPushNotification::getInstance()->addTarget(nUID) ;
 						CSendPushNotification::getInstance()->setContent(CServerStringTable::getInstance()->getStringByID(1),1) ;
 						CSendPushNotification::getInstance()->postApns(CGameServerApp::SharedGameServerApp()->getAsynReqQueue(),false,"reply Apply") ;
 					}
@@ -839,15 +855,15 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 				break;
 			}
 
-			const char* pContent = "emoji" ;
-			if ( nType == 0 )
-			{
-				pContent = "Text Message";
-			}
-			else if ( 1 == nType )
-			{
-				pContent = "Voice Message";
-			}
+			const char* pContent = CServerStringTable::getInstance()->getStringByID(9) ;
+			//if ( nType == 0 )
+			//{
+			//	pContent = "Text Message";
+			//}
+			//else if ( 1 == nType )
+			//{
+			//	pContent = "Voice Message";
+			//}
  
 			auto pAsync = getSvrApp()->getAsynReqQueue();
 			Json::Value jsTarget ;

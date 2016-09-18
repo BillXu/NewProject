@@ -502,7 +502,19 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 			memcpy_s(pRecorder->cRoomName,sizeof(pRecorder->cRoomName),jArg["roomName"].asCString(),sizeof(jArg["roomName"].asCString()));
 			auto pGame = (CPlayerGameData*)GetPlayer()->GetComponent(ePlayerComponent_PlayerGameData);
 			pGame->addPlayerGameRecorder(pRecorder);
-			LOGFMTD("do syn game result from offline event room id = %u, offset = %d , uid = %u",pRecorder->nRoomID,pRecorder->nOffset,GetPlayer()->GetUserUID());
+
+			uint32_t nBackCoin = 0 ;
+			if (jArg["finalCoin"].isNull() == false )
+			{
+				nBackCoin = jArg["finalCoin"].asUInt() ;
+			}
+			auto pPlayerData = GetPlayer()->GetBaseData();
+			pPlayerData->AddMoney(nBackCoin);
+
+			stMsg msg ;
+			msg.usMsgType = MSG_PLAYER_UPDATE_MONEY ;
+			GetPlayer()->GetBaseData()->OnMessage(&msg,ID_MSG_PORT_CLIENT) ;
+			LOGFMTD("do syn game result from offline event room id = %u, offset = %d , uid = %u, finalCoin = %u",pRecorder->nRoomID,pRecorder->nOffset,GetPlayer()->GetUserUID(),nBackCoin);
 		}
 		break; 
 	default:

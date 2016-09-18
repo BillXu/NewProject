@@ -436,6 +436,7 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 		{
 			pPlayerItem->nCoinInRoom += pPlayerItem->nCheckedCoin ;
 			pPlayerItem->nCheckedCoin = 0 ;
+			onUpdatePlayerGameResult(m_pRoom,pPlayerItem->nUserUID,0);
 		}
 	}
 
