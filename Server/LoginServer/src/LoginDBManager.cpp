@@ -75,7 +75,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 					}
 
 					cName = rand() % 50 ;
-					if ( acc <= 25 )
+					if ( cName <= 25)
 					{
 						cName = 'a' + cName ;
 					}
@@ -89,6 +89,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 				sprintf_s(pLoginRegister->cPassword,"hello");
 			}
 			
+			std::cout << " register name : " << pLoginRegister->cName << std::endl;
 			pdata->nExtenArg1 = pLoginRegister->cRegisterType ;
 			if ( strlen(pLoginRegister->cAccount) >= MAX_LEN_ACCOUNT || strlen(pLoginRegister->cPassword) >= MAX_LEN_PASSWORD )
 			{

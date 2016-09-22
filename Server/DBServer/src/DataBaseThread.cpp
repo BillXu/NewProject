@@ -1,5 +1,5 @@
-#include "DataBaseThread.h"
 #include "DBRequest.h"
+#include "DataBaseThread.h"
 #include "log4z.h"
 #define  MYSQL_PING_TIME (3600*8 + 30)
 //CDataBaseThread* CDataBaseThread::SharedDBThread()

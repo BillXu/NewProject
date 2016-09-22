@@ -29,6 +29,12 @@
     <Filter Include="Apns">
       <UniqueIdentifier>{13d50dcd-ca8c-482d-85ea-325988e77b29}</UniqueIdentifier>
     </Filter>
+    <Filter Include="httpModule">
+      <UniqueIdentifier>{6e6b2b8a-4185-4fd0-b5c3-ccaf55ab57e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="httpModule\httpServer">
+      <UniqueIdentifier>{4259c932-bf0b-4c41-93e2-fde7e2560927}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -111,6 +117,30 @@
     </ClCompile>
     <ClCompile Include="src\ApnsTask.cpp">
       <Filter>Apns</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpServer\connection.cpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpServer\connection_manager.cpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpServer\mime_types.cpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpServer\reply.cpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpServer\request_handler.cpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpServer\request_parser.cpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\httpServer\server.cpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HttpModule.cpp">
+      <Filter>httpModule</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -197,6 +227,36 @@
     </ClInclude>
     <ClInclude Include="src\ApnsTask.h">
       <Filter>Apns</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\connection.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\connection_manager.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\header.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\mime_types.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\reply.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\request.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\request_handler.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\request_parser.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\httpServer\server.hpp">
+      <Filter>httpModule\httpServer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HttpModule.h">
+      <Filter>httpModule</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,7 @@
 #pragma once
 #include "IGlobalModule.h"
 #include "TaskPool.h"
+#include "IVerifyTask.h"
 struct stVerifyRequest ;
 class CTaskPoolModule
 	:public IGlobalModule
@@ -26,7 +27,9 @@ public:
 	void testFunc();
 	ITask::ITaskPrt createTask( uint32_t nTaskID )override ;
 	CTaskPool& getPool(){ return m_tTaskPool ;}
+	void doDBVerify( uint32_t nUserUID , uint16_t nShopID , uint8_t nChannel, std::string& strTransfcationID );
 protected:
+	void doDBVerify(IVerifyTask::VERIFY_REQUEST_ptr ptr);
 	// logic 
 	void onWechatOrder( stMsg* pOrder, eMsgPort eSenderPort , uint32_t nSessionID );
 	void onVerifyMsg( stMsg* pOrder, eMsgPort eSenderPort , uint32_t nSessionID );

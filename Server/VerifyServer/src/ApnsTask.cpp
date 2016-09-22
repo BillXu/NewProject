@@ -1,4 +1,5 @@
 #include "ApnsTask.h"
+#include "log4z.h"
 CApnsTask::CApnsTask(uint32_t nTaskID )
 	:ITask(nTaskID)
 {
@@ -19,25 +20,25 @@ void CApnsTask::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUserD
 {
 	Json::Reader reader;
 	Json::Value rootValue ;
-	static char pTempBuffer[1024] = { 0 } ;
+	static char pTempBuffer[2024] = { 0 } ;
 	memset(pTempBuffer,0,sizeof(pTempBuffer)) ;
-	memcpy(pTempBuffer,pResultData,nDatalen);
+	memcpy_s(pTempBuffer,sizeof(pTempBuffer),pResultData,nDatalen);
 	if ( reader.parse(pTempBuffer,rootValue) )
 	{
 		auto ret = rootValue["ret"].asString() == "SUCCESS";
 		if ( ret )
 		{
-			printf("invoker ok \n") ;
+			LOGFMTD("invoker ok \n") ;
 		}
 		else
 		{
 			auto p = rootValue["data"];
-			printf("error = %s \n",p["error_code"].asCString()) ;
+			LOGFMTD("error = %s \n", p["error_code"].asCString());
 		}
 	}
 	else
 	{
-		printf("parse json data error , from apple \n") ;
+		LOGFMTD("parse json data error , from apple \n");
 		return ;
 	}
 

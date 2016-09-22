@@ -593,6 +593,20 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			}
 		}
 		break;
+	case MSG_VERIFY_TANSACTION:
+	{
+		stMsgFromVerifyServer* pRet = (stMsgFromVerifyServer*)prealMsg;
+		CPlayer* pp = GetPlayerByUserUID(pRet->nBuyerPlayerUserUID);
+		if (!pp)
+		{
+			LOGFMTE("uid = %d not find ,can not give shopItemID = %u", pRet->nBuyerPlayerUserUID, pRet->nShopItemID);
+		}
+		else
+		{
+			return pp->OnMessage(prealMsg, eSenderPort);
+		}
+		break;
+	}
 	default:
 		return false;
 	}

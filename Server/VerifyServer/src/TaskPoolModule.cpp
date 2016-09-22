@@ -311,12 +311,7 @@ void CTaskPoolModule::onVerifyMsg( stMsg* pMsg, eMsgPort eSenderPort , uint32_t 
 		}
 
 		LOGFMTI("apple verify success  uid = %u, channel = %u,shopItem id = %u,go on DB verify",pResult->nFromPlayerUserUID,pResult->nChannel,pResult->nShopItemID) ;
-		auto pDBTask = getPool().getReuseTaskObjByID(eTask_DBVerify);
-		auto pDBVerifyTask = (IVerifyTask*)pDBTask.get() ;
-
-		pDBVerifyTask->setVerifyRequest(pResult) ;
-		pDBVerifyTask->setCallBack([this](ITask::ITaskPrt ptr){ auto pAready = (IVerifyTask*)ptr.get(); sendVerifyResult(pAready->getVerifyResult()) ;} ) ;
-		getPool().postTask(pDBTask) ;
+		doDBVerify(pResult);
 	} ) ;
 	getPool().postTask(pTask);
 }
@@ -330,4 +325,30 @@ void CTaskPoolModule::sendVerifyResult(std::shared_ptr<stVerifyRequest> & pResul
 	msg.nBuyForPlayerUserUID = pResult->nBuyedForPlayerUserUID ;
 	getSvrApp()->sendMsg(pResult->nSessionID,(char*)&msg,sizeof(msg));
 	LOGFMTI( "finish verify transfaction shopid = %u ,uid = %d ret = %d",msg.nShopItemID,msg.nBuyerPlayerUserUID,msg.nRet ) ;
+}
+
+void CTaskPoolModule::doDBVerify(uint32_t nUserUID, uint16_t nShopID, uint8_t nChannel,std::string& strTransfcationID)
+{
+	IVerifyTask::VERIFY_REQUEST_ptr pRequest(new stVerifyRequest());
+	pRequest->nFromPlayerUserUID = nUserUID;
+	pRequest->nShopItemID = nShopID;
+	pRequest->nBuyedForPlayerUserUID = nUserUID;
+	pRequest->nChannel = nChannel; 
+	pRequest->nSessionID = 0;
+	pRequest->nMiUserUID = 0;
+
+	memset(pRequest->pBufferVerifyID,0,sizeof(pRequest->pBufferVerifyID));
+	memcpy_s(pRequest->pBufferVerifyID, sizeof(pRequest->pBufferVerifyID),strTransfcationID.data(),strTransfcationID.size());
+
+	doDBVerify(pRequest);
+}
+
+void CTaskPoolModule::doDBVerify(IVerifyTask::VERIFY_REQUEST_ptr ptr)
+{
+	auto pDBTask = getPool().getReuseTaskObjByID(eTask_DBVerify);
+	auto pDBVerifyTask = (IVerifyTask*)pDBTask.get();
+
+	pDBVerifyTask->setVerifyRequest(ptr);
+	pDBVerifyTask->setCallBack([this](ITask::ITaskPrt ptr){ auto pAready = (IVerifyTask*)ptr.get(); sendVerifyResult(pAready->getVerifyResult()); });
+	getPool().postTask(pDBTask);
 }

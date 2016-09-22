@@ -1,7 +1,7 @@
 #pragma once 
-#include "ThreadMod.h"
 #include "my_global.h"
 #include "mysql.h"
+#include "ThreadMod.h"
 class CDataBaseThread
 :public  CThreadT
 {

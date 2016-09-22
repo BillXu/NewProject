@@ -387,3 +387,5 @@ Server/Bin/ServerRelease/GateServer.exe
 Server/Bin/ServerRelease/LoginServer.exe
 *.exe
 PaiYouQuan/
+Server/ServerCommon/boost/
+*.exe

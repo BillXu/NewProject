@@ -1,5 +1,6 @@
 #include "DBTask.h"
 #include "DBRequest.h"
+#include "log4z.h"
 #define  MYSQL_PING_TIME (3600*8 + 30)
 CDBTask::CDBTask( uint32_t nTaskID,const char* pIP,unsigned pPort , const char* pUserName,const char* pPassword, const char* pDBName ) 
 	:ITask(nTaskID),m_pRequest( new stDBRequest() ),m_pResult(new stDBResult() ),m_pMySql(nullptr),m_tNextMysqlPingTime(0)
@@ -121,7 +122,7 @@ uint8_t CDBTask::doRequest(DBRequest_ptr ptr )
 	pResult->nAffectRow = 0 ;
 	if ( mysql_real_query(m_pMySql,pRequest->pSqlBuffer,pRequest->nSqlBufferLen) )
 	{
-		printf("query DB Error Info , Operate UID = %d : %s . sql: = %s\n", pRequest->nRequestUID, mysql_error(m_pMySql),pRequest->pSqlBuffer);
+		LOGFMTE("query DB Error Info , Operate UID = %d : %s . sql: = %s\n", pRequest->nRequestUID, mysql_error(m_pMySql), pRequest->pSqlBuffer);
 		pResult->nAffectRow = 0 ;
 		return 1;
 	}
