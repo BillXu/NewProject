@@ -108,6 +108,7 @@
     <ClInclude Include="AsyncRequestQuene.h" />
     <ClInclude Include="AutoBuffer.h" />
     <ClInclude Include="catch_dump_file.h" />
+    <ClInclude Include="ConfigDefine.h" />
     <ClInclude Include="IGlobalModule.h" />
     <ClInclude Include="ISeverApp.h" />
     <ClInclude Include="log4z.h" />

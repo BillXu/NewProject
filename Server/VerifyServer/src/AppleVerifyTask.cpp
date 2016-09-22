@@ -11,7 +11,7 @@ CAppleVerifyTask::CAppleVerifyTask( uint32_t nTaskID )
 #else
 	m_tHttpRequest.init("https://buy.itunes.apple.com/verifyReceipt");
 #endif
-	//m_tHttpRequest.init("https://sandbox.itunes.apple.com/verifyReceipt");
+	m_tHttpRequest.init("https://sandbox.itunes.apple.com/verifyReceipt");
 	m_tHttpRequest.setDelegate(this);
 }
 

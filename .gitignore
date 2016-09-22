@@ -389,3 +389,4 @@ Server/Bin/ServerRelease/LoginServer.exe
 PaiYouQuan/
 Server/ServerCommon/boost/
 *.exe
+Server/VerifyServer/src/testTask.h

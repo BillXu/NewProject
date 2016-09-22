@@ -4,13 +4,18 @@
 #include "log4z.h"
 #include <boost/algorithm/string.hpp>  
 #include "VerifyApp.h"
+#include "ConfigDefine.h"
 void CHttpModule::init(IServerApp* svrApp)
 {
 	IGlobalModule::init(svrApp);
 	mHttpServer = boost::make_shared<http::server::server>(5006);
 	mHttpServer->run();
 
-	registerHttpHandle("/vxpay.php", boost::bind(&CHttpModule::onHandleVXPayResult, this, boost::placeholders::_1));
+	// register wechat pay result notification 
+	std::string str = Wechat_notifyUrl;
+	std::size_t nPos = str.find_last_of('/');
+	auto sub = str.substr(nPos, str.size() - nPos);
+	registerHttpHandle(sub, boost::bind(&CHttpModule::onHandleVXPayResult, this, boost::placeholders::_1));
 }
 
 void CHttpModule::update(float fDeta)

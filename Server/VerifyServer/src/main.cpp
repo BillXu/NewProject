@@ -115,7 +115,6 @@ void  testFunc()
 int main()
 {
 	//testFunc();
-
 	CVerifyApp theApp ;
 	CApplication theAplication(&theApp);
 	theAplication.startApp();
