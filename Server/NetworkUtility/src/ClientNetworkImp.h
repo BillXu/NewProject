@@ -5,7 +5,7 @@
 #include <boost/thread.hpp>
 #include "InternalBuffer.h"
 #include <deque> 
-using boost::asio::ip::tcp;  
+using asio::ip::tcp;  
 class CClientNetworkImp
 {
 public:
@@ -31,23 +31,23 @@ public:
 	bool getFirstPacket(Packet** ppPacket ); // must delete out side ;
 	void addPacket(Packet* pPacket ) ;
 	bool sendMsg(const char* pData , size_t nLen ) ;
-	boost::asio::io_service* getServicePtr(){ return &m_io_service ; }
+	asio::io_service* getServicePtr(){ return &m_io_service ; }
 private:  
-	void handleConnect(const boost::system::error_code& error);
+	void handleConnect(const asio::error_code& error);
 
-	void handleReadHeader(const boost::system::error_code& error) ; 
+	void handleReadHeader(const asio::error_code& error);
 
-	void handleReadBody(const boost::system::error_code& error) ;
+	void handleReadBody(const asio::error_code& error);
 
 	void doWrite(InternalBuffer_ptr msg) ;
 
-	void handleWrite(const boost::system::error_code& error) ;
+	void handleWrite(const asio::error_code& error);
 
-	void sendHeatBeat( const boost::system::error_code& ec );
-	void onKeepIoServeicWork( const boost::system::error_code& ec );
+	void sendHeatBeat(const asio::error_code& ec);
+	void onKeepIoServeicWork(const asio::error_code& ec);
 	void doClose();
 private:  
-	boost::asio::io_service m_io_service;  
+	asio::io_service m_io_service;  
 	tcp::socket* m_socket;  
 
 	boost::shared_mutex m_PacketMutex;
@@ -60,10 +60,10 @@ private:
 	unsigned char m_nState ;
 
 	boost::thread* m_pIOThread ;
-	boost::asio::ip::tcp::endpoint* m_pEndpoint ;
+	asio::ip::tcp::endpoint* m_pEndpoint ;
 
-	boost::asio::deadline_timer m_tHeatBeat;
+	asio::deadline_timer m_tHeatBeat;
 	int8_t m_nHeatBeatTimes ;
 
-	boost::asio::deadline_timer m_tKeepIOServiecWork;
+	asio::deadline_timer m_tKeepIOServiecWork;
 };

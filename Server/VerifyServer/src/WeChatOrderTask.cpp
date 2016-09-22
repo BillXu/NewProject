@@ -21,11 +21,11 @@ uint8_t CWeChatOrderTask::performTask()
 	}
 
 	auto pRequest = m_ptrCurRequest;
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	pRequest->nPrize = 1 ;
 	LOGFMTE("temp set prize = 1 ") ;
-#endif
-	
+//#endif
+
 	TiXmlElement *xmlRoot = new TiXmlElement("xml"); 
 
 	TiXmlElement *pNode = new TiXmlElement("appid"); 
@@ -69,13 +69,15 @@ uint8_t CWeChatOrderTask::performTask()
 	pNode->LinkEndChild(pValue);
 	strForMd5 += "&nonce_str=" ;
 	strForMd5 += strRandString;
+#ifdef _DEBUG
 	printf("rand str: %s\n",strRandString.c_str()) ;
+#endif 
 	// ok 
 	pNode = new TiXmlElement("notify_url"); 
-	pValue = new TiXmlText( "http://www.paiyouquan/pay.php");
+	pValue = new TiXmlText( "http://abc.paiyouquan.com:5006/vxpay.php");
 	xmlRoot->LinkEndChild(pNode);
 	pNode->LinkEndChild(pValue);
-	strForMd5 += "&notify_url=http://www.paiyouquan/pay.php" ;
+	strForMd5 += "&notify_url=http://abc.paiyouquan.com:5006/vxpay.php" ;
 
 	// ok 
 	pNode = new TiXmlElement("out_trade_no"); 
@@ -111,15 +113,23 @@ uint8_t CWeChatOrderTask::performTask()
 	pNode->LinkEndChild(pValue);
 	strForMd5 += "&trade_type=APP" ;
 
+	// st to 
+	//std::string strAppKey = "5fc4164aee7ba3360452c4e0e5d02d9d";
+	//transform(strAppKey.begin(), strAppKey.end(), strAppKey.begin(),  toupper);
 	// and key value 
 	strForMd5 += "&key=E97ED2537D229C0E967042D2E7F1C936" ;
+	//strForMd5 += strAppKey ;
+#ifdef _DEBUG
 	printf("formd5Str: %s\n",strForMd5.c_str());
+#endif 
 	CMD5 md5 ;
 	md5.GenerateMD5((unsigned char*)strForMd5.c_str(),strlen(strForMd5.c_str())) ;
 	std::string strSign = md5.ToString() ;
 	transform(strSign.begin(), strSign.end(), strSign.begin(),  toupper);
 	// not ok 
+#ifdef _DEBUG
 	printf("sing: %s\n",strSign.c_str());
+#endif 
 	pNode = new TiXmlElement("sign"); 
 	pValue = new TiXmlText( strSign.c_str() );
 	xmlRoot->LinkEndChild(pNode);
@@ -190,7 +200,7 @@ void CWeChatOrderTask::onHttpCallBack(char* pResultData, size_t nDatalen , void*
 		}
 	}
 	pRequest->nRet = 1 ;
-	printf("we chat order failed \n") ;
+	LOGFMTE("we chat order failed : %s \n",str.c_str()) ;
 	t.SaveFile("reT.xml");
 }
 

@@ -2,7 +2,7 @@
 #include "CommonDefine.h"
 #include "log4z.h"
 #include "TaskPoolModule.h"
-
+#include "HttpModule.h"
 bool CVerifyApp::init()
 {
 	IServerApp::init();
@@ -21,12 +21,19 @@ bool CVerifyApp::init()
 	LOGFMTI("START verify server !") ;
 
 	installModule(eMod_Pool);
+	installModule(eMod_Http);
 	return true;
 }
 
 uint16_t CVerifyApp::getLocalSvrMsgPortType()
 {
 	return ID_MSG_PORT_VERIFY ;
+}
+
+CTaskPoolModule* CVerifyApp::getTaskPoolModule()
+{
+	auto p = getModuleByType(eMod_Pool);
+	return (CTaskPoolModule*)p;
 }
 
 IGlobalModule* CVerifyApp::createModule( uint16_t eModuleType )
@@ -40,6 +47,10 @@ IGlobalModule* CVerifyApp::createModule( uint16_t eModuleType )
 	if ( eModuleType == eMod_Pool )
 	{
 		p = new CTaskPoolModule();
+	}
+	else if ( eMod_Http == eModuleType )
+	{
+		p = new CHttpModule();
 	}
 	return p ;
 }

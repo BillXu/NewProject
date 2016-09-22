@@ -1,5 +1,6 @@
-#include "DataBaseThread.h"
 #include "DBRequest.h"
+#include "DataBaseThread.h"
+#include "log4z.h"
 #define  MYSQL_PING_TIME (3600*8 + 30)
 //CDataBaseThread* CDataBaseThread::SharedDBThread()
 //{
@@ -123,7 +124,7 @@ bool CDataBaseThread::ProcessRequest()
 		pResult->nAffectRow = 0 ;
 		if ( mysql_real_query(m_pMySql,pRequest->pSqlBuffer,pRequest->nSqlBufferLen) )
 		{
-			printf("query DB Error Info , Operate UID = %d : %s . sql: = %s\n", pRequest->nRequestUID, mysql_error(m_pMySql),pRequest->pSqlBuffer);
+			LOGFMTE("query DB Error Info , Operate UID = %d : %s . sql: = %s\n", pRequest->nRequestUID, mysql_error(m_pMySql),pRequest->pSqlBuffer);
 			pResult->nAffectRow = 0 ;
 			continue; 
 		}
@@ -155,7 +156,7 @@ bool CDataBaseThread::ProcessRequest()
 					{
 						if ( msqlResult != NULL )
 						{
-							printf("mysql_store_result Error Info , Operate UID = %d : %s why have more than one result type  result \n", pRequest->nRequestUID, mysql_error(m_pMySql));
+							LOGFMTE("mysql_store_result Error Info , Operate UID = %d : %s why have more than one result type  result \n", pRequest->nRequestUID, mysql_error(m_pMySql));
 						}
 						//pResult->nAffectRow = 0 ;
 						mysql_free_result(msqlResult);
@@ -210,7 +211,7 @@ bool CDataBaseThread::ProcessRequest()
 							default:
 								{
 									bValide = false ;
-									printf("error DB request unsupport field Type : Type = %d : field Name: %s \n",msqlfield->type, pField->strFieldName.c_str()) ;
+									LOGFMTE("error DB request unsupport field Type : Type = %d : field Name: %s \n", msqlfield->type, pField->strFieldName.c_str());
 								}
 							}
 
@@ -236,7 +237,7 @@ bool CDataBaseThread::ProcessRequest()
 				break; 
 			default:
 				{
-					printf("error DB request type, DB request UID = %d , Type = %d\n",pRequest->nRequestUID,pRequest->eType) ;
+					LOGFMTE("error DB request type, DB request UID = %d , Type = %d\n", pRequest->nRequestUID, pRequest->eType);
 					continue; ;
 				}
 			}

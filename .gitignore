@@ -387,3 +387,6 @@ Server/Bin/ServerRelease/GateServer.exe
 Server/Bin/ServerRelease/LoginServer.exe
 *.exe
 PaiYouQuan/
+Server/VerifyServer/src/testTask.h
+Server/VerifyServer/src/httpServer/main.cpp
+Server/ServerCommon/boost/

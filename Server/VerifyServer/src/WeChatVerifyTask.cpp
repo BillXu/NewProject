@@ -50,7 +50,9 @@ uint8_t CWechatVerifyTask::performTask()
 	pNode->LinkEndChild(pValue);
 	strForMd5 += "&nonce_str=" ;
 	strForMd5 += strRandString;
+#ifdef _DEBUG
 	printf("rand str: %s\n",strRandString.c_str()) ;
+#endif 
 
 	// ok 
 	pNode = new TiXmlElement("out_trade_no"); 
@@ -64,13 +66,17 @@ uint8_t CWechatVerifyTask::performTask()
 	static char pBuffer [200] = { 0 } ;
 	// and key value 
 	strForMd5 += "&key=E97ED2537D229C0E967042D2E7F1C936" ;
-	printf("formd5Str: %s\n",strForMd5.c_str());
+#ifdef _DEBUG
+	printf("formd5Str: %s\n", strForMd5.c_str());
+#endif 
 	CMD5 md5 ;
 	md5.GenerateMD5((unsigned char*)strForMd5.c_str(),strlen(strForMd5.c_str())) ;
 	std::string strSign = md5.ToString() ;
 	transform(strSign.begin(), strSign.end(), strSign.begin(),  toupper);
 	// not ok 
+#ifdef _DEBUG
 	printf("sing: %s\n",strSign.c_str());
+#endif 
 	pNode = new TiXmlElement("sign"); 
 	pValue = new TiXmlText( strSign.c_str() );
 	xmlRoot->LinkEndChild(pNode);
@@ -79,7 +85,7 @@ uint8_t CWechatVerifyTask::performTask()
 	TiXmlPrinter printer; 
 	xmlRoot->Accept( &printer ); 
 	std::string stringBuffer = printer.CStr(); 
-	printf("finsStr : %s\n",stringBuffer.c_str());
+	//printf("finsStr : %s\n",stringBuffer.c_str());
 	auto ret = m_tHttpRequest.performRequest(nullptr,stringBuffer.c_str(),stringBuffer.size(),nullptr ) ;
 	
 	delete xmlRoot ;
@@ -99,7 +105,8 @@ void CWechatVerifyTask::onHttpCallBack(char* pResultData, size_t nDatalen , void
 	TiXmlDocument t ;
 	std::string str( pResultData,nDatalen );
 	t.Parse(str.c_str(),0,TIXML_ENCODING_UTF8);
-	LOGFMTD("weChatPayRet : %s",str.c_str()) ;
+	//LOGFMTD("weChatPayRet : %s",str.c_str()) ;
+	LOGD("client request verify back ");
 	TiXmlNode* pRoot = t.RootElement();
 	if ( pRoot )
 	{
