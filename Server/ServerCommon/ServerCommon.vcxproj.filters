@@ -125,5 +125,8 @@
     <ClInclude Include="log4z.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="ConfigDefine.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@
 #include "Md5.h"
 #include<algorithm>
 #include "log4z.h"
+#include "ConfigDefine.h"
 CWechatVerifyTask::CWechatVerifyTask( uint32_t nTaskID ) 
 	:IVerifyTask(nTaskID)
 {
@@ -17,18 +18,20 @@ uint8_t CWechatVerifyTask::performTask()
 	auto pRequest = getVerifyResult() ; 
 	TiXmlElement *xmlRoot = new TiXmlElement("xml"); 
 
-	TiXmlElement *pNode = new TiXmlElement("appid"); 
-	TiXmlText *pValue = new TiXmlText( "wx66f2837c43330a7b" );
+	TiXmlElement *pNode = new TiXmlElement("appid");
+	TiXmlText *pValue = new TiXmlText(Wechat_appID);
 	xmlRoot->LinkEndChild(pNode);
 	pNode->LinkEndChild(pValue);
-	std::string strForMd5 = "appid=wx66f2837c43330a7b";
+	std::string strForMd5 = "appid=";
+	strForMd5 += Wechat_appID;
 
 	// ok 
-	pNode = new TiXmlElement("mch_id"); 
-	pValue = new TiXmlText( "1308480601" );
+	pNode = new TiXmlElement("mch_id");
+	pValue = new TiXmlText(Wechat_MchID);
 	xmlRoot->LinkEndChild(pNode);
 	pNode->LinkEndChild(pValue);
-	strForMd5 += "&mch_id=1308480601" ;
+	strForMd5 += "&mch_id=";
+	strForMd5 += Wechat_MchID;
 
 	// ok 
 	std::string strRandString = "";
@@ -65,7 +68,8 @@ uint8_t CWechatVerifyTask::performTask()
 
 	static char pBuffer [200] = { 0 } ;
 	// and key value 
-	strForMd5 += "&key=E97ED2537D229C0E967042D2E7F1C936" ;
+	strForMd5 += "&key=" ;
+	strForMd5 += Wechat_MchKey;
 #ifdef _DEBUG
 	printf("formd5Str: %s\n", strForMd5.c_str());
 #endif 

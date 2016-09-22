@@ -4,6 +4,7 @@
 #include<algorithm>
 #include "VerifyRequest.h"
 #include "log4z.h"
+#include "ConfigDefine.h"
 CWeChatOrderTask::CWeChatOrderTask( uint32_t nTaskID)
 	:ITask(nTaskID)
 {
@@ -29,10 +30,11 @@ uint8_t CWeChatOrderTask::performTask()
 	TiXmlElement *xmlRoot = new TiXmlElement("xml"); 
 
 	TiXmlElement *pNode = new TiXmlElement("appid"); 
-	TiXmlText *pValue = new TiXmlText( "wx66f2837c43330a7b" );
+	TiXmlText *pValue = new TiXmlText(Wechat_appID);
 	xmlRoot->LinkEndChild(pNode);
 	pNode->LinkEndChild(pValue);
-	std::string strForMd5 = "appid=wx66f2837c43330a7b";
+	std::string strForMd5 = "appid=";
+	strForMd5 += Wechat_appID;
 	// ok 
 	pNode = new TiXmlElement("body"); 
 	pValue = new TiXmlText( pRequest->cShopDesc );
@@ -43,10 +45,11 @@ uint8_t CWeChatOrderTask::performTask()
 
 	// ok 
 	pNode = new TiXmlElement("mch_id"); 
-	pValue = new TiXmlText( "1308480601" );
+	pValue = new TiXmlText(Wechat_MchID);
 	xmlRoot->LinkEndChild(pNode);
 	pNode->LinkEndChild(pValue);
-	strForMd5 += "&mch_id=1308480601" ;
+	strForMd5 += "&mch_id=" ;
+	strForMd5 += Wechat_MchID;
 
 	// ok 
 	// ok 
@@ -74,10 +77,11 @@ uint8_t CWeChatOrderTask::performTask()
 #endif 
 	// ok 
 	pNode = new TiXmlElement("notify_url"); 
-	pValue = new TiXmlText( "http://abc.paiyouquan.com:5006/vxpay.php");
+	pValue = new TiXmlText(Wechat_notifyUrl);
 	xmlRoot->LinkEndChild(pNode);
 	pNode->LinkEndChild(pValue);
-	strForMd5 += "&notify_url=http://abc.paiyouquan.com:5006/vxpay.php" ;
+	strForMd5 += "&notify_url=" ;
+	strForMd5 += Wechat_notifyUrl;
 
 	// ok 
 	pNode = new TiXmlElement("out_trade_no"); 
@@ -117,7 +121,8 @@ uint8_t CWeChatOrderTask::performTask()
 	//std::string strAppKey = "5fc4164aee7ba3360452c4e0e5d02d9d";
 	//transform(strAppKey.begin(), strAppKey.end(), strAppKey.begin(),  toupper);
 	// and key value 
-	strForMd5 += "&key=E97ED2537D229C0E967042D2E7F1C936" ;
+	strForMd5 += "&key=" ;
+	strForMd5 += Wechat_MchKey ;
 	//strForMd5 += strAppKey ;
 #ifdef _DEBUG
 	printf("formd5Str: %s\n",strForMd5.c_str());
