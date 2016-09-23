@@ -22,10 +22,10 @@ uint8_t CWeChatOrderTask::performTask()
 	}
 
 	auto pRequest = m_ptrCurRequest;
-//#ifdef _DEBUG
+#ifdef _DEBUG
 	pRequest->nPrize = 1 ;
 	LOGFMTE("temp set prize = 1 ") ;
-//#endif
+#endif
 
 	TiXmlElement *xmlRoot = new TiXmlElement("xml"); 
 

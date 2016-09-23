@@ -164,6 +164,7 @@ enum eNoticeType
 	eNotice_BeRemoveFromClub, // { clubID : 2345 }
 	eNotice_RecivedApplyToJoinClub, // { applicantUID : 2345 , clubID : 2345 , text : "join me" }
 	eNotice_RecivedReplyForApplyForJoinClub, // { clubID : 23455 , isAgree : 1 , text : "text" }
+	eNotice_ShopResult, //{ finalDiamond : 234, addDiamond : 2345, nRet : 0 , itemID : 23 }  // nRet : 0 success , 1 failed ; 
 };
 
 enum eRoomSeat

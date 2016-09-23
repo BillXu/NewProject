@@ -8,7 +8,23 @@
 void CHttpModule::init(IServerApp* svrApp)
 {
 	IGlobalModule::init(svrApp);
-	mHttpServer = boost::make_shared<http::server::server>(5006);
+
+	std::string strNotifyUrl = Wechat_notifyUrl;
+	// parse port ;
+	std::size_t nPosDot = strNotifyUrl.find_last_of(':');
+	std::size_t nPosSlash = strNotifyUrl.find_last_of('/');
+	uint16_t nPort = 80;
+	if (nPosDot != std::string::npos && std::string::npos != nPosSlash)
+	{
+		auto strPort = strNotifyUrl.substr(nPosDot + 1, nPosSlash - nPosDot - 1);
+		nPort = atoi(strPort.c_str());
+		if (0 == nPort)
+		{
+			nPort = 80;
+		}
+	}
+
+	mHttpServer = boost::make_shared<http::server::server>(nPort);
 	mHttpServer->run();
 
 	// register wechat pay result notification 

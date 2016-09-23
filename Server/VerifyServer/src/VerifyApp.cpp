@@ -19,7 +19,6 @@ bool CVerifyApp::init()
 	setConnectServerConfig(pConfig);
 
 	LOGFMTI("START verify server !") ;
-
 	installModule(eMod_Pool);
 	installModule(eMod_Http);
 	return true;

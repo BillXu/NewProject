@@ -4,6 +4,7 @@
 #include "DataBaseThread.h"
 #include "DBRequest.h"
 #include "log4z.h"
+#include "ConfigDefine.h"
 CLoginApp::CLoginApp()
 {
 	m_pDBThread = NULL ;
@@ -44,7 +45,7 @@ bool CLoginApp::init()
 		return false;
 	}
 	m_pDBThread = new CDataBaseThread ;
-	bool bRet = m_pDBThread->InitDataBase(pSvrConfigItem->strIPAddress,pSvrConfigItem->nPort,pSvrConfigItem->strAccount,pSvrConfigItem->strPassword,"niuniu365");
+	bool bRet = m_pDBThread->InitDataBase(pSvrConfigItem->strIPAddress, pSvrConfigItem->nPort, pSvrConfigItem->strAccount, pSvrConfigItem->strPassword, Game_DB_Name);
 	if ( bRet )
 	{
 		m_pDBThread->Start() ;

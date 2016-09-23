@@ -1,7 +1,8 @@
 #pragma once
-#define GAME_panda
-#define GAME_paiYouQuan
+//#define GAME_panda
+//#define GAME_paiYouQuan
 #define GAME_365 
+//#define GAME_IN_REVIEW 
 
 #if defined( GAME_panda)
 
@@ -11,15 +12,19 @@
 #define Wechat_MchID ""
 #define Wechat_appID ""
 #define Wechat_MchKey ""
+#define Game_DB_Name "pandaniuniu"
+#define Log_DB_Name "pandaniuniulog"
 
 #elif defined(GAME_paiYouQuan)
 
-#define Gotype_DevID ""
-#define Gotype_ProdID ""
-#define Wechat_notifyPort ""
-#define Wechat_MchID ""
-#define Wechat_appID ""
-#define Wechat_MchKey ""
+#define Gotype_DevID "e87f31bb-e86c-4d87-a3f3-57b3da76b3d6"
+#define Gotype_ProdID "abffee4b-deea-4e96-ac8d-b9d58f246c3f" 
+#define Wechat_notifyUrl "http://abc.paiyouquan.com:5007/vxpay.php"
+#define Wechat_MchID "1308480601"
+#define Wechat_appID "wx66f2837c43330a7b"
+#define Wechat_MchKey "E97ED2537D229C0E967042D2E7F1C936"
+#define Game_DB_Name "taxpokerdb"
+#define Log_DB_Name "taxpokerlogdb"
 
 #elif defined(GAME_365)
 
@@ -29,6 +34,8 @@
 #define Wechat_MchID "1385365702"
 #define Wechat_appID "wxae3a38cb9960bc84"
 #define Wechat_MchKey "NUN5DKS5MJW4UBVJIL1G2XUQ66LU2ENU"
+#define Game_DB_Name "niuniu365"
+#define Log_DB_Name "niuniulog"
 
 #else
 
@@ -38,5 +45,7 @@
 #define Wechat_MchID ""
 #define Wechat_appID ""
 #define Wechat_MchKey ""
+#define Game_DB_Name ""
+#define Log_DB_Name ""
 
 #endif 

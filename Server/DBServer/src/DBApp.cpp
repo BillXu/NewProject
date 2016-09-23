@@ -5,6 +5,7 @@
 #include "ServerMessageDefine.h"
 #include "CommonDefine.h"
 #include "log4z.h"
+#include "ConfigDefine.h"
 CDBServerApp::CDBServerApp()
 {
 	m_pDBManager = NULL ;
@@ -45,7 +46,7 @@ bool CDBServerApp::init()
 	}
 
 	m_pDBWorkThread = new CDataBaseThread ;
-	m_pDBWorkThread->InitDataBase(pDatabase->strIPAddress,pDatabase->nPort,pDatabase->strAccount,pDatabase->strPassword,"niuniu365");
+	m_pDBWorkThread->InitDataBase(pDatabase->strIPAddress, pDatabase->nPort, pDatabase->strAccount, pDatabase->strPassword, Game_DB_Name);
 	m_pDBWorkThread->Start();
 
 	// dbManager ;
