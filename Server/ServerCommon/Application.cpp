@@ -1,6 +1,10 @@
 #include "Application.h"
 #include "log4z.h"
-#pragma comment(lib,"JsonDll.lib")
+#ifdef _DEBUG
+#pragma comment(lib,"jsoncppD.lib")
+#else
+#pragma comment(lib,"jsoncpp.lib")
+#endif 
 #include <cassert>
 CApplication::CApplication(IServerApp* pApp )
 {

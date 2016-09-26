@@ -86,10 +86,11 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 					pLoginRegister->cAccount[nIdx] = acc ;
 					pLoginRegister->cName[nIdx] = cName ;
 				}
+				memset(pLoginRegister->cName,0,sizeof(pLoginRegister->cName));
+				sprintf_s(pLoginRegister->cName, "guest",rand() % 10000 + 1 );
 				sprintf_s(pLoginRegister->cPassword,"hello");
 			}
 			
-			std::cout << " register name : " << pLoginRegister->cName << std::endl;
 			pdata->nExtenArg1 = pLoginRegister->cRegisterType ;
 			if ( strlen(pLoginRegister->cAccount) >= MAX_LEN_ACCOUNT || strlen(pLoginRegister->cPassword) >= MAX_LEN_PASSWORD )
 			{

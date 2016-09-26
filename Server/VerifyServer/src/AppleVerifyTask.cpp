@@ -3,6 +3,7 @@
 #include "VerifyRequest.h"
 #include <cassert>
 #include "log4z.h"
+#include "ConfigDefine.h"
 CAppleVerifyTask::CAppleVerifyTask( uint32_t nTaskID ) 
 	:IVerifyTask(nTaskID)
 {

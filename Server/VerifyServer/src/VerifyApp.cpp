@@ -3,6 +3,7 @@
 #include "log4z.h"
 #include "TaskPoolModule.h"
 #include "HttpModule.h"
+#include "ConfigDefine.h"
 bool CVerifyApp::init()
 {
 	IServerApp::init();
@@ -20,7 +21,9 @@ bool CVerifyApp::init()
 
 	LOGFMTI("START verify server !") ;
 	installModule(eMod_Pool);
+#ifndef GAME_panda
 	installModule(eMod_Http);
+#endif 
 	return true;
 }
 

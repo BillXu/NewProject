@@ -272,7 +272,7 @@ pip-log.txt
 +
 +# Ignore files build by ndk and eclipse
 +libs/
-+Bin/
+#+Bin/
 +obj/
 +gen/
 +assets/
@@ -372,9 +372,9 @@ MyPoker/cocos2d/
 MyGame/proj.win32/include/
 MyGame/proj.win32/lib/
 *.a
-*.dll
+#*.dll
 *.so
-*.lib
+#*.lib
 DezhouPoker/
 工作计划表.xls
 *.exe
@@ -390,3 +390,5 @@ PaiYouQuan/
 Server/ServerCommon/boost/
 *.exe
 Server/VerifyServer/src/testTask.h
+MyGame/
+!/Server/Bin/Lib/

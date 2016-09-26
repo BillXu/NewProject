@@ -59,13 +59,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;SERVER;VERIFY_SERVER;_WIN32_WINNT=0x0601;_DEBUG;_CONSOLE;JSON_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./src/;../../Common;../ServerCommon;../DBServer/src;../ServerCommon/pthreadLib;../DBServer/src/include;../NetworkUtility/src;../ServerCommon/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>-DBOOST_DATE_TIME_NO_LIB -DBOOST_REGEX_NO_LIB %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-DBOOST_DATE_TIME_NO_LIB -DBOOST_REGEX_NO_LIB  -DASIO_HAS_BOOST_REGEX %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libmysql.lib;pthreadVC2.lib;libcurl_imp.lib;NetworkUtilityD.lib;ServerCommon_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>../Bin/Lib</AdditionalLibraryDirectories>
+      <AdditionalOptions>-DBOOST_DATE_TIME_NO_LIB -DBOOST_REGEX_NO_LIB %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -79,6 +80,7 @@
       <PreprocessorDefinitions>WIN32;SERVER;VERIFY_SERVER;_WIN32_WINNT=0x0601;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./src/;../../Common;../ServerCommon;../DBServer/src;../ServerCommon/pthreadLib;../DBServer/src/include;../NetworkUtility/src;../ServerCommon/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AdditionalOptions>-DBOOST_REGEX_NO_LIB %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -551,6 +551,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			msgBack.nSavedMoneyForVip = 0 ;
 			msgBack.nShopItemID = pRet->nShopItemID ;
 			msgBack.nRet = 0 ;
+			uint32_t nAddDiamond = 0;
 			if ( pRet->nRet == 4 ) // success 
 			{
 				{
@@ -563,6 +564,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 					}
 					else
 					{
+						nAddDiamond = pItem->nCount;
 						AddMoney(pItem->nCount,true) ;
 						LOGFMTI("add coin with shop id = %d for buyer uid = %d ",pRet->nShopItemID,pRet->nBuyerPlayerUserUID) ;
 					}
@@ -587,7 +589,16 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 
 			msgBack.nDiamoned = GetAllDiamoned();
 			msgBack.nFinalyCoin = GetAllCoin() ;
-			SendMsg(&msgBack,sizeof(msgBack)) ;
+			//SendMsg(&msgBack,sizeof(msgBack)) ;
+
+			// send dlg 
+			LOGFMTD("post dlg notice");
+			Json::Value jsNoticeArg;
+			jsNoticeArg["finalDiamond"] = GetAllDiamoned();
+			jsNoticeArg["addDiamond"] = nAddDiamond;
+			jsNoticeArg["nRet"] = msgBack.nRet == 0 ? 0 : 1 ;
+			jsNoticeArg["itemID"] = pRet->nShopItemID;
+			CPlayerMailComponent::PostDlgNotice(eNotice_ShopResult, jsNoticeArg, pRet->nBuyerPlayerUserUID);
 		}
 		break;
 	case MSG_ON_PLAYER_BIND_ACCOUNT:
