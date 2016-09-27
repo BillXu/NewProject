@@ -2,7 +2,7 @@
 #include "Session.h"
 #include "SeverNetworkImp.h"
 uint32_t CSession::s_ConnectID = 1 ;
-CSession::CSession(asio::io_service& io_service,CServerNetworkImp* network )
+CSession::CSession(boost::asio::io_service& io_service,CServerNetworkImp* network )
 	:m_socket(io_service),m_pNetwork(network),m_pReadIngBuffer(new CInternalBuffer()),m_tHeatBeat(io_service),m_tWaitFirstMsg(io_service)
 {
 	m_nConnectID = ++s_ConnectID ;
@@ -22,11 +22,11 @@ bool CSession::sendData(const char* pData , uint16_t nLen )
 	m_vWillSendBuffers.push_back(pBuffer) ;
 	if ( bSending == false )
 	{
-		asio::async_write(m_socket,  
-			asio::buffer(m_vWillSendBuffers.front()->data(),  
+		boost::asio::async_write(m_socket,  
+			boost::asio::buffer(m_vWillSendBuffers.front()->data(),  
 			m_vWillSendBuffers.front()->length()),   
 			boost::bind(&CSession::handleWrite, shared_from_this(),  
-			asio::placeholders::error)); 
+			boost::asio::placeholders::error)); 
 	}
 	return true ;
 }
@@ -43,11 +43,11 @@ std::string CSession::getIPString()
 
 void CSession::start()
 {
-	asio::async_read(m_socket,  
-		asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length),  
+	boost::asio::async_read(m_socket,  
+		boost::asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length),  
 		boost::bind(  
 		&CSession::handleReadHeader, shared_from_this(),  
-		asio::placeholders::error)); //异步读客户端发来的消息
+		boost::asio::placeholders::error)); //异步读客户端发来的消息
 }
 
 void CSession::close()
@@ -58,14 +58,14 @@ void CSession::close()
 	m_tWaitFirstMsg.cancel();
 }
 // handle function ;
-void CSession::handleReadHeader(const asio::error_code& error)
+void CSession::handleReadHeader(const boost::system::error_code& error)
 {
 	if (!error && m_pReadIngBuffer->decodeHeader())  
 	{  
-		asio::async_read(m_socket,  
-			asio::buffer(m_pReadIngBuffer->body(), m_pReadIngBuffer->bodyLength()),  
+		boost::asio::async_read(m_socket,  
+			boost::asio::buffer(m_pReadIngBuffer->body(), m_pReadIngBuffer->bodyLength()),  
 			boost::bind(&CSession::handleReadBody, shared_from_this(),  
-			asio::placeholders::error));  
+			boost::asio::placeholders::error));  
 	}  
 	else  
 	{  
@@ -74,7 +74,7 @@ void CSession::handleReadHeader(const asio::error_code& error)
 	} 
 }
 
-void CSession::handleReadBody(const asio::error_code& error)
+void CSession::handleReadBody(const boost::system::error_code& error) 
 {
 	if (!error)  
 	{  
@@ -84,11 +84,11 @@ void CSession::handleReadBody(const asio::error_code& error)
 			m_bRecivedMsg = true ;
 		}
 
-		asio::async_read(m_socket,  
-			asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length),  
+		boost::asio::async_read(m_socket,  
+			boost::asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length),  
 			boost::bind(  
 			&CSession::handleReadHeader, shared_from_this(),  
-			asio::placeholders::error));
+			boost::asio::placeholders::error));
 	}  
 	else  
 	{  
@@ -97,7 +97,7 @@ void CSession::handleReadBody(const asio::error_code& error)
 	}  
 }
 
-void CSession::handleWrite(const asio::error_code& error)
+void CSession::handleWrite(const boost::system::error_code& error) 
 {
 	if (!error)  
 	{  
@@ -105,11 +105,11 @@ void CSession::handleWrite(const asio::error_code& error)
 		m_vWillSendBuffers.pop_front();  
 		if (!m_vWillSendBuffers.empty())  
 		{  
-			asio::async_write(m_socket,  
-				asio::buffer(m_vWillSendBuffers.front()->data(),  
+			boost::asio::async_write(m_socket,  
+				boost::asio::buffer(m_vWillSendBuffers.front()->data(),  
 				m_vWillSendBuffers.front()->length()),  
 				boost::bind(&CSession::handleWrite, shared_from_this(),  
-				asio::placeholders::error));
+				boost::asio::placeholders::error));
 		}  
 	}  
 	else  
@@ -121,10 +121,10 @@ void CSession::handleWrite(const asio::error_code& error)
 void CSession::startWaitFirstMsg()
 {
 	m_tWaitFirstMsg.expires_from_now(boost::posix_time::seconds(TIME_CHECK_FIRST_MSG));
-	m_tWaitFirstMsg.async_wait(boost::bind(&CSession::handleCheckFirstMsg, this,asio::placeholders::error ));
+	m_tWaitFirstMsg.async_wait(boost::bind(&CSession::handleCheckFirstMsg, this,boost::asio::placeholders::error ));
 }
 
-void CSession::handleCheckFirstMsg(const asio::error_code& ec)
+void CSession::handleCheckFirstMsg( const boost::system::error_code& ec )
 {
 	if ( !ec )
 	{
@@ -139,10 +139,10 @@ void CSession::handleCheckFirstMsg(const asio::error_code& ec)
 void CSession::startHeartbeatTimer()
 {
 	m_tHeatBeat.expires_from_now(boost::posix_time::seconds(TIME_HEAT_BET));
-	m_tHeatBeat.async_wait(boost::bind(&CSession::sendHeatBeat, this,asio::placeholders::error));
+	m_tHeatBeat.async_wait(boost::bind(&CSession::sendHeatBeat, this,boost::asio::placeholders::error));
 }
 
-void CSession::handleWriteHeartbeat(const asio::error_code& ec)
+void CSession::handleWriteHeartbeat(const boost::system::error_code& ec)
 {
 	if(!ec){
 		startHeartbeatTimer();
@@ -155,7 +155,7 @@ void CSession::handleWriteHeartbeat(const asio::error_code& ec)
 	}
 }
 
-void CSession::sendHeatBeat(const asio::error_code& ec)
+void CSession::sendHeatBeat( const boost::system::error_code& ec )
 {
 	if ( !ec )
 	{
@@ -164,8 +164,8 @@ void CSession::sendHeatBeat(const asio::error_code& ec)
 		*psh = 3;
 		p[2] = 0 ;
 		p[3] = 0 ;
-		asio::async_write(m_socket, asio::buffer(p, sizeof(p)),
+		boost::asio::async_write(m_socket, boost::asio::buffer(p, sizeof(p)),
 			boost::bind(&CSession::handleWriteHeartbeat, this,
-			asio::placeholders::error ));
+			boost::asio::placeholders::error ));
 	}
 }

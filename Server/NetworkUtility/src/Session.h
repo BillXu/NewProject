@@ -1,5 +1,5 @@
 #pragma once
-//#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>  
@@ -7,7 +7,7 @@
 #include <boost/thread.hpp>
 #include <deque> 
 #include "InternalBuffer.h"
-using asio::ip::tcp;  
+using boost::asio::ip::tcp;  
 class CServerNetworkImp ;
 class CSession
 	: public boost::enable_shared_from_this<CSession>
@@ -17,7 +17,7 @@ public:
 	typedef std::deque<InternalBuffer_ptr> BufferQueue;
 	typedef boost::unique_lock<boost::shared_mutex> WriteLock;  
 public:
-	CSession(asio::io_service& io_service,CServerNetworkImp* network );
+	CSession(boost::asio::io_service& io_service,CServerNetworkImp* network );
 	bool sendData(const char* pData , uint16_t nLen );
 	uint32_t getConnectID();
 	tcp::socket& socket(){return m_socket;}
@@ -25,17 +25,17 @@ public:
 	void start();
 	void close();  // only invoke by network ;
 	// handle function ;
-	void handleReadHeader(const asio::error_code& error);
-	void handleReadBody(const asio::error_code& error);
-	void handleWrite(const asio::error_code& error);
+	void handleReadHeader(const boost::system::error_code& error) ;
+	void handleReadBody(const boost::system::error_code& error) ;
+	void handleWrite(const boost::system::error_code& error) ;
 
 	// handle heatBeat
 	void startWaitFirstMsg();
-	void handleCheckFirstMsg(const asio::error_code& ec);
+	void handleCheckFirstMsg(const boost::system::error_code& ec);
 
 	void startHeartbeatTimer();
-	void sendHeatBeat(const asio::error_code& ec);
-	void handleWriteHeartbeat(const asio::error_code& ec);
+	void sendHeatBeat( const boost::system::error_code& ec );
+	void handleWriteHeartbeat(const boost::system::error_code& ec);
 protected:
 	static uint32_t s_ConnectID ;
 protected:
@@ -48,7 +48,7 @@ protected:
 
 	InternalBuffer_ptr m_pReadIngBuffer ;
 
-	asio::deadline_timer m_tHeatBeat;
-	asio::deadline_timer m_tWaitFirstMsg;
+	boost::asio::deadline_timer m_tHeatBeat;
+	boost::asio::deadline_timer m_tWaitFirstMsg;
 	bool m_bRecivedMsg ;  // 防止一些坏的连接，连上啦什么都不干，所以连上来如果10秒内，没有向sever 发消息，就踢掉。
 };

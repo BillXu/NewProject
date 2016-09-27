@@ -1,6 +1,6 @@
-#include "Session.h"
+ #include <WinSock2.h>
 #include "SeverNetworkImp.h"
-#include <WinSock2.h>
+#include "Session.h"
 CServerNetworkImp::CServerNetworkImp()
 {
 	m_acceptor = nullptr ;
@@ -33,10 +33,10 @@ bool CServerNetworkImp::init(uint16_t nPort )
 	m_acceptor = new tcp::acceptor(m_ioService,endpoint);
 	startAccept();
 
-	m_pIOThread = new  boost::thread(boost::bind(&asio::io_service::run, &m_ioService)); 
+	m_pIOThread = new  boost::thread(boost::bind(&boost::asio::io_service::run, &m_ioService)); 
 	m_pIOThread->detach();
 
-	m_pIOThread2 = new  boost::thread(boost::bind(&asio::io_service::run, &m_ioService)); 
+	m_pIOThread2 = new  boost::thread(boost::bind(&boost::asio::io_service::run, &m_ioService)); 
 	m_pIOThread2->detach();
 	return true ;
 }
@@ -46,10 +46,10 @@ void CServerNetworkImp::startAccept()
 	Session_ptr new_session(new CSession(m_ioService,this));  
 	m_acceptor->async_accept(new_session->socket(),  
 		boost::bind(&CServerNetworkImp::handleAccept, this, new_session,  
-		asio::placeholders::error)); 
+		boost::asio::placeholders::error)); 
 }
 
-void CServerNetworkImp::handleAccept(boost::shared_ptr<CSession> session, const asio::error_code& error)
+void CServerNetworkImp::handleAccept(boost::shared_ptr<CSession> session,const boost::system::error_code& error) 
 {
 	if (!error)  
 	{  

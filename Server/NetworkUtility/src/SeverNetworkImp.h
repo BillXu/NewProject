@@ -1,4 +1,5 @@
 #pragma once
+#include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>  
 #include <boost/enable_shared_from_this.hpp>  
@@ -6,8 +7,7 @@
 #include <map>
 #include <list>
 #include <boost/thread.hpp>
-#include <boost/asio.hpp>
-using asio::ip::tcp;  
+using boost::asio::ip::tcp;  
 class CSession;
 class CServerNetworkImp
 {
@@ -30,14 +30,14 @@ public:
 protected:
 	void closeSession(uint32_t nConnectID, bool bServerClose = false );
 	void startAccept() ;
-	void handleAccept(Session_ptr session, const asio::error_code& error);
+	void handleAccept(Session_ptr session,const boost::system::error_code& error) ;
 	Session_ptr getSessionByConnectID(uint32_t nConnectID );
 	void addPacket(Packet* pPacket ) ;
 	void onReivedData(uint32_t nConnectID , const char* pBuffer , size_t nLen );
 protected:
 	friend class CSession; 
 private:  
-	asio::io_service m_ioService;  
+	boost::asio::io_service m_ioService;  
 	tcp::acceptor* m_acceptor; 
 
 	boost::shared_mutex m_SessionMutex;  

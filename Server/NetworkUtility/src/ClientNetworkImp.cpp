@@ -76,28 +76,28 @@ bool CClientNetworkImp::connectToServer(const char* pIP, unsigned short nPort )
 	m_nState = eState_Connecting ;
 	printf("connect ting \n");
 
-	m_pEndpoint =  new asio::ip::tcp::endpoint( asio::ip::address::from_string(pIP),nPort );
+	m_pEndpoint =  new boost::asio::ip::tcp::endpoint( boost::asio::ip::address::from_string(pIP),nPort );
 	m_socket->async_connect(*m_pEndpoint,boost::bind(&CClientNetworkImp::handleConnect, this,  
-		asio::placeholders::error));
+		boost::asio::placeholders::error));
 
 	if ( m_pIOThread == nullptr )
 	{
-		m_pIOThread = new  boost::thread(boost::bind(&asio::io_service::run, &m_io_service)); 
+		m_pIOThread = new  boost::thread(boost::bind(&boost::asio::io_service::run, &m_io_service)); 
 
 		m_tKeepIOServiecWork.expires_from_now(boost::posix_time::seconds(888888));
-		m_tKeepIOServiecWork.async_wait(boost::bind(&CClientNetworkImp::onKeepIoServeicWork, this,asio::placeholders::error));
+		m_tKeepIOServiecWork.async_wait(boost::bind(&CClientNetworkImp::onKeepIoServeicWork, this,boost::asio::placeholders::error));
 	}
 	
 
 	return true ;
 }
 
-void CClientNetworkImp::onKeepIoServeicWork(const asio::error_code& ec)
+void CClientNetworkImp::onKeepIoServeicWork( const boost::system::error_code& ec )
 {
 	if ( !ec )
 	{
 		m_tKeepIOServiecWork.expires_from_now(boost::posix_time::seconds(888888));
-		m_tKeepIOServiecWork.async_wait(boost::bind(&CClientNetworkImp::onKeepIoServeicWork, this,asio::placeholders::error));
+		m_tKeepIOServiecWork.async_wait(boost::bind(&CClientNetworkImp::onKeepIoServeicWork, this,boost::asio::placeholders::error));
 	}
 }
 
@@ -142,7 +142,7 @@ bool CClientNetworkImp::sendMsg(const char* pData , size_t nLen )
 	return true ;
 }
 
-void CClientNetworkImp::handleConnect(const asio::error_code& error)
+void CClientNetworkImp::handleConnect(const boost::system::error_code& error)  
 {  
 	bool bSucce = !error;
 	Packet* pack = new Packet ;
@@ -151,16 +151,16 @@ void CClientNetworkImp::handleConnect(const asio::error_code& error)
 	pack->_connectID = 0 ;
 	if (bSucce)  
 	{  
-		asio::async_read(*m_socket,  
-			asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length), //读取数据报头  
+		boost::asio::async_read(*m_socket,  
+			boost::asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length), //读取数据报头  
 			boost::bind(&CClientNetworkImp::handleReadHeader, this,  
-			asio::placeholders::error));  
+			boost::asio::placeholders::error));  
 		printf("connected success\n");
 		m_nHeatBeatTimes = 3 ;
 
 		// start heat bet check ;
 		m_tHeatBeat.expires_from_now(boost::posix_time::seconds(CLIENT_HEAT_BET_CHECK_TIEM));
-		m_tHeatBeat.async_wait(boost::bind(&CClientNetworkImp::sendHeatBeat, this, asio::placeholders::error)); 
+		m_tHeatBeat.async_wait(boost::bind(&CClientNetworkImp::sendHeatBeat, this,boost::asio::placeholders::error));
 	} 
 	else
 	{
@@ -171,14 +171,14 @@ void CClientNetworkImp::handleConnect(const asio::error_code& error)
 	//m_tConnectTimeOut.cancel();
 }  
 
-void CClientNetworkImp::handleReadHeader(const asio::error_code& error)
+void CClientNetworkImp::handleReadHeader(const boost::system::error_code& error)  
 {  
 	if (!error && m_pReadIngBuffer->decodeHeader()) //分别处理数据报头和数据部分  
 	{  
-		asio::async_read(*m_socket,  
-			asio::buffer(m_pReadIngBuffer->body(),m_pReadIngBuffer->bodyLength()),//读取数据包数据部分  
+		boost::asio::async_read(*m_socket,  
+			boost::asio::buffer(m_pReadIngBuffer->body(),m_pReadIngBuffer->bodyLength()),//读取数据包数据部分  
 			boost::bind(&CClientNetworkImp::handleReadBody, this,  
-			asio::placeholders::error));  
+			boost::asio::placeholders::error));  
 	}  
 	else  
 	{  
@@ -186,7 +186,7 @@ void CClientNetworkImp::handleReadHeader(const asio::error_code& error)
 	}  
 }  
 
-void CClientNetworkImp::handleReadBody(const asio::error_code& error)
+void CClientNetworkImp::handleReadBody(const boost::system::error_code& error)  
 {  
 	if (!error)  
 	{  
@@ -206,10 +206,10 @@ void CClientNetworkImp::handleReadBody(const asio::error_code& error)
 			//printf("recived heat bet\n") ;
 		}
 
-		asio::async_read(*m_socket,   
-			asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length), //在这里读取下一个数据包头  
+		boost::asio::async_read(*m_socket,   
+			boost::asio::buffer(m_pReadIngBuffer->data(), CInternalBuffer::header_length), //在这里读取下一个数据包头  
 			boost::bind(&CClientNetworkImp::handleReadHeader, this,    
-			asio::placeholders::error)); //完成一次读操作（处理完一个数据包）  进行下一次读操作  
+			boost::asio::placeholders::error)); //完成一次读操作（处理完一个数据包）  进行下一次读操作  
 		
 		
 	}  
@@ -225,26 +225,26 @@ void CClientNetworkImp::doWrite(InternalBuffer_ptr msg)
 	m_vWillSendBuffers.push_back(msg); //把要写的数据push至写队列  
 	if (!write_in_progress)//队列初始为空 push一个msg后就有一个元素了  
 	{  
-		asio::async_write(*m_socket,  
-			asio::buffer(m_vWillSendBuffers.front()->data(),  
+		boost::asio::async_write(*m_socket,  
+			boost::asio::buffer(m_vWillSendBuffers.front()->data(),  
 			m_vWillSendBuffers.front()->length()),  
 			boost::bind(&CClientNetworkImp::handleWrite, this,   
-			asio::placeholders::error));  
+			boost::asio::placeholders::error));  
 	}  
 }  
 
-void CClientNetworkImp::handleWrite(const asio::error_code& error)//第一个消息单独处理，剩下的才更好操作  
+void CClientNetworkImp::handleWrite(const boost::system::error_code& error)//第一个消息单独处理，剩下的才更好操作  
 {  
 	if (!error)  
 	{  
 		m_vWillSendBuffers.pop_front();//刚才处理完一个数据 所以要pop一个  
 		if (!m_vWillSendBuffers.empty())    
 		{  
-			asio::async_write(*m_socket,  
-				asio::buffer(m_vWillSendBuffers.front()->data(),  
+			boost::asio::async_write(*m_socket,  
+				boost::asio::buffer(m_vWillSendBuffers.front()->data(),  
 				m_vWillSendBuffers.front()->length()),  
 				boost::bind(&CClientNetworkImp::handleWrite, this,  
-				asio::placeholders::error)); //循环处理剩余的消息  
+				boost::asio::placeholders::error)); //循环处理剩余的消息  
 		}  
 	}  
 	else  
@@ -253,7 +253,7 @@ void CClientNetworkImp::handleWrite(const asio::error_code& error)//第一个消息单
 	}  
 } 
 
-void CClientNetworkImp::sendHeatBeat(const asio::error_code& ec)
+void CClientNetworkImp::sendHeatBeat( const boost::system::error_code& ec )
 {
 	if ( !ec )
 	{
@@ -265,7 +265,7 @@ void CClientNetworkImp::sendHeatBeat(const asio::error_code& ec)
 		else
 		{
 			m_tHeatBeat.expires_from_now(boost::posix_time::seconds(CLIENT_HEAT_BET_CHECK_TIEM));
-			m_tHeatBeat.async_wait(boost::bind(&CClientNetworkImp::sendHeatBeat, this,asio::placeholders::error));
+			m_tHeatBeat.async_wait(boost::bind(&CClientNetworkImp::sendHeatBeat, this,boost::asio::placeholders::error));
 		}
 	}
 }
@@ -278,7 +278,7 @@ void CClientNetworkImp::doClose()
 		return ;
 	}
 	m_nState = eState_None ;
-	m_socket->shutdown(asio::socket_base::shutdown_type::shutdown_both);
+	m_socket->shutdown(boost::asio::socket_base::shutdown_type::shutdown_both);
 	m_socket->close();
 
 	Packet* pack = new Packet ;
