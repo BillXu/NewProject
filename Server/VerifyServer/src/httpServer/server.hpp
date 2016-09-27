@@ -17,9 +17,10 @@
 #include "request_handler.hpp"
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
+
 namespace http {
 namespace server {
-
+	using namespace boost;
 /// The top-level class of the HTTP server.
 class server
 {

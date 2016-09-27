@@ -21,7 +21,6 @@
 
 namespace http {
 namespace server {
-
 class connection_manager;
 
 /// Represents a single connection from a client.

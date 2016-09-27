@@ -18,7 +18,7 @@
 
 namespace http {
 namespace server {
-
+	using namespace boost;
 /// A reply to be sent to a client.
 struct reply
 {
