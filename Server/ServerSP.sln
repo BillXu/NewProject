@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DBServer", "DBServer\DBServer.vcxproj", "{8EAD9B5E-CCFE-4137-91D8-69EC4871F11F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1021C400-E90B-4985-982D-DF9DB555F336} = {1021C400-E90B-4985-982D-DF9DB555F336}
@@ -19,11 +21,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataServer", "GameServer\Ga
 		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestClient", "..\TestClient\TestClient.vcxproj", "{26BB2684-CC5F-4DFA-AE3C-6A8532601859}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoginServer", "LoginServer\LoginServer.vcxproj", "{5F75781A-C153-4F43-8AF3-B7C4285F471E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1021C400-E90B-4985-982D-DF9DB555F336} = {1021C400-E90B-4985-982D-DF9DB555F336}
@@ -31,12 +28,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LoginServer", "LoginServer\
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VerifyServer", "VerifyServer\VerifyServer.vcxproj", "{5D591419-420C-46EA-B153-DD5A426FA989}"
-	ProjectSection(ProjectDependencies) = postProject
-		{1021C400-E90B-4985-982D-DF9DB555F336} = {1021C400-E90B-4985-982D-DF9DB555F336}
-		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PushNotificationServer", "PushNotificationServer\PushNotificationServer.vcxproj", "{1E1AA803-7D10-4D28-8188-0F054FEF568C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1021C400-E90B-4985-982D-DF9DB555F336} = {1021C400-E90B-4985-982D-DF9DB555F336}
 		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
@@ -103,10 +94,6 @@ Global
 		{61A7DB25-7A43-44E9-A75D-FDD674D0E138}.Debug|Win32.Build.0 = Debug|Win32
 		{61A7DB25-7A43-44E9-A75D-FDD674D0E138}.Release|Win32.ActiveCfg = Release|Win32
 		{61A7DB25-7A43-44E9-A75D-FDD674D0E138}.Release|Win32.Build.0 = Release|Win32
-		{26BB2684-CC5F-4DFA-AE3C-6A8532601859}.Debug|Win32.ActiveCfg = Debug|Win32
-		{26BB2684-CC5F-4DFA-AE3C-6A8532601859}.Debug|Win32.Build.0 = Debug|Win32
-		{26BB2684-CC5F-4DFA-AE3C-6A8532601859}.Release|Win32.ActiveCfg = Release|Win32
-		{26BB2684-CC5F-4DFA-AE3C-6A8532601859}.Release|Win32.Build.0 = Release|Win32
 		{5F75781A-C153-4F43-8AF3-B7C4285F471E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{5F75781A-C153-4F43-8AF3-B7C4285F471E}.Debug|Win32.Build.0 = Debug|Win32
 		{5F75781A-C153-4F43-8AF3-B7C4285F471E}.Release|Win32.ActiveCfg = Release|Win32
@@ -115,10 +102,6 @@ Global
 		{5D591419-420C-46EA-B153-DD5A426FA989}.Debug|Win32.Build.0 = Debug|Win32
 		{5D591419-420C-46EA-B153-DD5A426FA989}.Release|Win32.ActiveCfg = Release|Win32
 		{5D591419-420C-46EA-B153-DD5A426FA989}.Release|Win32.Build.0 = Release|Win32
-		{1E1AA803-7D10-4D28-8188-0F054FEF568C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{1E1AA803-7D10-4D28-8188-0F054FEF568C}.Debug|Win32.Build.0 = Debug|Win32
-		{1E1AA803-7D10-4D28-8188-0F054FEF568C}.Release|Win32.ActiveCfg = Release|Win32
-		{1E1AA803-7D10-4D28-8188-0F054FEF568C}.Release|Win32.Build.0 = Release|Win32
 		{BD2F369E-6492-4061-A06D-5877E9DADBE2}.Debug|Win32.ActiveCfg = Debug|Win32
 		{BD2F369E-6492-4061-A06D-5877E9DADBE2}.Debug|Win32.Build.0 = Debug|Win32
 		{BD2F369E-6492-4061-A06D-5877E9DADBE2}.Release|Win32.ActiveCfg = Release|Win32

@@ -11,7 +11,7 @@ CExchangeCenter::CExchangeCenter(const char* pConfigFilePath)
 	nItemsBufferLen = 0 ;
 	bItemBufferDirty = false ;
 
-	m_tConfig.LoadFile(pConfigFilePath) ;
+	m_tConfig.LoadFile(pConfigFilePath) ;   
 }
 
 CExchangeCenter::~CExchangeCenter() 
