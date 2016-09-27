@@ -47,6 +47,7 @@ protected:
 	uint32_t m_nBankerCoinLimitForBet ; // 
 	uint32_t m_nBaseBet ;
 	uint8_t m_nResignBankerCtrl ;  // // 0 no niu leave banker , 1 lose to all  leave banker , 2 manual leave banker;
+	uint8_t m_nRateLevel;  
 	bool m_isWillManualLeaveBanker ;
 
 	Json::Value m_arrPlayers ;

@@ -20,6 +20,7 @@
 #include <json/json.h>
 CNiuNiuRoom::CNiuNiuRoom()
 {
+	m_nRateLevel = 1;
 	getPoker()->InitTaxasPoker() ;
 }
 
@@ -33,6 +34,11 @@ bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, cons
 	m_nBetBottomTimes = 1 ;
 	m_nBankerCoinLimitForBet = 0 ;
 	m_isWillManualLeaveBanker = false ;
+	if ( jsopt["rateLevel"].isNull() == false)
+	{
+		m_nRateLevel = jsopt["rateLevel"].asUInt();
+		LOGFMTD("create room rate level = %u , roomID = %u",m_nRateLevel,getRoomID() );
+	}
 	return true ;
 }
 
@@ -127,6 +133,7 @@ void CNiuNiuRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["baseBet"] = getBaseBet();
 	vOutJsValue["bankerTimes"] = m_nBetBottomTimes;
 	vOutJsValue["unbankerType"] = m_nResignBankerCtrl;
+	vOutJsValue["rateLevel"] = m_nRateLevel;
 }
 
 void CNiuNiuRoom::sendRoomPlayersInfo(uint32_t nSessionID)
@@ -208,12 +215,50 @@ void CNiuNiuRoom::setBankCoinLimitForBet( uint64_t nCoin )
 
 uint8_t CNiuNiuRoom::getReateByNiNiuType(uint8_t nType , uint8_t nPoint )
 {
-	if ( nPoint < 7 || nType == CNiuNiuPeerCard::Niu_None )
+	switch (m_nRateLevel)
 	{
-		return 1 ;
+		case 0:
+		{
+			if (nPoint <= 7 || nType == CNiuNiuPeerCard::Niu_None)
+			{
+				return 1;
+			}
+
+			if (8 == nPoint || 9 == nPoint)
+			{
+				return 2;
+			}
+
+			return 3;
+		}
+		break;
+		case 1:
+		{
+			if (nPoint < 7 || nType == CNiuNiuPeerCard::Niu_None)
+			{
+				return 1;
+			}
+
+			return (nPoint - 5);
+		}
+		break;
+		case 2:
+		{
+			if (nPoint <= 1 || nType == CNiuNiuPeerCard::Niu_None)
+			{
+				return 1;
+			}
+
+			return nPoint;
+		}
+		break;
+		default:
+			LOGFMTD("unknown rate level %u",m_nRateLevel);
+			return 1;
 	}
 
-	return ( nPoint - 5 ) ;
+	LOGFMTD("unknown rate level %u", m_nRateLevel);
+	return 1;
 }
 
 uint32_t CNiuNiuRoom::getLeastCoinNeedForBeBanker( uint8_t nBankerTimes )
