@@ -417,6 +417,23 @@ bool CPlayerMailComponent::ProcessMail( stRecievedMail& pMail)
 			m_tReadTimeTag = pMail.nRecvTime ;
 		}
 		break;
+	case eMail_AddRoomCard:
+		{
+			Json::Value vRoot;
+			Json::Reader reader;
+			bool bRet = reader.parse(pMail.strContent, vRoot);
+			if (!bRet)
+			{
+				LOGFMTE("uid = %u parse add Room card mail error ",GetPlayer()->GetUserUID() );
+				break;
+			}
+
+			uint32_t nAddLeft = vRoot["addCard"].asUInt();
+			auto nAddNo = vRoot["addCardNo"].asUInt();
+			GetPlayer()->GetBaseData()->AddMoney(nAddLeft, true);
+			LOGFMTI("uid = %u add room card mail cnt = %u addCardNo = %u", GetPlayer()->GetUserUID(),nAddLeft, nAddNo);
+		}
+		break;
 	case eMail_SysOfflineEvent:
 		{
 			processSysOfflineEvent(pMail);

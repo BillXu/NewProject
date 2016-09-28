@@ -106,6 +106,8 @@ enum eAsyncReq
 	eAsync_Apns, // { apnsType : 0 , targets : [234,2345,23,4] , content : "hello this is" ,msgID : "fs" ,msgdesc : "shfsg" }  apnsType : 0 , group type . 1 , target persions ;
 	eAsync_ComsumDiamond, // { targetUID : 2345 , diamond : 23 } // ret : { ret : 0 , diamond : 23 } // ret : 0 success , 1 not enough diamond ;
 	eAsync_GiveBackDiamond, // { targetUID : 2345 , diamond : 23 } ;
+	eAsync_AgentAddRoomCard, // { targetUID : 234523 , addCard : 2345 , addCardNo  : 2345 }  // ret ; always success ;
+	eAsync_AgentGetPlayerInfo, // { targetUID : 2345 } , // ret { isOnline : 0 , targetUID : 2345 , name : "hello name" , leftCardCnt : 2345  }  
 	eAsync_Max,
 };
 

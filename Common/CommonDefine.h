@@ -248,9 +248,10 @@ enum eMailType
 	eMail_SysOfflineEvent,// { event: concret type , arg:{ arg0: 0 , arg 1 = 3 } }  // processed in svr , will not send to client ;
 	eMail_DlgNotice, // content will be send by , stMsgDlgNotice 
 	eMail_ReadTimeTag,  // use tell time for public mail ;
-	eMail_Sys_End,
+	eMail_AddRoomCard, // { addCard : 235 , addCardNo : 23452345 }
+	eMail_Sys_End = 499,
 
-	eMail_RealMail_Begin, // will mail will show in golden server windown ;
+	eMail_RealMail_Begin = 500, // will mail will show in golden server windown ;
 	eMail_PlainText,  // need not parse , just display the content ;
 	eMail_InvitePrize, // { targetUID : 2345 , addCoin : 300 } // you invite player to join game ,and give prize to you 
 	eMail_WinMatch, // { gameType:234,roomName:234,rankIdx:2,addCoin:345,cup : 2 , diamomd : 34 }

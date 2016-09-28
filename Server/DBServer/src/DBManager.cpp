@@ -339,8 +339,8 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadMailList* pRet = (stMsgReadMailList*)pmsg ;
 			pdata->nExtenArg1 = pRet->nUserUID ;
 			pRequest->eType = eRequestType_Select ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM mail WHERE userUID = '%u' and state = '0' limit 50",pRet->nUserUID) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer, sizeof(pRequest->pSqlBuffer),
+				"SELECT * FROM mail WHERE userUID = '%u' and state = '0' order by postTime desc limit 50 ;", pRet->nUserUID);
 		}
 		break;
 	case MSG_PLAYER_SET_MAIL_STATE:

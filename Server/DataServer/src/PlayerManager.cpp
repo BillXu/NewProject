@@ -653,6 +653,48 @@ bool CPlayerManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& j
 			}
 		}
 		break ;
+	case eAsync_AgentAddRoomCard:
+	{
+		uint32_t nUserUID = jsReqContent["targetUID"].asUInt();
+		uint32_t nAddCnt = jsReqContent["addCard"].asUInt();
+		uint32_t nSeailNumber = jsReqContent["addCardNo"].asUInt();
+		auto pPlayer = GetPlayerByUserUID(nUserUID);
+		if (nullptr == pPlayer)
+		{
+			LOGFMTI("player not online agents add card to uid = %u , cnt = %u , addCardNo = %u", nUserUID, nAddCnt, nSeailNumber);
+			Json::StyledWriter jsWrite;
+			auto str = jsWrite.write(jsReqContent);
+			CPlayerMailComponent::PostMailToPlayer(eMailType::eMail_AddRoomCard,str.c_str(),str.size(),nUserUID);
+		}
+		else
+		{
+			LOGFMTI("player agents add card to uid = %u , cnt = %u , addCardNo = %u",nUserUID,nAddCnt,nSeailNumber);
+			pPlayer->GetBaseData()->AddMoney(nAddCnt, true);
+		}
+
+		jsResult = jsReqContent;
+	}
+	break;
+	case eAsync_AgentGetPlayerInfo:
+	{
+		uint32_t nUserUID = jsReqContent["targetUID"].asUInt();
+		jsResult["targetUID"] = jsReqContent["targetUID"];
+		auto pPlayer = GetPlayerByUserUID(nUserUID);
+		if (nullptr == pPlayer)
+		{
+			jsResult["isOnline"] = 0;
+		}
+		else
+		{
+			jsResult["isOnline"] = 1; 
+			jsResult["name"] = pPlayer->GetBaseData()->GetPlayerName();
+			jsResult["leftCardCnt"] = pPlayer->GetBaseData()->GetAllDiamoned();
+			
+		}
+
+		jsResult = jsReqContent;
+	}
+	break;
 	default:
 		return false;
 	}

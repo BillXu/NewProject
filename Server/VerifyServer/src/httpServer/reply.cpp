@@ -116,7 +116,7 @@ std::vector<asio::const_buffer> reply::to_buffers()
   }
   buffers.push_back(asio::buffer(misc_strings::crlf));
   buffers.push_back(asio::buffer(content));
-  //std::cout << "content : " << content << std::endl;
+  std::cout << "content : " << content << std::endl;
   return buffers;
 }
 
@@ -246,6 +246,11 @@ reply reply::stock_reply(reply::status_type status)
 {
   reply rep;
   rep.status = status;
+  if (ok != rep.status)
+  {
+	  rep.content = stock_replies::to_string(status);
+  }
+ 
   rep.headers.resize(2);
   rep.headers[0].name = "Content-Length";
   rep.headers[0].value = std::to_string(rep.content.size());
