@@ -5,6 +5,7 @@
 #include <boost/algorithm/string.hpp>  
 #include "VerifyApp.h"
 #include "ConfigDefine.h"
+#include "json/json.h"
 void CHttpModule::init(IServerApp* svrApp)
 {
 	IGlobalModule::init(svrApp);
@@ -31,6 +32,9 @@ void CHttpModule::init(IServerApp* svrApp)
 	std::size_t nPos = strNotifyUrl.find_last_of('/');
 	std::string strUri = strNotifyUrl.substr(nPos,strNotifyUrl.size() - nPos );
 	registerHttpHandle( strUri, boost::bind(&CHttpModule::onHandleVXPayResult, this, boost::placeholders::_1));
+
+	registerHttpHandle("/playerInfo.yh", boost::bind(&CHttpModule::handleGetPlayerInfo, this, boost::placeholders::_1));
+	registerHttpHandle("/addRoomCard.yh", boost::bind(&CHttpModule::handleAddRoomCard, this, boost::placeholders::_1));
 }
 
 void CHttpModule::update(float fDeta)
@@ -177,6 +181,79 @@ bool CHttpModule::onHandleVXPayResult(http::server::connection_ptr ptr)
 	res->setContent(str,"text/xml");
 	ptr->doReply();
 	t.SaveFile("reT.xml");
+	return true;
+}
+
+bool CHttpModule::handleGetPlayerInfo(http::server::connection_ptr ptr)
+{
+	auto req = ptr->getReqPtr();
+	auto res = ptr->getReplyPtr();
+	LOGFMTD("reciveget player info req = %s",req->reqContent.c_str());
+
+	Json::Reader jsReader;
+	Json::Value jsRoot;
+	auto bRet = jsReader.parse(req->reqContent, jsRoot);
+	if (!bRet)
+	{
+		return false;
+	}
+
+	uint32_t nUID = 0;
+	if (jsRoot["playerUID"].isNull() || jsRoot["playerUID"].isUInt() == false )
+	{
+		LOGFMTD("cant not finn uid argument");
+		return false;
+	}
+	nUID = jsRoot["playerUID"].asUInt();
+
+	// do check 
+	jsRoot["ret"] = 1;
+	jsRoot["name"] = "doName";
+	Json::StyledWriter jswrite;
+	auto str = jswrite.write(jsRoot);
+	res->setContent(str, "text/json");
+	ptr->doReply();
+	LOGFMTD("do reply get player info ");
+	return true;
+}
+
+bool CHttpModule::handleAddRoomCard(http::server::connection_ptr ptr)
+{
+	auto req = ptr->getReqPtr();
+	auto res = ptr->getReplyPtr();
+	LOGFMTD("reciveget add room card info req = %s", req->reqContent.c_str());
+
+	Json::Reader jsReader;
+	Json::Value jsRoot;
+	auto bRet = jsReader.parse(req->reqContent, jsRoot);
+	if (!bRet)
+	{
+		return false;
+	}
+
+	uint32_t nUID = 0;
+	uint32_t nAddCard;
+	if (jsRoot["playerUID"].isNull() || jsRoot["playerUID"].isUInt() == false )
+	{
+		LOGFMTD("cant not finn uid argument");
+		return false;
+	}
+
+	if (jsRoot["addCard"].isNull() || jsRoot["addCard"].isUInt() == false)
+	{
+		LOGFMTD("cant not finn addCard argument");
+		return false;
+	}
+
+	nAddCard = jsRoot["addCard"].asUInt();
+	nUID = jsRoot["playerUID"].asUInt();
+	// do check 
+	jsRoot["ret"] = 1;
+	Json::StyledWriter jswrite;
+	auto str = jswrite.write(jsRoot);
+	res->setContent(str, "text/json");
+	ptr->doReply();
+	LOGFMTD("do reply get player info ");
 	return true;
 }
 
