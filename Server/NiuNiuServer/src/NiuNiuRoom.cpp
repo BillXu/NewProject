@@ -337,6 +337,10 @@ void CNiuNiuRoom::onGameDidEnd()
 	sendMsgToPlayer((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),getRoomID()) ;
 
 	ISitableRoom::onGameDidEnd();
+	if (getDelegate())
+	{
+		getDelegate()->onOneRoundEnd(this);
+	}
 	LOGFMTD("room game End");
 }
 

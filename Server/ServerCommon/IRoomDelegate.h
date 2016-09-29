@@ -38,6 +38,7 @@ public:
 	virtual bool isPlayerLoseReachMax( IRoom* pRoom, uint32_t nUserUID );
 	virtual bool onPlayerWillDoLeaveRoom(IRoom* pRoom , IRoom::stStandPlayer* pPlayer );
 	virtual bool onDelayPlayerWillLeaveRoom(IRoom* pRoom , ISitableRoomPlayer* pPlayer );
+	virtual bool onOneRoundEnd(IRoom* pRoom){ return true; };
 protected:
 	void removeAllRankItemPlayer();
 	void sortRoomRankItem();

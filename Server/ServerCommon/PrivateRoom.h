@@ -4,6 +4,7 @@
 #include "IRoomDelegate.h"
 #include <cassert>
 #include "ISitableRoomPlayer.h"
+#include "ConfigDefine.h"
 struct stBuyInEntry
 {
 	uint32_t nBuyInCoin ;
@@ -146,12 +147,32 @@ public:
 	bool isPlayerLoseReachMax( IRoom* pRoom, uint32_t nUserUID )override;
 	bool onPlayerWillDoLeaveRoom(IRoom* pRoom , IRoom::stStandPlayer* pPlayer )override;
 	bool onDelayPlayerWillLeaveRoom(IRoom* pRoom , ISitableRoomPlayer* pPlayer )override;
+	bool onOneRoundEnd(IRoom* pRoom)override;
 
 	// self 
 	uint32_t getRoomState(){ return m_eState ; }
 	bool isRoomClosed();
 	void sendRoomInfo(uint32_t nSessionID );
-	uint32_t getCardNeed(){ return (( m_nDuringSeconds / 60 / 15 ) ) ;}
+	uint32_t getCardNeed()
+	{
+#ifndef GAME_365
+		return (( m_nDuringSeconds / 60 / 15 ) ) ;
+#else
+		switch ((uint32_t)m_nDuringSeconds)
+		{
+		case 10:
+			return 1;
+		case 20:
+			return 2;
+		case 30 :
+			return 3;
+		default:
+			LOGFMTD("unknown total round cnt = %u , so need 1 card", (uint32_t)m_nDuringSeconds);
+			return 1;
+		}
+#endif
+		return 1;
+	}
 	stPrivateRoomPlayerItem* getPlayerByUID(uint32_t nUserUID )
 	{
 		auto iter = m_mapPrivateRoomPlayers.find(nUserUID) ;
@@ -211,8 +232,8 @@ CPrivateRoom<T>::CPrivateRoom()
 	m_isControlTakeIn = false ;
 	m_nRoomID = 0 ;
 	m_nOwnerUID = 0;
-	m_fLeftTimeSec = 0 ;
-	m_nDuringSeconds = 0 ;
+	m_fLeftTimeSec = 10 ;
+	m_nDuringSeconds = 10;
 	m_eState = eRoomState_None ;
 	m_pRoom = nullptr;
 	m_nMaxTakeIn = 999999999 ;
@@ -247,6 +268,9 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 {
 	m_nRoomID = nRoomID ;
 	m_nDuringSeconds = 2 * 60;
+#ifdef GAME_365
+	m_nDuringSeconds = 10;
+#endif
 	m_eState = eRoomState_WaitOpen ;
 	m_pRoomMgr = pRoomMgr ;
 	m_strRoomName = vJsValue["name"].asString();
@@ -259,6 +283,9 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	if ( vJsValue["duringMin"].isNull() == false )
 	{
 		m_nDuringSeconds = vJsValue["duringMin"].asUInt() * 60 ;
+#ifdef GAME_365
+		m_nDuringSeconds = vJsValue["duringMin"].asUInt();
+#endif
 		LOGFMTD("create private room duiring is = %u",m_nDuringSeconds) ;
 	}
 	else
@@ -479,6 +506,10 @@ void CPrivateRoom<T>::roomItemDetailVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["roomType"] = getRoomType() ;
 	vOutJsValue["initTime"] = m_nDuringSeconds / 60 ; ;
 	vOutJsValue["playedTime"] = (uint32_t)((m_nDuringSeconds - m_fLeftTimeSec)/60);
+#ifdef GAME_365
+	vOutJsValue["initTime"] = (uint32_t)m_nDuringSeconds;
+	vOutJsValue["playedTime"] = (uint32_t)((m_nDuringSeconds - m_fLeftTimeSec));
+#endif
 	vOutJsValue["seatCnt"] = (uint16_t)m_pRoom->getSeatCount();
 	vOutJsValue["clubID"] = m_nClubID ;
 }
@@ -641,7 +672,9 @@ void CPrivateRoom<T>::update(float fDelta)
 	}
 
 	m_bRoomInfoDiry = true ;
+#ifndef GAME_365
 	m_fLeftTimeSec -= fDelta ;
+#endif
 	if ( m_fLeftTimeSec <= 0 )
 	{
 		m_fLeftTimeSec = 0 ;
@@ -1368,6 +1401,13 @@ bool CPrivateRoom<T>::onDelayPlayerWillLeaveRoom(IRoom* pRoom , ISitableRoomPlay
 
 	LOGFMTD("uid = %u leave DELAY private room sys coin = %u , coin in this room = %u",pPlayer->getUserUID(),pPlayer->getCoin(), pRoomPlayer->nCoinInRoom ) ;
 	return true ;
+}
+
+template<class T >
+bool CPrivateRoom<T>::onOneRoundEnd(IRoom* pRoom)
+{
+	m_fLeftTimeSec -= 1;
+	return true;
 }
 
 template<class T >
