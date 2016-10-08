@@ -1,7 +1,7 @@
 ﻿ShopItemID	ShopItemName	ItemID	Count	ShopItemIcon	ShopItemType	AppStroeIdentifer	Flag	PrizeType	OrigPrize	CurPrize	CanBuyTimes	BeginTime	EndTime
-1	10颗钻石	0	1	0	0	365douniu_1	0	0	0	6	0	0	0
-2	300颗钻石	0	5	0	0	365douniu_2	0	0	0	30	0	0	0
-3	1280颗钻石	0	18	0	0	365douniu_3	0	0	0	128	0	0	0
+1	3张房卡	0	3	0	0	365douniu_1	0	0	0	6	0	0	0
+2	15张房卡	0	15	0	0	365douniu_2	0	0	0	30	0	0	0
+3	54张房卡	0	54	0	0	365douniu_3	0	0	0	128	0	0	0
 4	3280颗钻石	0	3280	0	0	diamond_4	0	0	0	328	0	0	0
 5	6180颗钻石	0	6180	0	0	diamond_5	0	0	0	618	0	0	0
 11	500金币	0	500	0	1	0	0	1	0	50	0	0	0

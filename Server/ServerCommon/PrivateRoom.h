@@ -1331,7 +1331,31 @@ bool CPrivateRoom<T>::isDeleteRoom()
 template<class T >
 void CPrivateRoom<T>::deleteRoom()
 {
-	m_eState = eRoomState_Close ;
+	if (eRoomState_WaitOpen == getRoomState())
+	{
+		// give back room card here ;
+		LIST_ROOM_RANK_ITEM::iterator iter = m_vSortedRankItems.begin();
+		for (uint16_t nIdx = 0; iter != m_vSortedRankItems.end(); ++iter, ++nIdx)
+		{
+			// push rank 5 to send to client ;
+			stRoomRankItem* pItem = (*iter);
+			auto pP = getPlayerByUID(pItem->nUserUID);
+			if (pP == nullptr)
+			{
+				continue;
+			}
+
+			auto nCnt = getCardNeed();
+
+			Json::Value jsReq;
+			jsReq["targetUID"] = pItem->nUserUID;
+			jsReq["diamond"] = nCnt;
+			m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_GiveBackDiamond, jsReq);
+			LOGFMTI("delete room give back room card = %u , uid =%u", nCnt, pItem->nUserUID);
+		}
+	}
+
+	m_eState = eRoomState_Close;
 	onRoomDoClosed();
 }
 

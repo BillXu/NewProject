@@ -644,7 +644,14 @@ bool CPlayerManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& j
 			auto pPlayer = GetPlayerByUserUID(nUID);	
 			if ( pPlayer == nullptr )
 			{
-				LOGFMTE("uid = %u not online can not give back diamond = %u ",nUID,nDiamond);
+				Json::Value jsContent;
+				jsContent["targetUID"] = nUID;
+				jsContent["addCard"] = nDiamond;
+				jsContent["addCardNo"] = nUID;
+				Json::StyledWriter jsWrite;
+				auto str = jsWrite.write(jsContent);
+				CPlayerMailComponent::PostMailToPlayer(eMailType::eMail_AddRoomCard, str.c_str(), str.size(), nUID);
+				LOGFMTE("uid = %u not online can not give back diamond = %u, via agent add card mail ",nUID,nDiamond);
 			}
 			else
 			{

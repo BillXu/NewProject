@@ -83,6 +83,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				{
 					stMsgPlayerEnterRoomRet msgRet ;
 					msgRet.nRet = 6;
+					msgRet.nRoomID = pRet->nRoomID;
 					SendMsg(&msgRet,sizeof(msgRet)) ;
 					LOGFMTE("player uid = %d enter game , can not find game port type = %d ",GetPlayer()->GetUserUID(), pRet->nRoomGameType ) ;
 					break;
@@ -105,6 +106,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			{
 				stMsgPlayerEnterRoomRet msgRet ;
 				msgRet.nRet = 1;
+				msgRet.nRoomID = pRet->nRoomID;
 				SendMsg(&msgRet,sizeof(msgRet)) ;
 				LOGFMTD("player uid = %d already in room , id = %d ", GetPlayer()->GetUserUID() ,m_nStateInRoomID ) ;
 			}
@@ -115,6 +117,12 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			stMsgSvrEnterRoomRet* pRet = (stMsgSvrEnterRoomRet*)pMessage ;
 			stMsgPlayerEnterRoomRet msgRet ;
 			msgRet.nRet = pRet->nRet;
+			msgRet.nRoomID = pRet->nRoomID;
+			if (msgRet.nRet)
+			{
+				msgRet.nRoomID = m_nStateInRoomID;
+			}
+			
 			SendMsg(&msgRet,sizeof(msgRet)) ;
 
 			if ( msgRet.nRet )  // enter room failed ;

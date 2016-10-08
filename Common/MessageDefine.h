@@ -751,6 +751,7 @@ struct stMsgPlayerEnterRoomRet
 {
 	stMsgPlayerEnterRoomRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_ENTER_ROOM ; }
 	uint8_t nRet ; // 0 success , 1 already in this room , 2 not register player  can not enter ; 3 player coin is too few ; 4 ;  player coin is too many ; 5 can not find room id ,  6 room type error 
+	uint32_t nRoomID;
 };
 
 struct stMsgPlayerLeaveRoom
