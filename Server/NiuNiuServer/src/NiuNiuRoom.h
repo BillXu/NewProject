@@ -1,6 +1,7 @@
 #pragma once
 #include "ISitableRoom.h"
 #include <json/json.h>
+#include "ConfigDefine.h"
 class CNiuNiuRoom
 	:public ISitableRoom
 {
@@ -39,6 +40,9 @@ public:
 	bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID  )override ;
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override ;
 	bool canStartGame()override ;
+#if defined(GAME_365) || defined(GAME_panda)
+	uint32_t getMaxTakeIn(){ return 1000; };
+#endif 
 protected:
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;
 protected:

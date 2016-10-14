@@ -206,7 +206,7 @@ bool CNiuNiuPeerCard::checkFiveSmall()
 		nTotalPoint += nCard.GetCardFaceNum() ;
 	}
 
-	return nTotalPoint < 10 ;
+	return nTotalPoint <= 10 ;
 }
 
 

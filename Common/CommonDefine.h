@@ -44,8 +44,10 @@ enum ePayChannel
 {
 	ePay_AppStore,
 	ePay_WeChat,
+	ePay_WeChat_365Niu = ePay_WeChat,
 	ePay_ZhiFuBao,
 	ePay_XiaoMi,
+	ePay_WeChat_365Golden,
 	ePay_Max,
 };
 

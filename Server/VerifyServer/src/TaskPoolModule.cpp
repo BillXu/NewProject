@@ -267,7 +267,7 @@ void CTaskPoolModule::onVerifyMsg( stMsg* pMsg, eMsgPort eSenderPort , uint32_t 
 		memcpy(pRequest->pBufferVerifyID,str.c_str(),strlen(str.c_str()));
 		pTask = getPool().getReuseTaskObjByID(eTask_AppleVerify) ;
 	}
-	else if ( ePay_WeChat == pRequest->nChannel )
+	else if ( ePay_WeChat == pRequest->nChannel || ePay_WeChat_365Golden == pRequest->nChannel )
 	{
 		memcpy(pRequest->pBufferVerifyID,((unsigned char*)pMsg) + sizeof(stMsgToVerifyServer),pReal->nTranscationIDLen);
 		std::string strTradeNo(pRequest->pBufferVerifyID);

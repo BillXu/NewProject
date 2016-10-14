@@ -677,6 +677,9 @@ bool CPlayerManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& j
 		{
 			LOGFMTI("player agents add card to uid = %u , cnt = %u , addCardNo = %u",nUserUID,nAddCnt,nSeailNumber);
 			pPlayer->GetBaseData()->AddMoney(nAddCnt, true);
+			stMsg msgU;
+			msgU.usMsgType = MSG_PLAYER_UPDATE_MONEY;
+			pPlayer->GetBaseData()->OnMessage(&msgU, ID_MSG_PORT_CLIENT);
 		}
 
 		jsResult = jsReqContent;

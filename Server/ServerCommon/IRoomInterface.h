@@ -35,4 +35,5 @@ public:
 	virtual bool isPlaying() = 0 ;
 	virtual void setLeftTime(uint32_t nLeftSec ){  }
 	virtual void setRoomState(uint32_t nRoomState ){}
+	virtual bool onCreateFromDB(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue) { return true; };
 };

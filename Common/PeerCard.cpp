@@ -1,7 +1,10 @@
 #include "PeerCard.h"
 #include <memory>
 #include <assert.h>
+
+#ifdef SERVER
 #include "log4z.h"
+#endif
 #ifndef SERVER
 #include "Language.h"
 #endif
@@ -103,7 +106,9 @@ void CPeerCard::ReplaceCardByNumber( unsigned char nOld , unsigned char nNew )
 		}
 	}
 	assert(0);
+   #ifdef SERVER
 	LOGFMTE("this is no card in my peer card : old = %d ",nOld ) ;
+#endif
 }
 
 void CPeerCard::ShowCardByNumber(unsigned char nCardNum)
@@ -117,7 +122,9 @@ void CPeerCard::ShowCardByNumber(unsigned char nCardNum)
 		}
 	}
 	assert(0);
+    #ifdef SERVER
 	LOGFMTE("Can not show Card : %d . do not exist it ",nCardNum ) ;
+#endif
 	return  ;
 }
 
@@ -218,7 +225,9 @@ void CPeerCard::LogInfo()
 			break;
 
 	}
+    #ifdef SERVER
 	LOGFMTD("%s",pType) ;
+#endif
 	for ( int i = 0 ; i < PEER_CARD_COUNT ; ++i )
 	{
 		if ( m_vCard[i])

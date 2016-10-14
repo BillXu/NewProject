@@ -1,7 +1,9 @@
 #include "CardPoker.h"
 #include <assert.h>
 #include <stdlib.h>
+#ifdef SERVER
 #include "log4z.h"
+#endif
 // card 
 CCard::CCard(  unsigned char nCompositeNum  )
 	:m_eType(eCard_Heart)
@@ -20,7 +22,9 @@ void CCard::RsetCardByCompositeNum( unsigned char nCompositeNum )
 	assert(nCompositeNum > 0 && nCompositeNum <= 54 && "illegal composite Number" );
 	if ( (nCompositeNum > 0 && nCompositeNum <= 54) != true )
 	{
+        #ifdef SERVER
 		LOGFMTE("Illegal composite Number = %d",nCompositeNum );
+#endif
 		return ;
 	}
 
@@ -50,13 +54,17 @@ CCard& CCard::SetCard(eCardType etype, unsigned char nFaceNum )
 {
 	if ( etype < eCard_None || etype >= eCard_Max )
 	{
+        #ifdef SERVER
 		LOGFMTE("unknown card type =%d", etype ) ;
+#endif
 		return *this;
 	}
 
 	if ( nFaceNum <=0 ||nFaceNum >54 )
 	{
+        #ifdef SERVER
 		LOGFMTE("unlegal face number = %d",nFaceNum ) ;
+#endif
 	}
 	m_eType = etype ;
 	m_nCardFaceNum = nFaceNum ;
@@ -84,7 +92,9 @@ void CCard::LogCardInfo()
         pType = "unknown";
 		break; 
 	}
+    #ifdef SERVER
 	LOGFMTD("this is %s : %d . Composite Number: %d",pType,m_nCardFaceNum, GetCardCompositeNum() );
+#endif
 }
 
 // Poker
@@ -169,7 +179,9 @@ void CPoker::InitBaccarat()
 
 void CPoker::InitGolden()
 {
+    #ifdef SERVER
 	LOGFMTE("Implement this method please ");
+#endif
 }
 
 unsigned char CPoker::GetCardWithCompositeNum()
@@ -219,13 +231,17 @@ void CPoker::AddCard(unsigned char nCard )   // invoke when init
 {
 	if ( nCard < 0 || nCard > 54 )
 	{
+        #ifdef SERVER
 		LOGFMTE("unlegal card composite number = %d", nCard ) ;
+#endif
 		return ;
 	}
 	
 	if ( m_nCurIdx >= m_nCardCount )
 	{
+        #ifdef SERVER
 		LOGFMTE("Poker room space is full , can not add more card ") ;
+#endif
 	}
 	m_vCards[m_nCurIdx] = nCard ;
 	++m_nCurIdx ;
@@ -245,7 +261,9 @@ void CPoker::SetupCardCount(unsigned short nCount )
 
 void CPoker::LogCardInfo()
 {
+#ifdef SERVER
 	LOGFMTD("œ¥≈∆Ω·π˚»Áœ¬£∫   ");
+#endif
 	CCard stCard(2);
 	for ( int i = 0 ; i < m_nCardCount ; ++i )
 	{

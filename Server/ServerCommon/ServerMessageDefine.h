@@ -220,8 +220,7 @@ struct stMsgSaveRoomPlayer
 	:public stMsg
 {
 	stMsgSaveRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_ROOM_PLAYER ; }
-	uint8_t nRoomType ;
-	uint32_t nRoomID ;
+	uint32_t nRoomSerialNum;
 	uint32_t nTermNumber ;
 	stSaveRoomPlayerEntry savePlayer ;
 };
@@ -230,8 +229,8 @@ struct  stMsgReadRoomPlayer
 	:public stMsg
 {
 	stMsgReadRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_ROOM_PLAYER ;}
-	uint8_t nRoomType ;
-	uint32_t nRoomID ;
+	uint32_t nRoomSerialNum;
+	uint32_t nRoomID;
 	uint32_t nTermNumber ;
 };
 
@@ -250,8 +249,7 @@ struct stMsgSavePrivateRoomPlayer
 	:public stMsg
 {
 	stMsgSavePrivateRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_SAVE_PRIVATE_ROOM_PLAYER ;}
-	uint32_t nRoomID ;
-	uint8_t nRoomType ;
+	uint32_t nRoomSerialNum;
 	uint32_t nUserUID ;
 	uint16_t nJsonLen ;
 	PLACE_HOLDER(char* pJs) ; // stPrivateRoomPlayerItem  joson object ;
@@ -261,8 +259,8 @@ struct stMsgReadPrivateRoomPlayer
 	:public stMsg
 {
 	stMsgReadPrivateRoomPlayer(){ cSysIdentifer = ID_MSG_PORT_DB ; usMsgType = MSG_READ_PRIVATE_ROOM_PLAYER ; }
-	uint32_t nRoomID ;
-	uint8_t nRoomType ;
+	uint32_t nRoomID;
+	uint32_t nRoomSerialNum ;
 };
 
 struct stMsgReadPrivateRoomPlayerRet

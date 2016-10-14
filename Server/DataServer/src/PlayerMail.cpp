@@ -431,6 +431,9 @@ bool CPlayerMailComponent::ProcessMail( stRecievedMail& pMail)
 			uint32_t nAddLeft = vRoot["addCard"].asUInt();
 			auto nAddNo = vRoot["addCardNo"].asUInt();
 			GetPlayer()->GetBaseData()->AddMoney(nAddLeft, true);
+			stMsg msg;
+			msg.usMsgType = MSG_PLAYER_UPDATE_MONEY;
+			GetPlayer()->GetBaseData()->OnMessage(&msg, ID_MSG_PORT_CLIENT);
 			LOGFMTI("uid = %u add room card mail cnt = %u addCardNo = %u", GetPlayer()->GetUserUID(),nAddLeft, nAddNo);
 		}
 		break;

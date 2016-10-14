@@ -1,6 +1,8 @@
 #include "RoomConfig.h"
 #include "CommonDefine.h"
+#ifdef SERVER
 #include "log4z.h"
+#endif
 #include <assert.h>
 bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 {
@@ -55,7 +57,9 @@ bool CRoomConfigMgr::OnPaser(CReaderRow& refReaderRow )
 //		}
 //		break;
 	default:
+#ifdef SERVER
 		LOGFMTE( "unknown room config ,room type = %d",cType ) ;
+#endif
 		return false;
 	}
 	pRoomConfig->nGameType = cType ;

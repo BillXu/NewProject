@@ -359,7 +359,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 				break;
 			}
 
-			if ( msgBack.nChannel != ePay_WeChat )
+			if (msgBack.nChannel != ePay_WeChat && ePay_WeChat_365Golden != msgBack.nChannel)
 			{
 				msgBack.nRet = 4 ;
 				SendMsg(&msgBack,sizeof(msgBack)) ;

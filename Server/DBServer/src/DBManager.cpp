@@ -171,7 +171,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 
 			pRequest->eType = eRequestType_Add ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"INSERT INTO privateroomplayer (roomID, roomType,userUID,content) VALUES ('%u', '%u','%u','%s') ON DUPLICATE KEY UPDATE content = '%s';",pRet->nRoomID,pRet->nRoomType,pRet->nUserUID,auBuffer.getBufferPtr(),auBuffer.getBufferPtr()) ;
+				"INSERT INTO privateroomplayer (serialNum,userUID,content) VALUES ('%u','%u','%s') ON DUPLICATE KEY UPDATE content = '%s';",pRet->nRoomSerialNum,pRet->nUserUID,auBuffer.getBufferPtr(),auBuffer.getBufferPtr()) ;
 		}
 		break ;
 	case MSG_READ_PRIVATE_ROOM_PLAYER:
@@ -180,7 +180,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pdata->nExtenArg1 = pRet->nRoomID ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM privateroomplayer WHERE roomID = '%u'and roomType = %u limit 80",pRet->nRoomID,pRet->nRoomType ) ;
+				"SELECT * FROM privateroomplayer WHERE serialNum = '%u' limit 80", pRet->nRoomSerialNum);
 		}
 		break ;
 	case MSG_SAVE_ENCRYPT_NUMBER:
@@ -581,9 +581,9 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 		{
 			stMsgSaveRoomPlayer* pRet = (stMsgSaveRoomPlayer*)pmsg ;
 			pRequest->eType = eRequestType_Add;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomrankplayers (roomID, roomType,termNumber,playerUID,offsetCoin,otherOffset ) VALUES ('%u','%u','%u' ,'%u','%d','%d') ON DUPLICATE KEY UPDATE offsetCoin = '%d', otherOffset = '%d' ",
-				pRet->nRoomID,pRet->nRoomType,pRet->nTermNumber,pRet->savePlayer.nUserUID,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset) ;
-			LOGFMTD("update room player data room id = %u , type = %u , term = %u ,uid = %u",pRet->nRoomID,pRet->nRoomType,pRet->nTermNumber,pRet->savePlayer.nUserUID);
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO roomrankplayers (serialNum, termNumber,playerUID,offsetCoin,otherOffset ) VALUES ('%u','%u' ,'%u','%d','%d') ON DUPLICATE KEY UPDATE offsetCoin = '%d', otherOffset = '%d' ",
+				pRet->nRoomSerialNum,pRet->nTermNumber,pRet->savePlayer.nUserUID,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset,pRet->savePlayer.nGameOffset,pRet->savePlayer.nOtherOffset) ;
+			LOGFMTD("update room player data serialNum = %u ,term = %u ,uid = %u",pRet->nRoomSerialNum,pRet->nTermNumber,pRet->savePlayer.nUserUID);
 		}
 		break;
 	case MSG_READ_ROOM_PLAYER:
@@ -591,8 +591,8 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadRoomPlayer* pRet = (stMsgReadRoomPlayer*)pmsg ;
 			pRequest->eType = eRequestType_Select;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM roomrankplayers WHERE roomID = '%u' and termNumber = '%u' and roomType = '%u' order by offsetCoin desc limit 90 ",pRet->nRoomID,pRet->nTermNumber,pRet->nRoomType) ;
-			LOGFMTD("read room players room id = %d , type = %d",pRet->nRoomID,pRet->nRoomType );
+				"SELECT * FROM roomrankplayers WHERE serialNum = '%u' and termNumber = '%u' order by offsetCoin desc limit 90 ",pRet->nRoomSerialNum,pRet->nTermNumber) ;
+			LOGFMTD("read room players room id = %d , type = %d",pRet->nRoomID,pRet->nRoomSerialNum );
 			pdata->nExtenArg1 = pRet->nRoomID;
 			pdata->nExtenArg2 = pRet->nTermNumber ;
 			pdata->eFromPort = eSenderPort ;
@@ -2175,11 +2175,145 @@ void CDBManager::GetPlayerDetailData(stPlayerDetailData* pData, CMysqlRow&prow)
 // 	}
 }
 
+//{
+	void RET_ILSEQ() {
+		//std::cout << "WRONG FROM OF THE SEQUENCE" << std::endl;
+		//exit(1);
+		LOGFMTE("WRONG FROM OF THE SEQUENCE");
+	}
+
+
+	void RET_TOOFEW() {
+		//std::cout << "MISSING FROM THE SEQUENCE" << std::endl;
+		//exit(1);
+		LOGFMTE("MISSING FROM THE SEQUENCE");
+	}
+
+	std::vector<std::string> parse(std::string sin) {
+		int l = sin.length();
+		std::vector<std::string> ret;
+		ret.clear();
+		for (int p = 0; p < l;) {
+			int size = 0, n = l - p;
+			unsigned char c = sin[p], cc = sin[p + 1];
+			if (c < 0x80) {
+				size = 1;
+			}
+			else if (c < 0xc2) {
+				RET_ILSEQ();
+			}
+			else if (c < 0xe0) {
+				if (n < 2) {
+					RET_TOOFEW();
+				}
+				if (!((sin[p + 1] ^ 0x80) < 0x40)) {
+					RET_ILSEQ();
+				}
+				size = 2;
+			}
+			else if (c < 0xf0) {
+				if (n < 3) {
+					RET_TOOFEW();
+				}
+				if (!((sin[p + 1] ^ 0x80) < 0x40 &&
+					(sin[p + 2] ^ 0x80) < 0x40 &&
+					(c >= 0xe1 || cc >= 0xa0))) {
+					RET_ILSEQ();
+				}
+				size = 3;
+			}
+			else if (c < 0xf8) {
+				if (n < 4) {
+					RET_TOOFEW();
+				}
+				if (!((sin[p + 1] ^ 0x80) < 0x40 &&
+					(sin[p + 2] ^ 0x80) < 0x40 &&
+					(sin[p + 3] ^ 0x80) < 0x40 &&
+					(c >= 0xf1 || cc >= 0x90))) {
+					RET_ILSEQ();
+				}
+				size = 4;
+			}
+			else if (c < 0xfc) {
+				if (n < 5) {
+					RET_TOOFEW();
+				}
+				if (!((sin[p + 1] ^ 0x80) < 0x40 &&
+					(sin[p + 2] ^ 0x80) < 0x40 &&
+					(sin[p + 3] ^ 0x80) < 0x40 &&
+					(sin[p + 4] ^ 0x80) < 0x40 &&
+					(c >= 0xfd || cc >= 0x88))) {
+					RET_ILSEQ();
+				}
+				size = 5;
+			}
+			else if (c < 0xfe) {
+				if (n < 6) {
+					RET_TOOFEW();
+				}
+				if (!((sin[p + 1] ^ 0x80) < 0x40 &&
+					(sin[p + 2] ^ 0x80) < 0x40 &&
+					(sin[p + 3] ^ 0x80) < 0x40 &&
+					(sin[p + 4] ^ 0x80) < 0x40 &&
+					(sin[p + 5] ^ 0x80) < 0x40 &&
+					(c >= 0xfd || cc >= 0x84))) {
+					RET_ILSEQ();
+				}
+				size = 6;
+			}
+			else {
+				RET_ILSEQ();
+			}
+			std::string temp = "";
+			temp = sin.substr(p, size);
+			ret.push_back(temp);
+			p += size;
+		}
+		return ret;
+	}
+
+	std::string getSubStr(std::string & str, uint32_t length){
+		if (str.length() > length){
+			std::vector<std::string> ans = parse(str);
+			if (length < ans.size()) {
+				std::string returnString = "";
+				for (int i = 0; i < length; i++) {
+					returnString += ans[i];
+				}
+				return returnString;
+			}
+			else{
+				return str.c_str();
+			}
+		}
+		return str.c_str();
+	}
+//}
+
 void CDBManager::GetPlayerBrifData(stPlayerBrifData*pData,CMysqlRow&prow)
 {
 	pData->bIsOnLine = false ;
 	memset(pData->cName,0,sizeof(pData->cName)) ;
-	sprintf_s(pData->cName,sizeof(pData->cName),"%s",prow["playerName"]->CStringValue()) ;
+	if (prow["playerName"]->nBufferLen >= sizeof(pData->cName))
+	{
+		LOGFMTD("you name is too long");
+		std::string str = prow["playerName"]->CStringValue();
+		std::string strName = getSubStr(str,6);
+		if (strName.size() >= sizeof(pData->cName))
+		{
+			LOGFMTE("name still too long");
+			sprintf_s(pData->cName, sizeof(pData->cName), "%s", "Name too long");
+		}
+		else
+		{
+			sprintf_s(pData->cName, sizeof(pData->cName), "%s", strName.c_str());
+		}
+	}
+	else
+	{
+		sprintf_s(pData->cName, sizeof(pData->cName), "%s", prow["playerName"]->CStringValue());
+	}
+	
 	pData->nCoin = prow["coin"]->IntValue64();
 	pData->nDiamoned = prow["diamond"]->IntValue();
 	pData->nPhotoID = prow["photoID"]->IntValue();

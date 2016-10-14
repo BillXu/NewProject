@@ -601,5 +601,26 @@ bool CNiuNiuRoom::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort 
 }
 bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
 {
+	if (MSG_PLAYER_STANDUP == prealMsg->usMsgType)
+	{
+		stMsgPlayerStandUpRet msgBack;
+		msgBack.nRet = 0;
+		auto player = getSitdownPlayerBySessionID(nPlayerSessionID);
+		if (player == nullptr)
+		{
+			msgBack.nRet = 1;
+			sendMsgToPlayer(&msgBack, sizeof(msgBack), nPlayerSessionID);
+			return true ;
+		}
+		
+		if ( getBankerIdx() == player->getIdx())
+		{
+			msgBack.nRet = 3;
+			sendMsgToPlayer(&msgBack, sizeof(msgBack), nPlayerSessionID);
+			return true;
+		}
+		onPlayerWillStandUp(player);
+		return true;
+	}
 	return ISitableRoom::onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
 }

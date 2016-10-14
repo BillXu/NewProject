@@ -1,8 +1,9 @@
 #include "TaxasPokerPeerCard.h"
 #include <algorithm>
-#include "log4z.h"
+
 #include <assert.h>
 #ifdef SERVER
+#include "log4z.h"
 #include "NativeTypes.h"
 #endif // SERVER
 
@@ -60,8 +61,10 @@ bool CTaxasPokerPeerCard::removePublicCompsiteNum( unsigned char nCardNum )
 	auto iter = std::find_if(m_vDefaul.begin(),m_vDefaul.end(),[nCardNum]( CCard* pCard ){ return pCard->GetCardCompositeNum() == nCardNum ; }) ;
 	if ( iter != m_vDefaul.end() )
 	{
+        #ifdef SERVER
 		LOGFMTE("remove public card , but card = %u , is in hold card, please attention to add card sequence",nCardNum) ;
-	}
+#endif
+    }
 
 	iter = std::find_if(m_vAllCard.begin(),m_vAllCard.end(),[nCardNum]( CCard* pCard ){ return pCard->GetCardCompositeNum() == nCardNum ; }) ;
 	if ( iter == m_vAllCard.end() )
@@ -207,16 +210,18 @@ void CTaxasPokerPeerCard::Reset()
 
 void CTaxasPokerPeerCard::LogInfo()
 {
+    #ifdef SERVER
 	LOGFMTI("card Type = %s",m_strCardName.c_str() ) ;
 	LOGFMTI("All card is :") ;
-
+#endif
 	
 	for ( unsigned int i= 0 ; i < m_vAllCard.size() ; ++i )	
 	{
 		m_vAllCard[i]->LogCardInfo();
 	}
-
+#ifdef SERVER
 	LOGFMTI("Final card is :") ;
+#endif
 	for ( unsigned int i= 0 ; i < m_vFinalCard.size() ; ++i )
 	{
 		m_vFinalCard[i]->LogCardInfo();
@@ -351,7 +356,9 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 
 	if ( m_vAllCard.size() < 5  )
 	{
+        #ifdef SERVER
 		LOGFMTE("Do nothing , card count < 5 ; ") ;
+#endif
 		return ;
 	}
 	m_isCardDirty = false ;
@@ -594,9 +601,11 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 				return ;
 			}
 		}
-		LOGFMTE("No enough card to fill !") ; 
+        #ifdef SERVER
+		LOGFMTE("No enough card to fill !") ;
+#endif
 	}
-	else if ( vPairs[2].size() == 3 ) 
+	else if ( vPairs[2].size() == 3 )
 	{
 		m_vFinalCard.assign(vPairs[2].begin(),vPairs[2].end() ) ;
 		m_vPairs[0].assign(vPairs[2].begin(),vPairs[2].end()) ;
@@ -682,12 +691,14 @@ void CTaxasPokerPeerCard::CaculateFinalCard()
 		}
 
 	}
+    #ifdef SERVER
 	LOGFMTE( "analys card error , unknown error !card info : " ) ;
 	for ( CCard* pcardnow : m_vAllCard )
 	{
 		LOGFMTE("card type = %d , face = %d",pcardnow->GetType(),pcardnow->GetCardFaceNum() ) ;
 	}
 	LOGFMTE("card end !!! ");
+#endif
 	assert(0 && "fix error " );
 }
 

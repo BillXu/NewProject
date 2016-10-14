@@ -123,6 +123,7 @@ public:
 	bool onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )override;
 	void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue ) override;
 	void serializationToDB() override;
+	bool onCreateFromDB(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue)override;
 
 	uint8_t canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer )override;  // return 0 means ok ;
 	void onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t& nSubIdx ) override;
@@ -207,6 +208,7 @@ protected:
 	bool m_bRoomInfoDiry ;
 	bool m_isRequestingChatID ;
 	float m_fWaitOpenTicket ;
+	float m_fWaitPlayerJoinTicket;
 
 	std::map<uint32_t,stPrivateRoomPlayerItem*> m_mapPrivateRoomPlayers ;
 };
@@ -280,6 +282,7 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	m_nClubID = vJsValue["clubID"].asUInt() ;
 	m_nSerialNum = vJsValue["serialNum"].asUInt();
 	m_fWaitOpenTicket = 0 ;
+	m_fWaitPlayerJoinTicket = 0;
 	if ( vJsValue["duringMin"].isNull() == false )
 	{
 		m_nDuringSeconds = vJsValue["duringMin"].asUInt() * 60 ;
@@ -313,21 +316,29 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	m_nMaxTakeIn = m_pRoom->getMaxTakeIn();
 	LOGFMTD("create 1 private room") ;
 
+
+	return true ;
+}
+
+template<class T >
+bool CPrivateRoom<T>::onCreateFromDB(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue)
+{
+	onFirstBeCreated(pRoomMgr, nRoomID, vJsValue);
 	// read private room data 
-	stMsgReadPrivateRoomPlayer msgReadPrivate ;
-	msgReadPrivate.nRoomID = getRoomID() ;
-	msgReadPrivate.nRoomType = getRoomType() ;
-	m_pRoomMgr->sendMsg(&msgReadPrivate,sizeof(msgReadPrivate),getRoomID()) ;
-	LOGFMTD("read room private item") ;
+	stMsgReadPrivateRoomPlayer msgReadPrivate;
+	msgReadPrivate.nRoomSerialNum = m_nSerialNum;
+	msgReadPrivate.nRoomID = getRoomID();
+	m_pRoomMgr->sendMsg(&msgReadPrivate, sizeof(msgReadPrivate), getRoomID());
+	LOGFMTD("read room private item");
 
 	// read rank data 
-	stMsgReadRoomPlayer msgRead ;
-	msgRead.nRoomID = getRoomID();
-	msgRead.nRoomType = getRoomType() ;
-	msgRead.nTermNumber = 0 ;
-	m_pRoomMgr->sendMsg(&msgRead,sizeof(msgRead),getRoomID()) ;
-	LOGFMTD("read room rank") ;
-	return true ;
+	stMsgReadRoomPlayer msgRead;
+	msgRead.nRoomSerialNum = m_nSerialNum;
+	msgRead.nRoomID = getRoomID();  
+	msgRead.nTermNumber = 0;
+	m_pRoomMgr->sendMsg(&msgRead, sizeof(msgRead), getRoomID());
+	LOGFMTD("read room rank");
+	return true;
 }
 
 template<class T >
@@ -671,6 +682,27 @@ void CPrivateRoom<T>::update(float fDelta)
 		return ;
 	}
 
+	if ( eRoomState_WaitJoin != m_eState)
+	{
+		m_fWaitPlayerJoinTicket = 0 ;
+	}
+	else
+	{
+		m_fWaitPlayerJoinTicket += fDelta;
+		if (m_fWaitOpenTicket >= 60 * 60)
+		{
+			m_eState = eRoomState_Close;
+			onRoomDoClosed();
+			// inform data svr clear room info ;
+			Json::Value jsReq;
+			jsReq["roomID"] = getRoomID();
+			jsReq["ownerUID"] = getOwnerUID();
+			jsReq["clubID"] = m_nClubID;
+			m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_OnRoomDeleted, jsReq);
+			return;
+		}
+	}
+
 	m_bRoomInfoDiry = true ;
 #ifndef GAME_365
 	m_fLeftTimeSec -= fDelta ;
@@ -704,8 +736,7 @@ void CPrivateRoom<T>::onTimeSave()
 	LOGFMTD("time save room info room id = %u",getRoomID());
 	// save room rank ;
 	stMsgSaveRoomPlayer msgSave ;
-	msgSave.nRoomID = getRoomID() ;
-	msgSave.nRoomType = getRoomType() ;
+	msgSave.nRoomSerialNum = m_nSerialNum;
 	msgSave.nTermNumber = 0 ;
 	for ( auto pp : m_vSortedRankItems )
 	{
@@ -771,8 +802,7 @@ void CPrivateRoom<T>::onTimeSave()
 
 		stMsgSavePrivateRoomPlayer msgSavePrivatePlayer ;
 		msgSavePrivatePlayer.nJsonLen = str.size() ;
-		msgSavePrivatePlayer.nRoomID = getRoomID() ;
-		msgSavePrivatePlayer.nRoomType = getRoomType() ;
+		msgSavePrivatePlayer.nRoomSerialNum = m_nSerialNum;
 		msgSavePrivatePlayer.nUserUID = refPrivatePlayer.second->nUserUID ;
 
 		auBuffer.clearBuffer() ;
@@ -1462,7 +1492,8 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	auto iPlayer = pRoom->getPlayerBySessionID(nSessionID);
 	if ( iPlayer == nullptr )
 	{
-		
+		LOGFMTE("you are not in this room can not req room info session id = %u", nSessionID );
+		return;
 	}
 	auto iter = m_mapPrivateRoomPlayers.find(iPlayer->nUserUID) ;
 	assert(iter != m_mapPrivateRoomPlayers.end() && "why this is null ?" );

@@ -6,6 +6,7 @@
 //
 //
 #pragma warning(disable:4996)
+
 #include "log4z.h"
 #include <stdarg.h>
 #include <time.h>
@@ -18,6 +19,7 @@
 #ifdef POKER_CLIENT
 #include <string>
 #else
+
 #include <string.h>
 #include <Windows.h>
 #endif
