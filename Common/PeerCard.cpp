@@ -185,36 +185,36 @@ void CPeerCard::LogInfo()
 	{
 		case ePeerCard_None:
 			{
-				pType = "普通牌型   "   ;
+				pType = "GaoPai   "   ;
 			}
 			break;;
 		case ePeerCard_Pair:
 			{
-				pType = "对子";
+				pType = "DuiZi";
 				break;
 			}
 		case  ePeerCard_Sequence:
 			{
-				pType = "顺子";
+				pType = "ShunZi";
 				break;
 			}
 		case ePeerCard_SameColor:
 			{
-				pType = "金花";
+				pType = "JinHua";
 				break;
 			}
 		case ePeerCard_SameColorSequence:
 			{
-				pType = "顺金";
+				pType = "ShunJin";
 				break;
 			}
 		case ePeerCard_Bomb:
 			{
-				pType = "豹子";
+				pType = "BaoZi";
 				break;
 			}
 		default:
-			pType = "未知牌型" ;
+			pType = "Unknow" ;
 			break;
 
 	}
@@ -269,6 +269,44 @@ const char*  CPeerCard::getNameString(){
             break;
     }
     return Language::getInstance()->get(str.c_str());
-
+}
+#else 
+std::string CPeerCard::getNameString(){
+	std::string str = "GaoPai";
+	switch (m_eCardType) {
+	case ePeerCard_None:
+		str = "GaoPai:";
+		break;
+	case ePeerCard_Pair:
+		str = "DuiZi:";
+		break;
+	case ePeerCard_Sequence:
+		str = "ShunZi:";
+		break;
+	case ePeerCard_SameColor:
+		str = "JinHua:";
+		break;
+	case ePeerCard_SameColorSequence:
+		str = "ShunJin:";
+		break;
+	case ePeerCard_Bomb:
+		str = "BaoZi:";
+		break;
+	default:
+		str = "GaoPai:";
+		break;
+	}
+	
+	std::ostringstream oss;
+	oss << str;
+	for (uint8_t nIdx = 0; nIdx < PEER_CARD_COUNT; ++nIdx)
+	{
+		if (m_vCard[nIdx])
+		{
+			oss << ",";
+			oss << m_vCard[nIdx]->getName() ;
+		}
+	}
+	return oss.str();
 }
 #endif

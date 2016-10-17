@@ -112,7 +112,6 @@ void CGoldenRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["mainPool"] = m_nMailPool;
 	vOutJsValue["curActIdx"] = m_nCurActIdx ;
 	vOutJsValue["betRound"] = m_nBetRound ;
-	LOGFMTE("temp set bet round = 0 ") ;
 }
 
 void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
@@ -141,12 +140,12 @@ void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 				item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx) ;
 			}
 			auBuffer.addContent(&item,sizeof(item)) ;
-			LOGFMTD("send players uid = %u, state = %u",item.nUserUID,item.nStateFlag);
+			//LOGFMTD("send players uid = %u, state = %u",item.nUserUID,item.nStateFlag);
 		}
 	}
 
 	sendMsgToPlayer((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID) ;
-	LOGFMTD("send room info to session id = %d, player cnt = %d ", nSessionID,msgInfo.nPlayerCnt) ;
+	//LOGFMTD("send room info to session id = %d, player cnt = %d ", nSessionID,msgInfo.nPlayerCnt) ;
 }
 
 uint32_t CGoldenRoom::getBaseBet() // ji chu di zhu ;

@@ -479,7 +479,7 @@ void IRoom::goToState(IRoomState* pTargetState )
 	stMsgRoomEnterNewState msgNewState ;
 	msgNewState.m_fStateDuring = m_pCurRoomState->getStateDuring();
 	msgNewState.nNewState = m_pCurRoomState->getStateID();
-	LOGFMTD(" enter to state = %u room id = %u",msgNewState.nNewState,getRoomID()) ;
+	//LOGFMTD(" enter to state = %u room id = %u",msgNewState.nNewState,getRoomID()) ;
 	sendRoomMsg(&msgNewState,sizeof(msgNewState)) ;
 }
 

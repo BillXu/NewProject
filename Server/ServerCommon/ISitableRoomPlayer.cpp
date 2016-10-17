@@ -72,17 +72,17 @@ void ISitableRoomPlayer::switchPeerCard(ISitableRoomPlayer* pPlayer )
 void ISitableRoomPlayer::removeState( uint32_t nStateFlag )
 {
 	m_nState &=(~nStateFlag);
-	LOGFMTD("uid = %u state = %u remove state = %u",getUserUID(),getState(),nStateFlag) ;
+	//LOGFMTD("uid = %u state = %u remove state = %u",getUserUID(),getState(),nStateFlag) ;
 }
 
 void ISitableRoomPlayer::addState( uint32_t nStateFlag )
 {
 	m_nState |=(nStateFlag); 
-	LOGFMTD("uid = %u state = %u add state = %u",getUserUID(),getState(),nStateFlag) ;
+	//LOGFMTD("uid = %u state = %u add state = %u",getUserUID(),getState(),nStateFlag) ;
 }
 
 void ISitableRoomPlayer::setState( uint32_t nStateFlag )
 { 
 	m_nState = nStateFlag ;
-	LOGFMTD("uid = %u state = %u set state",getUserUID(),getState()) ;
+	//LOGFMTD("uid = %u state = %u set state",getUserUID(),getState()) ;
 }

@@ -87,6 +87,34 @@ void CCard::LogCardInfo()
 	LOGFMTD("this is %s : %d . Composite Number: %d",pType,m_nCardFaceNum, GetCardCompositeNum() );
 }
 
+std::string CCard::getName()
+{
+	std::string pType = "";
+	switch (m_eType)
+	{
+	case eCard_Heart:
+		pType = "HongTao ";
+		break;
+	case eCard_Sword:
+		pType = "HeiTao ";
+		break;
+	case eCard_Club:
+		pType = "CaoHua ";
+		break;
+	case eCard_Diamond:
+		pType = "FangKuai ";
+		break;
+	default:
+		pType = "unknown";
+		break;
+	}
+	std::ostringstream ss;
+	ss << pType;
+	ss << (int)m_nCardFaceNum;
+	return ss.str();
+	//LOGFMTD("this is %s : %d . Composite Number: %d", pType, m_nCardFaceNum, GetCardCompositeNum());
+}
+
 // Poker
 CPoker::CPoker()
 {

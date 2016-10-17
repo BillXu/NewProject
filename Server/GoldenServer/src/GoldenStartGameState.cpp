@@ -23,11 +23,11 @@ void CGoldenStartGameState::enterState(IRoom* pRoom)
 		{
 			stGoldenHoldPeerCard item ;
 			item.nIdx = pRoomPlayer->getIdx();
-			LOGFMTD("send player card :idx = %d",item.nIdx);
+			//LOGFMTD("send player card :idx = %d",item.nIdx);
 			for ( uint8_t nIdx = 0 ; nIdx < GOLDEN_PEER_CARD ; ++nIdx )
 			{
 				item.vCard[nIdx] = pRoomPlayer->getCardByIdx(nIdx);
-				LOGFMTD("idx = % u , card = %u",nIdx,item.vCard[nIdx]);
+				//LOGFMTD("idx = % u , card = %u",nIdx,item.vCard[nIdx]);
 			}
 			buffer.addContent(&item,sizeof(item)) ;
 		}

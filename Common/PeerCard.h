@@ -30,6 +30,8 @@ public:
 	void GetCompositeCardRepresent(char* vCard ); // 3 vector must ;
 #ifndef SERVER
     const char*  getNameString();
+#else
+	std::string  getNameString();
 #endif
 protected:
 	void ArrangeCard();

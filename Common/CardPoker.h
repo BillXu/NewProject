@@ -1,4 +1,5 @@
 #pragma once 
+#include <string>
 class CCard
 {
 public:
@@ -15,6 +16,7 @@ public:
 		eCard_Max,
 	};
 public:
+	std::string getName();
 	CCard( unsigned char nCompositeNum =2 );
 	~CCard();
 	void RsetCardByCompositeNum( unsigned char nCompositeNum );

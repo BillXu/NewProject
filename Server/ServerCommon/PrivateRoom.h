@@ -280,16 +280,16 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	stMsgReadPrivateRoomPlayer msgReadPrivate ;
 	msgReadPrivate.nRoomID = getRoomID() ;
 	msgReadPrivate.nRoomType = getRoomType() ;
-	m_pRoomMgr->sendMsg(&msgReadPrivate,sizeof(msgReadPrivate),getRoomID()) ;
-	LOGFMTD("read room private item") ;
+	//m_pRoomMgr->sendMsg(&msgReadPrivate,sizeof(msgReadPrivate),getRoomID()) ;
+	LOGFMTE("not read room private item") ;
 
 	// read rank data 
 	stMsgReadRoomPlayer msgRead ;
 	msgRead.nRoomID = getRoomID();
 	msgRead.nRoomType = getRoomType() ;
 	msgRead.nTermNumber = 0 ;
-	m_pRoomMgr->sendMsg(&msgRead,sizeof(msgRead),getRoomID()) ;
-	LOGFMTD("read room rank") ;
+	//m_pRoomMgr->sendMsg(&msgRead,sizeof(msgRead),getRoomID()) ;
+	LOGFMTE("not read room rank") ;
 	return true ;
 }
 
@@ -838,8 +838,8 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 				}
 			}
 
-			LOGFMTD("uid = %d request rank room id = %u",nUserID,getRoomID());
-			// send room info to player ;
+			//LOGFMTD("uid = %d request rank room id = %u",nUserID,getRoomID());
+			//// send room info to player ;
 			stMsgRequestRoomRankRet msgRet ;
 			msgRet.nCnt = vWillSend.size() ;
 			msgRet.nSelfRankIdx = nSelfRankIdx ;
@@ -848,7 +848,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			for ( auto& itemSendPlayer : vWillSend )
 			{
 				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
-				LOGFMTD("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
+				//LOGFMTD("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
 			}
 			m_pRoomMgr->sendMsg((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
 		}
@@ -913,7 +913,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			Json::Value jsresult ;
 			jsresult["state"] = nst ;
 			m_pRoom->sendRoomMsg(jsresult,MSG_ROOM_GAME_STATE_CHANGED) ;
-			LOGFMTD("room id = %u , set state to %u",getRoomID(),getRoomState()) ;
+			//LOGFMTD("room id = %u , set state to %u",getRoomID(),getRoomState()) ;
 			m_bRoomInfoDiry = true ;
 
 			// temp code 

@@ -27,7 +27,8 @@ public:
 
 	const char* getNameString()override 
 	{
-		return "golden not have name";
+		strPeerCardName = m_tRealPeerCard.getNameString();
+		return strPeerCardName.c_str();
 	}
 
 	uint32_t getWeight() override 
@@ -86,6 +87,7 @@ public:
 		return 0 ;
 	}
 protected:
+	std::string strPeerCardName;
 	uint8_t nAddCardIdx ; 
 	uint8_t vCards[GOLDEN_PEER_CARD];
 	CPeerCard m_tRealPeerCard ;
