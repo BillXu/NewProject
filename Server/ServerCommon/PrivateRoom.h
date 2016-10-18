@@ -792,7 +792,7 @@ void CPrivateRoom<T>::onTimeSave()
 			refPrivatePlayer.second->nCoinInRoom = nCoinInRoom ;
 		}
 
-		refPrivatePlayer.second->isDirty = true ;
+		refPrivatePlayer.second->isDirty = false ;
 
 		Json::Value jsValue ;
 		refPrivatePlayer.second->toJsvalue(jsValue);
