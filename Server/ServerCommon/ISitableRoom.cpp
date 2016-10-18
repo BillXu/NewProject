@@ -106,11 +106,25 @@ void ISitableRoom::update(float fDelta)
 
 void ISitableRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t& nSubIdx )
 {
-	IRoom::onPlayerEnterRoom(pEnterRoomPlayer,nSubIdx);
-	auto pp = getSitdownPlayerByUID(pEnterRoomPlayer->nUserUID) ;
-	if ( pp )
+	IRoom::onPlayerEnterRoom(pEnterRoomPlayer, nSubIdx);
+	auto pp = getSitdownPlayerByUID(pEnterRoomPlayer->nUserUID);
+	if (pp)
 	{
-		pp->reactive(pEnterRoomPlayer->nUserSessionID) ;
+		auto pStandPlayer = getPlayerByUserUID(pEnterRoomPlayer->nUserUID);
+		if (pStandPlayer->nCoin >= pp->getCoin())
+		{
+			if (pStandPlayer->nCoin != pp->getCoin())
+			{
+				LOGFMTD("uid = %u reenter room coin is not the same . stand = %u , sit = %u", pp->getUserUID(), pStandPlayer->nCoin, pp->getCoin());
+			}
+			pStandPlayer->nCoin -= pp->getCoin();
+		}
+		else
+		{
+			LOGFMTE("uid = %u stand coin is few then sit , why ? but stand = %u , sit = %u", pp->getUserUID(), pStandPlayer->nCoin, pp->getCoin());
+			pStandPlayer->nCoin = 0;
+		}
+		pp->reactive(pEnterRoomPlayer->nUserSessionID);
 	}
 }
 
