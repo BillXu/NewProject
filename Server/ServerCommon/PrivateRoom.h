@@ -113,6 +113,7 @@ public:
 	bool onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )override;
 	void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue ) override;
 	void serializationToDB() override;
+	bool onCreateFromDB(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue)override;
 
 	uint8_t canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer )override;  // return 0 means ok ;
 	void onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t& nSubIdx ) override;
@@ -233,49 +234,10 @@ CPrivateRoom<T>::~CPrivateRoom()
 
 // interface 
 template<class T >
-bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )
+bool CPrivateRoom<T>::onCreateFromDB(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue)
 {
-	m_nRoomID = nRoomID ;
-	m_nDuringSeconds = 2 * 60;
-	m_eState = eRoomState_WaitOpen ;
-	m_pRoomMgr = pRoomMgr ;
-	m_strRoomName = vJsValue["name"].asString();
-	m_nBaseBet = vJsValue["baseBet"].asUInt() ;
-	m_nBaseTakeIn = vJsValue["baseTakeIn"].asUInt() ;
-	m_isControlTakeIn = vJsValue["isControlTakeIn"].asBool() ;
-	m_nClubID = vJsValue["clubID"].asUInt() ;
-	m_nSerialNum = vJsValue["serialNum"].asUInt();
-	m_fWaitOpenTicket = 0 ;
-	if ( vJsValue["duringMin"].isNull() == false )
-	{
-		m_nDuringSeconds = vJsValue["duringMin"].asUInt() * 60 ;
-		LOGFMTD("create private room duiring is = %u",m_nDuringSeconds) ;
-	}
-	else
-	{
-		LOGFMTE("create private room duringMin is null ?") ;
-	}
 
-	if ( vJsValue["createUID"].isNull() == false )
-	{
-		m_nOwnerUID = vJsValue["createUID"].asUInt() ;
-		LOGFMTD("create private room ownerUID is = %u",m_nOwnerUID) ;
-	}
-	else
-	{
-		LOGFMTE("create private room ownerUID is null ?") ;
-	}
-
-	m_fLeftTimeSec = (float)m_nDuringSeconds ;
-
-	m_pRoom = new REAL_ROOM ;
-	m_pRoom->onFirstBeCreated(pRoomMgr,getRoomID() ,vJsValue);
-	pRoomMgr->reqeustChatRoomID(m_pRoom);
-	m_pRoom->setDelegate(this);
-	
-	m_nMaxTakeIn = m_pRoom->getMaxTakeIn();
-	LOGFMTD("create 1 private room") ;
-
+	onFirstBeCreated(pRoomMgr, nRoomID, vJsValue);
 	// read private room data 
 	stMsgReadPrivateRoomPlayer msgReadPrivate ;
 	msgReadPrivate.nRoomID = getRoomID() ;
@@ -291,6 +253,52 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	//m_pRoomMgr->sendMsg(&msgRead,sizeof(msgRead),getRoomID()) ;
 	LOGFMTE("not read room rank") ;
 	return true ;
+}
+
+template<class T >
+bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue)
+{
+	m_nRoomID = nRoomID;
+	m_nDuringSeconds = 2 * 60;
+	m_eState = eRoomState_WaitOpen;
+	m_pRoomMgr = pRoomMgr;
+	m_strRoomName = vJsValue["name"].asString();
+	m_nBaseBet = vJsValue["baseBet"].asUInt();
+	m_nBaseTakeIn = vJsValue["baseTakeIn"].asUInt();
+	m_isControlTakeIn = vJsValue["isControlTakeIn"].asBool();
+	m_nClubID = vJsValue["clubID"].asUInt();
+	m_nSerialNum = vJsValue["serialNum"].asUInt();
+	m_fWaitOpenTicket = 0;
+	if (vJsValue["duringMin"].isNull() == false)
+	{
+		m_nDuringSeconds = vJsValue["duringMin"].asUInt() * 60;
+		LOGFMTD("create private room duiring is = %u", m_nDuringSeconds);
+	}
+	else
+	{
+		LOGFMTE("create private room duringMin is null ?");
+	}
+
+	if (vJsValue["createUID"].isNull() == false)
+	{
+		m_nOwnerUID = vJsValue["createUID"].asUInt();
+		LOGFMTD("create private room ownerUID is = %u", m_nOwnerUID);
+	}
+	else
+	{
+		LOGFMTE("create private room ownerUID is null ?");
+	}
+
+	m_fLeftTimeSec = (float)m_nDuringSeconds;
+
+	m_pRoom = new REAL_ROOM;
+	m_pRoom->onFirstBeCreated(pRoomMgr, getRoomID(), vJsValue);
+	pRoomMgr->reqeustChatRoomID(m_pRoom);
+	m_pRoom->setDelegate(this);
+
+	m_nMaxTakeIn = m_pRoom->getMaxTakeIn();
+	LOGFMTD("create 1 private room");
+	return true;
 }
 
 template<class T >

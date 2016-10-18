@@ -715,12 +715,13 @@ void IRoomManager::readRoomInfo(uint32_t nSeailNum, uint32_t nChatRoomID )
 
 		LOGFMTD("crate room from db ok ") ;
 		// do create room ;
-		IRoomInterface* pRoom = doCreateInitedRoomObject(jsCreateRoomArg["roomID"].asUInt(),jsCreateRoomArg);
+		IRoomInterface* pRoom = doCreateRoomObject(getMgrRoomType(), true);
 		if ( pRoom == nullptr )
 		{
 			LOGFMTE("why create room is null, save arg : %s",strJs.c_str()) ;
 			return ;
 		}
+		pRoom->onCreateFromDB(this, jsCreateRoomArg["roomID"].asUInt(), jsCreateRoomArg);
 		m_vRooms[pRoom->getRoomID()] = pRoom ;
 		pRoom->setLeftTime(nLeftTime);
 		pRoom->setRoomState(roomState) ;

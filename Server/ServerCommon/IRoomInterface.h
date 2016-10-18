@@ -17,6 +17,7 @@ public:
 	virtual bool onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue ) = 0;
 	virtual void serializationFromDB(IRoomManager* pRoomMgr,stBaseRoomConfig* pConfig,uint32_t nRoomID , Json::Value& vJsValue ) = 0;
 	virtual void serializationToDB() = 0;
+	virtual bool onCreateFromDB(IRoomManager* pRoomMgr, uint32_t nRoomID, const Json::Value& vJsValue) { return true; };
 
 	virtual uint8_t canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer ) = 0;  // return 0 means ok ;
 	virtual void onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t& nSubIdx ) = 0;
