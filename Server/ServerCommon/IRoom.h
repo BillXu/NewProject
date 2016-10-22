@@ -110,6 +110,7 @@ public:
 	float getChouShuiRate(){ return m_fDividFeeRate ;}
 	void setChouShuiRate(float fDividFeeRate ){ m_fDividFeeRate = fDividFeeRate ; }
 	void enumAudientsPlayer(std::function<void (stStandPlayer*)> lpFunc );
+	virtual void sendResultToPlayerWhenDuringResultState(uint32_t nSessionID) { }
 protected:
 	bool addRoomState(IRoomState* pRoomState );
 private:

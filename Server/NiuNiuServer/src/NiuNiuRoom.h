@@ -2,6 +2,7 @@
 #include "ISitableRoom.h"
 #include <json/json.h>
 #include "ConfigDefine.h"
+#include "AutoBuffer.h"
 class CNiuNiuRoom
 	:public ISitableRoom
 {
@@ -43,6 +44,7 @@ public:
 #if defined(GAME_365) || defined(GAME_panda)
 	uint32_t getMaxTakeIn(){ return 1000; };
 #endif 
+	void sendResultToPlayerWhenDuringResultState(uint32_t nSessionID)override;
 protected:
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;
 protected:
@@ -55,4 +57,6 @@ protected:
 	bool m_isWillManualLeaveBanker ;
 
 	Json::Value m_arrPlayers ;
+
+	CAutoBuffer m_tGameResult;
 };

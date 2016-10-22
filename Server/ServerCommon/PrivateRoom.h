@@ -1031,13 +1031,18 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 		{
 			stMsgToRoom* pRet = (stMsgToRoom*)prealMsg ;
 			sendRoomInfo(nPlayerSessionID);
+
+			if (m_pRoom)
+			{
+				m_pRoom->sendResultToPlayerWhenDuringResultState(nPlayerSessionID);
+			}
 		}
 		break;
 	default:
 		{
 			if ( m_pRoom )
 			{
-				return m_pRoom->onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
+				return m_pRoom->onMessage(prealMsg, eSenderPort, nPlayerSessionID);
 			}
 			else
 			{
@@ -1133,6 +1138,13 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 				break ; //(uint32_t)(float(nCoin) * 1.1 )
 			}
 
+#ifdef GAME_365
+			if (pPrivatePlayer->nToTalCoin < 20000)
+			{
+				pPrivatePlayer->nToTalCoin = 20000;
+			}
+#endif 
+			
 			if ( (uint32_t)(float(nTakeIn) * 1.1 ) > pPrivatePlayer->nToTalCoin )
 			{
 				jsMsgBack["ret"] = 3 ;
@@ -1245,6 +1257,8 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			if ( iter == m_mapPrivateRoomPlayers.end() )
 			{
 				LOGFMTE("reply take in  uid = %u , not exist",nReplyUID) ;
+				prealMsg["ret"] = 1;
+				m_pRoomMgr->sendMsg(nSessionID, prealMsg, nMsgType);
 				break ;
 			}
 
@@ -1252,6 +1266,8 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			if ( pPrivatePlayer->isApplyIng == false )
 			{
 				LOGFMTE("uid = %u not applying , why reply to it",nReplyUID) ;
+				prealMsg["ret"] = 2;
+				m_pRoomMgr->sendMsg(nSessionID, prealMsg, nMsgType);
 				break ;
 			}
 			pPrivatePlayer->isApplyIng = false ;
@@ -1268,8 +1284,11 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 					{
 						pPrivatePlayer->nCheckedCoin = nApplyCoin ;
 						jsMsgBack["ret"] = 3 ;
-						LOGFMTE("UID = %u need buy coin = %u",pPrivatePlayer->nUserUID,nApplyCoin);
+						LOGFMTE("UID = %u need buy coin = %u may be coin not enough",pPrivatePlayer->nUserUID,nApplyCoin);
 						m_pRoom->sendMsgToPlayer(stiDownPlayer->getSessionID(),jsMsgBack,MSG_APPLY_TAKE_IN) ;
+
+						prealMsg["ret"] = 3;
+						m_pRoomMgr->sendMsg(nSessionID, prealMsg, nMsgType);
 						break ;
 					}
 
@@ -1301,6 +1320,9 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 						jsMsgBack["ret"] = 3 ;
 						LOGFMTE("UID = %u need buy coin = %u",pPrivatePlayer->nUserUID,nApplyCoin);
 						m_pRoom->sendMsgToPlayer(pStandPlayer->nUserSessionID,jsMsgBack,MSG_APPLY_TAKE_IN) ;
+
+						prealMsg["ret"] = 3;
+						m_pRoomMgr->sendMsg(nSessionID, prealMsg, nMsgType);
 						break ;
 					}
 					pPrivatePlayer->nCheckedCoin = 0 ;
@@ -1331,6 +1353,9 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			jsReqContent["arg"] = jsDlgArg ;
 			m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DATA,eAsync_PostDlgNotice,jsReqContent) ;
 			LOGFMTD("room id = %u reply uid = %u , result = %u , coin = %u",getRoomID(),nReplyUID,isAgree,nApplyCoin) ;
+
+			prealMsg["ret"] = 0;
+			m_pRoomMgr->sendMsg(nSessionID, prealMsg, nMsgType);
 		}
 		break ;
 	default:

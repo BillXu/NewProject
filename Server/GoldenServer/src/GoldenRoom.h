@@ -28,7 +28,9 @@ public:
 	uint8_t onPlayerAction(uint32_t nAct, uint32_t& nValue ,ISitableRoomPlayer* pPlayer );
 	uint8_t getCurActIdx(){ return m_nCurActIdx ;}
 	uint8_t informPlayerAct( bool bStepNext = false );
+	bool isReachedMaxRound();
 	bool onPlayerPK(ISitableRoomPlayer* pActPlayer , ISitableRoomPlayer* pTargetPlayer );
+	void sendResultToPlayerWhenDuringResultState(uint32_t nSessionID)override;
 protected:
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;
 protected:
@@ -38,6 +40,8 @@ protected:
 	uint32_t m_nMailPool ;
 	uint8_t  m_nCurActIdx ;
 	uint16_t m_nBetRound ;
+	uint8_t  m_nMaxBetRound;
 
 	Json::Value m_arrPlayers ;
+	Json::Value m_jsGameResult;
 };

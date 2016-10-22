@@ -318,7 +318,7 @@ enum eMsgType
 	// roomType : means eRoomType . baseBet , for taxas , it represent small blind . duringMin : room keep running time , by minite . clubID : when equal 0 , means ,quick game , opts : depend on game type ;
 	// NIU NIU  opts : { unbankerType : 0 }  // 0 no niu leave banker , 1 lose to all  leave banker , 2 manual leave banker;
 	// Taxas Poker opts : { maxTakeIn : 2345, isInsured : 0  }
-	// Golden opts : { maxSingleBet : 20 }
+	// Golden opts : { maxSingleBet : 20,maxRound : 30 }
 	// svr : { ret : 0 , roomID : 235 , clubID : 23 } ;
 	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error ; 4, req chat room id error ;
 	MSG_DELETE_ROOM, // ID_MSG_PORT_DATA ;
@@ -332,7 +332,7 @@ enum eMsgType
 
 	MSG_ROOM_INFO,
 	// svr : { ownerUID : 234552 , roomID : 2345 , seatCnt : 4 , chatID : 23455 , curState : eRoomState , leftTimeSec : 235 , baseTakeIn : 2345 , selfCoin : 2345, isCtrlTakeIn : 0 ,cardNeed : 23 , game : { ... } } 
-	// goldn :  game : { "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3 }
+	// goldn :  game : { "betRound" = 23, "bankIdx":3 ,"baseBet" : 20 ,"curBet" : 40 ,"mainPool" : 1000 ,curActIdx : 3, maxRound : 23 }
 	// NiuNiu : game : { "bankIdx":3 ,"baseBet" : 20 , "bankerTimes" : 2, unbankerType : 0  }
 	// taxas :   game : { isInsurd : 0 ,"litBlind":20,"maxTakIn":300, "bankIdx":3 ,"litBlindIdx":2,"bigBlindIdx" : 0,"curActIdx" : 3,"curPool":4000,"mostBet":200,"pubCards":[0,1] };
 
@@ -356,6 +356,8 @@ enum eMsgType
 	// client : { roomID : 2445 , replyToUID : 2345, isAgree : 0 , coin : 2300 }
 	// isAgree : 1 agree, 0 refuse ;
 	// replyUID : the applyer uid ;
+	// svr: { ret : 0 , replyToUID : 2345, isAgree : 0 , coin : 2300 } 
+	// ret : 0 success ; 1 tareget not exsit , 2 target not applying , 3 target coin is not engouh, 4 , unknown error , 100 can not find room 
 
 	MSG_REQUEST_ROOM_AUDIENTS, // audients ;
 	// client : { roomID : 2345 }
@@ -453,8 +455,20 @@ enum eMsgType
 	// client : { clubID : 2355, type : 0 } 
 	// type : 0 text message , 1 voice message  , 2 emoji
 
-	MSG_CLUB_UPDATE_NAME, // to data svr 
+	MSG_CLUB_UPDATE_NAME , // to data svr 
 	// client : { clubID : 2345 , newName : "hello" }
+
+	MSG_PLAYER_GOLDEN_LOOK, //eMsgPort::ID_MSG_PORT_TAXAS , eMsgPort::ID_MSG_PORT_GOLDEN , eMsgPort::ID_MSG_PORT_NIU_NIU  , 
+	// client : { roomID : 2445  }
+	// svr : { ret : 0 , cards : [2,3,5] }
+	// ret : 0 success , 1 can not do act , 2, not in game ;
+	MSG_GOLDEN_ROOM_LOOK,
+	// svr : { idx : 234 }
+
+	MSG_GOLDEN_ROOM_RESULT_NEW ,
+	// svr : { winnerIdx : 234 , players : [ {idx : 23 ,UID :2, offset : 23 , final : 234, card:[2,3,5 ] } , {idx : 23 , offset : 23 ,UID :2, final : 234, card:[2,3,5 ] } , ..... ] }
+
+
 
 
 
@@ -626,8 +640,8 @@ enum eMsgType
 	
 	MSG_GOLDEN_ROOM_INFORM_ACT,
 	
-	MSG_GOLDEN_ROOM_PLAYER_LOOK,
-	MSG_GOLDEN_ROOM_LOOK,
+	//MSG_GOLDEN_ROOM_PLAYER_LOOK,
+	//MSG_GOLDEN_ROOM_LOOK,
 	
 	MSG_GOLDEN_ROOM_PLAYER_GIVEUP,
 	MSG_GOLDEN_ROOM_GIVEUP,

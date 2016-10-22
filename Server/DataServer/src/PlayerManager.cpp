@@ -699,10 +699,7 @@ bool CPlayerManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& j
 			jsResult["isOnline"] = 1; 
 			jsResult["name"] = pPlayer->GetBaseData()->GetPlayerName();
 			jsResult["leftCardCnt"] = pPlayer->GetBaseData()->GetAllDiamoned();
-			
 		}
-
-		jsResult = jsReqContent;
 	}
 	break;
 	default:

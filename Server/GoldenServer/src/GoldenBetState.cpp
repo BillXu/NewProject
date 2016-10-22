@@ -65,21 +65,42 @@ bool CGoldenBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 		break;
 	case MSG_GOLDEN_PLAYER_ACT:
 		{
+			stMsgGoldenPlayerAct* pRet = (stMsgGoldenPlayerAct*)prealMsg;
+			Json::Value jsMsgBack;
 			stMsgGoldenPlayerActRet msgBack ;
 			msgBack.nRet = 0 ;
-			auto pPlayer = m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID) ;
+			auto pPlayer = (CGoldenRoomPlayer*)m_pRoom->getSitdownPlayerBySessionID(nPlayerSessionID) ;
 			if ( pPlayer == nullptr )
 			{
 				LOGFMTE("session id = %u not in this room do act room id = %u",nPlayerSessionID,m_pRoom->getRoomID()) ;
 				msgBack.nRet = 2 ;
-				m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+				jsMsgBack["ret"] = 2;
+				//m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+				if (eRoomPeerAction_ViewCard == pRet->nPlayerAct)
+				{
+					m_pRoom->sendMsgToPlayer(nPlayerSessionID, jsMsgBack, MSG_PLAYER_GOLDEN_LOOK);
+				}
 				break ;
 			}
-
-			stMsgGoldenPlayerAct* pRet = (stMsgGoldenPlayerAct*)prealMsg ;
 			bool bNeedWaitNext = pPlayer->getIdx() == m_pRoom->getCurActIdx() && (eRoomPeerAction_ViewCard != pRet->nPlayerAct) ;
 			msgBack.nRet = m_pRoom->onPlayerAction(pRet->nPlayerAct,pRet->nValue,pPlayer);
-			m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+			//m_pRoom->sendMsgToPlayer(&msgBack,sizeof(msgBack),nPlayerSessionID) ;
+			
+			jsMsgBack["ret"] = msgBack.nRet;
+			if (msgBack.nRet == 0 )
+			{
+				Json::Value jsCards;
+				jsCards[jsCards.size()] = pPlayer->getCardByIdx(0);
+				jsCards[jsCards.size()] = pPlayer->getCardByIdx(1);
+				jsCards[jsCards.size()] = pPlayer->getCardByIdx(2);
+				jsMsgBack["cards"] = jsCards;
+			}
+
+			if ( eRoomPeerAction_ViewCard == pRet->nPlayerAct)
+			{
+				m_pRoom->sendMsgToPlayer(nPlayerSessionID, jsMsgBack, MSG_PLAYER_GOLDEN_LOOK);
+			}
+			
 
 			if ( msgBack.nRet == 0 )
 			{
@@ -89,6 +110,13 @@ bool CGoldenBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 				msgAct.nPlayerIdx = pPlayer->getIdx() ;
 				msgAct.nValue = pRet->nValue ;
 				m_pRoom->sendRoomMsg(&msgAct,sizeof(msgAct)) ;
+
+				if (bNeedWaitNext && m_pRoom->isReachedMaxRound() )
+				{
+					LOGFMTD("reached max round so game over room id = %u",m_pRoom->getRoomID() );
+					m_pRoom->goToState(eRoomState_Golden_GameResult);
+					break;
+				}
 
 				if ( bNeedWaitNext && m_pRoom->getPlayerCntWithState(eRoomPeer_CanAct) > 1 )
 				{

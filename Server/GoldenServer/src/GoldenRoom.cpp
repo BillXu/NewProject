@@ -20,6 +20,7 @@ CGoldenRoom::CGoldenRoom()
 	m_nMailPool = 0;
 	m_nCurActIdx = m_nBankerIdx ;
 	m_nBetRound = 0 ;
+	m_nMaxBetRound = 20;
 	getPoker()->InitTaxasPoker() ;
 }
 
@@ -27,7 +28,20 @@ bool CGoldenRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID , con
 {
 	ISitableRoom::onFirstBeCreated(pRoomMgr,nRoomID,vJsValue) ;
 	m_nBaseBet = vJsValue["baseBet"].asUInt();
-
+	Json::Value jsOpt = vJsValue["opts"];
+	if (jsOpt.isNull() == false && jsOpt["maxRound"].isUInt() )
+	{
+		m_nMaxBetRound = jsOpt["maxRound"].asUInt();
+		LOGFMTD("room id = %u max round = %u",getRoomID(),m_nMaxBetRound );
+		if (m_nMaxBetRound == 0)
+		{
+			m_nMaxBetRound = 20;
+		}
+	}
+	else
+	{
+		LOGFMTE("do not set max round");
+	}
 	return true ;
 }
 
@@ -112,6 +126,7 @@ void CGoldenRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["mainPool"] = m_nMailPool;
 	vOutJsValue["curActIdx"] = m_nCurActIdx ;
 	vOutJsValue["betRound"] = m_nBetRound ;
+	vOutJsValue["maxRound"] = m_nMaxBetRound;
 	LOGFMTE("temp set bet round = 0 ") ;
 }
 
@@ -138,7 +153,7 @@ void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 			item.nUserUID = psit->getUserUID() ;
 			for ( uint8_t nCardIdx = 0 ; nCardIdx < nDisCardCnt ; ++nCardIdx )
 			{
-				item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx) ;
+				item.vHoldChard[nCardIdx] = 3; //psit->getCardByIdx(nCardIdx) ;
 			}
 			auBuffer.addContent(&item,sizeof(item)) ;
 			LOGFMTD("send players uid = %u, state = %u",item.nUserUID,item.nStateFlag);
@@ -244,26 +259,93 @@ uint32_t CGoldenRoom::coinNeededToSitDown()
 
 void CGoldenRoom::caculateGameResult()
 {
-	stMsgGoldenResult msgResult ;
-	msgResult.cWinnerIdx = GetFirstInvalidIdxWithState(1,eRoomPeer_CanAct) ;
-	
-	auto pPlayer = (CGoldenRoomPlayer*)getPlayerByIdx(msgResult.cWinnerIdx) ;
-	assert(pPlayer && "win player can not be null") ;
-	if ( pPlayer == nullptr )
+	// find winer player . biggest card player 
+	int8_t nSortedCnt = getSortedPlayerCnt();
+	CGoldenRoomPlayer* pWinner = nullptr;
+	for (int8_t nIdx = nSortedCnt - 1; nIdx >= 0; --nIdx)
 	{
-		LOGFMTE("why win player is null ?") ;
+		auto pp = (CGoldenRoomPlayer*)getSortedPlayerByIdx(nIdx);
+		if (pp && pp->isHaveState(eRoomPeer_CanAct))
+		{
+			pWinner = pp;
+			break;
+		}
+	}
+
+	if (pWinner == nullptr)
+	{
+		LOGFMTE("can not find winner playe as sorted player vector ? room id = %u",getRoomID() );
+	}
+	stMsgGoldenResult msgResult ;
+	if (pWinner)
+	{
+		msgResult.cWinnerIdx = pWinner->getIdx();
+	}
+	else
+	{
+		msgResult.cWinnerIdx = GetFirstInvalidIdxWithState(1, eRoomPeer_CanAct);
+	}
+
+	if (pWinner == nullptr)
+	{
+		pWinner = (CGoldenRoomPlayer*)getPlayerByIdx(msgResult.cWinnerIdx);
+	}
+
+	assert(pWinner && "win player can not be null");
+	if (pWinner == nullptr)
+	{
+		LOGFMTE("why win player is null ? room id = %u",getRoomID()) ;
 		return ;
 	}
 	
-	msgResult.nWinCoin = m_nMailPool - pPlayer->getBetCoin() ;
+	msgResult.nWinCoin = m_nMailPool - pWinner->getBetCoin();
 	uint32_t nTax = (uint32_t)(float(msgResult.nWinCoin) * getChouShuiRate() + 0.5f);
-	pPlayer->setCoin(m_nMailPool + pPlayer->getCoin() - nTax );
-	pPlayer->addWinCoin(m_nMailPool - nTax );
-	setBankerIdx(pPlayer->getIdx());  // winner is next banker 
-	msgResult.nFinalCoin = pPlayer->getCoin();
-	LOGFMTD("room id = %u uid = %u win game , tax = %u , win = %u , final = %u",getRoomID(),pPlayer->getUserUID(),nTax,msgResult.nWinCoin,msgResult.nFinalCoin);
+	pWinner->setCoin(m_nMailPool + pWinner->getCoin() - nTax);
+	pWinner->addWinCoin(m_nMailPool - nTax);
+	setBankerIdx(pWinner->getIdx());  // winner is next banker 
+	msgResult.nFinalCoin = pWinner->getCoin();
+	LOGFMTD("room id = %u uid = %u win game , tax = %u , win = %u , final = %u", getRoomID(), pWinner->getUserUID(), nTax, msgResult.nWinCoin, msgResult.nFinalCoin);
 
-	sendRoomMsg(&msgResult,sizeof(msgResult)) ;
+	//sendRoomMsg(&msgResult,sizeof(msgResult)) ;  // new game will not use it ;
+	// produce new msg ;
+	Json::Value jsMsg;
+	jsMsg["winnerIdx"] = pWinner->getIdx();
+	Json::Value jsPlayers;
+	for (int8_t nIdx = nSortedCnt - 1; nIdx >= 0; --nIdx)
+	{
+		auto pp = (CGoldenRoomPlayer*)getSortedPlayerByIdx(nIdx);
+		if (pp && pp->isHaveState(eRoomPeer_StayThisRound))
+		{
+			Json::Value jsPlayer;
+			jsPlayer["idx"] = pp->getIdx();
+			jsPlayer["UID"] = pp->getUserUID();
+			jsPlayer["offset"] = pp->getGameOffset();
+			jsPlayer["final"] = pp->getCoin();
+			
+			if (!pp->isHaveState(eRoomPeer_GiveUp))
+			{
+				Json::Value jsCard;
+				jsCard[jsCard.size()] = pp->getCardByIdx(0);
+				jsCard[jsCard.size()] = pp->getCardByIdx(1);
+				jsCard[jsCard.size()] = pp->getCardByIdx(2);
+				jsPlayer["card"] = jsCard;
+			}
+
+			jsPlayers[jsPlayers.size()] = jsPlayer;
+		}
+	}
+	jsMsg["players"] = jsPlayers;
+	sendRoomMsg(jsMsg, MSG_GOLDEN_ROOM_RESULT_NEW);
+	m_jsGameResult = jsMsg;
+}
+
+void CGoldenRoom::sendResultToPlayerWhenDuringResultState(uint32_t nSessionID)
+{
+	if (CGoldenGameResultState::eStateID == getCurRoomState()->getStateID())
+	{
+		sendMsgToPlayer(nSessionID, m_jsGameResult, MSG_GOLDEN_ROOM_RESULT_NEW);
+	}
+	
 }
 
 uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoomPlayer* pPlayer )
@@ -375,6 +457,30 @@ uint8_t CGoldenRoom::informPlayerAct( bool bStepNext )
 	msgAct.nActPlayerIdx = m_nCurActIdx ;
 	sendRoomMsg(&msgAct,sizeof(msgAct)) ;
 	return m_nCurActIdx ;
+}
+
+bool CGoldenRoom::isReachedMaxRound()
+{
+	int8_t nPreIdx = m_nCurActIdx;
+	auto nNextIdx = GetFirstInvalidIdxWithState(m_nCurActIdx + 1, eRoomPeer_CanAct);
+	int8_t nNowIdx = nNextIdx;
+	uint8_t nNextRound = m_nBetRound;
+	if (nPreIdx < nNowIdx)
+	{
+		if (nPreIdx < m_nBankerIdx && m_nBankerIdx <= nNowIdx)
+		{
+			++nNextRound;
+		}
+	}
+	else
+	{
+		if (m_nBankerIdx <= nNowIdx || m_nBankerIdx > nPreIdx)
+		{
+			++nNextRound;
+		}
+	}
+
+	return  (nNextRound > m_nMaxBetRound);
 }
 
 bool CGoldenRoom::onPlayerPK(ISitableRoomPlayer* pActPlayer , ISitableRoomPlayer* pTargetPlayer )

@@ -206,7 +206,7 @@ bool CGameRoomCenter::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nS
 			msgRet.nRoomType = pRet->nRoomType ;
 
 			std::vector<uint32_t> vOutRooms ;
-			msgRet.nCnt = getPlayerOwenRooms(vOutRooms,pPlayer->GetUserUID()) ;
+			msgRet.nCnt = getPlayerOwenRooms(vOutRooms, pPlayer->GetUserUID(), pRet->nRoomType);
 			if ( msgRet.nCnt == 0 )
 			{
 				getSvrApp()->sendMsg(nSessionID,(char*)&msgRet,sizeof(msgRet));
@@ -489,14 +489,18 @@ CGameRoomCenter::stRoomItem* CGameRoomCenter::getRoomItemByRoomID(uint32_t nRoom
 	return nullptr ;
 }
 
-uint16_t CGameRoomCenter::getPlayerOwnRoomCnt(uint32_t nPlayerUID)
+uint16_t CGameRoomCenter::getPlayerOwnRoomCnt(uint32_t nPlayerUID,uint8_t nGameType )
 {
-	auto iter = m_vPlayerOwners.find(nPlayerUID) ;
-	if ( iter != m_vPlayerOwners.end() )
-	{
-		return iter->second->vRoomIDs.size() ;
-	}
-	return 0 ;
+	//auto iter = m_vPlayerOwners.find(nPlayerUID) ;
+	//if ( iter != m_vPlayerOwners.end() )
+	//{
+	//	return iter->second->vRoomIDs.size() ;
+	//}
+	//return 0 ;
+
+	std::vector<uint32_t> v;
+	getPlayerOwenRooms(v, nPlayerUID, nGameType);
+	return v.size();
 }
 
 uint16_t CGameRoomCenter::getClubOwnRoomCnt(uint32_t nClubID )
@@ -535,14 +539,21 @@ uint32_t CGameRoomCenter::getReuseChatRoomID()
 	return iter ;
 }
 
-uint16_t CGameRoomCenter::getPlayerOwenRooms( std::vector<uint32_t>& vRoomIDs , uint32_t nPlayerUID )
+uint16_t CGameRoomCenter::getPlayerOwenRooms(std::vector<uint32_t>& vRoomIDs, uint32_t nPlayerUID, uint8_t nRoomType)
 {
 	auto iter = m_vPlayerOwners.find(nPlayerUID) ;
 	if ( iter != m_vPlayerOwners.end() )
 	{
 		auto pOwnInfor = iter->second ;
 		vRoomIDs.clear();
-		vRoomIDs.assign(pOwnInfor->vRoomIDs.begin(),pOwnInfor->vRoomIDs.end()) ;
+		for (auto& ref : pOwnInfor->vRoomIDs)
+		{
+			if (getRoomType(ref) == nRoomType)
+			{
+				vRoomIDs.push_back(ref);
+			}
+		}
+		//vRoomIDs.assign(pOwnInfor->vRoomIDs.begin(),pOwnInfor->vRoomIDs.end()) ;
 		return vRoomIDs.size();
 	}
 	return 0 ;

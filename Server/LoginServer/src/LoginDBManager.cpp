@@ -429,22 +429,131 @@ CDBManager::stArgData* CDBManager::GetReserverArgData()
 	return NULL ;
 }
 
+void RET_ILSEQ() {
+	//std::cout << "WRONG FROM OF THE SEQUENCE" << std::endl;
+	//exit(1);
+	LOGFMTE("WRONG FROM OF THE SEQUENCE");
+}
+
+
+void RET_TOOFEW() {
+	//std::cout << "MISSING FROM THE SEQUENCE" << std::endl;
+	//exit(1);
+	LOGFMTE("MISSING FROM THE SEQUENCE");
+}
+
+std::vector<std::string> parse(std::string sin) {
+	int l = sin.length();
+	std::vector<std::string> ret;
+	ret.clear();
+	for (int p = 0; p < l;) {
+		int size = 0, n = l - p;
+		unsigned char c = sin[p], cc = sin[p + 1];
+		if (c < 0x80) {
+			size = 1;
+		}
+		else if (c < 0xc2) {
+			RET_ILSEQ();
+		}
+		else if (c < 0xe0) {
+			if (n < 2) {
+				RET_TOOFEW();
+			}
+			if (!((sin[p + 1] ^ 0x80) < 0x40)) {
+				RET_ILSEQ();
+			}
+			size = 2;
+		}
+		else if (c < 0xf0) {
+			if (n < 3) {
+				RET_TOOFEW();
+			}
+			if (!((sin[p + 1] ^ 0x80) < 0x40 &&
+				(sin[p + 2] ^ 0x80) < 0x40 &&
+				(c >= 0xe1 || cc >= 0xa0))) {
+				RET_ILSEQ();
+			}
+			size = 3;
+		}
+		else if (c < 0xf8) {
+			if (n < 4) {
+				RET_TOOFEW();
+			}
+			if (!((sin[p + 1] ^ 0x80) < 0x40 &&
+				(sin[p + 2] ^ 0x80) < 0x40 &&
+				(sin[p + 3] ^ 0x80) < 0x40 &&
+				(c >= 0xf1 || cc >= 0x90))) {
+				RET_ILSEQ();
+			}
+			size = 4;
+		}
+		else if (c < 0xfc) {
+			if (n < 5) {
+				RET_TOOFEW();
+			}
+			if (!((sin[p + 1] ^ 0x80) < 0x40 &&
+				(sin[p + 2] ^ 0x80) < 0x40 &&
+				(sin[p + 3] ^ 0x80) < 0x40 &&
+				(sin[p + 4] ^ 0x80) < 0x40 &&
+				(c >= 0xfd || cc >= 0x88))) {
+				RET_ILSEQ();
+			}
+			size = 5;
+		}
+		else if (c < 0xfe) {
+			if (n < 6) {
+				RET_TOOFEW();
+			}
+			if (!((sin[p + 1] ^ 0x80) < 0x40 &&
+				(sin[p + 2] ^ 0x80) < 0x40 &&
+				(sin[p + 3] ^ 0x80) < 0x40 &&
+				(sin[p + 4] ^ 0x80) < 0x40 &&
+				(sin[p + 5] ^ 0x80) < 0x40 &&
+				(c >= 0xfd || cc >= 0x84))) {
+				RET_ILSEQ();
+			}
+			size = 6;
+		}
+		else {
+			RET_ILSEQ();
+		}
+		std::string temp = "";
+		temp = sin.substr(p, size);
+		ret.push_back(temp);
+		p += size;
+	}
+	return ret;
+}
+
 std::string CDBManager::checkString(const char* pstr)
 {
-	uint16_t nLen = strlen(pstr)*2 ;
-	char* pBuffer = new char[nLen] ;
-	memset(pBuffer,0,nLen);
-	uint16_t nWriteIdx = 0 ;
-	while (*pstr)
+	std::vector<std::string> strArray = parse(pstr);
+	std::string strout;
+	for (auto& ref : strArray)
 	{
-		pBuffer[nWriteIdx++] = *pstr;
-		if ( *pstr == '\'' )
+		strout += ref;
+		if (ref == "'")
 		{
-			pBuffer[nWriteIdx++] = '\'';
+			strout += ref;
 		}
-		++pstr ;
 	}
-	std::string str = pBuffer ;
-	return str ;
+
+	return strout;
+
+	//uint16_t nLen = strlen(pstr)*2 ;
+	//char* pBuffer = new char[nLen] ;
+	//memset(pBuffer,0,nLen);
+	//uint16_t nWriteIdx = 0 ;
+	//while (*pstr)
+	//{
+	//	pBuffer[nWriteIdx++] = *pstr;
+	//	if ( *pstr == '\'' )
+	//	{
+	//		pBuffer[nWriteIdx++] = '\'';
+	//	}
+	//	++pstr ;
+	//}
+	//std::string str = pBuffer ;
+	//return str ;
 }
 

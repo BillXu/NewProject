@@ -384,9 +384,9 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			}
 
 			auto pgameCenter = CGameServerApp::SharedGameServerApp()->getGameRoomCenter() ;
-			if ( pgameCenter->getPlayerOwnRoomCnt(GetPlayer()->GetUserUID()) >= getCreateRoomCntLimit() )
+			if (pgameCenter->getPlayerOwnRoomCnt(GetPlayer()->GetUserUID(), eroomType) >= getCreateRoomCntLimit())
 			{
-				LOGFMTD("uid = %u , create failed , already have room cnt = %u , limit = %u",GetPlayer()->GetUserUID(),pgameCenter->getPlayerOwnRoomCnt(GetPlayer()->GetUserUID()),getCreateRoomCntLimit()) ;
+				LOGFMTD("uid = %u , create failed , already have room cnt = %u , limit = %u", GetPlayer()->GetUserUID(), pgameCenter->getPlayerOwnRoomCnt(GetPlayer()->GetUserUID(), eroomType), getCreateRoomCntLimit());
 				jsMsgBack["ret"] = 1 ;
 				SendMsg(jsMsgBack,nmsgType);
 				break;

@@ -36,11 +36,11 @@ public:
 	stRoomItem* getRoomItemByRoomID(uint32_t nRoomID );
 	static uint8_t getRoomType(uint32_t nRoomID);
 	uint32_t generateRoomID(eRoomType eType, uint32_t& nSerailNum );
-	uint16_t getPlayerOwnRoomCnt(uint32_t nPlayerUID);
+	uint16_t getPlayerOwnRoomCnt(uint32_t nPlayerUID,uint8_t nRoomType );
 	uint16_t getClubOwnRoomCnt(uint32_t nClubID );
 	uint16_t getClubOwnRooms(std::vector<uint32_t>& vRoomIDs , uint32_t nClubID );
 	uint32_t getReuseChatRoomID();
-	uint16_t getPlayerOwenRooms( std::vector<uint32_t>& vRoomIDs , uint32_t nPlayerUID );
+	uint16_t getPlayerOwenRooms( std::vector<uint32_t>& vRoomIDs , uint32_t nPlayerUID , uint8_t nRoomType );
 protected:
 	bool addRoomItemToOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t nOwnerUID ,uint32_t nRoomID );
 	bool deleteRoomItemFromOwner(MAP_ROOM_OWNERS& vOwners ,uint32_t nOwnerUID ,uint32_t nRoomID );

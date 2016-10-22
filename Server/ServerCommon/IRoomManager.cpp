@@ -107,6 +107,10 @@ bool IRoomManager::onMsg( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSes
 	if ( pRoom == NULL )
 	{
 		LOGFMTE("can not find room to process id = %d ,from = %d, room id = %d",prealMsg->usMsgType,eSenderPort,pRoomMsg->nRoomID ) ;
+		Json::Value jsmsg;
+		jsmsg["roomID"] = pRoomMsg->nRoomID;
+		jsmsg["ret"] = 100;
+		getSvrApp()->sendMsg(nSessionID, jsmsg,pRoomMsg->usMsgType );
 		return  false ;
 	}
 

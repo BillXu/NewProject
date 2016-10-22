@@ -117,7 +117,7 @@ void CDBRequestQueue::doClearResult()
 	vResult.swap(m_vWillDelteResult) ;
 	mWillDelteResultLock.Unlock();
 
-	for ( auto ref : vResult )
+	for ( auto& ref : vResult )
 	{
 		delete ref ;
 		ref = nullptr ;

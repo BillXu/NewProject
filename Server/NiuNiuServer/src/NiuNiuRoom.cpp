@@ -18,7 +18,7 @@
 #include "NiuNiuGrabBanker.h"
 #include <algorithm>
 #include <json/json.h>
-CNiuNiuRoom::CNiuNiuRoom()
+CNiuNiuRoom::CNiuNiuRoom() :m_tGameResult(100)
 {
 	m_nRateLevel = 1;
 	getPoker()->InitTaxasPoker() ;
@@ -382,8 +382,9 @@ void CNiuNiuRoom::caculateGameResult()
 	stMsgNNGameResult msgResult ;
 	msgResult.nPlayerCnt = getSortedPlayerCnt() ;
 
-	CAutoBuffer auBuffer(sizeof(msgResult) + msgResult.nPlayerCnt * sizeof(stNNGameResultItem));
-	auBuffer.addContent(&msgResult,sizeof(msgResult)) ;
+	//CAutoBuffer auBuffer(sizeof(msgResult) + msgResult.nPlayerCnt * sizeof(stNNGameResultItem));
+	m_tGameResult.clearBuffer();
+	m_tGameResult.addContent(&msgResult, sizeof(msgResult));
 
 	int32_t nBankerOffset = 0 ;
 	// caclulate banker win ;
@@ -413,7 +414,7 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nFinalCoin = pNNP->getCoin() ;
 		item.nOffsetCoin = -1* nLoseCoin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
-		auBuffer.addContent(&item,sizeof(item)) ;
+		m_tGameResult.addContent(&item, sizeof(item));
 		LOGFMTD("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pNNP->getUserUID(),item.nOffsetCoin);
 		pNNP->setGameOffset(item.nOffsetCoin);
 
@@ -450,7 +451,7 @@ void CNiuNiuRoom::caculateGameResult()
 		item.nFinalCoin = pNNP->getCoin() ;
 		item.nOffsetCoin = (int32_t)nWithoutTaxWin ;
 		item.nPlayerIdx = pNNP->getIdx() ;
-		auBuffer.addContent(&item,sizeof(item)) ;
+		m_tGameResult.addContent(&item, sizeof(item));
 		LOGFMTD("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pNNP->getUserUID(),item.nOffsetCoin);
 		pNNP->setGameOffset(item.nOffsetCoin);
 	}
@@ -467,12 +468,12 @@ void CNiuNiuRoom::caculateGameResult()
 	item.nFinalCoin = pBanker->getCoin() ;
 	item.nOffsetCoin = nBankerOffset ;
 	item.nPlayerIdx = pBanker->getIdx() ;
-	auBuffer.addContent(&item,sizeof(item)) ;
+	m_tGameResult.addContent(&item, sizeof(item));
 	pBanker->setGameOffset(item.nOffsetCoin);
 	LOGFMTD("result item : idx = %u, uid = %u , offset = %d",item.nPlayerIdx,pBanker->getUserUID(),item.nOffsetCoin);
 	LOGFMTD("result player idx = %d , finalCoin = %d, offset coin = %d",item.nPlayerIdx,item.nFinalCoin,item.nOffsetCoin) ;
 
-	sendRoomMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+	sendRoomMsg((stMsg*)m_tGameResult.getBufferPtr(), m_tGameResult.getContentSize());
 
 	// check banker for coin 
 	if ( pBanker->getCoin() < getLeastCoinNeedForBeBanker(1) )
@@ -558,6 +559,16 @@ bool CNiuNiuRoom::canStartGame()
 	std::vector<uint8_t> v ;
 	return getPlayersHaveGrabBankerPrivilege(v) ;
 } 
+
+void CNiuNiuRoom::sendResultToPlayerWhenDuringResultState(uint32_t nSessionID)
+{
+	if (getCurRoomState()->getStateID() == CNiuNiuRoomGameResultState::eStateID)
+	{
+		auto msgID = (stMsg*)m_tGameResult.getBufferPtr();
+		sendMsgToPlayer((stMsg*)m_tGameResult.getBufferPtr(), m_tGameResult.getContentSize(), nSessionID);
+		LOGFMTI("send result info to session = %u duiring result state msg id = %u, size = %u",nSessionID,msgID->usMsgType,m_tGameResult.getContentSize() );
+	}
+}
 
 bool CNiuNiuRoom::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID  )
 {
