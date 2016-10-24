@@ -298,6 +298,24 @@ bool CPlayerManager::onMsg( stMsg* pMessage , eMsgPort eSenderPort , uint32_t nS
 
 bool CPlayerManager::onMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort eSenderPort , uint32_t nSessionID  )
 {
+	if ( MSG_REQUEST_PLAYER_IP == nmsgType)
+	{
+		std::string strIp = "0.0.0.0";
+		if (recvValue["reqUID"].isNull() == false && recvValue["reqUID"].isUInt() )
+		{
+			uint32_t nReqSeq = 0;
+			nReqSeq = recvValue["reqUID"].asUInt();
+			auto pPlayer = GetPlayerByUserUID(nReqSeq);
+			if (pPlayer)
+			{
+				strIp = pPlayer->GetBaseData()->getIp();
+			}
+		}
+		recvValue["ip"] = strIp;
+		getSvrApp()->sendMsg(nSessionID, recvValue, MSG_REQUEST_PLAYER_IP);
+		return true;
+	}
+
 	CPlayer* pTargetPlayer = GetPlayerBySessionID(nSessionID,true );
 	if ( pTargetPlayer && pTargetPlayer->OnMessage(recvValue,nmsgType,eSenderPort ) )
 	{

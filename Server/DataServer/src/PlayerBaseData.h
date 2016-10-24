@@ -55,6 +55,7 @@ public:
 	void addTodayGameCoinOffset(int32_t nOffset );
 	uint16_t getMaxCanCreateClubCount();
 	uint16_t getMaxCanCreteRoomCount();
+	std::string getIp(){ return m_strCurIP; }
 protected:
 	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
 	void onBeInviteBy(uint32_t nInviteUID );

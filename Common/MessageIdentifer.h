@@ -467,6 +467,10 @@ enum eMsgType
 
 	MSG_GOLDEN_ROOM_RESULT_NEW ,
 	// svr : { winnerIdx : 234 , players : [ {idx : 23 ,UID :2, offset : 23 , final : 234, card:[2,3,5 ] } , {idx : 23 , offset : 23 ,UID :2, final : 234, card:[2,3,5 ] } , ..... ] }
+	
+	MSG_REQUEST_PLAYER_IP,  // send to data svr 
+	// client : { reqUID : 23456 }
+	// svr : { reqUID : 23456 , ip : "128.0.0.1" }
 
 
 

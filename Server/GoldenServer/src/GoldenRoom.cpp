@@ -137,6 +137,12 @@ void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 	CAutoBuffer auBuffer(sizeof(msgInfo) + sizeof(stGoldenRoomInfoPayerItem) * msgInfo.nPlayerCnt);
 	auBuffer.addContent(&msgInfo,sizeof(msgInfo));
 
+	bool nTargetUID = 0;
+	auto p = getPlayerBySessionID(nSessionID);
+	if (p)
+	{
+		nTargetUID = p->nUserUID;
+	}
 	uint8_t nSeatCount = (uint8_t)getSeatCount();
 	stGoldenRoomInfoPayerItem item ;
 	uint8_t nDisCardCnt = GOLDEN_PEER_CARD;
@@ -153,7 +159,14 @@ void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 			item.nUserUID = psit->getUserUID() ;
 			for ( uint8_t nCardIdx = 0 ; nCardIdx < nDisCardCnt ; ++nCardIdx )
 			{
-				item.vHoldChard[nCardIdx] = 3; //psit->getCardByIdx(nCardIdx) ;
+				if ( nTargetUID == item.nUserUID && psit->isHaveState(eRoomPeer_Looked))
+				{
+					item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx) ;
+				}
+				else
+				{
+					item.vHoldChard[nCardIdx] = 3; //psit->getCardByIdx(nCardIdx) ;
+				}
 			}
 			auBuffer.addContent(&item,sizeof(item)) ;
 			LOGFMTD("send players uid = %u, state = %u",item.nUserUID,item.nStateFlag);
@@ -210,6 +223,10 @@ void CGoldenRoom::onGameDidEnd()
 	m_nCurBet = getBaseBet();
 	m_nMailPool = 0;
 	m_nBetRound = 0 ;
+	if (getDelegate())
+	{
+		getDelegate()->onOneRoundEnd(this);
+	}
 }
 
 void CGoldenRoom::onPlayerWillStandUp( ISitableRoomPlayer* pPlayer )
@@ -480,7 +497,7 @@ bool CGoldenRoom::isReachedMaxRound()
 		}
 	}
 
-	return  (nNextRound > m_nMaxBetRound);
+	return  ((nNextRound + 1) >= m_nMaxBetRound);
 }
 
 bool CGoldenRoom::onPlayerPK(ISitableRoomPlayer* pActPlayer , ISitableRoomPlayer* pTargetPlayer )
