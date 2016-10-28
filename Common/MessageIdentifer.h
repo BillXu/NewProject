@@ -472,7 +472,26 @@ enum eMsgType
 	// client : { reqUID : 23456 }
 	// svr : { reqUID : 23456 , ip : "128.0.0.1" }
 
+	MSG_PLAYER_APPLY_DISMISS_ROOM,
+	// client : { roomID : 2345 }
+	// svr : { ret : 0 } 
+	// ret : 0 success , 1 you not sitdown , 2 , room already dismiss , 3 state error , 4 unknown error ;
 
+	MSG_ROOM_APPLY_DISMISS_ROOM , 
+	// client : { idx : 234 }
+
+	MSG_PLAYER_REPLY_DIMISS_ROOM,
+	// client : { roomID : 234 , isAgree : 0  }
+	// isAgree : 0 disagree , 1 agree ;
+	// svr : { ret : 0 }
+	// ret : 0 , success , 1 you can not do that , 2 unknown error ;
+
+	MSG_ROOM_REPLY_DISMISS_ROOM,
+	// svr : { idx : 23 , isAgree : 0 }
+
+	MSG_DIMISS_ROOM_RESULT,
+	// svr : { isDismiss : 0 }
+	// isDismiss : 0 not dismiss , 1 do dismiss room ;
 
 
 

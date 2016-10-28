@@ -87,7 +87,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 					pLoginRegister->cName[nIdx] = cName ;
 				}
 				memset(pLoginRegister->cName,0,sizeof(pLoginRegister->cName));
-				sprintf_s(pLoginRegister->cName, "guest",rand() % 10000 + 1 );
+				sprintf_s(pLoginRegister->cName, "guest%u",rand() % 10000 + 1 );
 				sprintf_s(pLoginRegister->cPassword,"hello");
 			}
 			
@@ -442,10 +442,11 @@ void RET_TOOFEW() {
 	LOGFMTE("MISSING FROM THE SEQUENCE");
 }
 
-std::vector<std::string> parse(std::string sin) {
+std::vector<std::string> parse(std::string sin, bool& bValid ) {
 	int l = sin.length();
 	std::vector<std::string> ret;
 	ret.clear();
+	bValid = true;
 	for (int p = 0; p < l;) {
 		int size = 0, n = l - p;
 		unsigned char c = sin[p], cc = sin[p + 1];
@@ -454,42 +455,58 @@ std::vector<std::string> parse(std::string sin) {
 		}
 		else if (c < 0xc2) {
 			RET_ILSEQ();
+			bValid = false;
+			break;
 		}
 		else if (c < 0xe0) {
 			if (n < 2) {
 				RET_TOOFEW();
+				bValid = false;
+				break;
 			}
 			if (!((sin[p + 1] ^ 0x80) < 0x40)) {
 				RET_ILSEQ();
+				bValid = false;
+				break;
 			}
 			size = 2;
 		}
 		else if (c < 0xf0) {
 			if (n < 3) {
 				RET_TOOFEW();
+				bValid = false;
+				break;
 			}
 			if (!((sin[p + 1] ^ 0x80) < 0x40 &&
 				(sin[p + 2] ^ 0x80) < 0x40 &&
 				(c >= 0xe1 || cc >= 0xa0))) {
 				RET_ILSEQ();
+				bValid = false;
+				break;
 			}
 			size = 3;
 		}
 		else if (c < 0xf8) {
 			if (n < 4) {
 				RET_TOOFEW();
+				bValid = false;
+				break;
 			}
 			if (!((sin[p + 1] ^ 0x80) < 0x40 &&
 				(sin[p + 2] ^ 0x80) < 0x40 &&
 				(sin[p + 3] ^ 0x80) < 0x40 &&
 				(c >= 0xf1 || cc >= 0x90))) {
 				RET_ILSEQ();
+				bValid = false;
+				break;
 			}
 			size = 4;
 		}
 		else if (c < 0xfc) {
 			if (n < 5) {
 				RET_TOOFEW();
+				bValid = false;
+				break;
 			}
 			if (!((sin[p + 1] ^ 0x80) < 0x40 &&
 				(sin[p + 2] ^ 0x80) < 0x40 &&
@@ -497,12 +514,16 @@ std::vector<std::string> parse(std::string sin) {
 				(sin[p + 4] ^ 0x80) < 0x40 &&
 				(c >= 0xfd || cc >= 0x88))) {
 				RET_ILSEQ();
+				bValid = false;
+				break;
 			}
 			size = 5;
 		}
 		else if (c < 0xfe) {
 			if (n < 6) {
 				RET_TOOFEW();
+				bValid = false;
+				break;
 			}
 			if (!((sin[p + 1] ^ 0x80) < 0x40 &&
 				(sin[p + 2] ^ 0x80) < 0x40 &&
@@ -511,11 +532,15 @@ std::vector<std::string> parse(std::string sin) {
 				(sin[p + 5] ^ 0x80) < 0x40 &&
 				(c >= 0xfd || cc >= 0x84))) {
 				RET_ILSEQ();
+				bValid = false;
+				break;
 			}
 			size = 6;
 		}
 		else {
 			RET_ILSEQ();
+			bValid = false;
+			break;
 		}
 		std::string temp = "";
 		temp = sin.substr(p, size);
@@ -527,7 +552,18 @@ std::vector<std::string> parse(std::string sin) {
 
 std::string CDBManager::checkString(const char* pstr)
 {
-	std::vector<std::string> strArray = parse(pstr);
+	bool bValid = false;
+	std::vector<std::string> strArray = parse(pstr, bValid);
+	if ( false == bValid)
+	{
+		LOGFMTE("error invlid name str %s",pstr);
+		std::string strTemp = "";
+		char pBuffer[200] = { 0 };
+		sprintf_s(pBuffer,sizeof(pBuffer) ,"guest%u", rand() % 10000 + 1);
+		strTemp = pBuffer;
+		return strTemp;
+	}
+
 	std::string strout;
 	for (auto& ref : strArray)
 	{

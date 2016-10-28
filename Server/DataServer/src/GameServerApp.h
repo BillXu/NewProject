@@ -28,6 +28,7 @@ public:
 
 public:
 	static CGameServerApp* SharedGameServerApp();
+public:
 	~CGameServerApp();
 	bool init();
 	CPlayerManager* GetPlayerMgr();

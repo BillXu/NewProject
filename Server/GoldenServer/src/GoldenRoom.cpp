@@ -127,7 +127,6 @@ void CGoldenRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["curActIdx"] = m_nCurActIdx ;
 	vOutJsValue["betRound"] = m_nBetRound ;
 	vOutJsValue["maxRound"] = m_nMaxBetRound;
-	LOGFMTE("temp set bet round = 0 ") ;
 }
 
 void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
@@ -137,7 +136,7 @@ void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 	CAutoBuffer auBuffer(sizeof(msgInfo) + sizeof(stGoldenRoomInfoPayerItem) * msgInfo.nPlayerCnt);
 	auBuffer.addContent(&msgInfo,sizeof(msgInfo));
 
-	bool nTargetUID = 0;
+	uint32_t nTargetUID = 0;
 	auto p = getPlayerBySessionID(nSessionID);
 	if (p)
 	{

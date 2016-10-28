@@ -276,14 +276,15 @@ bool IServerApp::sendMsg( uint32_t nSessionID , Json::Value& recvValue, uint16_t
 {
 	if ( nMsgID )
 	{
-		if ( !recvValue[JS_KEY_MSG_TYPE] )
-		{
-			recvValue[JS_KEY_MSG_TYPE] = nMsgID ;
-		}
-		else
-		{
-			//LOGFMTE("msg id = %u ,already have this tag uid = %u",nMsgID,recvValue[JS_KEY_MSG_TYPE].asUInt() ) ;
-		}
+		recvValue[JS_KEY_MSG_TYPE] = nMsgID;
+		//if ( !recvValue[JS_KEY_MSG_TYPE] )
+		//{
+		//	recvValue[JS_KEY_MSG_TYPE] = nMsgID ;
+		//}
+		//else
+		//{
+		//	//LOGFMTE("msg id = %u ,already have this tag uid = %u",nMsgID,recvValue[JS_KEY_MSG_TYPE].asUInt() ) ;
+		//}
 	}
 
 	Json::StyledWriter writerJs ;

@@ -5,6 +5,7 @@
 #include "VerifyRequest.h"
 #include "log4z.h"
 #include "ConfigDefine.h"
+#include "CommonDefine.h"
 CWeChatOrderTask::CWeChatOrderTask( uint32_t nTaskID)
 	:ITask(nTaskID)
 {
@@ -26,15 +27,23 @@ uint8_t CWeChatOrderTask::performTask()
 	pRequest->nPrize = 1 ;
 	LOGFMTE("temp set prize = 1 ") ;
 #endif
-
+	auto appID = Wechat_appID;
+	auto mchID = Wechat_MchID;
+	auto mchKey = Wechat_MchKey;
+	if ( ePay_WeChat_365Golden == pRequest->nChannel)
+	{
+		appID = "wxae3a38cb9960bc84";
+		mchID = "1385365702";
+		mchKey = "NUN5DKS5MJW4UBVJIL1G2XUQ66LU2ENA";
+	}
 	TiXmlElement *xmlRoot = new TiXmlElement("xml"); 
 
 	TiXmlElement *pNode = new TiXmlElement("appid"); 
-	TiXmlText *pValue = new TiXmlText(Wechat_appID);
+	TiXmlText *pValue = new TiXmlText(appID);
 	xmlRoot->LinkEndChild(pNode);
 	pNode->LinkEndChild(pValue);
 	std::string strForMd5 = "appid=";
-	strForMd5 += Wechat_appID;
+	strForMd5 += appID;
 	// ok 
 	pNode = new TiXmlElement("body"); 
 	pValue = new TiXmlText( pRequest->cShopDesc );
@@ -45,11 +54,11 @@ uint8_t CWeChatOrderTask::performTask()
 
 	// ok 
 	pNode = new TiXmlElement("mch_id"); 
-	pValue = new TiXmlText(Wechat_MchID);
+	pValue = new TiXmlText(mchID);
 	xmlRoot->LinkEndChild(pNode);
 	pNode->LinkEndChild(pValue);
 	strForMd5 += "&mch_id=" ;
-	strForMd5 += Wechat_MchID;
+	strForMd5 += mchID;
 
 	// ok 
 	// ok 
@@ -122,7 +131,7 @@ uint8_t CWeChatOrderTask::performTask()
 	//transform(strAppKey.begin(), strAppKey.end(), strAppKey.begin(),  toupper);
 	// and key value 
 	strForMd5 += "&key=" ;
-	strForMd5 += Wechat_MchKey ;
+	strForMd5 += mchKey;
 	//strForMd5 += strAppKey ;
 #ifdef _DEBUG
 	printf("formd5Str: %s\n",strForMd5.c_str());

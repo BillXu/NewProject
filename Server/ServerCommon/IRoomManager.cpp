@@ -9,6 +9,7 @@
 #include "RoomConfig.h"
 #include "ISeverApp.h"
 #include "AsyncRequestQuene.h"
+#include "ConfigDefine.h"
 #define ROOM_LIST_ITEM_CNT_PER_PAGE 5 
 #define TIME_SAVE_ROOM_INFO 60*10
 IRoomManager::IRoomManager(CRoomConfigMgr* pConfigMgr)
@@ -534,8 +535,13 @@ bool IRoomManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& jsR
 			char pBuffer[2014] = {0} ;
 			Json::StyledWriter jsWrite ;
 			std::string str = jsWrite.write(jsReqContent) ;
+#ifdef GAME_365
 			sprintf_s(pBuffer,sizeof(pBuffer),"insert into rooms (serialNum,roomType,ownerUID,clubID,baseBet,createTime,jsCreateJson,leftTime ) values ('%u','%u','%u','%u','%u',now(),'%s','%u'); ", 
-				jsReqContent["serialNum"].asUInt(),getMgrRoomType(),jsReqContent["createUID"].asUInt(),jsReqContent["clubID"].asUInt(),jsReqContent["baseBet"].asUInt(),str.c_str(),jsReqContent["duringMin"].asUInt() * 60 );
+				jsReqContent["serialNum"].asUInt(),getMgrRoomType(),jsReqContent["createUID"].asUInt(),jsReqContent["clubID"].asUInt(),jsReqContent["baseBet"].asUInt(),str.c_str(),jsReqContent["duringMin"].asUInt() );
+#else
+			sprintf_s(pBuffer, sizeof(pBuffer), "insert into rooms (serialNum,roomType,ownerUID,clubID,baseBet,createTime,jsCreateJson,leftTime ) values ('%u','%u','%u','%u','%u',now(),'%s','%u'); ",
+				jsReqContent["serialNum"].asUInt(), getMgrRoomType(), jsReqContent["createUID"].asUInt(), jsReqContent["clubID"].asUInt(), jsReqContent["baseBet"].asUInt(), str.c_str(), jsReqContent["duringMin"].asUInt() * 60);
+#endif 
 			jsreq["sql"] = pBuffer ;
 			getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Add,jsreq) ;
 			return true ;
