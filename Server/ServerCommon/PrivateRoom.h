@@ -20,6 +20,7 @@ struct stPrivateRoomPlayerItem
 	uint32_t nCheckedCoin ;
 	bool isApplyIng ;
 	bool isDirty ;
+	time_t nTime_Apply;
 
 	stPrivateRoomPlayerItem(uint32_t nPlayerUID, uint32_t nAllCoin )
 	{
@@ -31,6 +32,7 @@ struct stPrivateRoomPlayerItem
 		isDirty = false ;
 		isApplyIng = false ;
 		nCheckedCoin = 0 ;
+		nTime_Apply = 0;
 	}
 
 	void toJsvalue(Json::Value& jsValue )
@@ -684,7 +686,7 @@ void CPrivateRoom<T>::onTimeSave()
 		msgSave.savePlayer.nGameOffset = pp->nGameOffset ;
 		msgSave.savePlayer.nOtherOffset = pp->nOtherOffset ;
 		m_pRoomMgr->sendMsg(&msgSave,sizeof(msgSave),0) ;
-		LOGFMTD("update rank uid = %u , offset = %d",pp->nUserUID,pp->nGameOffset) ;
+		//LOGFMTD("update rank uid = %u , offset = %d",pp->nUserUID,pp->nGameOffset) ;
 	}
 
 	if ( m_bRoomInfoDiry == true )
@@ -699,11 +701,18 @@ void CPrivateRoom<T>::onTimeSave()
 	{
 		uint32_t nCoinInRoom = 0 ;
 		bool isPlayerInRoom = false ;
+		bool isDelayLeave = false;
 		auto pSit = m_pRoom->getSitdownPlayerByUID(refPrivatePlayer.second->nUserUID);
 		if ( pSit )
 		{
 			nCoinInRoom = pSit->getCoin();
 			isPlayerInRoom = true ;
+
+			isDelayLeave = (nullptr == m_pRoom->getPlayerByUserUID(refPrivatePlayer.second->nUserUID));
+			if (isDelayLeave && (false == pSit->isDelayStandUp()))
+			{
+				LOGFMTE("you should be delay leave but you are not ? why uid = %u",refPrivatePlayer.second->nUserUID);
+			}
 		}
 		else
 		{
@@ -720,7 +729,7 @@ void CPrivateRoom<T>::onTimeSave()
 			continue;
 		}
 
-
+		auto nBackUp = refPrivatePlayer.second->nCoinInRoom;
 		if ( isPlayerInRoom )
 		{
 			refPrivatePlayer.second->nCoinInRoom = nCoinInRoom ;
@@ -730,6 +739,11 @@ void CPrivateRoom<T>::onTimeSave()
 
 		Json::Value jsValue ;
 		refPrivatePlayer.second->toJsvalue(jsValue);
+
+		if (isDelayLeave)
+		{
+			refPrivatePlayer.second->nCoinInRoom = nBackUp;
+		}
 
 		Json::StyledWriter jsWrite ;
 		std::string str = jsWrite.write(jsValue) ;
@@ -846,7 +860,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 				}
 			}
 
-			//LOGFMTD("uid = %d request rank room id = %u",nUserID,getRoomID());
+			LOGFMTD("uid = %d request rank room id = %u",nUserID,getRoomID());
 			//// send room info to player ;
 			stMsgRequestRoomRankRet msgRet ;
 			msgRet.nCnt = vWillSend.size() ;
@@ -856,7 +870,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			for ( auto& itemSendPlayer : vWillSend )
 			{
 				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
-				//LOGFMTD("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
+				LOGFMTD("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
 			}
 			m_pRoomMgr->sendMsg((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
 		}
@@ -959,7 +973,8 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			jsMsgBack["isApply"] = 0 ;
 			jsMsgBack["inRoomCoin"] = nCurInRoomCoin ;
 
-			if ( pPrivatePlayer->isApplyIng )
+			auto tNow = time(nullptr);
+			if ( pPrivatePlayer->isApplyIng && ( tNow - pPrivatePlayer->nTime_Apply ) < 60  )
 			{
 				jsMsgBack["ret"] = 4 ;
 				m_pRoom->sendMsgToPlayer(nSessionID,jsMsgBack,nMsgType) ;
@@ -1038,6 +1053,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 
 			// send notice ; do apply ;
 			pPrivatePlayer->isApplyIng = true ;
+			pPrivatePlayer->nTime_Apply = tNow;
 
 			Json::Value jsReqContent ;
 			jsReqContent["dlgType"] = eNoticeType::eNotice_ApplyTakeIn ;
@@ -1089,6 +1105,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 				break ;
 			}
 			pPrivatePlayer->isApplyIng = false ;
+			pPrivatePlayer->nTime_Apply = 0;
 			if ( isAgree )
 			{
 
