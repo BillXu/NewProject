@@ -46,11 +46,12 @@ void CAppleVerifyTask::onHttpCallBack(char* pResultData, size_t nDatalen , void*
 	assert(pResult != nullptr && "must not null") ;
 	Json::Reader reader;
 	Json::Value rootValue ;
-	static char pTempBuffer[1024] = { 0 } ;
-	memset(pTempBuffer,0,sizeof(pTempBuffer)) ;
-	memcpy(pTempBuffer,pResultData,nDatalen);
+	//static char pTempBuffer[1024] = { 0 } ;
+	//memset(pTempBuffer,0,sizeof(pTempBuffer)) ;
+	//memcpy(pTempBuffer,pResultData,nDatalen);
 	bool bCheckOk = false ;
-	if ( reader.parse(pTempBuffer,rootValue) )
+	//if ( reader.parse(pTempBuffer,rootValue) )
+	if ( reader.parse(pResultData, pResultData + nDatalen, rootValue))
 	{
 		bCheckOk = rootValue["status"].asInt() == 0 ;
 	}

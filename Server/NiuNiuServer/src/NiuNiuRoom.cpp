@@ -278,6 +278,15 @@ void CNiuNiuRoom::onGameWillBegin()
 	if ( isHaveBanker() )
 	{
 		setBankerIdx(m_nBankerIdx);
+
+		if (3 == m_nResignBankerCtrl )
+		{
+			stMsgNNProducedBanker msgInfom;
+			msgInfom.nBankerBetTimes = 1;
+			msgInfom.nBankerIdx = getBankerIdx();
+			sendRoomMsg(&msgInfom, sizeof(msgInfom));
+			LOGFMTD("inform new round banker = %u , room id = %u",getBankerIdx(),getRoomID());
+		}
 	}
 	LOGFMTD("room game begin");
 }
@@ -483,10 +492,41 @@ void CNiuNiuRoom::caculateGameResult()
 	}
 	// decide banker ;
 	 // // 0 no niu leave banker , 1 lose to all  leave banker ;
-	if ( ( m_nResignBankerCtrl == 0 && isBankerHaveNiu == false ) || (m_nResignBankerCtrl == 1 && isLoseToAll ) || ( 2 == m_nResignBankerCtrl && m_isWillManualLeaveBanker ) )
+	if ((m_nResignBankerCtrl == 3 ) || (m_nResignBankerCtrl == 0 && isBankerHaveNiu == false) || (m_nResignBankerCtrl == 1 && isLoseToAll) || (2 == m_nResignBankerCtrl && m_isWillManualLeaveBanker))
 	{
-		m_nBankerIdx = -1 ;
-		m_isWillManualLeaveBanker = false ;
+		if (m_nResignBankerCtrl == 3)
+		{
+			// find next banker 
+			uint8_t nIdx = pBanker->getIdx() + 1 ;
+			uint8_t nNewBankIdx = -1;
+			for (; nIdx < (getSeatCount() * 2); ++nIdx)
+			{
+				uint8_t nNewIdx = nIdx % getSeatCount();
+				auto pPlayer = getPlayerByIdx(nNewIdx);
+				if (pPlayer && pPlayer->getCoin() >= getLeastCoinNeedForBeBanker(1))
+				{
+					nNewBankIdx = pPlayer->getIdx();
+					break;
+				}
+			}
+
+			if ((uint8_t)-1 == nNewBankIdx)
+			{
+				LOGFMTE("no proper banker room id = %u, go on robot banker",getRoomID() );
+				m_nBankerIdx = -1;
+				m_isWillManualLeaveBanker = false;
+			}
+			else
+			{
+				m_nBankerIdx = nNewBankIdx;
+			}
+		}
+		else
+		{
+			m_nBankerIdx = -1;
+			m_isWillManualLeaveBanker = false;
+		}
+
 		LOGFMTD("resign banker ctrl = %u , isBankerHaveNiu = %u , isLoseToAll = %u",m_nResignBankerCtrl,isBankerHaveNiu,isLoseToAll) ;
 	}
 }
@@ -630,8 +670,29 @@ bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 			sendMsgToPlayer(&msgBack, sizeof(msgBack), nPlayerSessionID);
 			return true;
 		}
+
+		auto nState = getCurRoomState()->getStateID();
+		if ( eRoomState_WaitOpen !=nState && nState != eRoomState_WaitJoin && (nState != eRoomState_WillClose || eRoomState_Close != nState))
+		{
+			msgBack.nRet = 4;
+			sendMsgToPlayer(&msgBack, sizeof(msgBack), nPlayerSessionID);
+			return true;
+		}
 		onPlayerWillStandUp(player);
 		return true;
+	}
+	else if ( MSG_PLAYER_LEAVE_ROOM == prealMsg->usMsgType )
+	{
+		stMsgPlayerLeaveRoomRet msg;
+		auto nState = getCurRoomState()->getStateID();
+		auto p = getSitdownPlayerBySessionID(nPlayerSessionID);
+		if ( p && eRoomState_WaitOpen != nState && nState != eRoomState_WaitJoin && (nState != eRoomState_WillClose || eRoomState_Close != nState))
+		{
+			msg.nRet = 2;
+			sendMsgToPlayer(&msg, sizeof(msg), nPlayerSessionID);
+			LOGFMTD("current room state will not allow you leave session id  = %u roomID = %u", nPlayerSessionID,getRoomID());
+			return true;
+		}
 	}
 	return ISitableRoom::onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
 }

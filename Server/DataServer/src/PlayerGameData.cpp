@@ -75,7 +75,12 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 	case MSG_PLAYER_ENTER_ROOM:
 		{
 			stMsgPlayerEnterRoom* pRet = (stMsgPlayerEnterRoom*)pMessage ;
-			if ( isNotInAnyRoom() )
+			if (m_nStateInRoomID)
+			{
+				pRet->nRoomID = m_nStateInRoomID;
+			}
+
+			if ( 1 || isNotInAnyRoom() )  // go back room ;
 			{
 				stMsgSvrEnterRoom msgEnter ;
 				msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(pRet->nRoomGameType) ;
@@ -712,18 +717,18 @@ void CPlayerGameData::OnOtherWillLogined()
 	IPlayerComponent::OnOtherWillLogined();
 	if ( isNotInAnyRoom() == false )
 	{
-		stMsgCrossServerRequest msgEnter ;
-		msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(CGameRoomCenter::getRoomType(m_nStateInRoomID)) ;
-		msgEnter.nJsonsLen = 0 ;
-		msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
-		msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
-		msgEnter.nRequestType = eCrossSvrReq_ApplyLeaveRoom ;
-		msgEnter.nTargetID = m_nStateInRoomID ;
-		msgEnter.vArg[0] = m_nStateInRoomID ;
-		msgEnter.vArg[1] = GetPlayer()->GetSessionID() ;
-		SendMsg(&msgEnter,sizeof(msgEnter)) ;
+		//stMsgCrossServerRequest msgEnter ;
+		//msgEnter.cSysIdentifer = GetPlayer()->getMsgPortByRoomType(CGameRoomCenter::getRoomType(m_nStateInRoomID)) ;
+		//msgEnter.nJsonsLen = 0 ;
+		//msgEnter.nReqOrigID = GetPlayer()->GetUserUID();
+		//msgEnter.nRequestSubType = eCrossSvrReqSub_Default ;
+		//msgEnter.nRequestType = eCrossSvrReq_ApplyLeaveRoom ;
+		//msgEnter.nTargetID = m_nStateInRoomID ;
+		//msgEnter.vArg[0] = m_nStateInRoomID ;
+		//msgEnter.vArg[1] = GetPlayer()->GetSessionID() ;
+		//SendMsg(&msgEnter,sizeof(msgEnter)) ;
 
-		LOGFMTD("uid = %d other device login , apply to leave room id = %d ",GetPlayer()->GetUserUID(),m_nStateInRoomID) ;
+		LOGFMTD("uid = %d other device login , but will not apply to leave room id = %d ",GetPlayer()->GetUserUID(),m_nStateInRoomID) ;
 	}
 }
 

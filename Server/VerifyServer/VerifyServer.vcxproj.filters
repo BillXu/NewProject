@@ -142,6 +142,9 @@
     <ClCompile Include="src\HttpModule.cpp">
       <Filter>httpModule</Filter>
     </ClCompile>
+    <ClCompile Include="src\AnyLoginTask.cpp">
+      <Filter>Verify\Task</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\VerifyApp.h">
@@ -257,6 +260,9 @@
     </ClInclude>
     <ClInclude Include="src\HttpModule.h">
       <Filter>httpModule</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AnyLoginTask.h">
+      <Filter>Verify\Task</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

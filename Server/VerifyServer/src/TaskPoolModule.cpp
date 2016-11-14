@@ -10,6 +10,7 @@
 #include "WeChatVerifyTask.h"
 #include "DBVerifyTask.h"
 #include "ApnsTask.h"
+#include "AnyLoginTask.h"
 void CTaskPoolModule::init( IServerApp* svrApp )
 {
 	IGlobalModule::init(svrApp) ;
@@ -135,6 +136,12 @@ ITask::ITaskPrt CTaskPoolModule::createTask( uint32_t nTaskID )
 		{
 			std::shared_ptr<CApnsTask> pTask ( new CApnsTask(nTaskID)) ;
 			return pTask  ;
+		}
+		break;
+	case eTask_AnyLogin:
+		{
+			std::shared_ptr<AnyLoginTask> pTask(new AnyLoginTask(nTaskID));
+			return pTask;
 		}
 		break;
 	default:
@@ -351,4 +358,14 @@ void CTaskPoolModule::doDBVerify(IVerifyTask::VERIFY_REQUEST_ptr ptr)
 	pDBVerifyTask->setVerifyRequest(ptr);
 	pDBVerifyTask->setCallBack([this](ITask::ITaskPrt ptr){ auto pAready = (IVerifyTask*)ptr.get(); sendVerifyResult(pAready->getVerifyResult()); });
 	getPool().postTask(pDBTask);
+}
+
+ITask::ITaskPrt CTaskPoolModule::getReuseTask(eTask nTask)
+{
+	return getPool().getReuseTaskObjByID(nTask);
+}
+
+void CTaskPoolModule::postTask(ITask::ITaskPrt pTask)
+{
+	getPool().postTask(pTask);
 }

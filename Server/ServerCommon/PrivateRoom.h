@@ -750,7 +750,7 @@ void CPrivateRoom<T>::onTimeSave()
 		msgSave.savePlayer.nGameOffset = pp->nGameOffset ;
 		msgSave.savePlayer.nOtherOffset = pp->nOtherOffset ;
 		m_pRoomMgr->sendMsg(&msgSave,sizeof(msgSave),0) ;
-		LOGFMTD("update rank uid = %u , offset = %d",pp->nUserUID,pp->nGameOffset) ;
+		//LOGFMTD("update rank uid = %u , offset = %d",pp->nUserUID,pp->nGameOffset) ;
 	}
 
 	if ( m_bRoomInfoDiry == true )
@@ -765,11 +765,18 @@ void CPrivateRoom<T>::onTimeSave()
 	{
 		uint32_t nCoinInRoom = 0 ;
 		bool isPlayerInRoom = false ;
+		bool isDelayLeave = false;
 		auto pSit = m_pRoom->getSitdownPlayerByUID(refPrivatePlayer.second->nUserUID);
 		if ( pSit )
 		{
 			nCoinInRoom = pSit->getCoin();
 			isPlayerInRoom = true ;
+			auto pp = m_pRoom->getPlayerByUserUID(refPrivatePlayer.second->nUserUID);
+			isDelayLeave = (pp == nullptr);
+			if (isDelayLeave && (pSit->delayStandUp() == false))
+			{
+				LOGFMTE("save you delay leave , but you not delay stand up ? big error uid = %u", refPrivatePlayer.second->nUserUID );
+			}
 		}
 		else
 		{
@@ -786,16 +793,23 @@ void CPrivateRoom<T>::onTimeSave()
 			continue;
 		}
 
-
+		auto nInCoinBackUp = refPrivatePlayer.second->nCoinInRoom;
 		if ( isPlayerInRoom )
 		{
 			refPrivatePlayer.second->nCoinInRoom = nCoinInRoom ;
 		}
+		
 
-		refPrivatePlayer.second->isDirty = false ;
+		refPrivatePlayer.second->isDirty = false;
 
 		Json::Value jsValue ;
 		refPrivatePlayer.second->toJsvalue(jsValue);
+
+		if (isDelayLeave)
+		{
+			LOGFMTD("uid delay leave backup coin = %u coinInRoom = %u", nInCoinBackUp, refPrivatePlayer.second->nCoinInRoom );
+			refPrivatePlayer.second->nCoinInRoom = nInCoinBackUp;
+		}
 
 		Json::StyledWriter jsWrite ;
 		std::string str = jsWrite.write(jsValue) ;

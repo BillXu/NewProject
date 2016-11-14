@@ -8,6 +8,9 @@
 #include "json/json.h"
 #include "ISeverApp.h"
 #include "AsyncRequestQuene.h"
+#include "TaskPoolModule.h"
+#include "VerifyApp.h"
+#include "AnyLoginTask.h"
 void CHttpModule::init(IServerApp* svrApp)
 {
 	IGlobalModule::init(svrApp);
@@ -37,6 +40,7 @@ void CHttpModule::init(IServerApp* svrApp)
 
 	registerHttpHandle("/playerInfo.yh", boost::bind(&CHttpModule::handleGetPlayerInfo, this, boost::placeholders::_1));
 	registerHttpHandle("/addRoomCard.yh", boost::bind(&CHttpModule::handleAddRoomCard, this, boost::placeholders::_1));
+	registerHttpHandle("/AnyLogin.yh", boost::bind(&CHttpModule::handleAnySdkLogin, this, boost::placeholders::_1));
 }
 
 void CHttpModule::update(float fDeta)
@@ -372,6 +376,40 @@ bool CHttpModule::handleAddRoomCard(http::server::connection_ptr ptr)
 		LOGFMTD("do agent add room cards uid = %u, addCardNo = %u ", nUID, nAddCardNo);
 	}, jsRoot);
 	LOGFMTD("do async agent add room cards uid = %u cnt = %u,addCardNo = %u", nUID, nAddCard, nAddCardNo);
+	return true;
+}
+
+bool CHttpModule::handleAnySdkLogin(http::server::connection_ptr ptr)
+{
+	auto req = ptr->getReqPtr();
+	auto res = ptr->getReplyPtr();
+	LOGFMTD("reciveget any sdk req = %s", req->reqContent.c_str());
+	auto pTaskPool = ((CVerifyApp*)getSvrApp())->getTaskPoolModule();
+	auto pTask = pTaskPool->getReuseTask(CTaskPoolModule::eTask_AnyLogin);
+	auto pLoginTask = (AnyLoginTask*)pTask.get();
+	pLoginTask->setReqString(req->reqContent);
+	pTask->setCallBack([ptr](ITask::ITaskPrt pTask)
+	{
+		auto pLoginTask = (AnyLoginTask*)pTask.get();
+		auto res = ptr->getReplyPtr();
+		if (pTask->getResultCode() == 1)
+		{
+			LOGFMTE("request error from any sdk");
+			// do check 
+			std::string str = "error";
+			res->setContent(str, "text/json");
+			ptr->doReply();
+			return;
+		}
+
+		auto jsResult = pLoginTask->getResultJson();
+		Json::StyledWriter jswrite;
+		auto str = jswrite.write(jsResult);
+		res->setContent(str, "text/json");
+		ptr->doReply();
+		LOGFMTE("any sdk resp: %s",str.c_str());
+	});
+	pTaskPool->postTask(pTask);
 	return true;
 }
 

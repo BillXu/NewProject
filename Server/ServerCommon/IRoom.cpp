@@ -168,7 +168,7 @@ uint8_t IRoom::canPlayerEnterRoom( stEnterRoomData* pEnterRoomPlayer )  // retur
 	stStandPlayer* pp = getPlayerByUserUID(pEnterRoomPlayer->nUserUID);
 	if ( pp )
 	{
-		LOGFMTE("player uid = %d , already in this room, can not enter twice",pEnterRoomPlayer->nUserUID) ;
+		//LOGFMTE("player uid = %d , already in this room, can not enter twice",pEnterRoomPlayer->nUserUID) ;
 		//return 0;
 	}
 

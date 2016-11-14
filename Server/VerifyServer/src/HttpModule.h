@@ -14,6 +14,7 @@ protected:
 	bool onHandleVXPayResult(http::server::connection_ptr ptr );
 	bool handleGetPlayerInfo(http::server::connection_ptr ptr );
 	bool handleAddRoomCard(http::server::connection_ptr ptr);
+	bool handleAnySdkLogin(http::server::connection_ptr ptr);
 protected:
 	boost::shared_ptr<http::server::server> mHttpServer;
 	std::map<std::string, httpHandle> vHttphandles;

@@ -20,7 +20,8 @@ void CNiuNiuRoomBetState::onStateDuringTimeUp()
 		CNiuNiuRoomPlayer* pPlayer = (CNiuNiuRoomPlayer*)m_pRoom->getPlayerByIdx(idx);
 		if ( pPlayer )
 		{
-			pPlayer->increaseNoneActTimes();
+			//pPlayer->increaseNoneActTimes();
+			LOGFMTD("niuniu will not auto stand up ; roomid = %u , player id = %u",m_pRoom->getRoomID(),pPlayer->getUserUID());
 			pPlayer->setBetTimes(1) ;
 		}
 	}

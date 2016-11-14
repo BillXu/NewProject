@@ -15,6 +15,7 @@ public:
 		eTask_WechatVerify,
 		eTask_DBVerify,
 		eTask_Apns,
+		eTask_AnyLogin,
 		eTask_Max,
 	};
 public:
@@ -28,6 +29,8 @@ public:
 	ITask::ITaskPrt createTask( uint32_t nTaskID )override ;
 	CTaskPool& getPool(){ return m_tTaskPool ;}
 	void doDBVerify( uint32_t nUserUID , uint16_t nShopID , uint8_t nChannel, std::string& strTransfcationID );
+	ITask::ITaskPrt getReuseTask(eTask nTask);
+	void postTask(ITask::ITaskPrt pTask );
 protected:
 	void doDBVerify(IVerifyTask::VERIFY_REQUEST_ptr ptr);
 	// logic 
