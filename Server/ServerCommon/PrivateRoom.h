@@ -766,14 +766,14 @@ void CPrivateRoom<T>::onTimeSave()
 		uint32_t nCoinInRoom = 0 ;
 		bool isPlayerInRoom = false ;
 		bool isDelayLeave = false;
-		auto pSit = m_pRoom->getSitdownPlayerByUID(refPrivatePlayer.second->nUserUID);
+		ISitableRoomPlayer* pSit = (ISitableRoomPlayer*)m_pRoom->getSitdownPlayerByUID(refPrivatePlayer.second->nUserUID);
 		if ( pSit )
 		{
 			nCoinInRoom = pSit->getCoin();
 			isPlayerInRoom = true ;
 			auto pp = m_pRoom->getPlayerByUserUID(refPrivatePlayer.second->nUserUID);
-			isDelayLeave = (pp == nullptr);
-			if (isDelayLeave && (pSit->delayStandUp() == false))
+			isDelayLeave = (nullptr == pp);
+			if (isDelayLeave && (pSit->isDelayStandUp() == false))
 			{
 				LOGFMTE("save you delay leave , but you not delay stand up ? big error uid = %u", refPrivatePlayer.second->nUserUID );
 			}
