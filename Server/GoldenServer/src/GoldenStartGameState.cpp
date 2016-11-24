@@ -26,7 +26,7 @@ void CGoldenStartGameState::enterState(IRoom* pRoom)
 			LOGFMTD("send player card :idx = %d",item.nIdx);
 			for ( uint8_t nIdx = 0 ; nIdx < GOLDEN_PEER_CARD ; ++nIdx )
 			{
-				item.vCard[nIdx] = pRoomPlayer->getCardByIdx(nIdx);
+				item.vCard[nIdx] = 3;//pRoomPlayer->getCardByIdx(nIdx);
 				LOGFMTD("idx = % u , card = %u",nIdx,item.vCard[nIdx]);
 			}
 			buffer.addContent(&item,sizeof(item)) ;
