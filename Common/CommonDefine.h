@@ -57,6 +57,8 @@ enum eRoomType
 	eRoom_TexasPoker = eRoom_None,
 	eRoom_NiuNiu,
 	eRoom_Golden,
+	eRoom_MJ_Blood_River,// 血流成河
+	eRoom_MJ_Blood_End, // 血战到底 
 	eRoom_Max ,
 };
 
@@ -125,7 +127,79 @@ enum eRoomState
 	eRoomState_Golden_Bet,
 	eRoomState_Golden_PK,
 	eRoomState_Golden_GameResult,
+
+	// state for si chuan ma jiang 
+	eRoomState_WaitExchangeCards, //  等待玩家换牌
+	eRoomState_DoExchangeCards, // 玩家换牌
+	eRoomState_WaitDecideQue,  // 等待玩家定缺
+	eRoomState_DoDecideQue,  //  玩家定缺
+	eRoomState_DoFetchCard, // 玩家摸牌
+	eRoomState_WaitPlayerAct,  // 等待玩家操作 { idx : 0 , exeAct : eMJActType , isWaitChoseAct : 0 , actCard : 23, onlyChu : 1  }
+	eRoomState_WaitPlayerChu, // 等待玩家出牌 { idx : 2 }
+	eRoomState_DoPlayerAct,  // 玩家操作 // { idx : 0 ,huIdxs : [1,3,2,], act : eMJAct_Chi , card : 23, invokeIdx : 23, eatWithA : 23 , eatWithB : 22 }
+	eRoomState_WaitOtherPlayerAct,  // 等待玩家操作，有人出牌了 { invokerIdx : 0 , card : 0 ,cardFrom : eMJActType , arrNeedIdxs : [2,0,1] } 
+	eRoomState_DoOtherPlayerAct,  // 其他玩家操作了。
+	eRoomState_AskForRobotGang, // 询问玩家抢杠胡， { invokeIdx : 2 , card : 23 }
+	eRoomState_AskForHuAndPeng, // 询问玩家碰或者胡  { invokeIdx : 2 , card : 23 }
+	eRoomState_WaitSupplyCoin, // 等待玩家补充金币  {nextState: 234 , transData : { ... } }
+	eRoomState_WaitPlayerRecharge = eRoomState_WaitSupplyCoin,  //  等待玩家充值
+	eRoomState_GameEnd, // 游戏结束
 	eRoomState_Max,
+};
+
+
+enum eMJActType
+{
+	eMJAct_None,
+	eMJAct_Mo = eMJAct_None, // 摸牌
+	eMJAct_Chi, // 吃
+	eMJAct_Peng,  // 碰牌
+	eMJAct_MingGang,  // 明杠
+	eMJAct_AnGang, // 暗杠
+	eMJAct_BuGang,  // 补杠 
+	eMJAct_BuGang_Pre, // 补杠第一阶段
+	eMJAct_BuGang_Declare = eMJAct_BuGang_Pre, // 声称要补杠 
+	eMJAct_BuGang_Done, //  补杠第二阶段，执行杠牌
+	eMJAct_Hu,  //  胡牌
+	eMJAct_Chu, // 出牌
+	eMJAct_Pass, //  过 
+	eMJAct_Max,
+};
+
+enum eFanxingType
+{
+	eFanxing_PingHu, // 平胡
+
+	eFanxing_DuiDuiHu, //  对对胡
+
+	eFanxing_QingYiSe, // 清一色
+	eFanxing_DaiYaoJiu, //  带幺九
+	eFanxing_QiDui, //  七对
+	eFanxing_JinGouDiao, //  金钩钓
+
+	eFanxing_QingDuiDuiHu, // 清对对胡
+
+	eFanxing_QingDui, //  清七对
+	eFanxing_LongQiDui, //  龙七对
+	eFanxing_QingDaiYaoJiu, //  清 带幺九
+	eFanxing_JiangJinGouDiao, // 将金钩钓
+	eFanxing_QingJinGouDiao, // 清金钩钓
+
+	eFanxing_QingLongQiDui, //  清龙七对
+	eFanxing_ShiBaLuoHan, //  十八罗汉
+	eFanxing_Max, // 没有胡
+};
+
+enum eSettleType    // 这个枚举定义的只是一个中立的事件，对于发生事件的双方，叫法不一样，例如： 赢的人叫被点炮，输的人 叫 点炮。
+{
+	eSettle_DianPao,  // 点炮
+	eSettle_MingGang, // 明杠
+	eSettle_AnGang, //  暗杠
+	eSettle_BuGang,  //  补杠
+	eSettle_ZiMo,  // 自摸
+	eSettle_HuaZhu,  //   查花猪
+	eSettle_DaJiao,  //  查大叫
+	eSettle_Max,
 };
 
 
@@ -148,12 +222,12 @@ static unsigned char s_vChangeCardDimonedNeed[GOLDEN_PEER_CARD] = {0,4,8} ;
 
 #define JS_KEY_MSG_TYPE "msgID"
 
-enum eSpeed
-{
-	eSpeed_Normal,
-	eSpeed_Quick,
-	eSpeed_Max,
-};
+//enum eSpeed
+//{
+//	eSpeed_Normal,
+//	eSpeed_Quick,
+//	eSpeed_Max,
+//};
 
 enum eNoticeType
 {
@@ -194,6 +268,11 @@ enum eRoomPeerState
 	eRoomPeer_WillLeave = (1<<10)|eRoomPeer_StandUp ,
 	eRoomPeer_Looked =  (1<<13)|eRoomPeer_CanAct ,
 	eRoomPeer_PK_Failed = (1<<14)|eRoomPeer_StayThisRound ,
+
+	eRoomPeer_AlreadyHu = ((1 << 15) | eRoomPeer_CanAct),  //  已经胡牌的状态
+	eRoomPeer_DecideLose = eRoomPeer_GiveUp,  // 认输状态
+	eRoomPeer_LoserLeave = (1 << 16),  //  已经离开房间的认输的人。但是他的备份留在房间里。
+	eRoomPeer_DelayLeave = (1 << 17),  //  牌局结束后才离开
 	eRoomPeer_Max,
 };
 
@@ -357,13 +436,4 @@ enum eRoomLevel
 #define TEMP_ACCOUNT "tempAccount"
 #define TEMP_PASSWORD "tempPassword"
 
-//#define MUSIC_NAME "mp3/bgm2.mp3"
-//#define SOUND_BET "mp3/bet.mp3"
-//#define SOUND_PASS "mp3/check.mp3"
-//#define SOUND_CLOCK "mp3/clock.mp3"
-//#define SOUND_SHOW_PUBLIC "mp3/flop.mp3"
-//#define SOUND_GIVE_UP "mp3/fold.mp3"
-//#define SOUND_WIN_CHIP "mp3/movechips.mp3"
-//#define SOUND_MY_TURN "mp3/myturn.mp3"
-//#define SOUND_SHOW_SHOP "mp3/shopBell.mp3"
 

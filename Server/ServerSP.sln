@@ -76,6 +76,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerCommon", "ServerCommo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameCommon", "GameCommon\GameCommon.vcxproj", "{0C1CC656-13EF-4195-8FF4-A0DC0D28DBE9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MaJiangServer", "MaJiangServer\MaJiangServer.vcxproj", "{5AC88CEF-63E2-4998-A690-25ED685B562C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1021C400-E90B-4985-982D-DF9DB555F336} = {1021C400-E90B-4985-982D-DF9DB555F336}
+		{0C1CC656-13EF-4195-8FF4-A0DC0D28DBE9} = {0C1CC656-13EF-4195-8FF4-A0DC0D28DBE9}
+		{3BF0757D-C2EE-47D6-B251-D7B71C08D599} = {3BF0757D-C2EE-47D6-B251-D7B71C08D599}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -138,6 +145,10 @@ Global
 		{0C1CC656-13EF-4195-8FF4-A0DC0D28DBE9}.Debug|Win32.Build.0 = Debug|Win32
 		{0C1CC656-13EF-4195-8FF4-A0DC0D28DBE9}.Release|Win32.ActiveCfg = Release|Win32
 		{0C1CC656-13EF-4195-8FF4-A0DC0D28DBE9}.Release|Win32.Build.0 = Release|Win32
+		{5AC88CEF-63E2-4998-A690-25ED685B562C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5AC88CEF-63E2-4998-A690-25ED685B562C}.Debug|Win32.Build.0 = Debug|Win32
+		{5AC88CEF-63E2-4998-A690-25ED685B562C}.Release|Win32.ActiveCfg = Release|Win32
+		{5AC88CEF-63E2-4998-A690-25ED685B562C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

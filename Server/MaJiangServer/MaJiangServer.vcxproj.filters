@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="src\Card">
+      <UniqueIdentifier>{5df7c328-199b-4acf-8199-7f4a213977f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\MJ">
+      <UniqueIdentifier>{f32d0d30-f592-42ba-8cc2-70dc304ceddc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\MJXL">
+      <UniqueIdentifier>{3d15a2c7-b855-4f22-8ebb-98a8a32b1566}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\MJXL\XLState">
+      <UniqueIdentifier>{330f6ea0-79ca-4474-a202-462e93c56285}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\MJXZ">
+      <UniqueIdentifier>{44743f07-2e93-45ea-a433-bbfabb1dbeed}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\IMJPoker.h">
+      <Filter>src\Card</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJCard.h">
+      <Filter>src\Card</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJDefine.h">
+      <Filter>src\Card</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IGameRoom.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IMJPlayer.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IMJRoom.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IMJRoomState.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJPlayer.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJPlayerCard.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomStateAskForPengOrHu.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomStateAskForRobotGang.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomStateDoPlayerAct.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomStateGameEnd.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomStateStartGame.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomStateWaitPlayerAct.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomStateWaitPlayerChu.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomStateWaitReady.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLRoomStateDoPlayerAct.h">
+      <Filter>src\MJXL\XLState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLRoomStateStartGame.h">
+      <Filter>src\MJXL\XLState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLRoomStateWaitDecideQue.h">
+      <Filter>src\MJXL\XLState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLRoomStateWaitSupplyCoin.h">
+      <Filter>src\MJXL\XLState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLFanXingChecker.h">
+      <Filter>src\MJXL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLMJPlayer.h">
+      <Filter>src\MJXL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLMJPlayerCard.h">
+      <Filter>src\MJXL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLMJRoom.h">
+      <Filter>src\MJXL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLMJSettle.h">
+      <Filter>src\MJXL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XZMJRoom.h">
+      <Filter>src\MJXZ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJRoomManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJServer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XLRoomStateWaitPlayerAct.h">
+      <Filter>src\MJXL\XLState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJPrivateRoom.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IGameRecorder.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\MJCard.cpp">
+      <Filter>src\Card</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IMJRoom.cpp">
+      <Filter>src\MJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJPlayer.cpp">
+      <Filter>src\MJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJPlayerCard.cpp">
+      <Filter>src\MJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XLMJPlayer.cpp">
+      <Filter>src\MJXL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XLMJPlayerCard.cpp">
+      <Filter>src\MJXL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XLMJRoom.cpp">
+      <Filter>src\MJXL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XZMJRoom.cpp">
+      <Filter>src\MJXZ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJRoomManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJServer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJPrivateRoom.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

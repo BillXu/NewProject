@@ -321,6 +321,7 @@ void CNiuNiuRoom::onGameDidEnd()
 		{
 			CNiuNiuRoomPlayer* pNiuPlayer = (CNiuNiuRoomPlayer*)pSitDown ;
 			Json::Value refPlayer ;
+
 			refPlayer["uid"] = pNiuPlayer->getUserUID() ;
 			refPlayer["idx"] = pNiuPlayer->getIdx();
 			refPlayer["betTimes"] = pNiuPlayer->getBetTimes() <= 0 ? 5 : pNiuPlayer->getBetTimes();

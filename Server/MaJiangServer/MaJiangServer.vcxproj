@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5AC88CEF-63E2-4998-A690-25ED685B562C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>MaJiangServer</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions);SERVER</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../ServerCommon;../../Common;../NetworkUtility/src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\local\boost_1_61_0\lib32-msvc-12.0;../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NetworkUtility_D.lib;GameCommon_D.lib;ServerCommon_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions);SERVER</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>../ServerCommon;../../Common;../NetworkUtility/src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\local\boost_1_61_0\lib32-msvc-12.0;../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NetworkUtility.lib;ServerCommon.lib;GameCommon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="src\IGameRecorder.h" />
+    <ClInclude Include="src\IGameRoom.h" />
+    <ClInclude Include="src\IMJPlayer.h" />
+    <ClInclude Include="src\IMJPoker.h" />
+    <ClInclude Include="src\IMJRoom.h" />
+    <ClInclude Include="src\IMJRoomState.h" />
+    <ClInclude Include="src\MJCard.h" />
+    <ClInclude Include="src\MJDefine.h" />
+    <ClInclude Include="src\MJPlayer.h" />
+    <ClInclude Include="src\MJPlayerCard.h" />
+    <ClInclude Include="src\MJPrivateRoom.h" />
+    <ClInclude Include="src\MJRoomManager.h" />
+    <ClInclude Include="src\MJRoomStateAskForPengOrHu.h" />
+    <ClInclude Include="src\MJRoomStateAskForRobotGang.h" />
+    <ClInclude Include="src\MJRoomStateDoPlayerAct.h" />
+    <ClInclude Include="src\MJRoomStateGameEnd.h" />
+    <ClInclude Include="src\MJRoomStateStartGame.h" />
+    <ClInclude Include="src\MJRoomStateWaitPlayerAct.h" />
+    <ClInclude Include="src\MJRoomStateWaitPlayerChu.h" />
+    <ClInclude Include="src\MJRoomStateWaitReady.h" />
+    <ClInclude Include="src\MJServer.h" />
+    <ClInclude Include="src\XLFanXingChecker.h" />
+    <ClInclude Include="src\XLMJPlayer.h" />
+    <ClInclude Include="src\XLMJPlayerCard.h" />
+    <ClInclude Include="src\XLMJRoom.h" />
+    <ClInclude Include="src\XLMJSettle.h" />
+    <ClInclude Include="src\XLRoomStateDoPlayerAct.h" />
+    <ClInclude Include="src\XLRoomStateStartGame.h" />
+    <ClInclude Include="src\XLRoomStateWaitDecideQue.h" />
+    <ClInclude Include="src\XLRoomStateWaitPlayerAct.h" />
+    <ClInclude Include="src\XLRoomStateWaitSupplyCoin.h" />
+    <ClInclude Include="src\XZMJRoom.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\IMJRoom.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MJCard.cpp" />
+    <ClCompile Include="src\MJPlayer.cpp" />
+    <ClCompile Include="src\MJPlayerCard.cpp" />
+    <ClCompile Include="src\MJPrivateRoom.cpp" />
+    <ClCompile Include="src\MJRoomManager.cpp" />
+    <ClCompile Include="src\MJServer.cpp" />
+    <ClCompile Include="src\XLMJPlayer.cpp" />
+    <ClCompile Include="src\XLMJPlayerCard.cpp" />
+    <ClCompile Include="src\XLMJRoom.cpp" />
+    <ClCompile Include="src\XZMJRoom.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
