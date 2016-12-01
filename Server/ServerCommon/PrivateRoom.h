@@ -1310,11 +1310,21 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	auto iPlayer = pRoom->getPlayerBySessionID(nSessionID);
 	if ( iPlayer == nullptr )
 	{
-		
+		LOGFMTE("session id = %u not in room id = %u, can not req room info", nSessionID, getRoomID() );
+		return;
 	}
 	auto iter = m_mapPrivateRoomPlayers.find(iPlayer->nUserUID) ;
 	assert(iter != m_mapPrivateRoomPlayers.end() && "why this is null ?" );
-	jsMsgRoomInfo["selfCoin"] = iter->second->nCoinInRoom ;
+	if ( iter == m_mapPrivateRoomPlayers.end() || nullptr == iter->second)
+	{
+		jsMsgRoomInfo["selfCoin"] = 0;
+		LOGFMTE("uid id = %u not in room id = %u, privateRoomPlayerItem is nullptr or not have", iPlayer->nUserUID, getRoomID());
+	}
+	else
+	{
+		jsMsgRoomInfo["selfCoin"] = iter->second->nCoinInRoom;
+	}
+	
 	jsMsgRoomInfo["baseTakeIn"] = m_nBaseTakeIn;
 
 	Json::Value jsGame ;
