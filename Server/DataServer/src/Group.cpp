@@ -828,7 +828,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			}
 
 			pClub->setName(pName);
-			LOGFMTD("club id = %u update name to new = %s",pName) ;
+			LOGFMTD("club id = %u update name to new = %s", nClubID,pName);
 		}
 		break;
 	case MSG_CLUB_CHAT_MESSAGE:
