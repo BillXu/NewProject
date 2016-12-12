@@ -180,6 +180,7 @@ void MJRoomManager::update(float fDeta)
 		iter->second = nullptr;
 		m_vRooms.erase(iter);
 	}
+	m_vWillDeleteRoomIDs.clear();
 }
 
 bool MJRoomManager::onAsyncRequest(uint16_t nRequestType, const Json::Value& jsReqContent, Json::Value& jsResult)
@@ -197,7 +198,7 @@ bool MJRoomManager::onAsyncRequest(uint16_t nRequestType, const Json::Value& jsR
 		}
 
 		auto p = pRoom->onPlayerApplyLeave(nUID);
-		if (false == p)
+		if ( true == p)
 		{
 			jsResult["ret"] = 2;
 			jsResult["coin"] = 0;
@@ -217,6 +218,40 @@ bool MJRoomManager::onAsyncRequest(uint16_t nRequestType, const Json::Value& jsR
 		//{
 		//	jsResult["ret"] = 1;  // delay leave ;
 		//}
+		return true;
+	}
+
+	if (eAsync_SendUpdateCoinToClient == nRequestType)
+	{
+		uint32_t nSessionID = jsReqContent["sessionID"].asUInt();
+		uint32_t nUID = jsReqContent["uid"].asUInt();
+		uint32_t nCoin = jsReqContent["coin"].asUInt();
+		uint32_t nDiamond = jsReqContent["diamond"].asUInt();
+		uint32_t nRoomID = jsReqContent["roomID"].asUInt();
+
+		auto pRoom = getRoomByID(nRoomID);
+		if (pRoom)
+		{
+			Json::Value js = jsReqContent;
+			bool bProcessed = pRoom->onMsg(js, MSG_INTERAL_ROOM_SEND_UPDATE_COIN, ID_MSG_PORT_DATA, nSessionID);
+			if (!bProcessed)
+			{
+				LOGFMTE("find the room you stay in to update coin msg, but can not find you uid = %u", nUID);
+				Json::Value jsmsgBack;
+				jsmsgBack["coin"] = nCoin;
+				jsmsgBack["diamond"] = nDiamond;
+				sendMsg(jsmsgBack, MSG_REQ_UPDATE_COIN, nSessionID);
+			}
+		}
+		else
+		{
+			LOGFMTE("can not find the room you stay in to update coin msg  uid = %u", nUID);
+			Json::Value jsmsgBack;
+			jsmsgBack["coin"] = nCoin;
+			jsmsgBack["diamond"] = nDiamond;
+			sendMsg(jsmsgBack, MSG_REQ_UPDATE_COIN, nSessionID);
+
+		}
 		return true;
 	}
 
@@ -242,7 +277,24 @@ bool MJRoomManager::onAsyncRequest(uint16_t nRequestType, const Json::Value& jsR
 
 void MJRoomManager::onConnectedSvr()
 {
+	IGameRoomManager::onConnectedSvr();
+	auto asyq = getSvrApp()->getAsynReqQueue();
+	Json::Value jsReq;
+	jsReq["sql"] = "SELECT max(billID) as maxBillID FROM viproombills ;";
+	asyq->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Select, jsReq, [](uint16_t nReqType, const Json::Value& retContent, Json::Value& jsUserData){
+		uint32_t nAft = retContent["afctRow"].asUInt();
+		auto jsData = retContent["data"];
+		if (nAft == 0 || jsData.isNull())
+		{
+			LOGFMTE("read max bill id error ");
+			return;
+		}
 
+		auto jsRow = jsData[(uint32_t)0];
+		s_MaxBillID = jsRow["maxBillID"].asUInt();
+		++s_MaxBillID;
+		LOGFMTD("max bill id  = %u", s_MaxBillID);
+	});
 }
 
 bool MJRoomManager::processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nSessionID)
@@ -251,32 +303,120 @@ bool MJRoomManager::processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, u
 	msgBack.nRet = 0;
 	stMsgSvrEnterRoom* pRet = (stMsgSvrEnterRoom*)prealMsg;
 	msgBack.nGameType = 0;
-	msgBack.nRoomID = pRet->nRoomID;
-	
+	msgBack.nRoomID = pRet->nTargetID;
+	bool isRobot = pRet->tPlayerData.nPlayerType == ePlayer_Robot;
+	if (isRobot)
+	{
+		LOGFMTI("收到机器人进入房间的请求 = %u", pRet->tPlayerData.nUserUID);
+	}
+	//// temp set 
+	//pRet->nType = 1 ;
+	//pRet->nTargetID = 2 ;
+	LOGFMTD("session id = %u enter room type = %u , roomID = %u", nSessionID, pRet->nType, pRet->nTargetID);
+
 	// find a room to enter 
 	IGameRoom* pRoomEnter = nullptr;
-	pRoomEnter = getRoomByID(pRet->nRoomID);
+	if (pRet->nType == 1)
+	{
+		pRoomEnter = getRoomByID(pRet->nTargetID);
+		if (pRoomEnter == nullptr)
+		{
+			msgBack.nRet = 5;
+			sendMsg(&msgBack, sizeof(msgBack), nSessionID);
+			LOGFMTD("target room id = %u is null", pRet->nTargetID);
+			if (isRobot)
+			{
+				LOGFMTI("机器人进入房间失败 uid = %u", pRet->tPlayerData.nUserUID);
+			}
+			return false;
+		}
+
+		// robot adjust coin deponed on room limit ;
+		if (pRet->tPlayerData.nPlayerType == ePlayer_Robot)
+		{
+			uint32_t nStandCoin = 8000 + rand() % 1000;
+			auto pConfig = pRoomEnter->getRoomConfig();
+			uint32_t nLowLimit = 1000;
+			uint32_t nTopLimit = 3000;
+
+			if (pConfig->nEnterLowLimit != 0)
+			{
+				nLowLimit = pConfig->nEnterLowLimit;
+			}
+
+			if (0 != pConfig->nEnterTopLimit)
+			{
+				nTopLimit = pConfig->nEnterTopLimit;
+			}
+			else
+			{
+				nTopLimit = nLowLimit * 2;
+			}
+
+			if (nTopLimit <= nLowLimit)
+			{
+				nTopLimit = nLowLimit * 2;
+			}
+
+			nStandCoin = nLowLimit + rand() % (nTopLimit - nLowLimit);
+			nStandCoin = float(nStandCoin) * 1.1f + pConfig->nDeskFee;
+			LOGFMTD("adjust robot coin to : %u", nStandCoin);
+			pRet->tPlayerData.nCoin = nStandCoin;
+		}
+	}
+	else
+	{
+		//LOGFMTE("temp set enter er ren que shen %s",__FUNCTION__);
+		//pRet->nTargetID = 7 ;
+		auto pSvr = (CMJServerApp*)getSvrApp();
+		auto pConfig = pSvr->getRoomConfigMgr()->GetConfigByConfigID(pRet->nTargetID);
+		if (pConfig == nullptr)
+		{
+			msgBack.nRet = 2;
+			sendMsg(&msgBack, sizeof(msgBack), nSessionID);
+			LOGFMTE("svr do not have room config with id = %u", pRet->nTargetID);
+			return true;
+		}
+
+
+		if (pRet->tPlayerData.nPlayerType == ePlayer_Robot)
+		{
+			LOGFMTE("机器人不应该走到这里");
+			return true;
+		}
+
+		if (pConfig->nGameType == eRoom_MJ_Two_Bird_God)
+		{
+			return false;
+		}
+
+		pRoomEnter = randRoomToEnterByConfigID(pRet->nTargetID);
+	}
+
 	if (pRoomEnter == nullptr)
 	{
 		LOGFMTE("can not rand a room to enter , this msg may not process in this room mgr");
-		msgBack.nRet = 5;
-		sendMsg(&msgBack, sizeof(msgBack), nSessionID);
 		return false;
 	}
 
 	// when come here will not nullptr of room ;
 	// check enter xian zhi 
 	msgBack.nRet = pRoomEnter->checkPlayerCanEnter(&pRet->tPlayerData);
+
 	msgBack.nRoomID = pRoomEnter->getRoomID();
 	if (msgBack.nRet)
 	{
 		sendMsg(&msgBack, sizeof(msgBack), nSessionID);
-		LOGFMTD("you are not proper to enter this room target id = %u , ret = %d", pRet->nRoomID, msgBack.nRet);
+		LOGFMTD("you are not proper to enter this room target id = %u , ret = %d", pRet->nTargetID, msgBack.nRet);
+		if (isRobot)
+		{
+			LOGFMTI("机器人进入房间失败 uid = %u", pRet->tPlayerData.nUserUID);
+		}
 		return true;
 	}
 
 	int8_t nidx = 0;
-	msgBack.nGameType = pRoomEnter->getRoomType();
+	msgBack.nGameType = eRoom_MJ;
 	msgBack.nRoomID = pRoomEnter->getRoomID();
 	msgBack.nSubIdx = 0;
 	msgBack.nRet = 0;
@@ -288,11 +428,100 @@ bool MJRoomManager::processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, u
 		pRoomEnter->sendRoomInfo(nSessionID);
 		LOGFMTI("有人进入房间成功 ，会有room info 返回 , 进入房间成功消息也发 uid = %u", pRet->tPlayerData.nUserUID);
 	}
+	
+	if (isRobot)
+	{
+		LOGFMTI("机器人进入房间成功 ，会有room info 返回 , 进入房间成功消息也发 uid = %u", pRet->tPlayerData.nUserUID);
+	}
+	
 	return true;
 }
 
-IGameRoom* MJRoomManager::doCreatePrivateRoom(uint16_t nConfigID, Json::Value& jsArg)
+IGameRoom* MJRoomManager::randRoomToEnterByConfigID(uint32_t nRoomConfigID)
 {
+	auto iter = m_vPublicRooms.find(nRoomConfigID);
+	std::vector<IGameRoom*> vecRoom;
+	if (iter != m_vPublicRooms.end())
+	{
+		auto& vecRoomIDs = iter->second;
+		for (auto& ref : vecRoomIDs)
+		{
+			auto pRoom = getRoomByID(ref);
+			if (pRoom == nullptr || pRoom->isRoomFull())
+			{
+				continue;
+			}
+			vecRoom.push_back(pRoom);
+		}
+	}
+	
+	if (vecRoom.empty())
+	{
+		return doCreatePublicRoom(nRoomConfigID);
+	}
+	
+	return vecRoom[rand() % vecRoom.size()];
+}
+
+IGameRoom* MJRoomManager::doCreatePublicRoom(uint16_t nConfigID)
+{
+	auto pSvr = (CMJServerApp*)getSvrApp();
+	auto pConfig = pSvr->getRoomConfigMgr()->GetConfigByConfigID(nConfigID);
+	if (pConfig == nullptr)
+	{
+		LOGFMTE("svr do not have room config with id = %u, so can not create public room", nConfigID);
+		return nullptr;
+	}
+
+	IGameRoom* pRoom = nullptr;
+	if (eMJ_HZ == pConfig->nGameType)
+	{
+		pRoom = new HZMJRoom();
+	}
+	else if (eMJ_BloodRiver == pConfig->nGameType)
+	{
+		pRoom = new XLMJRoom();
+	}
+	else if (eMJ_BloodTheEnd == pConfig->nGameType)
+	{
+		pRoom = new XZMJRoom();
+	}
+	else
+	{
+		LOGFMTE("unknown game type for config id = %u, when create public room",nConfigID);
+		return nullptr;
+	}
+
+	Json::Value js;
+	pRoom->init(this, pConfig, generateRoomID(), js);
+	
+	// add to vec room ;
+	auto iter = m_vRooms.find(pRoom->getRoomID());
+	if (iter != m_vRooms.end())
+	{
+		LOGFMTE("why have duplicate room id when create public room configid = %u , room id = %u",nConfigID,pRoom->getRoomID());
+		delete pRoom;
+		pRoom = nullptr;
+		return iter->second;
+	}
+	m_vRooms[pRoom->getRoomID()] = pRoom;
+	
+	// add to public ;
+	auto iterpublic = m_vPublicRooms.find(nConfigID);
+	if (iterpublic == m_vPublicRooms.end())
+	{
+		m_vPublicRooms[nConfigID].push_back(pRoom->getRoomID());
+	}
+	else
+	{
+		iterpublic->second.push_back(pRoom->getRoomID());
+	}
+
+	return pRoom;
+}
+
+IGameRoom* MJRoomManager::doCreatePrivateRoom(uint16_t nConfigID, Json::Value& jsArg)
+ {
 	auto p = new MJPrivateRoom();
 	auto ret = p->init(this, nullptr, genPrivateRoomID(), jsArg);
 	if (ret == false)
@@ -326,6 +555,12 @@ uint32_t MJRoomManager::genPrivateRoomID()
 		pCheckRoom = getRoomByID(nRoomID);
 	} while (pCheckRoom);
 	return nRoomID;
+}
+
+uint32_t MJRoomManager::generateRoomID()
+{
+	static uint32_t s_id = 0;
+	return ++s_id ;
 }
 
 void MJRoomManager::addWillDeleteRoomID(uint32_t nDelRoomID)
@@ -384,7 +619,7 @@ void MJRoomManager::addVipRoomBill(std::shared_ptr<stVipRoomBill>& pBill, bool i
 		char pBuffer[500] = { 0 };
 		Json::StyledWriter jsWrite;
 		auto str = jsWrite.write(pBill->jsDetail);
-		sprintf_s(pBuffer, sizeof(pBuffer), "insert into viproombills (billID,roomID,roomType,createUID,billTime,detail,roomInitCoin ,circleCnt ) values( %u,%u,%u,%u,now(),'%s',%u;"
+		sprintf_s(pBuffer, sizeof(pBuffer), "insert into viproombills (billID,roomID,roomType,createUID,billTime,detail,roomInitCoin ,circleCnt ) values( %u,%u,%u,%u,now(),'%s',%u,%u);"
 			, pBill->nBillID, pBill->nRoomID, pBill->nRoomType, pBill->nCreateUID, str.c_str(), pBill->nRoomInitCoin, pBill->nCircleCnt);
 		jsReq["sql"] = pBuffer;
 		asy->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Add, jsReq);

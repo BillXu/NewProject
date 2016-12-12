@@ -13,17 +13,6 @@ enum  eMJCardType
 	eCT_Max,
 };
 
-enum eMJGameType
-{
-	eMJ_None,
-	eMJ_BloodRiver = eMJ_None,
-	eMJ_BloodTheEnd,
-	eMJ_COMMON,
-	eMJ_TwoBird,
-	eMJ_HZ,
-	eMJ_Max,
-};
-
 enum  ePosType
 {
 	ePos_Self,

@@ -513,6 +513,11 @@ void ISitableRoom::onGameDidEnd()
 			getDelegate()->onUpdatePlayerGameResult(this,pPlayer->getUserUID(),pPlayer->getGameOffset()) ;
 			LOGFMTD("update room peer offset uid = %u, offset = %d",pPlayer->getUserUID(),pPlayer->getGameOffset());
 		}
+		else  if (pPlayer->getGameOffset() != 0)
+		{
+			getDelegate()->onUpdatePlayerGameResult(this, pPlayer->getUserUID(), pPlayer->getGameOffset());
+			LOGFMTE("can not skip update room peer offset uid = %u, offset = %d", pPlayer->getUserUID(), pPlayer->getGameOffset());
+		}
 
 		if ( pPlayer->getNoneActTimes() >= getMaxNoneActTimeForStandUp() || (pPlayer->isDelayStandUp() || pPlayer->getCoin() < coinNeededToSitDown() || (getDelegate() && getDelegate()->isPlayerLoseReachMax(this,pPlayer->getUserUID())) ) )
 		{

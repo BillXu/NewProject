@@ -8,6 +8,16 @@ class CMJRoomStateWaitReady
 {
 public:
 	uint32_t getStateID()final{ return eRoomSate_WaitReady; }
+
+	void update(float fDeta)override
+	{
+		IMJRoomState::update(fDeta);
+		if (getRoom()->canStartGame())
+		{
+			getRoom()->goToState(eRoomState_StartGame);
+		}
+	}
+
 	bool onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)override
 	{
 		if ( MSG_PLAYER_SET_READY == nMsgType)

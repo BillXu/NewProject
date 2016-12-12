@@ -9,6 +9,7 @@
 #include "IMJPoker.h"
 #include "IGameRoomManager.h"
 #include "RobotDispatchStrategy.h"
+#include "MJCard.h"
 IMJRoom::~IMJRoom()
 {
 	for (auto& ref : m_vMJPlayers)
@@ -68,6 +69,7 @@ bool IMJRoom::onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)
 		jsMsg["uid"] = player->getUID();
 		jsMsg["coin"] = player->getCoin();
 		jsMsg["state"] = player->getState();
+		jsMsg["isTrusteed"] = player->isTrusteed() ? 1 : 0;
 		sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_ENTER);
 		return true;
 	}
@@ -154,6 +156,7 @@ void IMJRoom::sendRoomInfo(uint32_t nSessionID)
 		jsPlayer["uid"] = pPlayer->getUID();
 		jsPlayer["coin"] = pPlayer->getCoin();
 		jsPlayer["state"] = pPlayer->getState();
+		jsPlayer["isTrusteed"] = pPlayer->isTrusteed() ? 1 : 0;
 		arrPlayers[pPlayer->getIdx()] = jsPlayer;
 	}
 
@@ -164,6 +167,11 @@ void IMJRoom::sendRoomInfo(uint32_t nSessionID)
 	}
 
 	jsMsg["players"] = arrPlayers;
+
+	jsMsg["bankerIdx"] = getBankerIdx();
+	jsMsg["curActIdex"] = getCurRoomState()->getCurIdx();
+	jsMsg["leftCardCnt"] = getMJPoker()->getLeftCardCount();
+
 	sendMsgToPlayer(jsMsg, MSG_ROOM_INFO, nSessionID);
 	LOGFMTD("send msg room info msg to player session id = %u", nSessionID);
 
@@ -188,14 +196,15 @@ void IMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 
 		auto pCard = pp->getPlayerCard();
 		// svr : { bankerIdx : 2, leftCardCnt : 32 ,playersCard: [ { idx : 2,queType: 2, anPai : [2,3,4,34], mingPai : [ 23,67,32] , huPai : [1,34], chuPai: [2,34,4] },{ anPai : [2,3,4,34], mingPai : [ 23,67,32] , huPai : [1,34] }, .... ] }
-		// { idx : 2,queType: 2, anPai : [2,3,4,34], mingPai : [ 23,67,32] , huPai : [1,34], chuPai: [2,34,4] }
+		// { idx : 2,queType: 2, anPai : [2,3,4,34], anGangPai: [2,3,5], mingPai : [ 23,67,32] , huPai : [1,34], chuPai: [2,34,4] }
 		Json::Value jsCardInfo;
 		jsCardInfo["idx"] = pp->getIdx();
 		jsCardInfo["queType"] = 0;
 
-		IMJPlayerCard::VEC_CARD vAnPai, vMingPai, vChuPai , temp;
+		IMJPlayerCard::VEC_CARD vAnPai, vMingPai, vChuPai ,vAnGangedCard, temp;
 		pCard->getHoldCard(vAnPai);
 		pCard->getChuedCard(vChuPai);
+		pCard->getAnGangedCard(vAnGangedCard);
 		
 		pCard->getEatedCard(vMingPai);
 		pCard->getPengedCard(temp);
@@ -219,17 +228,20 @@ void IMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 			}
 		};
 
-		Json::Value jsMingPai, jsAnPai, jsChuPai, jaHupai;
-		toJs(vMingPai, jsMingPai); toJs(vAnPai, jsAnPai); toJs(vChuPai,jsChuPai);
+		Json::Value jsMingPai, jsAnPai, jsChuPai, jaHupai, jsAngangedPai;
+		toJs(vMingPai, jsMingPai); toJs(vAnPai, jsAnPai); toJs(vChuPai, jsChuPai); toJs(vAnGangedCard,jsAngangedPai);
 		jsCardInfo["mingPai"] = jsMingPai; jsCardInfo["anPai"] = jsAnPai; jsCardInfo["chuPai"] = jsChuPai; jsCardInfo["huPai"] = jaHupai;
-		vPeerCards[vPeerCards.size()] = jsCardInfo;
+		jsCardInfo["anGangPai"] = jsAngangedPai;
+		//vPeerCards[vPeerCards.size()] = jsCardInfo;
+
+		sendMsgToPlayer(jsCardInfo, MSG_ROOM_PLAYER_CARD_INFO, nSessionID);
 	}
 
-	jsmsg["playersCard"] = vPeerCards;
-	jsmsg["bankerIdx"] = getBankerIdx();
-	jsmsg["curActIdex"] = getCurRoomState()->getCurIdx();
-	jsmsg["leftCardCnt"] = getMJPoker()->getLeftCardCount();
-	sendMsgToPlayer(jsmsg, MSG_ROOM_PLAYER_CARD_INFO, nSessionID);
+	//jsmsg["playersCard"] = vPeerCards;
+	//jsmsg["bankerIdx"] = getBankerIdx();
+	//jsmsg["curActIdex"] = getCurRoomState()->getCurIdx();
+	//jsmsg["leftCardCnt"] = getMJPoker()->getLeftCardCount();
+	/*sendMsgToPlayer(jsmsg, MSG_ROOM_PLAYER_CARD_INFO, nSessionID);*/
 	LOGFMTD("send player card infos !");
 }
 
@@ -250,6 +262,34 @@ bool IMJRoom::onMessage(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nPlayerS
 
 bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)
 {
+	if ( MSG_PLAYER_REQUEST_TRUSTEED == nMsgType)
+	{
+		auto pPlayer = getMJPlayerBySessionID(nSessionID);
+		if (!pPlayer)
+		{
+			Json::Value jsMsg;
+			jsMsg["ret"] = 1;
+			sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
+			return true;
+		}
+
+		if (prealMsg["isTrusteed"].isNull() || prealMsg["isTrusteed"].isInt() == false)
+		{
+			LOGFMTE("player uid = %u set tuo guan  argument error ",pPlayer->getUID());
+			Json::Value jsMsg;
+			jsMsg["ret"] = 1;
+			sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
+			return true;
+		}
+
+		Json::Value jsMsg;
+		jsMsg["ret"] = 0;
+		sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
+
+		onPlayerTrusteedStateChange(pPlayer->getIdx(), prealMsg["isTrusteed"].asUInt() == 1);
+		return true;
+	}
+
 	if ( MSG_PLAYER_LEAVE_ROOM == nMsgType )
 	{
 		//LOGFMTE("sub class must process this msg");
@@ -267,6 +307,7 @@ bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPo
 			onPlayerApplyLeave(pPlayer->getUID());
 		}
 		sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
+		LOGFMTI("返回玩家离开房间的消息， sesssioniID = %u", nSessionID);
 		return true;;
 	}
 
@@ -288,10 +329,14 @@ bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPo
 			LOGFMTE("update coin error ,you don't int ther room id = %u  , uid = %u", nRoomID, nUID);
 		}
 
-		Json::Value jsmsgBack;
-		jsmsgBack["coin"] = nCoin;
-		jsmsgBack["diamond"] = nDiamond;
-		sendMsgToPlayer(jsmsgBack, MSG_REQ_UPDATE_COIN, nSessionIDThis);
+		if (getDelegate() == nullptr)
+		{
+			Json::Value jsmsgBack;
+			jsmsgBack["coin"] = nCoin;
+			jsmsgBack["diamond"] = nDiamond;
+			sendMsgToPlayer(jsmsgBack, MSG_REQ_UPDATE_COIN, nSessionIDThis);
+		}
+
 		return true;
 	}
 
@@ -327,7 +372,7 @@ void IMJRoom::sendRoomMsg(Json::Value& prealMsg, uint16_t nMsgType)
 {
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref)
+		if (ref && ref->isTempLeaveRoom() == false )
 		{
 			sendMsgToPlayer(prealMsg,nMsgType,ref->getSessionID());
 		}
@@ -366,6 +411,7 @@ bool IMJRoom::sitdown(IMJPlayer* pPlayer, uint8_t nIdx)
 	jsMsg["uid"] = pPlayer->getUID();
 	jsMsg["coin"] = pPlayer->getCoin();
 	jsMsg["state"] = pPlayer->getState();
+	jsMsg["isTrusteed"] = pPlayer->isTrusteed() ? 1 : 0;
 	sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_ENTER);
 	return true;
 }
@@ -379,6 +425,7 @@ bool IMJRoom::standup(uint32_t nUID)
 			// msg ;
 			Json::Value jsMsg;
 			jsMsg["idx"] = ref->getIdx();
+			jsMsg["isExit"] = 1;
 			sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_LEAVE);
 
 			delete ref;
@@ -498,9 +545,11 @@ void IMJRoom::startGame()
 	Json::Value msg;
 	Json::Value peerCards[4]; // used for sign for msg ;
 
-	uint8_t nDice = rand() % getSeatCnt();
+	uint8_t nDice = 2 + rand() % 11;
 	auto pPoker = getMJPoker();
+	LOGFMTD("room id = %u start game shuffle card , Dice = %u",getRoomID(),nDice);
 	pPoker->shuffle();
+	LOGFMTD("room id = %u shuffle end", getRoomID());
 	for (auto& pPlayer : m_vMJPlayers)
 	{
 		if (!pPlayer)
@@ -519,14 +568,50 @@ void IMJRoom::startGame()
 		}
 
 		LOGFMTD("distribute card for player idx = %u and decrease desk fee = %u",pPlayer->getIdx(),getRoomConfig()->nDeskFee );
+		
 		for (uint8_t nIdx = 0; nIdx < 13; ++nIdx)
 		{
+			//if (pPlayer->getIdx() == 2 && nIdx < 6)
+			//{
+			//	continue;
+			//}
+
 			auto nCard = pPoker->distributeOneCard();
+			/*auto nCardF = make_Card_Num(eCT_Tiao, 9);
+			auto nCardT = make_Card_Num(eCT_Tong, 7);
+			while ( nCard == nCardF || nCardT == nCard )
+			{
+				nCard = pPoker->distributeOneCard();
+			}*/
+
 			pPlayer->getPlayerCard()->addDistributeCard(nCard);
 
-			peerCards[pPlayer->getIdx()][nIdx] = nCard; // sign for msg ;
-			LOGFMTD("card idx = %u card number = %u", nIdx,nCard);
+			peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
+			//LOGFMTD("card idx = %u card number = %u", nIdx,nCard);
 		}
+
+		//if (pPlayer->getIdx() == 2)
+		//{
+		//	auto nCard = make_Card_Num(eCT_Tiao, 9);
+		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
+		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
+		//	nCard = make_Card_Num(eCT_Tiao, 9);
+		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
+		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
+		//	nCard = make_Card_Num(eCT_Tiao, 9);
+		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
+		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
+
+		//	nCard = make_Card_Num(eCT_Tong, 7);
+		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
+		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
+		//	nCard = make_Card_Num(eCT_Tong, 7);
+		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
+		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
+		//	nCard = make_Card_Num(eCT_Tong, 7);
+		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
+		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
+		//}
 
 		if (getBankerIdx() == pPlayer->getIdx())
 		{
@@ -1058,4 +1143,125 @@ void IMJRoom::setInitState(IMJRoomState* pState)
 uint32_t IMJRoom::getCoinNeedToSitDown()
 {
 	return ((stMJRoomConfig*)getRoomConfig())->nEnterLowLimit;
+}
+
+void IMJRoom::onCheckTrusteeForWaitPlayerAct(uint8_t nIdx, bool isMayBeHu)
+{
+	auto pPlayer = getMJPlayerByIdx(nIdx);
+	if (pPlayer == nullptr)
+	{
+		LOGFMTE("waht player act ,but player is nullptr");
+		return;
+	}
+
+	if (pPlayer->isTrusteed() == false)
+	{
+		return;
+	}
+
+	pPlayer->setTrusteeActFunc([this, nIdx, isMayBeHu](CTimer* pT, float ft)
+	{
+		auto pPlayer = getMJPlayerByIdx(nIdx);
+		if (pPlayer == nullptr)
+		{
+			LOGFMTE("setTrusteeActFunc waht player act ,but player is nullptr");
+			return;
+		}
+
+		if (pPlayer->isTrusteed() == false)
+		{
+			LOGFMTD("player cannecled trustee act ");
+			return;
+		}
+
+		auto playerCard = pPlayer->getPlayerCard();
+		Json::Value jsmsg;
+		if (isMayBeHu && playerCard->isHoldCardCanHu())
+		{
+			jsmsg["actType"] = eMJAct_Hu;
+			jsmsg["card"] = playerCard->getNewestFetchedCard();
+		}
+		else
+		{
+			jsmsg["actType"] = eMJAct_Chu;
+			jsmsg["card"] = getAutoChuCardWhenWaitActTimeout(nIdx);;
+		}
+		LOGFMTD("%u player tuo guan do act = %u", pPlayer->getUID(), jsmsg["actType"].asUInt());
+		onMsg(jsmsg, MSG_PLAYER_ACT, ID_MSG_PORT_CLIENT, pPlayer->getSessionID());
+	}
+	);
+}
+
+
+void IMJRoom::onCheckTrusteeForHuOtherPlayerCard(std::vector<uint8_t> vPlayerIdx, uint8_t nTargetCard)
+{
+	for (auto& nIdx : vPlayerIdx)
+	{
+		auto pPlayer = getMJPlayerByIdx(nIdx);
+		if (pPlayer == nullptr)
+		{
+			LOGFMTE("onCheckTrusteeForHuOtherPlayerCard player act ,but player is nullptr");
+			continue;
+		}
+
+		if (pPlayer->isTrusteed() == false)
+		{
+			continue;
+		}
+
+		pPlayer->setTrusteeActFunc([this, nIdx, nTargetCard](CTimer* pT, float ft)
+		{
+			auto pPlayer = getMJPlayerByIdx(nIdx);
+			if (pPlayer == nullptr)
+			{
+				LOGFMTE("setTrusteeActFunc waht player act ,but player is nullptr");
+				return;
+			}
+
+			if (pPlayer->isTrusteed() == false)
+			{
+				LOGFMTD("player cannecled trustee act ");
+				return;
+			}
+
+			auto playerCard = pPlayer->getPlayerCard();
+			Json::Value jsmsg;
+			if ( playerCard->canHuWitCard(nTargetCard) )
+			{
+				jsmsg["actType"] = eMJAct_Hu;
+				jsmsg["card"] = nTargetCard;
+			}
+			else
+			{
+				jsmsg["actType"] = eMJAct_Pass;
+				jsmsg["card"] = 0;
+			}
+			LOGFMTD("%u player tuo guan do act = %u  about other card", pPlayer->getUID(), jsmsg["actType"].asUInt());
+			onMsg(jsmsg, MSG_PLAYER_ACT, ID_MSG_PORT_CLIENT, pPlayer->getSessionID());
+		}
+		);
+	}
+}
+
+void IMJRoom::onPlayerTrusteedStateChange(uint8_t nPlayerIdx, bool isTrusteed)
+{
+	if (getDelegate())
+	{
+		LOGFMTD("vip room should not have tuo guan function %u",getRoomID() );
+		return;
+	}
+
+	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
+	if (!pPlayer)
+	{
+		LOGFMTE("room id = %u , player idx = %u is nulljptr trusteed state change",getRoomID(),nPlayerIdx);
+		return;
+	}
+
+	pPlayer->switchTrusteed(isTrusteed);
+	Json::Value js;
+	js["idx"] = pPlayer->getIdx();
+	js["isTrusteed"] = isTrusteed ? 1 : 0 ;
+	sendRoomMsg(js, MSG_ROOM_REQUEST_TRUSTEED);
+	LOGFMTD("room id = %u , player idx = %u update trusteed state = %u " ,getRoomID(),nPlayerIdx,isTrusteed );
 }

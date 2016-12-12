@@ -16,6 +16,9 @@
 #include "IGameRoomManager.h"
 #include "RobotDispatchStrategy.h"
 #include "XLRoomStateWaitPlayerAct.h"
+#include "XLRoomStateAskPengOrHu.h"
+#include "XLRoomStateAskForRobotGang.h"
+#define MAX_BEISHU 32
 bool XLMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	IMJRoom::init(pRoomMgr, pConfig, nRoomID, vJsValue);
@@ -23,7 +26,7 @@ bool XLMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	// create state and add state ;
 	IMJRoomState* vState[] = {
 		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new XLRoomStateWaitPlayerAct(), new XLRoomStateStartGame()
-		, new MJRoomStateGameEnd(), new XLRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(), new XLRoomStateWaitDecideQue(), new XLRoomStateWaitSupplyCoin()
+		, new MJRoomStateGameEnd(), new XLRoomStateDoPlayerAct(), new XLRoomStateAskForPengOrHu(), new XLRoomStateAskForRobotGang(),new XLRoomStateWaitDecideQue(), new XLRoomStateWaitSupplyCoin()
 	};
 	for (uint8_t nIdx = 0; nIdx < sizeof(vState) / sizeof(IMJRoomState*); ++nIdx)
 	{
@@ -45,6 +48,10 @@ bool XLMJRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 		return false;
 	}
 
+	Json::Value jsMsg;
+	jsMsg["idx"] = pPlayer->getIdx();
+	sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_LEAVE); // tell other player leave ;
+
 	auto curState = getCurRoomState()->getStateID();
 	if (eRoomSate_WaitReady == curState || eRoomState_GameEnd == curState || pPlayer->haveState(eRoomPeer_DecideLose) )
 	{
@@ -60,6 +67,7 @@ bool XLMJRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 		msgdoLeave.nRoundsPlayed = 1;
 		msgdoLeave.nGameOffset = pPlayer->getOffsetCoin();
 		getRoomMgr()->sendMsg(&msgdoLeave, sizeof(msgdoLeave), pPlayer->getSessionID());
+		LOGFMTD("player uid = %u , leave room id = %u",pPlayer->getUID(),getRoomID());
 
 		if (eRoomSate_WaitReady == curState || eRoomState_GameEnd == curState)  // when game over or not start , delte player in room data ;
 		{
@@ -71,9 +79,11 @@ bool XLMJRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 		else 
 		{
 			pPlayer->setState((pPlayer->getState() | eRoomPeer_LoserLeave));
-			LOGFMTE("decide player already sync data uid = %u" , pPlayer->getUID());
+			LOGFMTE("decide player already sync data uid = %u room id = %u" , pPlayer->getUID(),getRoomID());
 		}
 	}
+	pPlayer->doTempLeaveRoom();
+	onPlayerTrusteedStateChange(pPlayer->getIdx(), true);
 	return true;
 }
 
@@ -93,61 +103,63 @@ uint8_t XLMJRoom::checkPlayerCanEnter(stEnterRoomData* pEnterRoomPlayer)
 	return 0;
 }
 
-void XLMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
-{
-	auto pPlayer = getMJPlayerByIdx(nIdx);
-	if (!pPlayer->haveState(eRoomPeer_AlreadyHu))
-	{
-		IMJRoom::onWaitPlayerAct(nIdx,isCanPass);
-		return;
-	}
-
-	// can only hu , or bu gang ;  when already hu ;
-	auto pMJCard = pPlayer->getPlayerCard();
-	// send msg to tell player do act 
-	Json::Value jsArrayActs;
-
-	if (isCanGoOnMoPai())
-	{
-		// check bu gang .
-		IMJPlayerCard::VEC_CARD vCards;
-		pMJCard->getHoldCardThatCanBuGang(vCards);
-		for (auto& ref : vCards)
-		{
-			if (ref != pMJCard->getNewestFetchedCard())
-			{
-				continue;
-			}
-			Json::Value jsAct;
-			jsAct["act"] = eMJAct_BuGang;
-			jsAct["cardNum"] = ref;
-			jsArrayActs[jsArrayActs.size()] = jsAct;
-		}
-	}
-
-	// check hu .
-	if (pMJCard->isHoldCardCanHu())
-	{
-		Json::Value jsAct;
-		jsAct["act"] = eMJAct_Hu;
-		jsAct["cardNum"] = pMJCard->getNewestFetchedCard();
-		jsArrayActs[jsArrayActs.size()] = jsAct;
-	}
-
-	isCanPass = jsArrayActs.empty() == false;
-
-	// add default alwasy chu , infact need not add , becaust it alwasy in ,but compatable with current client ;
-	Json::Value jsAct;
-	jsAct["act"] = eMJAct_Chu;
-	jsAct["cardNum"] = getAutoChuCardWhenWaitActTimeout(nIdx);
-	jsArrayActs[jsArrayActs.size()] = jsAct;
-
-	Json::Value jsMsg;
-	jsMsg["acts"] = jsArrayActs;
-	sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_AFTER_RECEIVED_CARD, pPlayer->getSessionID());
-
-	LOGFMTD("already hu , tell player idx = %u do act size = %u", nIdx, jsArrayActs.size());
-}
+//void XLMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
+//{
+//	auto pPlayer = getMJPlayerByIdx(nIdx);
+//	if (!pPlayer->haveState(eRoomPeer_AlreadyHu))
+//	{
+//		IMJRoom::onWaitPlayerAct(nIdx,isCanPass);
+//		return;
+//	}
+//
+//	// can only hu , or bu gang ;  when already hu ;
+//	auto pMJCard = pPlayer->getPlayerCard();
+//	// send msg to tell player do act 
+//	Json::Value jsArrayActs;
+//
+//	if (isCanGoOnMoPai())
+//	{
+//		// check bu gang .
+//		IMJPlayerCard::VEC_CARD vCards;
+//		pMJCard->getHoldCardThatCanBuGang(vCards);
+//		for (auto& ref : vCards)
+//		{
+//			if (ref != pMJCard->getNewestFetchedCard())
+//			{
+//				LOGFMTD("room id = %u have bu gang card = %u , but not nest get card = %u", getRoomID(), ref, pMJCard->getNewestFetchedCard());
+//				continue;
+//			}
+//			Json::Value jsAct;
+//			jsAct["act"] = eMJAct_BuGang;
+//			jsAct["cardNum"] = ref;
+//			jsArrayActs[jsArrayActs.size()] = jsAct;
+//			LOGFMTD("room id =%u player already hu , tell client bu gang card = %u ",getRoomID(),ref);
+//		}
+//	}
+//
+//	// check hu .
+//	if (pMJCard->isHoldCardCanHu())
+//	{
+//		Json::Value jsAct;
+//		jsAct["act"] = eMJAct_Hu;
+//		jsAct["cardNum"] = pMJCard->getNewestFetchedCard();
+//		jsArrayActs[jsArrayActs.size()] = jsAct;
+//	}
+//
+//	isCanPass = jsArrayActs.empty() == false;
+//
+//	// add default alwasy chu , infact need not add , becaust it alwasy in ,but compatable with current client ;
+//	Json::Value jsAct;
+//	jsAct["act"] = eMJAct_Chu;
+//	jsAct["cardNum"] = getAutoChuCardWhenWaitActTimeout(nIdx);
+//	jsArrayActs[jsArrayActs.size()] = jsAct;
+//
+//	Json::Value jsMsg;
+//	jsMsg["acts"] = jsArrayActs;
+//	sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_AFTER_RECEIVED_CARD, pPlayer->getSessionID());
+//
+//	LOGFMTD("already hu , tell player idx = %u do act size = %u", nIdx, jsArrayActs.size());
+//}
 
 void XLMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 {
@@ -176,7 +188,7 @@ void XLMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 	auto pSettle = new stSettleAnGang(nIdx);
 	for (auto& pPlayer : m_vMJPlayers)
 	{
-		if (nullptr == pPlayer || pPlayer->getIdx() == nIdx || pPlayer->haveState(eRoomPeer_AlreadyHu) || pPlayer->haveState(eRoomPeer_DecideLose))
+		if (nullptr == pPlayer || pPlayer->getIdx() == nIdx || canKouPlayerCoin(pPlayer->getIdx()) == false  )
 		{
 			continue;
 		}
@@ -203,7 +215,7 @@ void XLMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 	auto pSettle = new stSettleBuGang(nIdx);
 	for (auto& pPlayer : m_vMJPlayers)
 	{
-		if (nullptr == pPlayer || pPlayer->getIdx() == nIdx || pPlayer->haveState(eRoomPeer_AlreadyHu) || pPlayer->haveState(eRoomPeer_DecideLose))
+		if (nullptr == pPlayer || pPlayer->getIdx() == nIdx || canKouPlayerCoin(pPlayer->getIdx()) == false)
 		{
 			continue;
 		}
@@ -244,7 +256,14 @@ void XLMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		pMJCard->onGangCardBeRobot(nCard);
 	}
 
+	if (pDianPaoPlayer == nullptr)
+	{  
+		LOGFMTE("room id = %u why dian pao player is nullptr ? ", getRoomID() );
+		return;
+	}
+
 	auto pSettle = new stSettleDiaoPao(nInvokeIdx, isRobotGang, isGangShangPao);
+	LOGFMTD("room id = %u add dian pao settle uid = %u , hu size = %u",getRoomID(),pDianPaoPlayer->getUID(),vHuIdx.size());
 	for (auto& nidx : vHuIdx)
 	{
 		auto pHuPlayer = (XLMJPlayer*)getMJPlayerByIdx(nidx);
@@ -261,21 +280,30 @@ void XLMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		}
 
 		auto pHuCard = (XLMJPlayerCard*)pHuPlayer->getPlayerCard();
-		pHuPlayer->setState(eRoomPeer_AlreadyHu);
 
 		uint32_t nHuType = 0; uint8_t nBeiShu = 0 , nGenCnt = 0 ;
 		if (pHuCard->onDoHu(false,nCard, nHuType, nBeiShu, nGenCnt) == false)
 		{
-			LOGFMTE("hu card return false when hu do hu , idx = %u ,card = %u",nidx,nCard);
+			LOGFMTE("room id = %u hu card return false when hu do hu , idx = %u ,card = %u",getRoomID(),nidx,nCard);
 			continue;
 		}
+		pHuPlayer->setState(eRoomPeer_AlreadyHu);
 
 		// do caculate coin ;
 		if (isRobotGang || isGangShangPao)  // qiang gang he gang shang pao dou jia yi fan ;
 		{
 			nBeiShu *= 2;  //  yi fan , means * 2 ;
 		}
-		nBeiShu += nGenCnt;  // add gen cnt ;
+	
+		for (uint8_t nGenF = 0; nGenF < nGenCnt; ++nGenF)
+		{
+			nBeiShu *= 2; // add gen cnt fan;
+		}
+
+		if (nBeiShu > MAX_BEISHU)
+		{
+			nBeiShu = MAX_BEISHU;
+		}
 
 		uint32_t nSettleCoin = getBaseBet() * nBeiShu;
 		if ((int32_t)nSettleCoin > pDianPaoPlayer->getCoin())
@@ -300,6 +328,7 @@ void XLMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		msg["fanShu"] = nBeiShu;
 		sendRoomMsg(msg, MSG_ROOM_ACT);
 
+		LOGFMTD("room id = %u uid = %u hu dianpao uid = %u  beishu = %u , coin = %u huType = %u gen = %u", getRoomID(), pHuPlayer->getUID(), pDianPaoPlayer->getUID(), nBeiShu, nSettleCoin, nHuType, nGenCnt);
 		// if no coin will not go settle 
 		if (pDianPaoPlayer->getCoin() <= 0)
 		{
@@ -310,9 +339,9 @@ void XLMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 	addSettle(pSettle);
 }
 
-void XLMJRoom::onPlayerZiMo(uint8_t nIdx, uint8_t nCard)
+void XLMJRoom::onPlayerZiMo(uint8_t nPlayerIdx, uint8_t nCard)
 {
-	auto pZiMoPlayer = (XLMJPlayer*)getMJPlayerByIdx(nIdx);
+	auto pZiMoPlayer = (XLMJPlayer*)getMJPlayerByIdx(nPlayerIdx);
 	auto pHuCard = (XLMJPlayerCard*)pZiMoPlayer->getPlayerCard();
 	bool isGangShangHua = pZiMoPlayer->haveGangFalg();
 
@@ -320,7 +349,7 @@ void XLMJRoom::onPlayerZiMo(uint8_t nIdx, uint8_t nCard)
 	uint32_t nHuType = 0; uint8_t nBeiShu = 0, nGenCnt = 0;
 	if (pHuCard->onDoHu(true, nCard, nHuType, nBeiShu, nGenCnt) == false)
 	{
-		LOGFMTE("hu card return false when hu do hu , idx = %u ,card = %u", nIdx, nCard);
+		LOGFMTE("hu card return false when hu do hu , idx = %u ,card = %u", nPlayerIdx, nCard);
 		return;
 	}
 	pZiMoPlayer->setState(eRoomPeer_AlreadyHu);
@@ -328,16 +357,28 @@ void XLMJRoom::onPlayerZiMo(uint8_t nIdx, uint8_t nCard)
 	{
 		nBeiShu *= 2; // jia yi fan 
 	}
-	nBeiShu += nGenCnt;
+
+	for (uint8_t nIdx = 0; nIdx < nGenCnt; ++nIdx)
+	{
+		nBeiShu *= 2; // jia yi fan , mei yi ge gen 
+	}
+
+	nBeiShu *= 2; // jia yi fan , yin wei zi mo ;
+	
+	if (nBeiShu > MAX_BEISHU)
+	{
+		nBeiShu = MAX_BEISHU;
+	}
 
 	pZiMoPlayer->updateFanXingAndFanShu(nHuType, nBeiShu);
 	
-	auto pSettle = new stSettleZiMo(nIdx,nHuType,nBeiShu);
-	auto nNeedCoinPerPlayer = getBaseBet() * nBeiShu;
+	auto pSettle = new stSettleZiMo(nPlayerIdx, nHuType, nBeiShu, isGangShangHua);
+	auto nNeedCoinPerPlayer = getBaseBet() * nBeiShu ; 
+	LOGFMTD("room id = %u add zi mo settle  uid = %u  bei shu = %u ",getRoomID(),pZiMoPlayer->getUID(),nBeiShu);
 	// do caculate coin 
 	for (auto& pLoser : m_vMJPlayers)
 	{
-		if (pLoser == nullptr || pLoser->getIdx() == nIdx || pLoser->haveState(eRoomPeer_DecideLose))
+		if (pLoser == nullptr || pLoser->getIdx() == nPlayerIdx || canKouPlayerCoin(pLoser->getIdx()) == false)
 		{
 			continue;
 		}
@@ -348,10 +389,11 @@ void XLMJRoom::onPlayerZiMo(uint8_t nIdx, uint8_t nCard)
 			nSettleCoin = pLoser->getCoin();
 		}
 
-		pZiMoPlayer->addOffsetCoin(nSettleCoin);
+		pZiMoPlayer->addOffsetCoin(nSettleCoin);   
 		pLoser->addOffsetCoin(-1 * (int32_t)nSettleCoin);
 
 		pSettle->addLosePlayer(pLoser->getIdx(), nSettleCoin);
+		LOGFMTD("room id = %u , uid = %u zi mo , win uid = %u , offset = %u" ,getRoomID(),pZiMoPlayer->getUID(),pLoser->getUID(),nSettleCoin);
 	}
 
 	// send hu act msg to client ;
@@ -389,9 +431,10 @@ void XLMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 		jsCardInfo["idx"] = pp->getIdx();
 		jsCardInfo["queType"] = pCard->getQueType();
 
-		IMJPlayerCard::VEC_CARD vAnPai, vMingPai, vChuPai, vHuPai, temp;
+		IMJPlayerCard::VEC_CARD vAnPai, vMingPai, vChuPai, vHuPai, vAnGangedCard, temp;
 		pCard->getHoldCard(vAnPai);
 		pCard->getChuedCard(vChuPai);
+		pCard->getAnGangedCard(vAnGangedCard);
 
 		pCard->getEatedCard(vMingPai);
 		pCard->getPengedCard(temp);
@@ -417,18 +460,14 @@ void XLMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 			}
 		};
 
-		Json::Value jsMingPai, jsAnPai, jsChuPai, jsHupai;
-		toJs(vMingPai, jsMingPai); toJs(vAnPai, jsAnPai); toJs(vChuPai, jsChuPai);toJs(vHuPai,jsHupai);
+		Json::Value jsMingPai, jsAnPai, jsChuPai, jsHupai, jsAngangedPai;
+		toJs(vMingPai, jsMingPai); toJs(vAnPai, jsAnPai); toJs(vChuPai, jsChuPai); toJs(vHuPai, jsHupai); toJs(vAnGangedCard, jsAngangedPai);
 		jsCardInfo["mingPai"] = jsMingPai; jsCardInfo["anPai"] = jsAnPai; jsCardInfo["chuPai"] = jsChuPai; jsCardInfo["huPai"] = jsHupai;
-		vPeerCards[vPeerCards.size()] = jsCardInfo;
+		jsCardInfo["anGangPai"] = jsAngangedPai;
+		//vPeerCards[vPeerCards.size()] = jsCardInfo;
+		sendMsgToPlayer(jsCardInfo, MSG_ROOM_PLAYER_CARD_INFO, nSessionID);
+		LOGFMTD("send player card infos !");
 	}
-
-	jsmsg["playersCard"] = vPeerCards;
-	jsmsg["bankerIdx"] = getBankerIdx();
-	jsmsg["curActIdex"] = getCurRoomState()->getCurIdx();
-	jsmsg["leftCardCnt"] = getMJPoker()->getLeftCardCount();
-	sendMsgToPlayer(jsmsg, MSG_ROOM_PLAYER_CARD_INFO, nSessionID);
-	LOGFMTD("send player card infos !");
 }
 
 bool XLMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
@@ -445,7 +484,7 @@ bool XLMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 		{
 			return true;
 		}
-
+		
 		if (pMJCard->canHuWitCard(nCard))
 		{
 			return true;
@@ -677,22 +716,28 @@ void XLMJRoom::onGameEnd()
 {
 	// cha hua zhu when liu ju (more then two player not hu , include 2 );
 	// check liu ju 
-	uint8_t nNotHuPlayer = 0;
-	for (auto& ref : m_vMJPlayers)
-	{
-		if (ref && (ref->haveState(eRoomPeer_AlreadyHu) == false) && ( ref->haveState(eRoomPeer_DecideLose) == false ) )
-		{
-			++nNotHuPlayer;
-		}
-	}
+	//uint8_t nNotHuPlayer = 0;
+	//for (auto& ref : m_vMJPlayers)
+	//{
+	//	if (ref && (ref->haveState(eRoomPeer_AlreadyHu) == false) && ( ref->haveState(eRoomPeer_DecideLose) == false ) )
+	//	{
+	//		++nNotHuPlayer;
+	//	}
+	//}
 
-	std::vector<uint8_t> vecHuaZhu;
-	if ( nNotHuPlayer >= 2)
-	{
-		doChaHuaZhu(vecHuaZhu);
+	//std::vector<uint8_t> vecHuaZhu;
+	//if ( nNotHuPlayer >= 2)
+	//{
+		// cha hua zhu 
+		//doChaHuaZhu(vecHuaZhu);
 		// cha da jiao ;  // when da jiao  give back , gang win , all type of gang ;
-		doChaDaJiao(vecHuaZhu);
-	}
+		//doChaDaJiao(vecHuaZhu);
+	//}
+	std::vector<uint8_t> vecHuaZhu;
+	// cha hua zhu 
+	doChaHuaZhu(vecHuaZhu);
+	// cha da jiao ;  // when da jiao  give back , gang win , all type of gang ;
+	doChaDaJiao(vecHuaZhu);
 
 	// send game over msg ;
 	LOGFMTI("GAME OVER : ");
@@ -778,7 +823,8 @@ void XLMJRoom::doChaHuaZhu(std::vector<uint8_t>& vHuaZhu)
 		return;
 	}
 	// hua zhu give coin to not hua zhu player ;
-	uint32_t nHuaZhuBaseLose = getBaseBet(); 
+	uint8_t nBeiShu = MAX_BEISHU;
+	uint32_t nHuaZhuBaseLose = getBaseBet() * nBeiShu;
 	for (auto& nHuaZhuIdx : vHuaZhu)
 	{
 		auto pHuaZhu = getMJPlayerByIdx(nHuaZhuIdx);
@@ -787,6 +833,7 @@ void XLMJRoom::doChaHuaZhu(std::vector<uint8_t>& vHuaZhu)
 			continue;
 		}
 
+		LOGFMTD("room id = %u cha hua zhu uid = %u ",getRoomID(),pHuaZhu->getUID());
 		auto pSettle = new stSettleHuaZhu(nHuaZhuIdx);
 		// give coin to None HuaZhu player ;
 		for (auto& notHuZhu : vNotHuaZhu)
@@ -801,7 +848,8 @@ void XLMJRoom::doChaHuaZhu(std::vector<uint8_t>& vHuaZhu)
 			pHuaZhu->addOffsetCoin((int32_t)nLoseCoin * -1 );
 			pNotHuaZhu->addOffsetCoin(nLoseCoin);
 
-			pSettle->addHuPlayer(notHuZhu, nLoseCoin, 0, 0);
+			pSettle->addHuPlayer(notHuZhu, nLoseCoin, 0, nBeiShu);
+			LOGFMTD("room id = %u , huaZhu uid = %u , not huaZhu = %u , coin = %u",getRoomID(),pHuaZhu->getUID(),pNotHuaZhu->getUID(),nLoseCoin);
 			if (pHuaZhu->getCoin() == 0)
 			{
 				LOGFMTD("huazhu idx = %u lose all room id = %u",nHuaZhuIdx,getRoomID());
@@ -868,13 +916,14 @@ void XLMJRoom::doChaDaJiao(std::vector<uint8_t>& vHuaZhu)
 			continue;
 		}
 
+		LOGFMTD("room id = %u cha da jiao = %u ", getRoomID(),pPlayerDaJiao->getUID());
 		auto pSettle = new stSettleDaJiao(nDaJiaoIdx);
 		// give coin to None HuaZhu player ;
 		for (auto& nTingIdx : vTingPai )
 		{
 			auto pTingPaiPlayer = getMJPlayerByIdx(nTingIdx);
 			auto pTingPlayerCard = (XLMJPlayerCard*)pTingPaiPlayer->getPlayerCard();
-			uint32_t nLoseCoin = pTingPlayerCard->getMaxPossibleBeiShu() * getBaseBet();
+			uint32_t nLoseCoin = min(MAX_BEISHU,pTingPlayerCard->getMaxPossibleBeiShu()) * getBaseBet();
 			if (nLoseCoin == 0)
 			{
 				LOGFMTE("why i hu is cha jiao win 0 ? my card is : ");
@@ -889,6 +938,7 @@ void XLMJRoom::doChaDaJiao(std::vector<uint8_t>& vHuaZhu)
 			pTingPaiPlayer->addOffsetCoin(nLoseCoin);
 
 			pSettle->addHuPlayer(nTingIdx, nLoseCoin, 0, 0);
+			LOGFMTD("room id = %u , da jiao uid = %u lose coin = %u to TingPaiPlayer = %u", getRoomID(), pPlayerDaJiao->getUID(),nLoseCoin,pTingPaiPlayer->getUID());
 			if (pPlayerDaJiao->getCoin() == 0)
 			{
 				LOGFMTD("DaJiao idx = %u lose all room id = %u", nDaJiaoIdx, getRoomID());
@@ -1076,7 +1126,8 @@ bool XLMJRoom::getWaitSupplyCoinPlayerIdxs(std::vector<uint8_t>& vOutWaitSupplyI
 			continue;
 		}
 
-		if (pPlayer->getCoin() < (int32_t)nLowLimit)
+		//if (pPlayer->getCoin() < (int32_t)nLowLimit)
+		if (pPlayer->getCoin() <= 0 )
 		{
 			vOutWaitSupplyIdx.push_back(pPlayer->getIdx());
 		}
@@ -1095,4 +1146,52 @@ void XLMJRoom::infoPlayerSupplyCoin(std::vector<uint8_t>& vOutWaitSupplyIdx)
 	}
 	js["players"] = jsArray;
 	sendRoomMsg(js, MSG_ROOM_INFORM_SUPPLY_COIN);
+}
+
+uint8_t XLMJRoom::getAutoChuCardWhenWaitActTimeout(uint8_t nIdx)
+{
+	auto pp = getMJPlayerByIdx(nIdx);
+	if (nullptr == pp)
+	{
+		LOGFMTE("player is null for idx = %u",nIdx);
+		return 0;
+	}
+
+	auto pCard = (XLMJPlayerCard*)pp->getPlayerCard();
+	auto nCard = pCard->getQueTypeCardForChu();
+	if (nCard)
+	{
+		return nCard;
+	}
+
+	return IMJRoom::getAutoChuCardWhenWaitActTimeout(nIdx);
+}
+
+uint8_t XLMJRoom::getAutoChuCardWhenWaitChuTimeout(uint8_t nIdx)
+{
+	auto pp = getMJPlayerByIdx(nIdx);
+	if (nullptr == pp)
+	{
+		LOGFMTE("player is null for idx = %u", nIdx);
+		return 0;
+	}
+
+	auto pCard = (XLMJPlayerCard*)pp->getPlayerCard();
+	auto nCard = pCard->getQueTypeCardForChu();
+	if (nCard)
+	{
+		return nCard;
+	}
+
+	return IMJRoom::getAutoChuCardWhenWaitChuTimeout(nIdx);
+}
+
+bool XLMJRoom::canKouPlayerCoin(uint8_t nPlayerIdx)
+{
+	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
+	if (nullptr == pPlayer || pPlayer->haveState(eRoomPeer_DecideLose) )
+	{
+		return false;
+	}
+	return true;
 }

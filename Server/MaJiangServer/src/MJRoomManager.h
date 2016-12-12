@@ -9,6 +9,7 @@ class MJRoomManager
 public:
 	struct stVipRoomBill
 	{
+		uint32_t nBillID;
 		uint32_t nRoomID;
 		uint32_t nCreateUID;
 		uint32_t nRoomType;
@@ -25,6 +26,8 @@ public:
 	};
 
 	typedef std::map<uint32_t, IGameRoom*> MAP_MJROOM;
+	typedef std::vector<uint32_t> VEC_ROOMID;
+	typedef std::map<uint16_t, VEC_ROOMID> MAP_CONFIG_ROOMID;
 
 	typedef std::shared_ptr<stVipRoomBill> VIP_ROOM_BILL_SHARED_PTR;
 	typedef std::map<uint32_t, std::shared_ptr<stVipRoomBill>> MAP_VIP_BILL;
@@ -47,10 +50,14 @@ public:
 	void addWillDeleteRoomID(uint32_t nDelRoomID );
 protected:
 	bool processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nSessionID);
+	uint32_t generateRoomID();
+	IGameRoom* randRoomToEnterByConfigID( uint32_t nRoomConfigID );
+	IGameRoom* doCreatePublicRoom( uint16_t nConfigID );
 	IGameRoom* doCreatePrivateRoom( uint16_t nConfigID , Json::Value& jsArg);
 	uint32_t genPrivateRoomID();
 protected:
 	MAP_MJROOM m_vRooms;
+	MAP_CONFIG_ROOMID m_vPublicRooms;
 	std::map<uint32_t, std::shared_ptr<stReqVipRoomBillPlayers>> m_vReqingBillInfoPlayers;
 protected:
 	MAP_VIP_BILL m_vVipRoomBills;

@@ -21,12 +21,22 @@ public:
 		m_ePengGangAct = 0;
 
 		IMJRoomState::enterState(pmjRoom, jsTranData);
-		setStateDuringTime(eTime_WaitPlayerAct);
+		setStateDuringTime(pmjRoom->isWaitPlayerActForever() ? 100000000 : eTime_WaitPlayerAct);
 		m_nInvokeIdx = jsTranData["invokeIdx"].asUInt();
 		m_nCard = jsTranData["card"].asUInt();
 		getRoom()->onAskForPengOrHuThisCard(m_nInvokeIdx, m_nCard, m_vWaitHuIdx, m_vWaitPengGangIdx, m_isNeedWaitEat);
 		assert((m_vWaitHuIdx.empty() == false || m_vWaitPengGangIdx.empty() == false) && "invalid argument");
 
+		// wait truastee;
+		std::vector<uint8_t> vWaitTruste;
+		vWaitTruste = m_vWaitHuIdx;
+		vWaitTruste.insert(vWaitTruste.begin(),m_vWaitPengGangIdx.begin(),m_vWaitPengGangIdx.end());
+		if (m_isNeedWaitEat)
+		{
+			auto neatidx = (m_nInvokeIdx + 1) % getRoom()->getSeatCnt();
+			vWaitTruste.push_back(neatidx);
+		}
+		getRoom()->onCheckTrusteeForHuOtherPlayerCard(vWaitTruste, m_nCard);
 	}
 
 	void onStateTimeUp()override
@@ -37,17 +47,84 @@ public:
 			return;
 		}
 
+		if ( doAct() )  // some body time out ,but have player do act ; 
+		{
+			return;
+		}
+
 		Json::Value jsTran;
 		jsTran["idx"] = getRoom()->getNextActPlayerIdx(m_nInvokeIdx);
 		jsTran["act"] = eMJAct_Mo;
 		getRoom()->goToState(eRoomState_DoPlayerAct, &jsTran);
 	}
 
+	void responeReqActList( uint32_t nSessionID )
+	{
+		auto pPlayer = getRoom()->getMJPlayerBySessionID(nSessionID);
+		if (!pPlayer)
+		{
+			LOGFMTE("you are  not in room id = %u , session id = %u , can not send you act list",getRoom()->getRoomID(),nSessionID);
+			return;
+		}
+		Json::Value jsMsg;
+		jsMsg["invokerIdx"] = m_nInvokeIdx;
+		jsMsg["cardNum"] = m_nCard;
+
+		Json::Value jsActs;
+
+		auto iterPeng = std::find(m_vWaitPengGangIdx.begin(), m_vWaitPengGangIdx.end(), pPlayer->getIdx());
+		// check peng 
+		if ( iterPeng != m_vWaitPengGangIdx.end() )
+		{
+			jsActs[jsActs.size()] = eMJAct_Peng;
+		}
+		
+		// check ming gang 
+		if (getRoom()->isCanGoOnMoPai() && pPlayer->getPlayerCard()->canMingGangWithCard(m_nCard))
+		{
+			jsActs[jsActs.size()] = eMJAct_MingGang;
+			// already add in peng ;  vWaitPengGangIdx
+		}
+
+		if (pPlayer->getIdx() == (m_nInvokeIdx + 1) % getRoom()->getSeatCnt() && m_isNeedWaitEat )
+		{
+			jsActs[jsActs.size()] = eMJAct_Chi;
+		}
+
+		// check hu ;
+		auto iterHu = std::find(m_vWaitHuIdx.begin(), m_vWaitHuIdx.end(), pPlayer->getIdx());
+		if ( iterHu != m_vWaitHuIdx.end() )
+		{
+			jsActs[jsActs.size()] = eMJAct_Hu;
+		}
+
+		if (jsActs.empty())
+		{
+			LOGFMTE("you are not in any wait list , so cannot resp you act list room id = %u , uid = %u",getRoom()->getRoomID(),pPlayer->getUID() );
+			return;
+		}
+
+		if (jsActs.size() > 0)
+		{
+			jsActs[jsActs.size()] = eMJAct_Pass;
+		}
+
+		jsMsg["acts"] = jsActs;
+		getRoom()->sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_ABOUT_OTHER_CARD, nSessionID );
+		LOGFMTD("respon act list inform uid = %u act about other card room id = %u card = %u", pPlayer->getUID(), getRoom()->getRoomID(), m_nCard);
+	}
+
 	bool onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)override
 	{
-		if (MSG_PLAYER_ACT != nMsgType)
+		if (MSG_PLAYER_ACT != nMsgType && MSG_REQ_ACT_LIST != nMsgType)
 		{
 			return false;
+		}
+
+		if (MSG_REQ_ACT_LIST == nMsgType)
+		{
+			responeReqActList(nSessionID);
+			return true;
 		}
 
 		auto actType = prealMsg["actType"].asUInt();
@@ -210,7 +287,15 @@ public:
 			return true;
 		}
 		 
-		if ( m_vDoHuIdx.empty() == false )
+		doAct();
+		return true;
+	}
+
+	uint8_t getCurIdx()override{ return m_nInvokeIdx; }
+
+	bool doAct()
+	{
+		if (m_vDoHuIdx.empty() == false)
 		{
 			LOGFMTD("some body do hu ");
 			// do transfer 
@@ -229,7 +314,7 @@ public:
 			getRoom()->goToState(eRoomState_DoPlayerAct, &jsTran);
 			return true;
 		}
-		else if ( !m_vDoPengGangIdx.empty() )
+		else if (!m_vDoPengGangIdx.empty())
 		{
 			// gang or peng ;
 			Json::Value jsTran;
@@ -242,17 +327,20 @@ public:
 		}
 
 		// must do eat
-		Json::Value jsTran;
-		jsTran["idx"] = (m_nInvokeIdx + 1) % getRoom()->getSeatCnt();
-		jsTran["act"] = eMJAct_Chi;
-		jsTran["card"] = m_nCard;
-		jsTran["invokeIdx"] = m_nInvokeIdx;
-		jsTran["eatWithA"] = m_vEatWithInfo[0];
-		jsTran["eatWithB"] = m_vEatWithInfo[1];
-		getRoom()->goToState(eRoomState_DoPlayerAct, &jsTran);
-		return true;
+		if (m_vEatWithInfo.empty() == false)
+		{
+			Json::Value jsTran;
+			jsTran["idx"] = (m_nInvokeIdx + 1) % getRoom()->getSeatCnt();
+			jsTran["act"] = eMJAct_Chi;
+			jsTran["card"] = m_nCard;
+			jsTran["invokeIdx"] = m_nInvokeIdx;
+			jsTran["eatWithA"] = m_vEatWithInfo[0];
+			jsTran["eatWithB"] = m_vEatWithInfo[1];
+			getRoom()->goToState(eRoomState_DoPlayerAct, &jsTran);
+			return true;
+		}
+		return false;
 	}
-	uint8_t getCurIdx()override{ return m_nInvokeIdx; }
 protected:
 	uint8_t m_nInvokeIdx;
 	uint8_t m_nCard;

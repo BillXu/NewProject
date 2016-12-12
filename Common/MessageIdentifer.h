@@ -495,6 +495,125 @@ enum eMsgType
 	// isDismiss : 0 not dismiss , 1 do dismiss room ;
 
 
+	// mj room msg 麻将房间信息。客户端发给svr的信息，必须包含 dstRoomID 的 key 
+
+	MSG_PLAYER_SET_READY = 2554,   // 玩家准备
+	// client : { dstRoomID : 2345 } ;
+
+	MSG_ROOM_PLAYER_READY,  // 其他玩家准备
+	// svr : { idx : 2 }
+
+	MSG_ROOM_START_GAME,  // 开始游戏的消息
+	// svr : { banker: 2 , dice : 3 , peerCards : [ { cards : [1,3,4,5,64,23,64] },{ cards : [1,3,4,5,64,23,64] },{cards : [1,3,4,5,64,23,64] },{ cards : [1,3,4,5,64,23,64] } ] }
+	// banker 庄家的索引 , dice : 骰子的点数； cards ： 玩家的手牌
+
+	MSG_ROOM_WAIT_CHOSE_EXCHANG,  //  通知玩家选择三张牌 进行交互
+	// svr : null 
+
+	MSG_PLAYER_CHOSED_EXCHANGE,   // 玩家选好要交换的牌
+	// client : { dstRoomID : 2345 ,cards: [ 3, 1,2] }
+	// svr : { ret : 0 }
+	// ret : 0 成功 , 1 你选择的牌里面有错误, 2 选择的牌 张数不对 3 . 你没有参加牌局 , 4 你已经选择了，不要选择两次;
+
+	MSG_ROOM_FINISH_EXCHANGE,  //  所有玩家完成选择；
+	// svr : { mode : 0 , result : [ { idx = 0 , cards : [ 2, 4 ,5]}, { idx = 1 , cards : [ 2, 4 ,5]},{ idx = 2 , cards : [ 2, 4 ,5]},{ idx = 3 , cards : [ 2, 4 ,5]}  ] }
+	// mode : 换牌模式， 0 顺时针换 , 1 逆时针换, 2 对家换 
+
+	MSG_ROOM_WAIT_DECIDE_QUE, // 进入等待玩家定缺的状态
+	// svr : null ;
+
+	MSG_PLAYER_DECIDE_QUE,  // 玩家定缺
+	// client : { dstRoomID : 2345 , type : 2 }
+	// type: 定缺的类型，1,万 2, 筒 3, 条
+
+
+	MSG_ROOM_FINISH_DECIDE_QUE,  // 玩家完成 定缺
+	// svr : { ret : [ {type : 0, idx : 2 }, {type : 0, idx : 1 } , {type : 0, idx : 2 }, {type : 0, idx : 3 }] }
+	// 数组对应玩家 定的缺门类型。
+
+	MSG_PLAYER_WAIT_ACT_ABOUT_OTHER_CARD,  // 有人出了一张牌，等待需要这张牌的玩家 操作，可以 碰，杠，胡
+	// svr : { invokerIdx : 2,cardNum : 32 , acts : [type0, type 1 , ..] }  ;
+	// 这个消息不会广播，只会发给需要这张牌的玩家，cardNum 待需要的牌，type 类型参照 eMJActType
+
+	MSG_PLAYER_WAIT_ACT_AFTER_RECEIVED_CARD,  // 自己获得一张牌，杠或者摸，然后可以进行的操作 杠，胡
+	// svr : { acts : [ {act :eMJActType , cardNum : 23 } , {act :eMJActType , cardNum : 56 }, ... ]  }  ;
+	// 这个消息不会广播，只会发给当前操作的玩家，acts： 可操作的数组， 因为获得一张牌，以后可以进行的操作很多。cardNum 操作相对应的牌，type 类型参照 eMJActType
+
+	MSG_PLAYER_ACT, // 玩家操作
+	// client : { dstRoomID : 2345 ,actType : 0 , card : 23 , eatWith : [22,33] }
+	// actType : eMJActType   操作类型，参照枚举值, card 操作的目标牌。eatWith: 当动作类型是吃的时候，这个数组里表示要用哪两张牌吃
+	// svr : { ret : 0 }
+	// ret : 0 操作成功 , 1 没有轮到你操作 , 2 不能执行指定的操作，条件不满足, 3 参数错误 , 4 状态错误 ;
+
+	MSG_ROOM_ACT,  // 房间里有玩家执行了一个操作
+	// svr : { idx : 0 , actType : 234, card : 23, gangCard : 12, eatWith : [22,33], huType : 23, fanShu : 23  }
+	// idx :  执行操作的那个玩家的索引。 actType : 执行操作的类型，参照枚举值eMJActType 。 card： 操作涉及到的牌  gangCard: 杠牌后 获得的牌;
+	// eatWith : 当吃牌的时候，表示用哪两张牌进行吃
+	// huType : 胡牌类型，只有是胡的动作才有这个字段；
+	// fanShu :  胡牌的时候的翻数，只有胡牌的动作才有这个字段
+
+	MSG_ROOM_SETTLE_DIAN_PAO, //  实结算的 点炮
+	//svr : { paoIdx : 234 , isGangPao : 0 , isRobotGang : 0 , huPlayers : [ { idx : 2 , coin : 2345 }, { idx : 2, coin : 234 }, ... ]  }
+	// paoIdx : 引跑者的索引， isGangShangPao ： 是否是杠上炮， isRobotGang ： 是否是被抢杠， huPlayer ： 这一炮 引发的所有胡牌这，是一个数组。 { idx ： 胡牌人的索引， coin 胡牌人赢的金币} 
+
+	MSG_ROOM_SETTLE_MING_GANG, // 实结算 明杠 
+	// svr :  { invokerIdx : 234 , gangIdx : 234 , gangWin : 2344 }
+	// invokerIdx ： 引杠者的索引， gangIdx ： 杠牌这的索引 ， gangWin： 此次杠牌赢的钱；
+
+	MSG_ROOM_SETTLE_AN_GANG, // 实时结算 暗杠 
+	//svr： { gangIdx: 234, losers : [{idx: 23, lose : 234 }, .....] }
+	// gangIdx : 杠牌者的索引。 losers 此次杠牌输钱的人，数组。 { idx 输钱人的索引， lose  输了多少钱 }
+
+	MSG_ROOM_SETTLE_BU_GANG, // 实际结算 补杠
+	// svr : 参数和解释都跟 暗杠一样。
+
+	MSG_ROOM_SETTLE_ZI_MO, // 实时结算 自摸
+	// svr ： { ziMoIdx: 234, losers : [{idx: 23, lose : 234 }, .....] }
+	// ziMoIdx : 自摸的人的索引。 losers ： 自摸导致别人数钱了。一个数字。 {idx 输钱人的索引， lose ： 输了多少钱 } 
+
+	MSG_ROOM_GAME_OVER, // 游戏结束
+	// svr : { players : [ {idx : 0 , coin : 2345 ,huType : eFanxingType, offset : 23 , beiShu : 20 } ,{idx : 1 , coin : 2345 ,huType : eFanxingType , offset : 23 } ,{idx : 2 , coin : 2345,huType : eFanxingType, offset : 23 },{idx : 3 , coin : 2345,huType : eFanxingType, offset : 23 } ]  } 
+	// eFanxingType 参照枚举值
+	// players: 结束后，每个玩家最终的钱数。
+
+	MSG_PLAYER_DETAIL_BILL_INFOS, // 游戏结束后收到的个人详细账单，每个人只能收到自己的。
+	// svr ： { idx： 23 ， bills：[ { type: 234, offset : -23, huType : 23, beiShu : 234, target : [2, 4] } , .......... ] } 
+	// idx : 玩家的索引。
+	// bills : 玩家的账单数组，直接可以用于显示。 账单有多条。
+	// 账单内解释： type ： 取值参考枚举 eSettleType ， offset ： 这个账单的输赢，负数表示输了， 结合type 得出描述，比如：Type 为点炮，正数就是被点炮，负数就是点炮，
+	// 同理当type 是自摸的时候，如果offset 为负数，那么就是被自摸，整数就是自摸。依次类推其他类型。
+	// huType : 只有当是自摸的时候有效，表示自摸的胡类型，或者被点炮 这个字段也是有效的。beiShu ：就是胡牌的倍数，有效性随同　ｈｕＴｙｐｅ。 
+	// target : 就是自己这个账单 相对的一方， 就是赢了哪些人的钱，或者输给谁了。被谁自摸了，被谁点炮了，点炮了谁。具体到客户端表现，就是最右边那个 上家下家，之类的那一列。
+
+	MSG_ROOM_PLAYER_CARD_INFO,
+	// svr : { bankerIdx : 2, leftCardCnt : 32 ,playersCard: [ { idx : 2,queType: 2, anPai : [2,3,4,34], mingPai : [ 23,67,32] , huPai : [1,34], chuPai: [2,34,4] },{ anPai : [2,3,4,34], mingPai : [ 23,67,32] , huPai : [1,34] }, .... ] }
+	// leftCardCnt : 剩余牌的数量，重新进入已经在玩的房间，或者断线重连，就会收到这个消息， anPai 就是牌，没有展示出来的，mingPai 就是已经展示出来的牌（碰，杠），huPai ： 已经胡了的牌。 queType : 1,万 2, 筒 3, 条
+
+
+	MSG_APPLY_DISMISS_VIP_ROOM, // 申请解散vip 房间
+	// client : { dstRoomID : 234 } 
+
+	MSG_ROOM_APPLY_DISMISS_VIP_ROOM, //房间里有人申请解散vip 房间
+	// svr : { applyerIdx : 2 }
+	// applyerIdx : 申请者的idx 
+
+	MSG_REPLY_DISSMISS_VIP_ROOM_APPLY,  // 答复申请解散的请求
+	// client { dstRoomID : 23 , reply : 0 }
+	// reply ： 0 表示同意， 1 表示拒绝。
+
+	MSG_VIP_ROOM_GAME_OVER,  // vip 房间结束
+	// svr : { ret : 0 , initCoin : 235 , bills : [ { uid : 2345 , curCoin : 234 }, ....]  }
+	// ret , 0 正常结束， 1 房间被解散。 initCoin 房间的初始金币，bills，是一个数组 放着具体每个玩家的情况，curCoin 表示玩家最终剩余金额, uid 玩家的唯一id 
+
+	MSG_VIP_ROOM_DO_CLOSED, // vip 房间结束通知
+	// svr : { isDismiss : 0 , roomID : 2345 , eType : eroomType }  
+	// isDismiss : 是否是解散结束的房间。1 是解散房间，0 是自然结束。
+
+	MSG_ROOM_REPLY_DISSMISS_VIP_ROOM_APPLY, // 收到有人回复解散房间
+	// svr { idx : 23 , reply : 0 }
+	// reply ： 0 表示同意， 1 表示拒绝。
+
+
 
 
 

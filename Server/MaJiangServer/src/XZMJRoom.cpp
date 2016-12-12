@@ -2,6 +2,8 @@
 #include "IMJPlayer.h"
 #include "IMJPlayerCard.h"
 #include "log4z.h"
+#include "XLMJPlayer.h"
+#define MAX_BEISHU 32
 bool XZMJRoom::isGameOver()
 {
 	if (XLMJRoom::isGameOver())
@@ -175,4 +177,14 @@ uint8_t XZMJRoom::getNextActPlayerIdx(uint8_t nCurActIdx)
 
 	LOGFMTE("why can not find a can do act player ? ");
 	return 0;
+}
+
+bool XZMJRoom::canKouPlayerCoin(uint8_t nPlayerIdx)
+{
+	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
+	if (nullptr == pPlayer  || pPlayer->haveState(eRoomPeer_AlreadyHu) || pPlayer->haveState(eRoomPeer_DecideLose) )
+	{
+		return false;
+	}
+	return true;
 }

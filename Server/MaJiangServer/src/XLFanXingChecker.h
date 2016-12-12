@@ -3,7 +3,6 @@
 #include "MJPlayerCard.h"
 #include "MJCard.h"
 #include "log4z.h"
-#include "commonDefine.h"
 class XLFanXingHelper
 {
 public:
@@ -426,7 +425,7 @@ public:
 	{
 		if (doSelfCheck(pHelper))
 		{
-			nBeiShu = 64;
+			nBeiShu = 32;
 			nFanXingType = eFanxing_ShiBaLuoHan;
 			return true;
 		}

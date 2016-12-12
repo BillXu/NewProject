@@ -13,7 +13,7 @@ public:
 	void enterState(IMJRoom* pmjRoom, Json::Value& jsTranData)override
 	{
 		IMJRoomState::enterState(pmjRoom, jsTranData);
-		setStateDuringTime(eTime_WaitPlayerAct);
+		setStateDuringTime(pmjRoom->isWaitPlayerActForever() ? 100000000 : eTime_WaitPlayerAct);
 		if (jsTranData["idx"].isNull() == false && jsTranData["idx"].isUInt())
 		{
 			m_nIdx = jsTranData["idx"].asUInt();

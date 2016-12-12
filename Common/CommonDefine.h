@@ -202,6 +202,23 @@ enum eSettleType    // Õâ¸öÃ¶¾Ù¶¨ÒåµÄÖ»ÊÇÒ»¸öÖĞÁ¢µÄÊÂ¼ş£¬¶ÔÓÚ·¢ÉúÊÂ¼şµÄË«·½£¬½Ğ·
 	eSettle_Max,
 };
 
+enum eTime
+{
+	eTime_ExeGameStart = 10,			// Ö´ĞĞÓÎÏ·¿ªÊ¼ µÄÊ±¼ä
+	eTime_WaitChoseExchangeCard = 5, //  µÈ´ıÍæ¼ÒÑ¡Ôñ»»ÅÆµÄÊ±¼ä
+	eTime_DoExchangeCard = 3, //   Ö´ĞĞ»»ÅÆµÄÊ±¼ä
+	eTime_WaitDecideQue = 10, // µÈ´ıÍæ¼Ò¶¨È±
+	eTime_DoDecideQue = 2, // ¶¨È±Ê±¼ä
+	eTime_WaitPlayerAct = 10,  // µÈ´ıÍæ¼Ò²Ù×÷µÄÊ±¼ä
+	eTime_WaitPlayerChoseAct = eTime_WaitPlayerAct,
+	eTime_DoPlayerMoPai = 1,  //  Íæ¼ÒÃşÅÆÊ±¼ä
+	eTime_DoPlayerActChuPai = 2,  // Íæ¼Ò³öÅÆµÄÊ±¼ä
+	eTime_DoPlayerAct_Gang = 2, // Íæ¼Ò¸ÜÅÆÊ±¼ä
+	eTime_DoPlayerAct_Hu = 3,  // Íæ¼ÒºúÅÆµÄÊ±¼ä
+	eTime_DoPlayerAct_Peng = 2, // Íæ¼ÒÅöÅÆÊ±¼ä
+	eTime_GameOver = 1, // ÓÎÏ·½áÊø×´Ì¬³ÖĞøÊ±¼ä
+};
+
 
 // ROOM TIME BY SECOND 
 #define TIME_ROOM_WAIT_READY 5
@@ -270,8 +287,6 @@ enum eRoomPeerState
 	eRoomPeer_PK_Failed = (1<<14)|eRoomPeer_StayThisRound ,
 
 	eRoomPeer_AlreadyHu = ((1 << 15) | eRoomPeer_CanAct),  //  ÒÑ¾­ºúÅÆµÄ×´Ì¬
-	eRoomPeer_DecideLose = eRoomPeer_GiveUp,  // ÈÏÊä×´Ì¬
-	eRoomPeer_LoserLeave = (1 << 16),  //  ÒÑ¾­Àë¿ª·¿¼äµÄÈÏÊäµÄÈË¡£µ«ÊÇËûµÄ±¸·İÁôÔÚ·¿¼äÀï¡£
 	eRoomPeer_DelayLeave = (1 << 17),  //  ÅÆ¾Ö½áÊøºó²ÅÀë¿ª
 	eRoomPeer_Max,
 };

@@ -62,8 +62,8 @@ public:
 	void onPlayerSetReady( uint8_t nIdx );
 	// mj function ;
 	virtual void onWaitPlayerAct(uint8_t nIdx, bool& isCanPass);
-	uint8_t getAutoChuCardWhenWaitActTimeout(uint8_t nIdx);
-	uint8_t getAutoChuCardWhenWaitChuTimeout(uint8_t nIdx);
+	virtual uint8_t getAutoChuCardWhenWaitActTimeout(uint8_t nIdx);
+	virtual uint8_t getAutoChuCardWhenWaitChuTimeout(uint8_t nIdx);
 	void onPlayerMo( uint8_t nIdx );
 	void onPlayerPeng( uint8_t nIdx , uint8_t nCard , uint8_t nInvokeIdx );
 	void onPlayerEat(uint8_t nIdx, uint8_t nCard, uint8_t nWithA, uint8_t nWithB, uint8_t nInvokeIdx);
@@ -85,6 +85,12 @@ public:
 	IMJRoomState* getCurRoomState(){ return m_pCurState; }
 	uint32_t getCoinNeedToSitDown();
 	CRobotDispatchStrategy* getRobotDispatchStrage(){ return m_pRobotDispatchStrage; }
+
+	// tuo guan 
+	void onCheckTrusteeForWaitPlayerAct( uint8_t nIdx , bool isMayHu);
+
+	void onCheckTrusteeForHuOtherPlayerCard(std::vector<uint8_t> vPlayerIdx, uint8_t nTargetCard );
+	void onPlayerTrusteedStateChange( uint8_t nPlayerIdx , bool isTrusteed );
 protected:
 	bool addRoomState(IMJRoomState* pState);
 	void setInitState(IMJRoomState* pState);

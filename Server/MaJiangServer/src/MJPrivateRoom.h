@@ -54,12 +54,14 @@ protected:
 	std::map<uint32_t, uint8_t> m_mapRecievedReply; // key : uid , value: replayer , 0  agree , 1 disagree ;
 	bool m_bWaitDismissReply;
 	CTimer m_tWaitRepklyTimer;
+	time_t m_tInvokerTime;
+	uint32_t m_nInvokerDismissUID;
 	bool m_bDoDismissRoom;
 
 	eRoomState m_eState;
 	IGameRoom* m_pRoom;
 
-	stBaseRoomConfig m_stConfig;
+	stMJRoomConfig m_stConfig;
 
 	bool m_bRoomInfoDiry;
 };

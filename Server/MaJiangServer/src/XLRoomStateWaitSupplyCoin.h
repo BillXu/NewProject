@@ -136,6 +136,28 @@ public:
 			return;
 		}
 
+		// if next act player decide lose then must chage another one 
+		if (nTargetState == eRoomState_DoPlayerAct)
+		{
+			auto eAct = jsTransArg["act"].asUInt(); // = eMJAct_Mo;
+			auto nIdx = jsTransArg["idx"].asUInt(); // = nIdx;
+			if (eMJAct_Mo == eAct)
+			{
+				auto pPlayer = getRoom()->getMJPlayerByIdx(nIdx);
+				if (!pPlayer)
+				{
+					LOGFMTE("room id = %u next player is nullptr , why ? idx = %u",getRoom()->getRoomID(),nIdx);
+				}
+				else
+				{
+					if (pPlayer->haveState(eRoomPeer_DecideLose))
+					{
+						jsTransArg["idx"] = getRoom()->getNextActPlayerIdx(nIdx);
+						LOGFMTD("room id = %u , idx = %u decide lose ,so next should skip to next idx = %u", getRoom()->getRoomID(), nIdx, jsTransArg["idx"].asUInt());
+					}
+				}
+			}
+		}
 		getRoom()->goToState(nTargetState, &jsTransArg);
 	}
 protected:

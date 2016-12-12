@@ -2,6 +2,7 @@
 #include "ISeverApp.h"
 #include "Singleton.h"
 #include "RoomConfig.h"
+#include "MJServerRoomManger.h"
 class CMJServerApp
 	:public IServerApp
 	,public CSingleton<CMJServerApp>

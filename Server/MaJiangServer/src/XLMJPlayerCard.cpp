@@ -6,6 +6,8 @@ void XLMJPlayerCard::reset()
 {
 	MJPlayerCard::reset();
 	m_nQueType = eCT_Max;
+	m_vecAlreadyHu.clear();
+	m_vCanHuCard.clear();
 }
 
 bool XLMJPlayerCard::canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB)
@@ -71,6 +73,13 @@ bool XLMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, uint32_t& nHuType, uint8
 	}
 
 	funRemoveAddToCard(nCard);
+
+	if (m_vCanHuCard.empty())
+	{
+		std::set<uint8_t> vCanHu;
+		getCanHuCards(vCanHu);
+		m_vCanHuCard.assign(vCanHu.begin(),vCanHu.end());
+	}
 	return true;
 }
 
@@ -98,10 +107,16 @@ uint32_t XLMJPlayerCard::getMaxPossibleBeiShu()
 		auto& refVcards = m_vCards[type];
 		addCardToVecAsc(refVcards, nCard);
 
+		if (isHoldCardCanHu() == false)
+		{
+			LOGFMTE("you say can hu , but can not hu ? why ?");
+			debugCardInfo();
+			continue;
+		}
 		// do check ;
 		uint8_t nBeiShu = 0;
 		auto ret = getFanxingChecker()->doCheckFanxing(this, nBeiShu, nHuType);
-
+		auto genCnt = getGenShu();
 		// remove from hold card after check ;
 		auto iterDel = std::find(refVcards.begin(), refVcards.end(), nCard);
 		refVcards.erase(iterDel);
@@ -110,6 +125,11 @@ uint32_t XLMJPlayerCard::getMaxPossibleBeiShu()
 		{
 			LOGFMTE("get can hu card , but can not check fanxing ? why bug ");
 			continue;
+		}
+
+		for (uint8_t nGenF = 0; nGenF < genCnt; ++nGenF)  // per gen jia yi fan ;
+		{
+			nBeiShu *= 2;
 		}
 
 		if (nBeiShu > nMaxBeiShu)
@@ -135,7 +155,7 @@ uint8_t XLMJPlayerCard::getAutoQueType()
 {
 	auto pfuncGetWeight = [](VEC_CARD& vCards)
 	{
-		uint16_t nWeiht = vCards.size() * 100;
+		uint16_t nWeiht = vCards.size() * 1000;
 		std::vector<uint8_t> vecCards;
 		vecCards.assign(vCards.begin(),vCards.end());
 		std::sort(vecCards.begin(), vecCards.end());
@@ -193,13 +213,13 @@ uint8_t XLMJPlayerCard::getAutoQueType()
 	{
 		return eCT_Wan;
 	}
-	else if (nTiao <= nWan && nTiao <= nTong)
+	else if (nTong <= nWan && nTong <= nTiao)
 	{
-		return eCT_Tiao;
+		return eCT_Tong;
 	}
 	else
 	{
-		return eCT_Tong;
+		return eCT_Tiao;
 	}
 	return 0;
 }
@@ -222,11 +242,17 @@ bool XLMJPlayerCard::canHuWitCard(uint8_t nCard)
 		return false;
 	}
 
-	auto iter = std::find(m_vecAlreadyHu.begin(),m_vecAlreadyHu.end(),nCard );
-	if (iter != m_vecAlreadyHu.end())
-	{
-		return true;
-	}
+	//auto iter = std::find(m_vecAlreadyHu.begin(),m_vecAlreadyHu.end(),nCard );
+	//if (iter != m_vecAlreadyHu.end())
+	//{
+	//	return true;
+	//}
+
+	//iter = std::find(m_vCanHuCard.begin(), m_vCanHuCard.end(), nCard);
+	//if (iter != m_vCanHuCard.end())
+	//{
+	//	return true;
+	//}
 
 	return MJPlayerCard::canHuWitCard(nCard);
 }
@@ -246,6 +272,7 @@ bool XLMJPlayerCard::isTingPai()
 	{
 		return false;
 	}
+
 	return MJPlayerCard::isTingPai();
 }
 
@@ -279,7 +306,17 @@ bool XLMJPlayerCard::canAnGangWithCard(uint8_t nCard)
 		return false;
 	}
 
-	return MJPlayerCard::canAnGangWithCard(nCard);
+	if (MJPlayerCard::canAnGangWithCard(nCard) == false)
+	{
+		return false;
+	}
+
+	// get hold card that can an gang 
+	VEC_CARD vCanG;
+	getHoldCardThatCanAnGang(vCanG);
+
+	auto iter = std::find(vCanG.begin(), vCanG.end(), nCard);
+	return iter != vCanG.end();
 }
 
 bool XLMJPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
@@ -291,6 +328,51 @@ bool XLMJPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
 		if (getQueType() == type)
 		{
 			ref = 0;
+			continue;
+		}
+
+		if ( m_vecAlreadyHu.empty() ) // not hu , so can gang 
+		{
+			continue;
+		}
+
+		// gang pai , check afect  the pai xing 
+		// remove 
+		auto& vCard = m_vCards[type];
+		uint8_t nCnt = 4;
+		while (nCnt--)
+		{
+			auto iter = std::find(vCard.begin(),vCard.end(),ref );
+			vCard.erase(iter);
+		}
+
+		std::set<uint8_t> vCanHuNow;
+		getCanHuCards(vCanHuNow);
+
+		// give back 4 card 
+		nCnt = 4;
+		while (nCnt--)
+		{
+			addCardToVecAsc(vCard, ref);
+		}
+
+		// check valid ;
+		if (m_vCanHuCard.size() != vCanHuNow.size())
+		{
+			ref = 0;  // can not gang ;
+			LOGFMTD("changed pai xing , can not an Gang card = %u", ref);
+			continue;
+		}
+
+		for (auto& nHuc : m_vCanHuCard)
+		{
+			auto iter = std::find(vCanHuNow.begin(),vCanHuNow.end(),nHuc);
+			if (iter == vCanHuNow.end())
+			{
+				ref = 0;  // can not gang ;
+				LOGFMTD("changed pai xing , can not an Gang card = %u",ref);
+				break;
+			}
 		}
 	}
 
@@ -300,6 +382,61 @@ bool XLMJPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
 		vGangCards.erase(iter);
 		iter = std::find(vGangCards.begin(), vGangCards.end(), 0);
 	}
+
+	return !vGangCards.empty();
+}
+
+bool XLMJPlayerCard::getHoldCardThatCanBuGang(VEC_CARD& vGangCards)
+{
+	MJPlayerCard::getHoldCardThatCanBuGang(vGangCards);
+	if (m_vecAlreadyHu.empty()) // not hu , so can gang 
+	{
+		return !vGangCards.empty();
+	}
+
+	for (auto& ref : vGangCards)
+	{
+		// gang pai , check afect  the pai xing 
+		// remove 
+		auto type = card_Type(ref);
+		auto& vCard = m_vCards[type];
+
+		auto iter = std::find(vCard.begin(), vCard.end(), ref);
+		vCard.erase(iter);
+
+		std::set<uint8_t> vCanHuNow;
+		getCanHuCards(vCanHuNow);
+
+		// give back card 
+		addCardToVecAsc(vCard, ref);
+
+		// check valid ;
+		if (m_vCanHuCard.size() != vCanHuNow.size())
+		{
+			ref = 0;  // can not gang ;
+			LOGFMTD("changed pai xing , can not an Gang card = %u", ref);
+			continue;
+		}
+
+		for (auto& nHuc : m_vCanHuCard)
+		{
+			auto iter = std::find(vCanHuNow.begin(), vCanHuNow.end(), nHuc);
+			if (iter == vCanHuNow.end())
+			{
+				ref = 0;  // can not gang ;
+				LOGFMTD("changed pai xing , can not an Gang card = %u", ref);
+				break;
+			}
+		}
+	}
+
+	auto iter = std::find(vGangCards.begin(), vGangCards.end(), 0);
+	while (iter != vGangCards.end())
+	{
+		vGangCards.erase(iter);
+		iter = std::find(vGangCards.begin(), vGangCards.end(), 0);
+	}
+
 	return !vGangCards.empty();
 }
 
@@ -329,6 +466,7 @@ uint8_t XLMJPlayerCard::getGenShu()
 
 	// add gang cnt ;
 	nGenCnt += m_vGanged.size();
+	nGenCnt += m_vAnGanged.size();
 
 	// add not not Bu gang card ;
 	for (auto ref : m_vPenged)
@@ -347,6 +485,16 @@ bool XLMJPlayerCard::getHuedCard(VEC_CARD& vhuedCard)
 {
 	vhuedCard.insert(vhuedCard.begin(), m_vecAlreadyHu.begin(), m_vecAlreadyHu.end());
 	return m_vecAlreadyHu.empty() == false;
+}
+
+uint8_t XLMJPlayerCard::getQueTypeCardForChu()
+{
+	auto vA = m_vCards[getQueType()];
+	if (vA.empty())
+	{
+		return 0;
+	}
+	return vA.front();
 }
 
 // help fanxing

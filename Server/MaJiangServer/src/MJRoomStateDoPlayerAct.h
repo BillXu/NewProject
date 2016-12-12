@@ -54,7 +54,6 @@ public:
 		{
 		case eMJAct_Chi:
 		case eMJAct_Peng:
-		case eMJAct_MingGang:
 		{
 			Json::Value jsValue;
 			jsValue["idx"] = m_nActIdx;
@@ -65,6 +64,7 @@ public:
 		case eMJAct_BuGang:
 		case eMJAct_BuGang_Declare:
 		case eMJAct_AnGang:
+		case eMJAct_MingGang:
 		{
 			Json::Value jsValue;
 			jsValue["idx"] = m_nActIdx;

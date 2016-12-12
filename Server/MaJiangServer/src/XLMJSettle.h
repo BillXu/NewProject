@@ -60,15 +60,29 @@ struct stSettleDiaoPao
 
 		if (nIdx == nInvokerIdx)
 		{
+			if (vMapHuAndCoin.empty())
+			{
+				LOGFMTE("type = %u hu and coin is null ,invoker idx = %u",eType,nInvokerIdx);
+				return false;
+			}
 			//{ type: 234, offset : -23, huType : 23, beiShu : 234, target : [2, 4] }
 			jsInfo["type"] = eType;
 			jsInfo["offset"] = -1 * (int32_t)nLoseCoin;
-			jsInfo["huType"] = 0;
-			jsInfo["beiShu"] = 0;
+			jsInfo["huType"] = vMapHuAndCoin.begin()->second.nHuType;
+			jsInfo["beiShu"] = vMapHuAndCoin.begin()->second.nBeiShu;
+			jsInfo["isGangShangPao"] = isGangShangPao ? 1 : 0;
+			jsInfo["isRobotGang"] = isRobotGang ? 1 : 0;
 			Json::Value jsTarget;
+			Json::Value vhuType;
 			for (auto& iter : vMapHuAndCoin)
 			{
 				jsTarget[jsTarget.size()] = iter.first;
+				vhuType[vhuType.size()] = iter.second.nHuType;
+			}
+
+			if (eType == eSettle_DianPao)
+			{
+				jsInfo["vHuTypes"] = vhuType;
 			}
 			jsInfo["target"] = jsTarget;
 		}
@@ -84,6 +98,8 @@ struct stSettleDiaoPao
 			jsInfo["offset"] = iter->second.nWinCoin;
 			jsInfo["huType"] = iter->second.nHuType;
 			jsInfo["beiShu"] = iter->second.nHuType;
+			jsInfo["isGangShangPao"] = isGangShangPao ? 1 : 0;
+			jsInfo["isRobotGang"] = isRobotGang ? 1 : 0;
 			Json::Value jsTarget;
 			jsTarget[0u] = nInvokerIdx;
 			jsInfo["target"] = jsTarget;
@@ -272,7 +288,7 @@ struct stSettleBuGang
 struct stSettleZiMo
 	:public stSettleAnGang
 {
-	stSettleZiMo(uint8_t huIdx, uint32_t huType, uint8_t beiShu) :stSettleAnGang(huIdx){ eType = eSettle_ZiMo; nHuType = huType, nBeiShu = beiShu; }
+	stSettleZiMo(uint8_t huIdx, uint32_t huType, uint8_t beiShu, bool isGangHua) :stSettleAnGang(huIdx){ eType = eSettle_ZiMo; nHuType = huType, nBeiShu = beiShu; isGangShangHua = isGangHua; }
 	bool writePlayerBillInfo(uint8_t nIdx, Json::Value& jsInfo)override
 	{
 		if (isContainPlayer(nIdx) == false)
@@ -282,6 +298,7 @@ struct stSettleZiMo
 		stSettleAnGang::writePlayerBillInfo(nIdx,jsInfo);
 		jsInfo["huType"] = nHuType;
 		jsInfo["beiShu"] = nBeiShu;
+		jsInfo["isGangShangHua"] = isGangShangHua ? 1 : 0;
 		return true;
 	}
 
@@ -294,6 +311,7 @@ struct stSettleZiMo
 public:
 	uint32_t nHuType;
 	uint8_t nBeiShu;
+	bool isGangShangHua;
 };
 
 struct stSettleHuaZhu

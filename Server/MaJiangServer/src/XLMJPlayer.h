@@ -6,6 +6,7 @@ class XLMJPlayer
 {
 public:
 	XLMJPlayer();
+	void init(stEnterRoomData* pData)override;
 	void onWillStartGame()override;
 	void onStartGame()override;
 	void onGameDidEnd()override;

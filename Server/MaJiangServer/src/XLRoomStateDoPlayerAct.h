@@ -94,4 +94,5 @@ public:
 			pXLRoom->goToState(eRoomState_WaitSupplyCoin, &jsTrans);
 		}
 	}
+
 };

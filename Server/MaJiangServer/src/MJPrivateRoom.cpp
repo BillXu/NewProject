@@ -21,8 +21,8 @@ MJPrivateRoom::~MJPrivateRoom()
 
 bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue)
 {
-	vJsValue["circle"].asUInt();
-	m_nInitCircle = m_nLeftCircle;
+	m_nInitCircle = vJsValue["circle"].asUInt();
+	m_nLeftCircle = m_nInitCircle ;
 	m_nInitCoin = vJsValue["initCoin"].asUInt();
 	memset(&m_stConfig, 0, sizeof(m_stConfig));
 	m_stConfig.nConfigID = 0;
@@ -70,7 +70,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 
 bool MJPrivateRoom::onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)
 {
-	//pEnterRoomPlayer->nPlayerType = ePlayer_Robot; // avoid robot dispatch take effect ; temp let robot join vip room ;
+	pEnterRoomPlayer->nPlayerType = ePlayer_Robot; // avoid robot dispatch take effect ; temp let robot join vip room ;
 	if (m_pRoom)
 	{
 		auto iter = m_vAllPlayers.find(pEnterRoomPlayer->nUserUID);
@@ -112,7 +112,21 @@ bool MJPrivateRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 {
 	auto pRoom = (IMJRoom*)m_pRoom;
 	auto curState = pRoom->getCurRoomState()->getStateID();
-	if (eRoomSate_WaitReady == curState || eRoomState_GameEnd == curState )
+	auto pp = pRoom->getMJPlayerByUID(nPlayerUID);
+	if (pp)
+	{
+		Json::Value jsMsg;
+		jsMsg["idx"] = pp->getIdx();
+		sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_LEAVE); // tell other player leave ;
+		pp->doTempLeaveRoom();
+	}
+	else
+	{
+		LOGFMTD("you are not in this room i let you go room id = %u",getRoomID());
+		return true;
+	}
+
+	if (eRoomSate_WaitReady == curState && this->m_bComsumedRoomCards == false ) // not start game 
 	{
 		// direct leave just stand up ;
 		pRoom->standup(nPlayerUID);
@@ -145,7 +159,7 @@ bool MJPrivateRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 	{
 		LOGFMTE("private room can not leave befor room is closed");
 	}
-	return true;
+	return false;
 }
 
 bool MJPrivateRoom::isRoomFull()
@@ -244,9 +258,10 @@ bool MJPrivateRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSe
 			return true;
 		}
 
-		m_mapRecievedReply[pp->getUID()] = 1;
+		m_mapRecievedReply[pp->getUID()] = 0;
 		if (m_bWaitDismissReply)
 		{
+			LOGFMTE("already waiting reply %u why you go on apply ?", pp->getUID() );
 			onCheckDismissReply(false);
 		}
 		else
@@ -254,6 +269,7 @@ bool MJPrivateRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSe
 			Json::Value jsMsg;
 			jsMsg["applyerIdx"] = pp->getIdx();
 			sendRoomMsg(jsMsg, MSG_ROOM_APPLY_DISMISS_VIP_ROOM);
+			m_tWaitRepklyTimer.reset();
 			m_tWaitRepklyTimer.setInterval(TIME_WAIT_REPLY_DISMISS);
 			m_tWaitRepklyTimer.setIsAutoRepeat(false);
 			m_tWaitRepklyTimer.setCallBack([this](CTimer*p, float f){
@@ -262,6 +278,9 @@ bool MJPrivateRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSe
 			});
 			m_tWaitRepklyTimer.start();
 			m_bWaitDismissReply = true;
+			onCheckDismissReply(false);
+			m_tInvokerTime = time(nullptr);
+			m_nInvokerDismissUID = pp->getUID();
 		}
 	}
 	break;
@@ -282,6 +301,12 @@ bool MJPrivateRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSe
 
 		LOGFMTD("received player session id = %u , reply dismiss ret = %u", nSessionID, prealMsg["reply"].asUInt());
 		m_mapRecievedReply[pp->getUID()] = prealMsg["reply"].asUInt();
+
+		Json::Value jsMsg;
+		jsMsg["idx"] = pp->getIdx();
+		jsMsg["reply"] = prealMsg["reply"];
+		sendRoomMsg(jsMsg, MSG_ROOM_REPLY_DISSMISS_VIP_ROOM_APPLY);
+
 		onCheckDismissReply(false);
 	}
 	break;
@@ -322,12 +347,54 @@ void MJPrivateRoom::sendRoomInfo(uint32_t nSessionID)
 	{
 		m_pRoom->sendRoomInfo(nSessionID);
 	}
+	else
+	{
+		LOGFMTE("private room core is null , can not send detail info");
+		return;
+	}
+
 	LOGFMTD("send vip room info ext to player session id = %u", nSessionID);
 	Json::Value jsMsg;
 	jsMsg["leftCircle"] = m_nLeftCircle;
 	jsMsg["baseBet"] = m_stConfig.nBaseBet;
 	jsMsg["creatorUID"] = m_nOwnerUID;
 	jsMsg["initCoin"] = m_nInitCoin;
+	jsMsg["roomType"] = m_pRoom->getRoomType();
+	// is waiting vote dismiss room ;
+	jsMsg["isWaitingDismiss"] = m_bWaitDismissReply ? 1 : 0;
+	int32_t nLeftSec = 0;
+	if (m_bWaitDismissReply)
+	{
+		jsMsg["applyDismissUID"] = m_nInvokerDismissUID;
+		// find argee idxs ;
+		Json::Value jsArgee;
+		for (auto& ref : m_mapRecievedReply)
+		{
+			auto p = ((IMJRoom*)m_pRoom)->getMJPlayerByUID(ref.first);
+			if (!p)
+			{
+				LOGFMTE("%u you are not in room but you reply dissmiss room ", ref.first);
+				continue;
+			}
+			jsArgee[jsArgee.size()] = p->getIdx();
+		}
+
+		jsMsg["agreeIdxs"] = jsArgee;
+
+		// caclulate wait time ;
+		auto nEsT = time(nullptr) - m_tInvokerTime;
+		if (nEsT > TIME_WAIT_REPLY_DISMISS)
+		{
+			nLeftSec = 1;
+		}
+		else
+		{
+			nLeftSec = TIME_WAIT_REPLY_DISMISS - nEsT;
+		}
+	}
+
+	jsMsg["leftWaitTime"] = nLeftSec;
+
 	sendMsgToPlayer(jsMsg, MSG_VIP_ROOM_INFO_EXT, nSessionID);
 }
 
@@ -348,30 +415,70 @@ void MJPrivateRoom::onCheckDismissReply(bool bTimerOut)
 	}
 
 	uint8_t nSeatCnt = ((IMJRoom*)m_pRoom)->getSeatCnt();
-	if (bTimerOut)
+	auto pRoom = (IMJRoom*)m_pRoom;
+	for (uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx)
 	{
-		if ((nSeatCnt - nDisAgreeCnt) * 2 > nSeatCnt)  // not disagree means agree ;
+		auto pp = pRoom->getMJPlayerByIdx(nIdx);
+		if (nullptr == pp)
 		{
-			LOGFMTD("most player want dismiss room time out");
-			onRoomGameOver(true);
+			++nAgreeCnt;
 		}
+	}
+
+	//process result
+	if (nAgreeCnt * 2 > nSeatCnt || bTimerOut )
+	{
+		LOGFMTD("most player want dismiss room");
+		onRoomGameOver(true);
+	}
+	else if (nDisAgreeCnt >= 1)
+	{
+		LOGFMTD("most player do not want dismiss room");
 	}
 	else
 	{
-		if (nAgreeCnt * 2 > nSeatCnt)
-		{
-			LOGFMTD("most player want dismiss room");
-			onRoomGameOver(true);
-		}
-		else
-		{
-			return;
-		}
+		// go on wait more player reply ;
+		return;
 	}
 
 	m_mapRecievedReply.clear();
 	m_bWaitDismissReply = false;
 	m_tWaitRepklyTimer.canncel();
+	return;
+
+	//if (bTimerOut)
+	//{
+	//	if ((nSeatCnt - nDisAgreeCnt) * 2 > nSeatCnt)  // not disagree means agree ;
+	//	{
+	//		LOGFMTD("most player want dismiss room time out");
+	//		onRoomGameOver(true);
+	//	}
+	//}
+	//else
+	//{
+	//	if (nAgreeCnt * 2 > nSeatCnt)
+	//	{
+	//		LOGFMTD("most player want dismiss room");
+	//		onRoomGameOver(true);
+	//	}
+	//	else if (nDisAgreeCnt >= 1 )
+	//	{
+	//		LOGFMTD("most player do not want dismiss room");
+	//		m_mapRecievedReply.clear();
+	//		m_bWaitDismissReply = false;
+	//		m_tWaitRepklyTimer.canncel();
+	//		return;
+	//	}
+	//	else
+	//	{
+	//		// go on wait more player reply ;
+	//		return;
+	//	}
+	//}
+
+	//m_mapRecievedReply.clear();
+	//m_bWaitDismissReply = false;
+	//m_tWaitRepklyTimer.canncel();
 }
 
 void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
@@ -448,57 +555,69 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		msgdoLeave.nGameOffset = 0;
 		m_pRoomMgr->sendMsg(&msgdoLeave, sizeof(msgdoLeave), pp->getUID());
 	}
+
+	bool bCanncelBill = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady );
+	
 	// send room bills ;
-	Json::Value jsMsg;
-	jsMsg["ret"] = isDismissed ? 1 : 0;
-	jsMsg["initCoin"] = m_nInitCoin;
-
-	Json::Value jsVBills;
-	Json::Value jsPlayedPlayers;
-	for (auto& ref : m_vAllPlayers)
+	if ( !bCanncelBill )
 	{
-		Json::Value jsPlayer;
-		jsPlayer["uid"] = ref.second.nUID;
-		jsPlayer["curCoin"] = ref.second.nRoomCoin;
-		jsVBills[jsVBills.size()] = jsPlayer;
+		Json::Value jsMsg;
+		jsMsg["ret"] = isDismissed ? 1 : 0;
+		jsMsg["initCoin"] = m_nInitCoin;
 
-		jsPlayedPlayers[jsPlayedPlayers.size()] = ref.second.nUID;
-	}
-	jsMsg["bills"] = jsVBills;
-
-	for (auto& ref : m_vAllPlayers)
-	{
-		if (ref.second.nSessionID)
+		Json::Value jsVBills;
+		Json::Value jsPlayedPlayers;
+		for (auto& ref : m_vAllPlayers)
 		{
-			LOGFMTD("send game room over bill to session id = %u", ref.second.nSessionID);
-			m_pRoomMgr->sendMsg(jsMsg, MSG_VIP_ROOM_GAME_OVER, ref.second.nSessionID);
-		}
-	}
+			Json::Value jsPlayer;
+			jsPlayer["uid"] = ref.second.nUID;
+			jsPlayer["curCoin"] = ref.second.nRoomCoin;
+			jsVBills[jsVBills.size()] = jsPlayer;
 
+			jsPlayedPlayers[jsPlayedPlayers.size()] = ref.second.nUID;
+		}
+		jsMsg["bills"] = jsVBills;
+
+		for (auto& ref : m_vAllPlayers)
+		{
+			if (ref.second.nSessionID)
+			{
+				LOGFMTD("send game room over bill to session id = %u", ref.second.nSessionID);
+				m_pRoomMgr->sendMsg(jsMsg, MSG_VIP_ROOM_GAME_OVER, ref.second.nSessionID);
+			}
+		}
+
+		// add vip room bill 
+		auto pBill = ((MJRoomManager*)m_pRoomMgr)->createVipRoomBill();
+		pBill->jsDetail = jsVBills;
+		pBill->nBillTime = (uint32_t)time(nullptr);
+		pBill->nCreateUID = m_nOwnerUID;
+		pBill->nRoomID = getRoomID();
+		pBill->nRoomType = getRoomType();
+		pBill->nRoomInitCoin = m_nInitCoin;
+		pBill->nCircleCnt = m_nInitCircle - m_nLeftCircle;
+		((MJRoomManager*)m_pRoomMgr)->addVipRoomBill(pBill, true);
+
+		// sys bill id to data svr 
+		Json::Value jsReqSync;
+		jsReqSync["billID"] = pBill->nBillID;
+		jsReqSync["useUIDs"] = jsPlayedPlayers;
+		auto asynQueue = m_pRoomMgr->getSvrApp()->getAsynReqQueue();
+		asynQueue->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_SyncVipRoomBillID, jsReqSync);
+	}
+	
 	Json::Value jsClosed;
 	jsClosed["uid"] = m_nOwnerUID;
 	jsClosed["roomID"] = getRoomID();
 	jsClosed["eType"] = getRoomType();
 	m_pRoomMgr->sendMsg(jsClosed, MSG_VIP_ROOM_CLOSED, 0, ID_MSG_PORT_DATA);
 
-	// add vip room bill 
-	auto pBill = ((MJRoomManager*)m_pRoomMgr)->createVipRoomBill();
-	pBill->jsDetail = jsVBills;
-	pBill->nBillTime = (uint32_t)time(nullptr);
-	pBill->nCreateUID = m_nOwnerUID;
-	pBill->nRoomID = getRoomID();
-	pBill->nRoomType = getRoomType();
-	pBill->nRoomInitCoin = m_nInitCoin;
-	pBill->nCircleCnt = m_nInitCircle - m_nLeftCircle;
-	((MJRoomManager*)m_pRoomMgr)->addVipRoomBill(pBill, true);
-
-	// sys bill id to data svr 
-	Json::Value jsReqSync;
-	jsReqSync["billID"] = pBill->nBillID;
-	jsReqSync["useUIDs"] = jsPlayedPlayers;
-	auto asynQueue = m_pRoomMgr->getSvrApp()->getAsynReqQueue();
-	asynQueue->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_SyncVipRoomBillID, jsReqSync);
-
+	// tell client closed room ;
+	Json::Value jsDoClosed;
+	jsDoClosed["roomID"] = getRoomID();
+	jsDoClosed["eType"] = getRoomType();
+	jsDoClosed["isDismiss"] = isDismissed ? 1 : 0;
+	pRoom->sendRoomMsg(jsDoClosed, MSG_VIP_ROOM_DO_CLOSED);
 	// will delete this room ;
 	((MJRoomManager*)m_pRoomMgr)->addWillDeleteRoomID(getRoomID());
 }

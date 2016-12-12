@@ -1,5 +1,6 @@
 #pragma once 
 #include "NativeTypes.h"
+#include "timer.h"
 class IMJPlayerCard;
 struct stEnterRoomData;
 class IMJPlayer
@@ -32,5 +33,10 @@ public:
 	virtual void clearDecareBuGangFlag() = 0;
 	virtual bool haveDecareBuGangFalg() = 0;
 	virtual bool isRobot() = 0;
+	virtual bool isTrusteed() = 0;
+	virtual void switchTrusteed(bool isTrusted) = 0;
+	virtual void setTrusteeActFunc(CTimer::time_func pFunc) = 0;
+	virtual bool isTempLeaveRoom() = 0;
+	virtual bool doTempLeaveRoom() = 0 ;
 
 };

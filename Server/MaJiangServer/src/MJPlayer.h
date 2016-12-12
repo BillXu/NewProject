@@ -1,9 +1,11 @@
 #pragma once
 #include "IMJPlayer.h"
+#include "Timer.h"
 class MJPlayer
 	:public IMJPlayer
 {
 public:
+	~MJPlayer();
 	void init(stEnterRoomData* pData)override;
 	void onComeBackRoom(stEnterRoomData* pData)override;
 	void onWillStartGame()override;
@@ -29,7 +31,13 @@ public:
 	bool haveDecareBuGangFalg()final;
 	int32_t onRecievedSupplyCoin(uint32_t nSupplyCoin)final;
 	bool isRobot()final;
+	bool isTrusteed()final;
+	void switchTrusteed( bool isTrusted )override;
+	void setTrusteeActFunc(CTimer::time_func pFunc)final;
+	bool isTempLeaveRoom()final;
+	bool doTempLeaveRoom()final;
 private:
+	bool m_isTempLeave;
 	uint8_t m_nPlayerType;
 	uint32_t m_eState;
 	uint32_t m_nUserUID;
@@ -39,4 +47,7 @@ private:
 	uint32_t m_nCoin;
 	bool m_isHaveGang;
 	bool m_isDeclareBuGang;
+	bool m_isTrusteed; // is tuo guan ?
+
+	CTimer m_tTrusteedActTimer;
 };

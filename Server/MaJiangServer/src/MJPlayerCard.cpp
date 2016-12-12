@@ -128,7 +128,6 @@ uint8_t MJPlayerCard::stNotShunCard::getLackCardCntForShun()
 // mj player card ;
 void MJPlayerCard::reset()
 {
-	VEC_CARD m_vCards[eCT_Max];
 	for (auto& vC : m_vCards)
 	{
 		vC.clear();
@@ -137,7 +136,7 @@ void MJPlayerCard::reset()
 	m_vPenged.clear();
 	m_vGanged.clear();
 	m_vEated.clear();
-	m_vEated.clear();
+	m_vAnGanged.clear();
 	m_nNesetFetchedCard = 0 ;
 	m_nJIang = 0;
 	m_nDanDiao = 0;
@@ -624,8 +623,8 @@ bool MJPlayerCard::onAnGang(uint8_t nCard, uint8_t nGangGetCard)
 		vCard.erase(iter);
 	}
 
-	addCardToVecAsc(m_vGanged, nCard);
-
+	//addCardToVecAsc(m_vGanged, nCard); 
+	addCardToVecAsc(m_vAnGanged, nCard);
 	// new get card ;
 	auto eGetType = card_Type(nGangGetCard);
 	addCardToVecAsc(m_vCards[eGetType], nGangGetCard);
@@ -655,6 +654,7 @@ bool MJPlayerCard::onBuGang(uint8_t nCard, uint8_t nGangGetCard)
 		LOGFMTE("not peng , hao to bu gang ? %u ",nCard); 
 		return false;
 	}
+	m_vPenged.erase(iterPeng);
 
 	// add to gang ;
 	addCardToVecAsc(m_vGanged, nCard);
@@ -729,6 +729,12 @@ bool MJPlayerCard::getChuedCard(VEC_CARD& vChuedCard)
 	return vChuedCard.empty() == false;
 }
 
+bool MJPlayerCard::getAnGangedCard(VEC_CARD& vAnGanged)
+{
+	vAnGanged.insert(vAnGanged.end(), m_vAnGanged.begin(), m_vAnGanged.end());
+	return vAnGanged.empty() == false;
+}
+
 bool MJPlayerCard::getGangedCard(VEC_CARD& vGangCard)
 {
 	vGangCard.insert(vGangCard.end(), m_vGanged.begin(), m_vGanged.end());
@@ -768,15 +774,62 @@ void MJPlayerCard::addCardToVecAsc(VEC_CARD& vec, uint8_t nCard)
 
 bool MJPlayerCard::getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMustKeZiShun )
 {
+	/// temp unsed ;
 	if (vCard.empty())
 	{
 		vNotShun.clear();
 		return true;
 	}
-	// ignore ke zi 
-	if (pickNotShunZiOutIgnoreKeZi(vCard, vNotShun))
+
+	auto nCnt = tryBestFindLeastNotShun(vCard, vNotShun, bMustKeZiShun );
+	if (nCnt == 0)
 	{
-		vNotShun.clear();
+		return true;
+	}
+
+	return false;
+
+
+
+	// below will not used 
+	SET_NOT_SHUN vMyNotShun;
+	uint8_t nMyCnt = 100;
+
+	auto pCheckShun = [this]( bool bMustKeZi, uint8_t& nMyCnt, SET_NOT_SHUN& vMyNotShun, VEC_CARD& vCheckCard )
+	{
+		SET_NOT_SHUN vTemp;
+		auto nCnt = tryBestFindLeastNotShun(vCheckCard, vTemp, bMustKeZi);
+		if (nCnt == 0)
+		{
+			nMyCnt = 0;
+			vMyNotShun.clear();
+			return true;
+		}
+
+		if (nCnt <= 2 || nCnt <= nMyCnt )
+		{
+			if (nMyCnt > 2)
+			{
+				// just wap ;
+				vMyNotShun.swap(vTemp);
+			}
+			else
+			{
+				vMyNotShun.insert(vTemp.begin(), vTemp.end());
+			}
+
+			if (nCnt < nMyCnt )
+			{
+				nMyCnt = nCnt;
+			}
+		}
+		return false;
+	};
+	
+	VEC_CARD vIgnoreKezi;
+	vIgnoreKezi.assign(vCard.begin(),vCard.end());
+	if (pCheckShun(bMustKeZiShun, nMyCnt, vMyNotShun, vIgnoreKezi))
+	{
 		return true;
 	}
 
@@ -787,54 +840,45 @@ bool MJPlayerCard::getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMus
 	if (vLeftCard.empty())
 	{
 		vNotShun.clear();
+		vMyNotShun.clear();
+		nMyCnt = 0;
 		return true;
-	}
-
-	if (bMustKeZiShun || vLeftCard.size() < 3 ) // this situation left card  must be  not shun ;
-	{
-		stNotShunCard stNot;
-		stNot.vCards.clear();
-		stNot.vCards = vLeftCard;
-		vNotShun.insert(stNot);
-		//return false;
 	}
 
 	// without kezi ,Left card , that not shun . ignore part ke zi , means some kezi not represent ke zi ;
 	if ( vKeZi.size() > 0 )
 	{
-		if ( pickNotShunZiOutIgnoreKeZi(vLeftCard, vNotShun))
+		// without ke zi situation 
+		if (pCheckShun(bMustKeZiShun, nMyCnt, vMyNotShun, vLeftCard))
 		{
-			vNotShun.clear();
 			return true;
 		}
 	}
-
 	
 	// take part keZi into construct shun ;
-	if (vKeZi.size() >= 1)
+	if (vKeZi.size() > 1 )
 	{
 		VEC_CARD vCheck;
 		vCheck.assign(vLeftCard.begin(), vLeftCard.end());
 		vCheck.push_back(vKeZi[0]);
 		vCheck.push_back(vKeZi[0]);
 		vCheck.push_back(vKeZi[0]);
-		if (pickNotShunZiOutIgnoreKeZi(vCheck, vNotShun))
+		if (pCheckShun(bMustKeZiShun, nMyCnt, vMyNotShun, vCheck))
 		{
-			vNotShun.clear();
 			return true;
 		}
 	}
 
-	if (vKeZi.size() >= 2)
+	if (vKeZi.size() >= 2 )
 	{
 		VEC_CARD vCheck;
 		vCheck.assign(vLeftCard.begin(), vLeftCard.end());
 		vCheck.push_back(vKeZi[1]);
 		vCheck.push_back(vKeZi[1]);
 		vCheck.push_back(vKeZi[1]);
-		if (pickNotShunZiOutIgnoreKeZi(vCheck, vNotShun))
+
+		if (pCheckShun(bMustKeZiShun, nMyCnt, vMyNotShun, vCheck))
 		{
-			vNotShun.clear();
 			return true;
 		}
 	}
@@ -846,9 +890,8 @@ bool MJPlayerCard::getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMus
 		 vCheck.push_back(vKeZi[2]);
 		 vCheck.push_back(vKeZi[2]);
 		 vCheck.push_back(vKeZi[2]);
-		 if (pickNotShunZiOutIgnoreKeZi(vCheck, vNotShun))
+		 if (pCheckShun(bMustKeZiShun, nMyCnt, vMyNotShun, vCheck))
 		 {
-			 vNotShun.clear();
 			 return true;
 		 }
 
@@ -862,9 +905,8 @@ bool MJPlayerCard::getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMus
 		 vCheck.push_back(vKeZi[0]);
 		 vCheck.push_back(vKeZi[0]);
 		 vCheck.push_back(vKeZi[0]);
-		 if (pickNotShunZiOutIgnoreKeZi(vCheck, vNotShun))
+		 if (pCheckShun(bMustKeZiShun, nMyCnt, vMyNotShun, vCheck))
 		 {
-			 vNotShun.clear();
 			 return true;
 		 }
 
@@ -878,9 +920,8 @@ bool MJPlayerCard::getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMus
 		 vCheck.push_back(vKeZi[1]);
 		 vCheck.push_back(vKeZi[1]);
 		 vCheck.push_back(vKeZi[1]);
-		 if (pickNotShunZiOutIgnoreKeZi(vCheck, vNotShun))
+		 if (pCheckShun(bMustKeZiShun, nMyCnt, vMyNotShun, vCheck))
 		 {
-			 vNotShun.clear();
 			 return true;
 		 }
 
@@ -893,12 +934,13 @@ bool MJPlayerCard::getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMus
 		 vCheck.push_back(vKeZi[1]);
 		 vCheck.push_back(vKeZi[1]);
 		 vCheck.push_back(vKeZi[1]);
-		 if (pickNotShunZiOutIgnoreKeZi(vCheck, vNotShun))
+		 if (pCheckShun(bMustKeZiShun, nMyCnt, vMyNotShun, vCheck))
 		 {
-			 vNotShun.clear();
 			 return true;
 		 }
 	 }
+
+	vNotShun.insert(vMyNotShun.begin(),vMyNotShun.end());
 	return false;
 }
 
@@ -940,90 +982,186 @@ bool MJPlayerCard::pickKeZiOut(VEC_CARD vCards, VEC_CARD& vKeZi, VEC_CARD& vLeft
 	return true;
 }
 
+//bool MJPlayerCard::pickNotShunZiOutIgnoreKeZi(VEC_CARD vCardIgnorKeZi, SET_NOT_SHUN& vNotShun)
+//{
+//	VEC_CARD vAscendSort, vDescendSort;
+//	vAscendSort.assign(vCardIgnorKeZi.begin(),vCardIgnorKeZi.end());
+//	std::sort(vAscendSort.begin(), vAscendSort.end());   // < asc
+//
+//	vDescendSort.swap(vCardIgnorKeZi);  //desc
+//	std::sort(vDescendSort.begin(), vDescendSort.end(), [](const uint8_t& refLeft, const uint8_t& refLeftRight)->bool{ return refLeft > refLeftRight; });   // < asc
+//
+//	auto pfn = [](VEC_CARD& vec, uint8_t nSeekValue, uint8_t& nFindIdx, uint8_t nIdxStart )->bool{
+//		for (uint8_t nIdx = nIdxStart; nIdx < vec.size(); ++nIdx)
+//		{
+//			if (vec[nIdx] == nSeekValue)
+//			{
+//				nFindIdx = nIdx;
+//				return true;
+//			}
+//		}
+//		return false;
+//	};
+//
+//
+//	auto pfnErase = [pfn](VEC_CARD& vec,bool bAsc )
+//	{
+//		for (uint8_t nIdx = 0; nIdx < vec.size(); ++nIdx)
+//		{
+//			uint8_t nValue = vec[nIdx];
+//			if (0 == nValue)
+//			{
+//				continue;
+//			}
+//			uint8_t nValue1 = nValue + 1; uint8_t nIdx1 = 0;
+//			uint8_t nValue2 = nValue1 + 1; uint8_t nIdx2 = 0;
+//			if (!bAsc)
+//			{
+//				nValue1 = nValue - 1;
+//				nValue2 = nValue1 - 1;
+//			}
+//			if (pfn(vec, nValue1, nIdx1,nIdx + 1 ) && pfn(vec, nValue2, nIdx2,nIdx + 1 ))
+//			{
+//				vec[nIdx] = 0;
+//				vec[nIdx1] = 0;
+//				vec[nIdx2] = 0;
+//			}
+//		}
+//
+//		// erase zero ;
+//		auto iter = std::find(vec.begin(), vec.end(), 0);
+//		while (iter != vec.end())
+//		{
+//			vec.erase(iter);
+//			iter = std::find(vec.begin(), vec.end(), 0);
+//		}
+//	};
+//
+//	//-------left to right
+//	pfnErase(vAscendSort,true);
+//	if (vAscendSort.empty())
+//	{
+//		return true;
+//	}
+//
+//	pfnErase(vDescendSort,false);
+//	if ( vDescendSort.empty())
+//	{
+//		return true;
+//	}
+//
+//	//---right to left 
+//	if (vAscendSort.empty() == false)
+//	{
+//		stNotShunCard st;
+//		st.vCards.clear();
+//		st.vCards.swap(vAscendSort);
+//		vNotShun.insert(st);
+//	}
+//
+//	if (vDescendSort.empty() == false)
+//	{
+//		stNotShunCard st;
+//		st.vCards.clear();
+//		st.vCards.swap(vDescendSort);
+//		vNotShun.insert(st);
+//	}
+//
+//	return false;
+//}
+
 bool MJPlayerCard::pickNotShunZiOutIgnoreKeZi(VEC_CARD vCardIgnorKeZi, SET_NOT_SHUN& vNotShun)
 {
-	VEC_CARD vAscendSort, vDescendSort;
-	vAscendSort.assign(vCardIgnorKeZi.begin(),vCardIgnorKeZi.end());
-	std::sort(vAscendSort.begin(), vAscendSort.end());   // < asc
+	//VEC_CARD vCheckCard;
+	//vCheckCard.assign(vCardIgnorKeZi.begin(), vCardIgnorKeZi.end());
+	//std::sort(vCheckCard.begin(), vCheckCard.end());   
 
-	vDescendSort.swap(vCardIgnorKeZi);  //desc
-	std::sort(vDescendSort.begin(), vDescendSort.end(), [](const uint8_t& refLeft, const uint8_t& refLeftRight)->bool{ return refLeft > refLeftRight; });   // < asc
+	//auto findNotShun = [](VEC_CARD& vCheck, SET_NOT_SHUN& vNotShun )
+	//{
+	//	if (vCheck.size() % 3 != 0)
+	//	{
+	//		LOGFMTE("when check here must 3 beishu ");
+	//	}
+	//};
 
-	auto pfn = [](VEC_CARD& vec, uint8_t nSeekValue, uint8_t& nFindIdx, uint8_t nIdxStart )->bool{
-		for (uint8_t nIdx = nIdxStart; nIdx < vec.size(); ++nIdx)
-		{
-			if (vec[nIdx] == nSeekValue)
-			{
-				nFindIdx = nIdx;
-				return true;
-			}
-		}
-		return false;
-	};
+	////vDescendSort.swap(vCardIgnorKeZi);  //desc
+	////std::sort(vDescendSort.begin(), vDescendSort.end(), [](const uint8_t& refLeft, const uint8_t& refLeftRight)->bool{ return refLeft > refLeftRight; });   // < asc
+
+	//auto pfn = [](VEC_CARD& vec, uint8_t nSeekValue, uint8_t& nFindIdx, uint8_t nIdxStart)->bool{
+	//	for (uint8_t nIdx = nIdxStart; nIdx < vec.size(); ++nIdx)
+	//	{
+	//		if (vec[nIdx] == nSeekValue)
+	//		{
+	//			nFindIdx = nIdx;
+	//			return true;
+	//		}
+	//	}
+	//	return false;
+	//};
 
 
-	auto pfnErase = [pfn](VEC_CARD& vec,bool bAsc )
-	{
-		for (uint8_t nIdx = 0; nIdx < vec.size(); ++nIdx)
-		{
-			uint8_t nValue = vec[nIdx];
-			if (0 == nValue)
-			{
-				continue;
-			}
-			uint8_t nValue1 = nValue + 1; uint8_t nIdx1 = 0;
-			uint8_t nValue2 = nValue1 + 1; uint8_t nIdx2 = 0;
-			if (!bAsc)
-			{
-				nValue1 = nValue - 1;
-				nValue2 = nValue1 - 1;
-			}
-			if (pfn(vec, nValue1, nIdx1,nIdx + 1 ) && pfn(vec, nValue2, nIdx2,nIdx + 1 ))
-			{
-				vec[nIdx] = 0;
-				vec[nIdx1] = 0;
-				vec[nIdx2] = 0;
-			}
-		}
+	//auto pfnErase = [pfn](VEC_CARD& vec, bool bAsc)
+	//{
+	//	for (uint8_t nIdx = 0; nIdx < vec.size(); ++nIdx)
+	//	{
+	//		uint8_t nValue = vec[nIdx];
+	//		if (0 == nValue)
+	//		{
+	//			continue;
+	//		}
+	//		uint8_t nValue1 = nValue + 1; uint8_t nIdx1 = 0;
+	//		uint8_t nValue2 = nValue1 + 1; uint8_t nIdx2 = 0;
+	//		if (!bAsc)
+	//		{
+	//			nValue1 = nValue - 1;
+	//			nValue2 = nValue1 - 1;
+	//		}
+	//		if (pfn(vec, nValue1, nIdx1, nIdx + 1) && pfn(vec, nValue2, nIdx2, nIdx + 1))
+	//		{
+	//			vec[nIdx] = 0;
+	//			vec[nIdx1] = 0;
+	//			vec[nIdx2] = 0;
+	//		}
+	//	}
 
-		// erase zero ;
-		auto iter = std::find(vec.begin(), vec.end(), 0);
-		while (iter != vec.end())
-		{
-			vec.erase(iter);
-			iter = std::find(vec.begin(), vec.end(), 0);
-		}
-	};
+	//	// erase zero ;
+	//	auto iter = std::find(vec.begin(), vec.end(), 0);
+	//	while (iter != vec.end())
+	//	{
+	//		vec.erase(iter);
+	//		iter = std::find(vec.begin(), vec.end(), 0);
+	//	}
+	//};
 
-	//-------left to right
-	pfnErase(vAscendSort,true);
-	if (vAscendSort.empty())
-	{
-		return true;
-	}
+	////-------left to right
+	//pfnErase(vAscendSort, true);
+	//if (vAscendSort.empty())
+	//{
+	//	return true;
+	//}
 
-	pfnErase(vDescendSort,false);
-	if ( vDescendSort.empty())
-	{
-		return true;
-	}
+	//pfnErase(vDescendSort, false);
+	//if (vDescendSort.empty())
+	//{
+	//	return true;
+	//}
 
-	//---right to left 
-	if (vAscendSort.empty() == false)
-	{
-		stNotShunCard st;
-		st.vCards.clear();
-		st.vCards.swap(vAscendSort);
-		vNotShun.insert(st);
-	}
+	////---right to left 
+	//if (vAscendSort.empty() == false)
+	//{
+	//	stNotShunCard st;
+	//	st.vCards.clear();
+	//	st.vCards.swap(vAscendSort);
+	//	vNotShun.insert(st);
+	//}
 
-	if (vDescendSort.empty() == false)
-	{
-		stNotShunCard st;
-		st.vCards.clear();
-		st.vCards.swap(vDescendSort);
-		vNotShun.insert(st);
-	}
+	//if (vDescendSort.empty() == false)
+	//{
+	//	stNotShunCard st;
+	//	st.vCards.clear();
+	//	st.vCards.swap(vDescendSort);
+	//	vNotShun.insert(st);
+	//}
 
 	return false;
 }
@@ -1127,10 +1265,23 @@ bool MJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
 	}
 
 	// copy card for use ;
+	SET_NOT_SHUN vNotShun[eCT_Max];
 	VEC_CARD vCards[eCT_Max];
+	std::vector<uint8_t> vNotEmptyShunIdx;
 	for (uint8_t nIdx = 0; nIdx < eCT_Max; ++nIdx )
 	{
 		vCards[nIdx] = m_vCards[nIdx];
+		getNotShuns(vCards[nIdx], vNotShun[nIdx], eCT_Feng == nIdx || eCT_Jian == nIdx);
+		if (vNotShun[nIdx].empty() == false)
+		{
+			vNotEmptyShunIdx.push_back(nIdx);
+		}
+	}
+
+	if (vNotEmptyShunIdx.size() > 2 || vNotEmptyShunIdx.empty())
+	{
+		LOGFMTE("already ting pai ,why no que card = %u",vNotEmptyShunIdx.size());
+		return false;
 	}
 
 	// already 
@@ -1198,59 +1349,132 @@ bool MJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
 			}
 		}
 	};
-	if ( m_nJIang )
+	if (vNotEmptyShunIdx.size() == 2)
 	{
-		auto type = card_Type(m_nJIang);
-		// remove jiang , then check ;
-		auto iter = std::find(vCards[type].begin(), vCards[type].end(), m_nJIang);
-		vCards[type].erase(iter);
-		iter = std::find(vCards[type].begin(), vCards[type].end(), m_nJIang);
-		vCards[type].erase(iter);
-
-		for (uint8_t nIdx = 0; nIdx < eCT_Max; ++nIdx)
+		// must have jiang 
+		// asume idx 0 have jiang 
+		SET_NOT_SHUN& vFirst = vNotShun[vNotEmptyShunIdx[0]];
+		SET_NOT_SHUN& vSecond = vNotShun[vNotEmptyShunIdx[1]];
+		for (auto& v : vFirst)
 		{
-			pfnGetCanHuCardIgnoreJiang(vCards[nIdx], vCanHuCards);
-			if (vCanHuCards.empty() == false)
+			if (v.getSize() == 2 && v.vCards[0] == v.vCards[1])
 			{
-				return true;
+				// other type shound have hu card ;
+				pfnGetCanHuCardIgnoreJiang(vCards[vNotEmptyShunIdx[1]], vCanHuCards);
+				break;
 			}
 		}
 
-		return false;
+		// asume idx 1 have jiang ;
+		for (auto& v : vSecond)
+		{
+			if (v.getSize() == 2 && v.vCards[0] == v.vCards[1])
+			{
+				// other type shound have hu card ;
+				pfnGetCanHuCardIgnoreJiang(vCards[vNotEmptyShunIdx[0]], vCanHuCards);
+				break;
+			}
+		}
+
+		return vCanHuCards.size() > 0;
 	}
 
-	// if no jiang , so must be dan diao ;
-	if (0 == m_nDanDiao)
+	// only one que type 
+	// check 9 card ;
+	for (uint8_t nValue = 1; nValue <= 9; ++nValue)
 	{
-		LOGFMTE("why is not dan diao , also have no jiang big bug ????? ");
-		return false;
-	}
-	
-	auto type = card_Type(m_nDanDiao);
-	SET_NOT_SHUN vNotShun;
-	getNotShuns(vCards[type], vNotShun, eCT_Feng == type || eCT_Jian == type);
-	// parse dan diao card ;
-	auto iter = vNotShun.begin();
-	for (; iter != vNotShun.end(); ++iter)
-	{
-		if ((*iter).getSize() == 1)
+		uint8_t card = make_Card_Num((eMJCardType)vNotEmptyShunIdx[0], nValue);
+		if (canHuWitCard(card))
 		{
-			vCanHuCards.insert((*iter).vCards.front());
+			vCanHuCards.insert(card);
 		}
 	}
-
-	// although  diandiao  , but also this can have already jiang , because when decide jiang or dandiao , we asume , dan diao first ;
-	if (std::count(vCards[type].begin(), vCards[type].end(), m_nDanDiao) >= 2)
+	return vCanHuCards.size() > 0;
+	// check dan diao 
+	SET_NOT_SHUN& vFirst = vNotShun[vNotEmptyShunIdx[0]];
+	for (auto& v : vFirst)
 	{
-		// remove as jiang 
-		auto iter = std::find(vCards[type].begin(), vCards[type].end(), m_nDanDiao);
-		vCards[type].erase(iter);
-		iter = std::find(vCards[type].begin(), vCards[type].end(), m_nDanDiao);
-		vCards[type].erase(iter);
-		pfnGetCanHuCardIgnoreJiang(vCards[type], vCanHuCards);
-	}
+		if (v.getSize() == 1 )
+		{
+			// other type shound have hu card ;
+			vCanHuCards.insert(v.vCards[0]);
+			continue;
+		}
 
-	return vCanHuCards.empty() == false;
+		if (v.getSize() == 4)
+		{
+			VEC_CARD vTempCard;
+			if (v.vCards[0] == v.vCards[1])
+			{
+				vTempCard.push_back(v.vCards[2]); vTempCard.push_back(v.vCards[3]);
+				pfnGetCanHuCardIgnoreJiang(vTempCard, vCanHuCards);
+			}
+			
+			vTempCard.clear();
+			if (v.vCards[2] == v.vCards[3])
+			{
+				vTempCard.push_back(v.vCards[0]); vTempCard.push_back(v.vCards[1]);
+				pfnGetCanHuCardIgnoreJiang(vTempCard, vCanHuCards);
+			}
+		}
+	}
+	return vCanHuCards.size() > 0;
+	// have jiang 
+	
+	///-----------------------------------------------
+	//if ( m_nJIang )
+	//{
+	//	auto type = card_Type(m_nJIang);
+	//	// remove jiang , then check ;
+	//	auto iter = std::find(vCards[type].begin(), vCards[type].end(), m_nJIang);
+	//	vCards[type].erase(iter);
+	//	iter = std::find(vCards[type].begin(), vCards[type].end(), m_nJIang);
+	//	vCards[type].erase(iter);
+
+	//	for (uint8_t nIdx = 0; nIdx < eCT_Max; ++nIdx)
+	//	{
+	//		pfnGetCanHuCardIgnoreJiang(vCards[nIdx], vCanHuCards);
+	//		if (vCanHuCards.empty() == false)
+	//		{
+	//			return true;
+	//		}
+	//	}
+
+	//	return false;
+	//}
+
+	//// if no jiang , so must be dan diao ;
+	//if (0 == m_nDanDiao)
+	//{
+	//	LOGFMTE("why is not dan diao , also have no jiang big bug ????? ");
+	//	return false;
+	//}
+	//
+	//auto type = card_Type(m_nDanDiao);
+	//SET_NOT_SHUN vNotShun;
+	//getNotShuns(vCards[type], vNotShun, eCT_Feng == type || eCT_Jian == type);
+	//// parse dan diao card ;
+	//auto iter = vNotShun.begin();
+	//for (; iter != vNotShun.end(); ++iter)
+	//{
+	//	if ((*iter).getSize() == 1)
+	//	{
+	//		vCanHuCards.insert((*iter).vCards.front());
+	//	}
+	//}
+
+	//// although  diandiao  , but also this can have already jiang , because when decide jiang or dandiao , we asume , dan diao first ;
+	//if (std::count(vCards[type].begin(), vCards[type].end(), m_nDanDiao) >= 2)
+	//{
+	//	// remove as jiang 
+	//	auto iter = std::find(vCards[type].begin(), vCards[type].end(), m_nDanDiao);
+	//	vCards[type].erase(iter);
+	//	iter = std::find(vCards[type].begin(), vCards[type].end(), m_nDanDiao);
+	//	vCards[type].erase(iter);
+	//	pfnGetCanHuCardIgnoreJiang(vCards[type], vCanHuCards);
+	//}
+
+	//return vCanHuCards.empty() == false;
 }
 
 uint8_t MJPlayerCard::getMiniQueCnt( VEC_CARD vCards[eCT_Max] )
@@ -1274,6 +1498,10 @@ uint8_t MJPlayerCard::getMiniQueCnt( VEC_CARD vCards[eCT_Max] )
 	m_nDanDiao = 0;
 	for (auto& vRefNotShun : vNotShun)
 	{
+		if (vRefNotShun.empty())
+		{
+			continue;
+		}
 		uint8_t nTemp;
 		nQueCnt += getLestQue(vRefNotShun, false, m_nDanDiao == 0, nTemp, m_nDanDiao);
 	}
@@ -1472,4 +1700,244 @@ void MJPlayerCard::debugCardInfo()
 
 	LOGFMTD("card info end !");
 }
+
+uint8_t MJPlayerCard::tryBestFindLeastNotShun(VEC_CARD& vCard, SET_NOT_SHUN& vNotShun, bool bMustKeZi )
+{
+	if (vCard.empty())
+	{
+		return 0;
+	}
+
+	VEC_CARD vCheckCard;
+	vCheckCard.assign(vCard.begin(), vCard.end());
+	std::sort(vCheckCard.begin(), vCheckCard.end());
+	
+	if (vCheckCard.size() < 3 || bMustKeZi )  // this function not contai ke zi shun ; 
+	{
+		stNotShunCard st;
+		st.vCards.swap(vCheckCard);
+		vNotShun.insert(st);
+		return st.getLackCardCntForShun();
+	}
+
+	// find shun from card ;
+	SET_NOT_SHUN vMyNotShun;
+	uint8_t nMyLeastCnt;
+	nMyLeastCnt = 100;
+	for (uint8_t nIdx = 0; nIdx < vCheckCard.size(); ++nIdx)
+	{
+		if (nIdx + 2 >= vCheckCard.size())
+		{
+			break;
+		}
+
+		auto pFuncSubCheck = [this](VEC_CARD& vSubCheckCard, bool bMustKeZi, SET_NOT_SHUN& vMyNotShun, uint8_t& nMyLeastCnt )
+		{
+			// remove zero ;
+			auto iter = std::find(vSubCheckCard.begin(), vSubCheckCard.end(), 0);
+			while (iter != vSubCheckCard.end())
+			{
+				vSubCheckCard.erase(iter);
+				iter = std::find(vSubCheckCard.begin(), vSubCheckCard.end(), 0);
+			}
+
+			SET_NOT_SHUN vTemp;
+			auto nCnt = tryBestFindLeastNotShun(vSubCheckCard, vTemp, bMustKeZi);
+			if (nCnt == 0)
+			{
+				nMyLeastCnt = 0;
+				vMyNotShun.clear();
+				return true;
+			}
+
+			if (nCnt <= 2 || nCnt <= nMyLeastCnt)
+			{
+				if (nMyLeastCnt > 2)
+				{
+					// just wap ;
+					vMyNotShun.swap(vTemp);
+				}
+				else
+				{
+					vMyNotShun.insert(vTemp.begin(), vTemp.end());
+				}
+
+				if (nCnt < nMyLeastCnt)
+				{
+					nMyLeastCnt = nCnt;
+				}
+			}
+
+			return false;
+		};
+
+		// check ke zi shun zi 
+		VEC_CARD vSubCheckCard;
+		vSubCheckCard.assign(vCheckCard.begin(), vCheckCard.end());
+		if (vSubCheckCard[nIdx] == vSubCheckCard[nIdx + 2])
+		{
+			// do may ke zi ;
+			vSubCheckCard[nIdx] = vSubCheckCard[nIdx + 1] = vSubCheckCard[nIdx + 2] = 0;
+			if (pFuncSubCheck(vSubCheckCard, bMustKeZi, vMyNotShun, nMyLeastCnt))
+			{
+				return 0;
+			}
+		}
+
+		// pu tong shun zi case ;
+		if (bMustKeZi)
+		{
+			continue;
+		}
+		vSubCheckCard.clear();
+		vSubCheckCard.assign(vCheckCard.begin(), vCheckCard.end());
+ 
+		bool bFindSecond = false , bFind3 = false;
+		for (uint8_t sIdx = nIdx + 1; sIdx < vSubCheckCard.size(); ++sIdx)
+		{
+			if (vSubCheckCard[sIdx] > (vSubCheckCard[nIdx] + 2))
+			{
+				break;
+			}
+
+			if (!bFindSecond)
+			{
+				if (vSubCheckCard[sIdx] == (vSubCheckCard[nIdx] + 1))
+				{
+					vSubCheckCard[sIdx] = 0;
+					bFindSecond = true;
+				}
+				continue;
+			}
+
+			// find 3 
+			if (vSubCheckCard[sIdx] == (vSubCheckCard[nIdx] + 2))
+			{
+				vSubCheckCard[sIdx] = 0;
+				bFind3 = true;
+				break;
+			}
+		}
+
+		if (!bFindSecond || !bFind3)
+		{
+			continue;
+		}
+		vSubCheckCard[nIdx] = 0; // clear self value ;
+
+		// remove zero ;
+		if (pFuncSubCheck(vSubCheckCard, bMustKeZi, vMyNotShun, nMyLeastCnt))
+		{
+			return 0;
+		}
+
+	}
+
+	// no shun zi here 
+	if (vMyNotShun.empty())
+	{
+		stNotShunCard st;
+		st.vCards.swap(vCheckCard);
+		vNotShun.insert(st);
+		return st.getLackCardCntForShun();
+	}
+
+	vNotShun.insert(vMyNotShun.begin(),vMyNotShun.end());
+	return nMyLeastCnt;
+}
+
+//uint8_t MJPlayerCard::tryBestFindLeastNotShunMustKeZi(VEC_CARD& vCard, SET_NOT_SHUN& vNotShun)
+//{
+//	if (vCard.empty())
+//	{
+//		return 0;
+//	}
+//
+//	VEC_CARD vCheckCard;
+//	vCheckCard.assign(vCard.begin(), vCard.end());
+//	std::sort(vCheckCard.begin(), vCheckCard.end());
+//
+//	if (vCheckCard.size() < 3 ) 
+//	{
+//		stNotShunCard st;
+//		st.vCards.swap(vCheckCard);
+//		vNotShun.insert(st);
+//		return st.getLackCardCntForShun();
+//	}
+//
+//	// find shun from card ;
+//	SET_NOT_SHUN vMyNotShun;
+//	uint8_t nMyLeastCnt;
+//	nMyLeastCnt = 100;
+//	for (uint8_t nIdx = 0; nIdx < vCheckCard.size(); ++nIdx)
+//	{
+//		if (nIdx + 2 >= vCheckCard.size())
+//		{
+//			break;
+//		}
+//
+//		VEC_CARD vSubCheckCard;
+//		vSubCheckCard.assign(vCheckCard.begin(), vCheckCard.end());
+//
+//		auto iter = std::find(vSubCheckCard.begin(), vSubCheckCard.end(), vCheckCard[nIdx]);
+//		if (vSubCheckCard.end() == iter)
+//		{
+//			continue;
+//		}
+//		vSubCheckCard.erase(iter);
+//
+//		iter = std::find(vSubCheckCard.begin(), vSubCheckCard.end(), vCheckCard[nIdx] + 1);
+//		if (vSubCheckCard.end() == iter)
+//		{
+//			continue;
+//		}
+//		vSubCheckCard.erase(iter);
+//
+//		iter = std::find(vSubCheckCard.begin(), vSubCheckCard.end(), vCheckCard[nIdx] + 2);
+//		if (vSubCheckCard.end() == iter)
+//		{
+//			continue;
+//		}
+//		vSubCheckCard.erase(iter);
+//
+//		// do subcheck 
+//		SET_NOT_SHUN vTemp;
+//		auto nCnt = tryBestFindLeastNotShun(vSubCheckCard, vTemp, bMustKeZi);
+//		if (nCnt == 0)
+//		{
+//			vMyNotShun.clear();
+//			return 0;
+//		}
+//
+//		if (nCnt <= 2 || nCnt <= nMyLeastCnt)
+//		{
+//			if (nMyLeastCnt > 2)
+//			{
+//				// just wap ;
+//				vMyNotShun.swap(vTemp);
+//			}
+//			else
+//			{
+//				vMyNotShun.insert(vTemp.begin(), vTemp.end());
+//			}
+//
+//			if (nCnt < nMyLeastCnt)
+//			{
+//				nMyLeastCnt = nCnt;
+//			}
+//		}
+//	}
+//
+//	// no shun zi here 
+//	if (vMyNotShun.empty())
+//	{
+//		stNotShunCard st;
+//		st.vCards.swap(vCheckCard);
+//		vNotShun.insert(st);
+//		return st.getLackCardCntForShun();
+//	}
+//
+//	vNotShun.insert(vMyNotShun.begin(), vMyNotShun.end());
+//	return nMyLeastCnt;
+//}
 

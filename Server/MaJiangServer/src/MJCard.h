@@ -18,6 +18,7 @@ public:
 	void initAllCard( eMJGameType eType );
 	eMJGameType getGameType();
 	bool isEmpty();
+	void debugPokerInfo();
 	static eMJCardType parseCardType(uint8_t nCardNum);
 	static uint8_t parseCardValue(uint8_t nNum );
 	static uint8_t makeCardNumber(eMJCardType eType,uint8_t nValue );

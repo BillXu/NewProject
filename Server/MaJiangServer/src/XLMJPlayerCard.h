@@ -21,8 +21,10 @@ public:
 	bool canPengWithCard(uint8_t nCard) override;
 	bool canAnGangWithCard(uint8_t nCard)override;
 	bool getHoldCardThatCanAnGang(VEC_CARD& vGangCards)override;
+	bool getHoldCardThatCanBuGang(VEC_CARD& vGangCards)override ;
 	XLFanXingChecker* getFanxingChecker(){ return &m_tFanXingChecker; };
 	bool getHuedCard(VEC_CARD& vhuedCard);
+	uint8_t getQueTypeCardForChu();
 
 	// fanxing helper
 	void helpGetHoldCardByType(MJPlayerCard::VEC_CARD& vCards, uint8_t nType)override;
@@ -35,6 +37,8 @@ protected:
 protected:
 	uint8_t m_nQueType;
 	VEC_CARD m_vecAlreadyHu;
+	VEC_CARD m_vCanHuCard;
 public:
 	static XLFanXing m_tFanXingChecker;
+	//XLFanXing m_tFanXingChecker;
 };

@@ -11,4 +11,6 @@ public:
 	void onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<uint8_t>& vOutCandinates)override;
 	uint8_t getNextActPlayerIdx(uint8_t nCurActIdx);
 	uint8_t getRoomType()override{ return eMJ_BloodTheEnd; }
+protected:
+	bool canKouPlayerCoin(uint8_t nPlayerIdx) override;
 };
