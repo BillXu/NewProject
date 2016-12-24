@@ -44,6 +44,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>../Bin/ServerRelease</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -51,15 +52,16 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions);SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;SERVER;%(PreprocessorDefinitions);JSON_DLL</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../ServerCommon;../../Common;../NetworkUtility/src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../ServerCommon;../../Common;../NetworkUtility/src;./src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\local\boost_1_61_0\lib32-msvc-12.0;../Bin/Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>NetworkUtility_D.lib;GameCommon_D.lib;ServerCommon_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../Bin/Lib;C:\local\boost_1_61_0\lib32-msvc-12.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>NetworkUtilityD.lib;GameCommon_D.lib;ServerCommon_D.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -72,7 +74,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions);SERVER</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../ServerCommon;../../Common;../NetworkUtility/src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../ServerCommon;../../Common;../NetworkUtility/src;./src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,7 +116,6 @@
     <ClInclude Include="src\XLRoomStateStartGame.h" />
     <ClInclude Include="src\XLRoomStateWaitDecideQue.h" />
     <ClInclude Include="src\XLRoomStateWaitPlayerAct.h" />
-    <ClInclude Include="src\XLRoomStateWaitSupplyCoin.h" />
     <ClInclude Include="src\XZMJRoom.h" />
   </ItemGroup>
   <ItemGroup>

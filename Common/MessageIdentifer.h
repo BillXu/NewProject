@@ -53,6 +53,7 @@ enum eMsgType
 	MSG_VERIFY_GATE, // verify that is gate server 
 	MSG_VERIFY_DB,  // verify that is DBserver ;
 	MSG_VERIFY_APNS, // apple push notification ;
+	MSG_VERIFY_MJ = MSG_VERIFY_APNS, // apple push notification ;
 	MSG_VERIFY_LOG, // LOG sever 
 	MSG_VERIFY_TAXAS, // TAXAS POKER SERVER 
 	MSG_VERIFY_DATA, // VIERIFY DATA SERVER ;
@@ -496,6 +497,8 @@ enum eMsgType
 
 
 	// mj room msg 麻将房间信息。客户端发给svr的信息，必须包含 dstRoomID 的 key 
+	MSG_CONSUM_VIP_ROOM_CARDS,   // server used 
+	// js : { uid : 235, cardCnt : 2 }
 
 	MSG_PLAYER_SET_READY = 2554,   // 玩家准备
 	// client : { dstRoomID : 2345 } ;
@@ -515,7 +518,7 @@ enum eMsgType
 	// svr : { ret : 0 }
 	// ret : 0 成功 , 1 你选择的牌里面有错误, 2 选择的牌 张数不对 3 . 你没有参加牌局 , 4 你已经选择了，不要选择两次;
 
-	MSG_ROOM_FINISH_EXCHANGE,  //  所有玩家完成选择；
+	MSG_ROOM_FINISH_EXCHANGE,  //  所有玩家完成选择,换三张；
 	// svr : { mode : 0 , result : [ { idx = 0 , cards : [ 2, 4 ,5]}, { idx = 1 , cards : [ 2, 4 ,5]},{ idx = 2 , cards : [ 2, 4 ,5]},{ idx = 3 , cards : [ 2, 4 ,5]}  ] }
 	// mode : 换牌模式， 0 顺时针换 , 1 逆时针换, 2 对家换 
 
@@ -552,6 +555,11 @@ enum eMsgType
 	// huType : 胡牌类型，只有是胡的动作才有这个字段；
 	// fanShu :  胡牌的时候的翻数，只有胡牌的动作才有这个字段
 
+	MSG_REQ_ACT_LIST,   //玩家重新上线，断线重连 收到roomInfo 后，发送此消息请求玩家操作列表；
+	// client : { dstRoomID : 356 } ,
+	// svr : { ret : 0 } ;
+	// ret : 0 等待你出牌，只能出牌，1 此刻不是你该操作的时候。
+
 	MSG_ROOM_SETTLE_DIAN_PAO, //  实结算的 点炮
 	//svr : { paoIdx : 234 , isGangPao : 0 , isRobotGang : 0 , huPlayers : [ { idx : 2 , coin : 2345 }, { idx : 2, coin : 234 }, ... ]  }
 	// paoIdx : 引跑者的索引， isGangShangPao ： 是否是杠上炮， isRobotGang ： 是否是被抢杠， huPlayer ： 这一炮 引发的所有胡牌这，是一个数组。 { idx ： 胡牌人的索引， coin 胡牌人赢的金币} 
@@ -586,9 +594,26 @@ enum eMsgType
 	// target : 就是自己这个账单 相对的一方， 就是赢了哪些人的钱，或者输给谁了。被谁自摸了，被谁点炮了，点炮了谁。具体到客户端表现，就是最右边那个 上家下家，之类的那一列。
 
 	MSG_ROOM_PLAYER_CARD_INFO,
-	// svr : { bankerIdx : 2, leftCardCnt : 32 ,playersCard: [ { idx : 2,queType: 2, anPai : [2,3,4,34], mingPai : [ 23,67,32] , huPai : [1,34], chuPai: [2,34,4] },{ anPai : [2,3,4,34], mingPai : [ 23,67,32] , huPai : [1,34] }, .... ] }
-	// leftCardCnt : 剩余牌的数量，重新进入已经在玩的房间，或者断线重连，就会收到这个消息， anPai 就是牌，没有展示出来的，mingPai 就是已经展示出来的牌（碰，杠），huPai ： 已经胡了的牌。 queType : 1,万 2, 筒 3, 条
+	// svr : { idx : 2, queType: 2, anPai : [2,3,4,34], mingPai : [ 23,67,32] , huPai : [1,34], chuPai: [2,34,4] },{ anPai : [2,3,4,34], mingPai : [ 23,67,32], anGangPai : [23,24] , huPai : [1,34] }
+	//  anPai 就是牌，没有展示出来的，mingPai 就是已经展示出来的牌（碰，杠），huPai ： 已经胡了的牌。 queType : 1,万 2, 筒 3, 条
+	// anGangPai : 就是安杠的牌，单张，不是4张。比如 暗杠8万，那么就是一个8万，也不是4个8万。
 
+	MSG_MJ_ROOM_INFO,  // 房间的基本信息
+	// svr : { roomID ： 23 , configID : 23 , waitTimer : 23, bankerIdx : 0 , curActIdex : 2 , leftCardCnt : 23 , roomState :  23 , players : [ {idx : 0 , uid : 233, coin : 2345 , state : 34, isTrusteed : 0  }, {idx : 0 , uid : 233, coin : 2345, state : 34, isTrusteed : 0 },{idx : 0 , uid : 233, coin : 2345 , state : 34,isTrusteed : 0 } , ... ] }
+	// roomState  , 房间状态
+	// isTrusteed : 玩家是否托管
+	// leftCardCnt : 剩余牌的数量，重新进入已经在玩的房间，或者断线重连，就会收到这个消息，
+	// bankerIdx : 庄家的索引
+	// curActIdx :  当前正在等待操作的玩家
+
+	MSG_VIP_ROOM_INFO_EXT, // VIP 房间的额外信息；
+	// svr : { leftCircle : 2 , baseBet : 1 , creatorUID : 2345 , initCoin : 2345, roomType : 2, applyDismissUID : 234, isWaitingDismiss : 0 , agreeIdxs : [2,3,1] ，leftWaitTime ： 234 }
+	// letCircle : 剩余的圈数， baseBet 基础底注 ，creatorUID 创建者的ID , initCoin 每个人的初始金币
+	// roomType : 游戏类型，参考枚举 eRoomType ；
+	// isWaitingDismiss : 是否在等待投票，解散房间。0 是没有在等待， 1 是在等待
+	// agreeIdxs ： 已经投票同意的玩家 索引数组
+	// leftWaitTime : 等待解散房间的剩余时间，单位秒
+	// applyDismissUID : 申请解散房间者的ID
 
 	MSG_APPLY_DISMISS_VIP_ROOM, // 申请解散vip 房间
 	// client : { dstRoomID : 234 } 
@@ -612,6 +637,16 @@ enum eMsgType
 	MSG_ROOM_REPLY_DISSMISS_VIP_ROOM_APPLY, // 收到有人回复解散房间
 	// svr { idx : 23 , reply : 0 }
 	// reply ： 0 表示同意， 1 表示拒绝。
+
+	MSG_VIP_ROOM_CLOSED,
+	// { uid : 2345 , roomID : 2345 , eType : eroomType } 
+
+	MSG_ROOM_PLAYER_ENTER, // 有其他玩家进入房间
+	// svr : {idx : 0 , uid : 233, coin : 2345,state : 34 }
+
+	MSG_ROOM_PLAYER_LEAVE, // 有玩家离开房间;
+	// svr : { idx : 2 ,isExit : 0 }
+	// isExit : 是否是离开，还是真的退出。 1 是真的退出 。一定要判断 isExit 这个值是存在，并且是值为 1 。
 
 
 
@@ -709,11 +744,11 @@ enum eMsgType
 	MSG_ROOM_PROCESSE_KIKED_RESULT,
 
 	MSG_ROOM_ENTER,
-	MSG_ROOM_PLAYER_ENTER,  // MSG_ROOM_PLAYER_x means other player actions 
+	//MSG_ROOM_PLAYER_ENTER,  // MSG_ROOM_PLAYER_x means other player actions 
 	MSG_PLAYER_FOLLOW_TO_ROOM, // zhui zong pai ju 
 
 	MSG_ROOM_LEAVE,
-	MSG_ROOM_PLAYER_LEAVE,
+	//MSG_ROOM_PLAYER_LEAVE,
 	// private room 
 	MSG_PLAYER_CREATE_PRIVATE_ROOM,  // create private Room ;
 

@@ -14,7 +14,7 @@ bool XZMJRoom::isGameOver()
 	uint8_t nNotCanAct = 0;
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref && (false == ref->haveState(eRoomPeer_DecideLose)) && (false == ref->haveState(eRoomPeer_AlreadyHu)))
+		if (ref && (false == ref->haveState(eRoomPeer_AlreadyHu)))
 		{
 			++nNotCanAct;
 		}
@@ -31,7 +31,7 @@ bool XZMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 {
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_DecideLose) || ref->haveState(eRoomPeer_AlreadyHu) )
+		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_AlreadyHu) )
 		{
 			continue;
 		}
@@ -55,7 +55,7 @@ bool XZMJRoom::isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)
 {
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_DecideLose) || ref->haveState(eRoomPeer_AlreadyHu) )
+		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_AlreadyHu) )
 		{
 			continue;
 		}
@@ -75,7 +75,7 @@ void XZMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::
 	isNeedWaitEat = false;
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_DecideLose) || ref->haveState(eRoomPeer_AlreadyHu) )
+		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_AlreadyHu) )
 		{
 			continue;
 		}
@@ -134,7 +134,7 @@ void XZMJRoom::onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<
 	// inform target player do this things 
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_DecideLose) || ref->haveState(eRoomPeer_AlreadyHu) )
+		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_AlreadyHu) )
 		{
 			continue;
 		}
@@ -169,7 +169,7 @@ uint8_t XZMJRoom::getNextActPlayerIdx(uint8_t nCurActIdx)
 	{
 		auto nActIdx = nIdx % getSeatCnt();
 		auto p = getMJPlayerByIdx(nActIdx);
-		if (p && (p->haveState(eRoomPeer_DecideLose) == false) && (p->haveState(eRoomPeer_AlreadyHu) == false))
+		if (p &&  (p->haveState(eRoomPeer_AlreadyHu) == false))
 		{
 			return nActIdx;
 		}
@@ -182,7 +182,7 @@ uint8_t XZMJRoom::getNextActPlayerIdx(uint8_t nCurActIdx)
 bool XZMJRoom::canKouPlayerCoin(uint8_t nPlayerIdx)
 {
 	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
-	if (nullptr == pPlayer  || pPlayer->haveState(eRoomPeer_AlreadyHu) || pPlayer->haveState(eRoomPeer_DecideLose) )
+	if (nullptr == pPlayer  || pPlayer->haveState(eRoomPeer_AlreadyHu) )
 	{
 		return false;
 	}

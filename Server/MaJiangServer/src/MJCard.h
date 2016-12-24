@@ -3,6 +3,7 @@
 #include "NativeTypes.h"
 #include <vector>
 #include "IMJPoker.h"
+#include "CommonDefine.h"
 class CMJCard
 	:public IMJPoker
 {

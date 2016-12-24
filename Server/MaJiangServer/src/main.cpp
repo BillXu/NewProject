@@ -1,7 +1,6 @@
 #include "MJPlayerCard.h"
 #include "MJCard.h"
 #include "XLMJPlayerCard.h"
-#include "MJPeerCardNew.h"
 void tempTest()
 {
 	//CMJHuPaiInfo tInfo ;

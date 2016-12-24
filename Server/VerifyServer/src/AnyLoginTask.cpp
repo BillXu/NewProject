@@ -29,7 +29,7 @@ uint8_t AnyLoginTask::performTask()
 
 void AnyLoginTask::onHttpCallBack(char* pResultData, size_t nDatalen, void* pUserData, size_t nUserTypeArg)
 {
-	assert(pResult != nullptr && "must not null");
+	assert(pResultData != nullptr && "must not null");
 	Json::Reader reader;
 	m_jsResult.clear();	
 	if (reader.parse(pResultData, pResultData + nDatalen, m_jsResult))

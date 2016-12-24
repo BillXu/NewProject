@@ -5,7 +5,6 @@
 #include "RoomConfig.h"
 #include "MJServer.h"
 #include "IMJPlayer.h"
-#include "HZMJRoom.h"
 #include "XLMJRoom.h"
 #include "MJPrivateRoom.h"
 #include "AsyncRequestQuene.h"
@@ -15,6 +14,12 @@ void MJRoomManager::init(IServerApp* svrApp)
 {
 	m_vWillDeleteRoomIDs.clear();
 	IGameRoomManager::init(svrApp);
+
+	//temp code ;
+	Json::Value js;
+	js["circle"] = 4;
+	js["roomType"] = eRoom_MJ_Blood_River ;
+	doCreatePrivateRoom(0, js);
 }
 
 IGameRoom* MJRoomManager::getRoomByID(uint32_t nRoomID)
@@ -57,76 +62,76 @@ bool MJRoomManager::onMsg(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nSessi
 
 bool MJRoomManager::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)
 {
-	if (MSG_REQ_VIP_ROOM_BILL_INFO == nMsgType)
-	{
-		uint32_t nBillID = prealMsg["billID"].asUInt();
-		if (isHaveVipRoomBill(nBillID))
-		{
-			sendVipRoomBillToPlayer(nBillID, nSessionID);
-			return true;
-		}
+	//if (MSG_REQ_VIP_ROOM_BILL_INFO == nMsgType)
+	//{
+	//	uint32_t nBillID = prealMsg["billID"].asUInt();
+	//	if (isHaveVipRoomBill(nBillID))
+	//	{
+	//		sendVipRoomBillToPlayer(nBillID, nSessionID);
+	//		return true;
+	//	}
 
-		// add to requesting queue ;
-		auto iter = m_vReqingBillInfoPlayers.find(nBillID);
-		if (iter == m_vReqingBillInfoPlayers.end())
-		{
-			auto p = std::shared_ptr<stReqVipRoomBillPlayers>(new stReqVipRoomBillPlayers());
-			p->nReqBillID = nBillID;
-			p->vReqPlayers.insert(nSessionID);
-			m_vReqingBillInfoPlayers[nBillID] = p;
-		}
-		else
-		{
-			auto p = iter->second;
-			p->vReqPlayers.insert(nSessionID);
-		}
-		// read from db ;
-		auto async = getSvrApp()->getAsynReqQueue();
-		Json::Value jsReq;
-		std::ostringstream ss;
-		ss << "select roomID,roomType,createUID,unix_timestamp(billTime) as bTime,detail,roomInitCoin,circleCnt from viproombills where billID = " << nBillID << " ;";
-		jsReq["sql"] = ss.str();
-		Json::Value jsUserData;
-		jsUserData["billID"] = nBillID;
-		async->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Select, jsReq, [this](uint16_t nReqType, const Json::Value& retContent, Json::Value& jsUserData){
-			uint8_t nAfcRow = retContent["afctRow"].asUInt();
-			uint32_t nBillID = jsUserData["billID"].asUInt();
-			if (nAfcRow == 1)
-			{
-				auto jsRow = retContent["data"][(uint32_t)0];
-				auto pBill = createVipRoomBill();
-				--s_MaxBillID;
-				pBill->nBillID = nBillID;
-				pBill->nBillTime = jsRow["bTime"].asUInt();
-				pBill->nCircleCnt = jsRow["circleCnt"].asUInt();
-				pBill->nCreateUID = jsRow["createUID"].asUInt();
-				pBill->nRoomID = jsRow["roomID"].asUInt();
-				pBill->nRoomInitCoin = jsRow["roomInitCoin"].asUInt();
-				pBill->nRoomType = jsRow["roomType"].asUInt();
+	//	// add to requesting queue ;
+	//	auto iter = m_vReqingBillInfoPlayers.find(nBillID);
+	//	if (iter == m_vReqingBillInfoPlayers.end())
+	//	{
+	//		auto p = std::shared_ptr<stReqVipRoomBillPlayers>(new stReqVipRoomBillPlayers());
+	//		p->nReqBillID = nBillID;
+	//		p->vReqPlayers.insert(nSessionID);
+	//		m_vReqingBillInfoPlayers[nBillID] = p;
+	//	}
+	//	else
+	//	{
+	//		auto p = iter->second;
+	//		p->vReqPlayers.insert(nSessionID);
+	//	}
+	//	// read from db ;
+	//	auto async = getSvrApp()->getAsynReqQueue();
+	//	Json::Value jsReq;
+	//	std::ostringstream ss;
+	//	ss << "select roomID,roomType,createUID,unix_timestamp(billTime) as bTime,detail,roomInitCoin,circleCnt from viproombills where billID = " << nBillID << " ;";
+	//	jsReq["sql"] = ss.str();
+	//	Json::Value jsUserData;
+	//	jsUserData["billID"] = nBillID;
+	//	async->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Select, jsReq, [this](uint16_t nReqType, const Json::Value& retContent, Json::Value& jsUserData){
+	//		uint8_t nAfcRow = retContent["afctRow"].asUInt();
+	//		uint32_t nBillID = jsUserData["billID"].asUInt();
+	//		if (nAfcRow == 1)
+	//		{
+	//			auto jsRow = retContent["data"][(uint32_t)0];
+	//			auto pBill = createVipRoomBill();
+	//			--s_MaxBillID;
+	//			pBill->nBillID = nBillID;
+	//			pBill->nBillTime = jsRow["bTime"].asUInt();
+	//			pBill->nCircleCnt = jsRow["circleCnt"].asUInt();
+	//			pBill->nCreateUID = jsRow["createUID"].asUInt();
+	//			pBill->nRoomID = jsRow["roomID"].asUInt();
+	//			pBill->nRoomInitCoin = jsRow["roomInitCoin"].asUInt();
+	//			pBill->nRoomType = jsRow["roomType"].asUInt();
 
-				Json::Reader jsRead;
-				jsRead.parse(jsRow["detail"].asString(), pBill->jsDetail, false);
-				addVipRoomBill(pBill, false);
-			}
+	//			Json::Reader jsRead;
+	//			jsRead.parse(jsRow["detail"].asString(), pBill->jsDetail, false);
+	//			addVipRoomBill(pBill, false);
+	//		}
 
-			// send all req players ;
-			auto iter = m_vReqingBillInfoPlayers.find(nBillID);
-			if (iter == m_vReqingBillInfoPlayers.end())
-			{
-				LOGFMTE("here must error , must have players waiting the result");
-				return;
-			}
+	//		// send all req players ;
+	//		auto iter = m_vReqingBillInfoPlayers.find(nBillID);
+	//		if (iter == m_vReqingBillInfoPlayers.end())
+	//		{
+	//			LOGFMTE("here must error , must have players waiting the result");
+	//			return;
+	//		}
 
-			for (auto& nSessionID : iter->second->vReqPlayers)
-			{
-				sendVipRoomBillToPlayer(nBillID, nSessionID);
-			}
-			m_vReqingBillInfoPlayers.erase(iter);
+	//		for (auto& nSessionID : iter->second->vReqPlayers)
+	//		{
+	//			sendVipRoomBillToPlayer(nBillID, nSessionID);
+	//		}
+	//		m_vReqingBillInfoPlayers.erase(iter);
 
-		}, jsUserData);
+	//	}, jsUserData);
 
-		return true;
-	}
+	//	return true;
+	//}
 
 	// msg give to room process 
 	if (prealMsg["dstRoomID"].isNull())
@@ -221,7 +226,7 @@ bool MJRoomManager::onAsyncRequest(uint16_t nRequestType, const Json::Value& jsR
 		return true;
 	}
 
-	if (eAsync_SendUpdateCoinToClient == nRequestType)
+	/*if (eAsync_SendUpdateCoinToClient == nRequestType)
 	{
 		uint32_t nSessionID = jsReqContent["sessionID"].asUInt();
 		uint32_t nUID = jsReqContent["uid"].asUInt();
@@ -253,7 +258,7 @@ bool MJRoomManager::onAsyncRequest(uint16_t nRequestType, const Json::Value& jsR
 
 		}
 		return true;
-	}
+	}*/
 
 	if (eAsync_CreateRoom == nRequestType )
 	{
@@ -303,96 +308,21 @@ bool MJRoomManager::processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, u
 	msgBack.nRet = 0;
 	stMsgSvrEnterRoom* pRet = (stMsgSvrEnterRoom*)prealMsg;
 	msgBack.nGameType = 0;
-	msgBack.nRoomID = pRet->nTargetID;
-	bool isRobot = pRet->tPlayerData.nPlayerType == ePlayer_Robot;
-	if (isRobot)
-	{
-		LOGFMTI("收到机器人进入房间的请求 = %u", pRet->tPlayerData.nUserUID);
-	}
-	//// temp set 
-	//pRet->nType = 1 ;
-	//pRet->nTargetID = 2 ;
-	LOGFMTD("session id = %u enter room type = %u , roomID = %u", nSessionID, pRet->nType, pRet->nTargetID);
+	msgBack.nRoomID = pRet->nRoomID;
+	msgBack.nSubIdx = 0;
+
+	LOGFMTD("session id = %u enter room type = %u , roomID = %u", nSessionID, pRet->nSubIdx, pRet->nRoomID);
 
 	// find a room to enter 
 	IGameRoom* pRoomEnter = nullptr;
-	if (pRet->nType == 1)
+	pRoomEnter = getRoomByID(pRet->nRoomID);
+	if (pRoomEnter == nullptr)
 	{
-		pRoomEnter = getRoomByID(pRet->nTargetID);
-		if (pRoomEnter == nullptr)
-		{
-			msgBack.nRet = 5;
-			sendMsg(&msgBack, sizeof(msgBack), nSessionID);
-			LOGFMTD("target room id = %u is null", pRet->nTargetID);
-			if (isRobot)
-			{
-				LOGFMTI("机器人进入房间失败 uid = %u", pRet->tPlayerData.nUserUID);
-			}
-			return false;
-		}
-
-		// robot adjust coin deponed on room limit ;
-		if (pRet->tPlayerData.nPlayerType == ePlayer_Robot)
-		{
-			uint32_t nStandCoin = 8000 + rand() % 1000;
-			auto pConfig = pRoomEnter->getRoomConfig();
-			uint32_t nLowLimit = 1000;
-			uint32_t nTopLimit = 3000;
-
-			if (pConfig->nEnterLowLimit != 0)
-			{
-				nLowLimit = pConfig->nEnterLowLimit;
-			}
-
-			if (0 != pConfig->nEnterTopLimit)
-			{
-				nTopLimit = pConfig->nEnterTopLimit;
-			}
-			else
-			{
-				nTopLimit = nLowLimit * 2;
-			}
-
-			if (nTopLimit <= nLowLimit)
-			{
-				nTopLimit = nLowLimit * 2;
-			}
-
-			nStandCoin = nLowLimit + rand() % (nTopLimit - nLowLimit);
-			nStandCoin = float(nStandCoin) * 1.1f + pConfig->nDeskFee;
-			LOGFMTD("adjust robot coin to : %u", nStandCoin);
-			pRet->tPlayerData.nCoin = nStandCoin;
-		}
+		msgBack.nRet = 5;
+		sendMsg(&msgBack, sizeof(msgBack), nSessionID);
+		LOGFMTD("target room id = %u is null", pRet->nRoomID);
+		return false;
 	}
-	else
-	{
-		//LOGFMTE("temp set enter er ren que shen %s",__FUNCTION__);
-		//pRet->nTargetID = 7 ;
-		auto pSvr = (CMJServerApp*)getSvrApp();
-		auto pConfig = pSvr->getRoomConfigMgr()->GetConfigByConfigID(pRet->nTargetID);
-		if (pConfig == nullptr)
-		{
-			msgBack.nRet = 2;
-			sendMsg(&msgBack, sizeof(msgBack), nSessionID);
-			LOGFMTE("svr do not have room config with id = %u", pRet->nTargetID);
-			return true;
-		}
-
-
-		if (pRet->tPlayerData.nPlayerType == ePlayer_Robot)
-		{
-			LOGFMTE("机器人不应该走到这里");
-			return true;
-		}
-
-		if (pConfig->nGameType == eRoom_MJ_Two_Bird_God)
-		{
-			return false;
-		}
-
-		pRoomEnter = randRoomToEnterByConfigID(pRet->nTargetID);
-	}
-
 	if (pRoomEnter == nullptr)
 	{
 		LOGFMTE("can not rand a room to enter , this msg may not process in this room mgr");
@@ -407,16 +337,12 @@ bool MJRoomManager::processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, u
 	if (msgBack.nRet)
 	{
 		sendMsg(&msgBack, sizeof(msgBack), nSessionID);
-		LOGFMTD("you are not proper to enter this room target id = %u , ret = %d", pRet->nTargetID, msgBack.nRet);
-		if (isRobot)
-		{
-			LOGFMTI("机器人进入房间失败 uid = %u", pRet->tPlayerData.nUserUID);
-		}
+		LOGFMTD("you are not proper to enter this room target id = %u , ret = %d", pRet->nRoomID, msgBack.nRet);
 		return true;
 	}
 
 	int8_t nidx = 0;
-	msgBack.nGameType = eRoom_MJ;
+	msgBack.nGameType = pRoomEnter->getRoomType();
 	msgBack.nRoomID = pRoomEnter->getRoomID();
 	msgBack.nSubIdx = 0;
 	msgBack.nRet = 0;
@@ -427,13 +353,7 @@ bool MJRoomManager::processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, u
 	{
 		pRoomEnter->sendRoomInfo(nSessionID);
 		LOGFMTI("有人进入房间成功 ，会有room info 返回 , 进入房间成功消息也发 uid = %u", pRet->tPlayerData.nUserUID);
-	}
-	
-	if (isRobot)
-	{
-		LOGFMTI("机器人进入房间成功 ，会有room info 返回 , 进入房间成功消息也发 uid = %u", pRet->tPlayerData.nUserUID);
-	}
-	
+	}	
 	return true;
 }
 
@@ -465,59 +385,60 @@ IGameRoom* MJRoomManager::randRoomToEnterByConfigID(uint32_t nRoomConfigID)
 
 IGameRoom* MJRoomManager::doCreatePublicRoom(uint16_t nConfigID)
 {
-	auto pSvr = (CMJServerApp*)getSvrApp();
-	auto pConfig = pSvr->getRoomConfigMgr()->GetConfigByConfigID(nConfigID);
-	if (pConfig == nullptr)
-	{
-		LOGFMTE("svr do not have room config with id = %u, so can not create public room", nConfigID);
-		return nullptr;
-	}
+	//auto pSvr = (CMJServerApp*)getSvrApp();
+	//auto pConfig = pSvr->getRoomConfigMgr()->GetConfigByConfigID(nConfigID);
+	//if (pConfig == nullptr)
+	//{
+	//	LOGFMTE("svr do not have room config with id = %u, so can not create public room", nConfigID);
+	//	return nullptr;
+	//}
 
-	IGameRoom* pRoom = nullptr;
-	if (eMJ_HZ == pConfig->nGameType)
-	{
-		pRoom = new HZMJRoom();
-	}
-	else if (eMJ_BloodRiver == pConfig->nGameType)
-	{
-		pRoom = new XLMJRoom();
-	}
-	else if (eMJ_BloodTheEnd == pConfig->nGameType)
-	{
-		pRoom = new XZMJRoom();
-	}
-	else
-	{
-		LOGFMTE("unknown game type for config id = %u, when create public room",nConfigID);
-		return nullptr;
-	}
+	//IGameRoom* pRoom = nullptr;
+	//if (eMJ_HZ == pConfig->nGameType)
+	//{
+	//	pRoom = new HZMJRoom();
+	//}
+	//else if (eMJ_BloodRiver == pConfig->nGameType)
+	//{
+	//	pRoom = new XLMJRoom();
+	//}
+	//else if (eMJ_BloodTheEnd == pConfig->nGameType)
+	//{
+	//	pRoom = new XZMJRoom();
+	//}
+	//else
+	//{
+	//	LOGFMTE("unknown game type for config id = %u, when create public room",nConfigID);
+	//	return nullptr;
+	//}
 
-	Json::Value js;
-	pRoom->init(this, pConfig, generateRoomID(), js);
-	
-	// add to vec room ;
-	auto iter = m_vRooms.find(pRoom->getRoomID());
-	if (iter != m_vRooms.end())
-	{
-		LOGFMTE("why have duplicate room id when create public room configid = %u , room id = %u",nConfigID,pRoom->getRoomID());
-		delete pRoom;
-		pRoom = nullptr;
-		return iter->second;
-	}
-	m_vRooms[pRoom->getRoomID()] = pRoom;
-	
-	// add to public ;
-	auto iterpublic = m_vPublicRooms.find(nConfigID);
-	if (iterpublic == m_vPublicRooms.end())
-	{
-		m_vPublicRooms[nConfigID].push_back(pRoom->getRoomID());
-	}
-	else
-	{
-		iterpublic->second.push_back(pRoom->getRoomID());
-	}
+	//Json::Value js;
+	//pRoom->init(this, pConfig, generateRoomID(), js);
+	//
+	//// add to vec room ;
+	//auto iter = m_vRooms.find(pRoom->getRoomID());
+	//if (iter != m_vRooms.end())
+	//{
+	//	LOGFMTE("why have duplicate room id when create public room configid = %u , room id = %u",nConfigID,pRoom->getRoomID());
+	//	delete pRoom;
+	//	pRoom = nullptr;
+	//	return iter->second;
+	//}
+	//m_vRooms[pRoom->getRoomID()] = pRoom;
+	//
+	//// add to public ;
+	//auto iterpublic = m_vPublicRooms.find(nConfigID);
+	//if (iterpublic == m_vPublicRooms.end())
+	//{
+	//	m_vPublicRooms[nConfigID].push_back(pRoom->getRoomID());
+	//}
+	//else
+	//{
+	//	iterpublic->second.push_back(pRoom->getRoomID());
+	//}
 
-	return pRoom;
+	//return pRoom;
+	return nullptr;
 }
 
 IGameRoom* MJRoomManager::doCreatePrivateRoom(uint16_t nConfigID, Json::Value& jsArg)
@@ -541,6 +462,7 @@ IGameRoom* MJRoomManager::doCreatePrivateRoom(uint16_t nConfigID, Json::Value& j
 			return p;
 		}
 		m_vRooms[p->getRoomID()] = p;
+		LOGFMTD("create private room id = %u success", p->getRoomID() );
 	}
 	return p;
 }
@@ -580,26 +502,26 @@ MJRoomManager::~MJRoomManager()
 
 void MJRoomManager::sendVipRoomBillToPlayer(uint32_t nBillID, uint32_t nTargetSessionD)
 {
-	Json::Value jsMsg;
-	jsMsg["ret"] = 0;
-	jsMsg["billID"] = nBillID;
+	//Json::Value jsMsg;
+	//jsMsg["ret"] = 0;
+	//jsMsg["billID"] = nBillID;
 
-	if (!isHaveVipRoomBill(nBillID))
-	{
-		jsMsg["ret"] = 1;
-		sendMsg(jsMsg, MSG_REQ_VIP_ROOM_BILL_INFO, nTargetSessionD);
-		return;
-	}
+	//if (!isHaveVipRoomBill(nBillID))
+	//{
+	//	jsMsg["ret"] = 1;
+	//	sendMsg(jsMsg, MSG_REQ_VIP_ROOM_BILL_INFO, nTargetSessionD);
+	//	return;
+	//}
 
-	auto pBill = m_vVipRoomBills.find(nBillID)->second;
-	jsMsg["billTime"] = pBill->nBillTime;
-	jsMsg["circle"] = pBill->nCircleCnt;
-	jsMsg["creatorUID"] = pBill->nCreateUID;
-	jsMsg["roomID"] = pBill->nRoomID;
-	jsMsg["initCoin"] = pBill->nRoomInitCoin;
-	jsMsg["roomType"] = pBill->nRoomType;
-	jsMsg["detail"] = pBill->jsDetail;
-	sendMsg(jsMsg, MSG_REQ_VIP_ROOM_BILL_INFO, nTargetSessionD);
+	//auto pBill = m_vVipRoomBills.find(nBillID)->second;
+	//jsMsg["billTime"] = pBill->nBillTime;
+	//jsMsg["circle"] = pBill->nCircleCnt;
+	//jsMsg["creatorUID"] = pBill->nCreateUID;
+	//jsMsg["roomID"] = pBill->nRoomID;
+	//jsMsg["initCoin"] = pBill->nRoomInitCoin;
+	//jsMsg["roomType"] = pBill->nRoomType;
+	//jsMsg["detail"] = pBill->jsDetail;
+	//sendMsg(jsMsg, MSG_REQ_VIP_ROOM_BILL_INFO, nTargetSessionD);
 }
 
 void MJRoomManager::addVipRoomBill(std::shared_ptr<stVipRoomBill>& pBill, bool isAddtoDB)

@@ -11,6 +11,7 @@
 #include "TaskPoolModule.h"
 #include "VerifyApp.h"
 #include "AnyLoginTask.h"
+#include <fstream>
 void CHttpModule::init(IServerApp* svrApp)
 {
 	IGlobalModule::init(svrApp);
@@ -41,6 +42,13 @@ void CHttpModule::init(IServerApp* svrApp)
 	registerHttpHandle("/playerInfo.yh", boost::bind(&CHttpModule::handleGetPlayerInfo, this, boost::placeholders::_1));
 	registerHttpHandle("/addRoomCard.yh", boost::bind(&CHttpModule::handleAddRoomCard, this, boost::placeholders::_1));
 	registerHttpHandle("/AnyLogin.yh", boost::bind(&CHttpModule::handleAnySdkLogin, this, boost::placeholders::_1));
+
+	// halde config file 
+	registerHttpHandle("/configN.php", boost::bind(&CHttpModule::onHandleConfigN, this, boost::placeholders::_1));
+	registerHttpHandle("/configNA.php", boost::bind(&CHttpModule::onHandleConfigNA, this, boost::placeholders::_1));
+	registerHttpHandle("/configGolden.php", boost::bind(&CHttpModule::onHandleConfigGolden, this, boost::placeholders::_1));
+	registerHttpHandle("/configGoldenA.php", boost::bind(&CHttpModule::onHandleConfigGoldenA, this, boost::placeholders::_1));
+	registerHttpHandle("/configRefresh.php", boost::bind(&CHttpModule::onHandleConfigRefresh, this, boost::placeholders::_1));
 }
 
 void CHttpModule::update(float fDeta)
@@ -413,3 +421,104 @@ bool CHttpModule::handleAnySdkLogin(http::server::connection_ptr ptr)
 	return true;
 }
 
+// handle config file 
+bool CHttpModule::onHandleConfigN(http::server::connection_ptr ptr)
+{
+	return responeConfigToConnect("../configFile/configN.php",ptr);
+}
+
+bool CHttpModule::onHandleConfigNA(http::server::connection_ptr ptr)
+{
+	return responeConfigToConnect("../configFile/configNA.php", ptr);
+}
+
+bool CHttpModule::onHandleConfigGolden(http::server::connection_ptr ptr)
+{
+	return responeConfigToConnect("../configFile/Golden.php", ptr);
+}
+
+bool CHttpModule::onHandleConfigGoldenA(http::server::connection_ptr ptr)
+{
+	return responeConfigToConnect("../configFile/GoldenA.php", ptr);
+}
+
+bool CHttpModule::onHandleConfigRefresh(http::server::connection_ptr ptr)
+{
+	auto req = ptr->getReqPtr();
+	auto res = ptr->getReplyPtr();
+	vConfigFile.clear();
+	std::string str = "success";
+	res->setContent(str);
+	ptr->doReply();
+	return true;
+}
+
+bool CHttpModule::readFileToString(string file_name, string& fileData)
+{
+	ifstream file(file_name.c_str(), std::ifstream::binary);
+
+	if (file)
+	{
+		// Calculate the file's size, and allocate a buffer of that size.
+		file.seekg(0, file.end);
+		const int file_size = file.tellg();
+		char* file_buf = new char[file_size + 1];
+		//make sure the end tag \0 of string.
+
+		memset(file_buf, 0, file_size + 1);
+
+		// Read the entire file into the buffer.
+		file.seekg(0, ios::beg);
+		file.read(file_buf, file_size);
+
+
+		if (file)
+		{
+			fileData.append(file_buf);
+		}
+		else
+		{
+			std::cout << "error: only " << file.gcount() << " could be read";
+			fileData.append(file_buf);
+			return false;
+		}
+		file.close();
+		delete[]file_buf;
+	}
+	else
+	{
+		return false;
+	}
+
+
+	return true;
+}
+
+bool CHttpModule::responeConfigToConnect(const char* pFileName, http::server::connection_ptr ptr)
+{
+	auto req = ptr->getReqPtr();
+	auto res = ptr->getReplyPtr();
+
+	auto iter = vConfigFile.find(pFileName);
+	std::string strFile;
+	if (iter == vConfigFile.end())
+	{
+		auto b = readFileToString(pFileName, strFile);
+		if (b == false)
+		{
+			LOGFMTE("why can not find the file %s", pFileName);
+			return false;
+		}
+
+		LOGFMTD("read file = %s : content : %s", pFileName, strFile.c_str());
+		vConfigFile[pFileName] = strFile;
+	}
+	else
+	{
+		strFile = iter->second;
+	}
+
+	res->setContent(strFile);
+	ptr->doReply();
+	return true;
+}

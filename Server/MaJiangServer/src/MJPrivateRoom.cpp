@@ -23,11 +23,11 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 {
 	m_nInitCircle = vJsValue["circle"].asUInt();
 	m_nLeftCircle = m_nInitCircle ;
-	m_nInitCoin = vJsValue["initCoin"].asUInt();
+	m_nInitCoin = 1000;//vJsValue["initCoin"].asUInt();
 	memset(&m_stConfig, 0, sizeof(m_stConfig));
 	m_stConfig.nConfigID = 0;
 	m_stConfig.nBaseBet = 1;//;vJsValue["baseBet"].asUInt();
-	m_stConfig.nMaxSeat = vJsValue["seatCnt"].asUInt();
+	m_stConfig.nMaxSeat = 4;///vJsValue["seatCnt"].asUInt();
 	m_stConfig.nGameType = vJsValue["roomType"].asUInt();
 	if (m_stConfig.nMaxSeat == 0 || m_stConfig.nBaseBet == 0)
 	{
@@ -144,9 +144,6 @@ bool MJPrivateRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 			msgdoLeave.nGameType = getRoomType();
 			msgdoLeave.nRoomID = getRoomID();
 			msgdoLeave.nUserUID = nPlayerUID;
-			msgdoLeave.nMaxFangXingType = 0;
-			msgdoLeave.nMaxFanShu = 0;
-			msgdoLeave.nRoundsPlayed = 0;
 			msgdoLeave.nGameOffset = 0;
 			m_pRoomMgr->sendMsg(&msgdoLeave, sizeof(msgdoLeave), nPlayerUID);
 
@@ -194,18 +191,6 @@ bool MJPrivateRoom::onMessage(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nP
 	{
 		stMsgToRoom* pRet = (stMsgToRoom*)prealMsg;
 		sendRoomInfo(nPlayerSessionID);
-	}
-	break;
-	case MSG_SYNC_IN_GAME_ADD_COIN:
-	{
-		stMsgSyncInGameCoin* pRet = (stMsgSyncInGameCoin*)prealMsg;
-		stMsgSyncInGameCoinRet msgback;
-		msgback.nRet = 1;
-		msgback.nAddCoin = pRet->nAddCoin;
-		msgback.nRoomID = pRet->nRoomID;
-		msgback.nUserUID = pRet->nUserUID;
-		m_pRoomMgr->sendMsg(&msgback, sizeof(msgback), nPlayerSessionID);
-		LOGFMTD("private room should not process this message syn in game coin  uid = %u", msgback.nUserUID);
 	}
 	break;
 	default:
@@ -549,10 +534,6 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		msgdoLeave.nGameType = getRoomType();
 		msgdoLeave.nRoomID = getRoomID();
 		msgdoLeave.nUserUID = pp->getUID();
-		msgdoLeave.nMaxFangXingType = 0;
-		msgdoLeave.nMaxFanShu = 0;
-		msgdoLeave.nRoundsPlayed = m_nInitCircle - m_nLeftCircle ;
-		msgdoLeave.nGameOffset = 0;
 		m_pRoomMgr->sendMsg(&msgdoLeave, sizeof(msgdoLeave), pp->getUID());
 	}
 
@@ -599,11 +580,11 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		((MJRoomManager*)m_pRoomMgr)->addVipRoomBill(pBill, true);
 
 		// sys bill id to data svr 
-		Json::Value jsReqSync;
-		jsReqSync["billID"] = pBill->nBillID;
-		jsReqSync["useUIDs"] = jsPlayedPlayers;
-		auto asynQueue = m_pRoomMgr->getSvrApp()->getAsynReqQueue();
-		asynQueue->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_SyncVipRoomBillID, jsReqSync);
+		//Json::Value jsReqSync;
+		//jsReqSync["billID"] = pBill->nBillID;
+		//jsReqSync["useUIDs"] = jsPlayedPlayers;
+		//auto asynQueue = m_pRoomMgr->getSvrApp()->getAsynReqQueue();
+		//asynQueue->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_SyncVipRoomBillID, jsReqSync);
 	}
 	
 	Json::Value jsClosed;

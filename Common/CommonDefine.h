@@ -62,6 +62,15 @@ enum eRoomType
 	eRoom_Max ,
 };
 
+enum eMJGameType
+{
+	eMJ_None,
+	eMJ_BloodRiver = eRoom_MJ_Blood_River,
+	eMJ_BloodTheEnd,
+	eMJ_COMMON,
+	eMJ_Max,
+};
+
 enum eVipCardType
 {
 	eCard_None,
@@ -89,6 +98,7 @@ enum eRoomState
 	eRoomState_WillDead,
 	eRoomState_TP_Dead = eRoomState_Dead,
 	eRoomState_WaitJoin,
+	eRoomSate_WaitReady = eRoomState_WaitJoin,
 	eRoomState_NN_WaitJoin = eRoomState_WaitJoin ,
 	eRoomState_TP_WaitJoin = eRoomState_WaitJoin,
 	eRoomState_WillClose,
@@ -230,7 +240,7 @@ enum eTime
 // Golden room time 
 #define TIME_GOLDEN_ROOM_WAIT_READY 10
 #define TIME_GOLDEN_ROOM_DISTRIBUTY 3
-#define TIME_GOLDEN_ROOM_WAIT_ACT 15
+#define TIME_GOLDEN_ROOM_WAIT_ACT 25
 #define TIME_GOLDEN_ROOM_PK 4
 #define TIME_GOLDEN_ROOM_RESULT 2
 

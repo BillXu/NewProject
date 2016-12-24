@@ -1117,6 +1117,13 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 	case MSG_APPLY_TAKE_IN:
 		{
 			uint32_t nTakeIn = prealMsg["takeIn"].asUInt() ;
+#ifdef GAME_365
+			if (!m_isControlTakeIn && ( nTakeIn == 1000u || nTakeIn == 5000u ) )
+			{
+				nTakeIn = 1500;
+				LOGFMTD("temp let player default coin = 5000 , room id = %u, session id = %u", getRoomID(), nSessionID );
+			}
+#endif 
 			// check coin state ;
 			auto stStandPlayer = m_pRoom->getPlayerBySessionID(nSessionID);
 			if ( !stStandPlayer )
@@ -1183,7 +1190,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 				 
 				if ( nTakeIn <= pPrivatePlayer->nCheckedCoin )
 				{
-					LOGFMTD("uid = %u , do takeIn = %u , checkCoin = %u",pPrivatePlayer->nUserUID, nTakeIn,pPrivatePlayer->nCheckedCoin ) ;
+					LOGFMTD("uid = %u , do takeIn = %u , checkCoin = %u session id = %u", pPrivatePlayer->nUserUID, nTakeIn, pPrivatePlayer->nCheckedCoin, nSessionID);
 					nTakeIn = pPrivatePlayer->nCheckedCoin;
 					pPrivatePlayer->nCheckedCoin -= nTakeIn ;
 				}

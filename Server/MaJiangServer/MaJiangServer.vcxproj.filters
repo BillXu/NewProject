@@ -90,9 +90,6 @@
     <ClInclude Include="src\XLRoomStateWaitDecideQue.h">
       <Filter>src\MJXL\XLState</Filter>
     </ClInclude>
-    <ClInclude Include="src\XLRoomStateWaitSupplyCoin.h">
-      <Filter>src\MJXL\XLState</Filter>
-    </ClInclude>
     <ClInclude Include="src\XLFanXingChecker.h">
       <Filter>src\MJXL</Filter>
     </ClInclude>

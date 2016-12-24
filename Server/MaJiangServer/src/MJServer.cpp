@@ -22,7 +22,6 @@ bool CMJServerApp::init()
 	m_tMgr.LoadFile("../configFile/RoomConfig.txt") ;
 
 	CServerStringTable::getInstance()->LoadFile("../configFile/stringTable.txt");
-	CRewardConfig::getInstance()->LoadFile("../configFile/rewardConfig.txt");
 
 	installModule(eMod_RoomMgr);
 	installModule(eMod_RoomMgrOld);
@@ -42,11 +41,7 @@ IGlobalModule* CMJServerApp::createModule(uint16_t eModuleType)
 		return p;
 	}
 
-	if (eModuleType == eMod_RoomMgrOld)
-	{
-		p = new CMJRoomManager(getRoomConfigMgr());
-	}
-	else if (eMod_RoomMgr == eModuleType)
+	 if (eMod_RoomMgr == eModuleType)
 	{
 		p = new MJRoomManager();
 	}

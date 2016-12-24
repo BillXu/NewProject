@@ -23,7 +23,6 @@ public:
 	bool onPlayerApplyLeave(uint32_t nPlayerUID)override;
 	bool isRoomFull()override;
 
-	//virtual void roomItemDetailVisitor(Json::Value& vOutJsValue) = 0;
 	uint32_t getRoomID()override;
 	uint8_t getRoomType()override;
 	void update(float fDelta)override;
@@ -61,7 +60,7 @@ protected:
 	eRoomState m_eState;
 	IGameRoom* m_pRoom;
 
-	stMJRoomConfig m_stConfig;
+	stNiuNiuRoomConfig m_stConfig;
 
 	bool m_bRoomInfoDiry;
 };

@@ -5,6 +5,7 @@
 #define RESEVER_GAME_SERVER_PLAYERS 100 
 #define TIME_MATCH_PAUSE 60*30
 #define MAX_NEW_PLAYER_HALO 120
+#define  ROOM_CIRCLES_PER_VIP_ROOM_CARDS 4
 enum  eLogType
 {
 	eLog_Register, // externString, {ip:"ipdizhi"}
@@ -54,6 +55,7 @@ enum eServerType
 	eSvrType_Verify,
 	eSvrType_DataBase,
 	eSvrType_APNS,
+	eSvrType_MJ = eSvrType_APNS,
 	eSvrType_Log,
 	eSvrType_LogDataBase,
 	eSvrType_Center,

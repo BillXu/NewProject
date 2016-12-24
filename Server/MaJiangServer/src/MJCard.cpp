@@ -52,11 +52,11 @@ void CMJCard::initAllCard( eMJGameType eType )
 	m_nCurCardIdx = 0 ;
 
 	assert(eType < eMJ_Max && eType >= eMJ_None && "invalid card type" );
-	if ( eMJ_TwoBird == eType )
-	{
-		initTwoBirdCard() ;
-		return ;
-	}
+	//if ( eMJ_TwoBird == eType )
+	//{
+	//	initTwoBirdCard() ;
+	//	return ;
+	//}
 
 	m_eMJGameType = eType ;
 
@@ -93,7 +93,7 @@ void CMJCard::initTwoBirdCard()
 {
 	m_vAllCards.clear() ;
 	m_nCurCardIdx = 0 ;
-	m_eMJGameType = eMJ_TwoBird ;
+	//m_eMJGameType = eMJ_TwoBird ;
 
 	// every card are 4 count 
 	for ( uint8_t nCnt = 0 ; nCnt < 4 ; ++nCnt )
@@ -133,15 +133,88 @@ bool CMJCard::isEmpty()
 
 void CMJCard::debugPokerInfo()
 {
-	Json::Value js;
-	for (auto& ref : m_vAllCards)
+// temp code 
+	//Json::Value js;
+	//for (auto& ref : m_vAllCards)
+	//{
+	//	js[js.size()] = ref;
+	//}
+
+	//Json::StyledWriter jswriter;
+	//auto strJs = jswriter.write(js);
+
+	// temp code 
+	//LOGFMTD("poker is : %s",strJs.c_str());
+	std::string str = "  [51,53,49,51,17,38,20,18,57,23,34,41,39,22,49,55,36,20,23,55,21,19,25,21,50,36,24,53,21,56,53,24,18,57,20,17,22,57,39,35,34,40,22,41,22,40,52,56,33,40,40,37,24, \
+		33,\
+		33, \
+		21,\
+		19,\
+		37,\
+		36,\
+		18,\
+		34,\
+		35,\
+		19,\
+		37,\
+		38,\
+		33,\
+		20,\
+		41,\
+		39,\
+		56,\
+		39,\
+		51,\
+		50,\
+		52,\
+		57,\
+		41,\
+		25,\
+		36,\
+		38,\
+		38,\
+		50,\
+		34,\
+		25,\
+		54,\
+		19,\
+		23,\
+		23,\
+		17,\
+		56,\
+		25,\
+		17,\
+		18,\
+		54,\
+		49,\
+		49,\
+		51,\
+		37,\
+		55,\
+		35,\
+		54,\
+		24,\
+		55,\
+		52,\
+		35,\
+		52,\
+		53,\
+		50,\
+		54]" ;
+
+	Json::Reader jsR;
+	Json::Value jsRoot;
+	bool b = jsR.parse(str, jsRoot);
+	if (b)
 	{
-		js[js.size()] = ref;
+		LOGFMTD("ok review");
+		m_vAllCards.clear();
+		for (uint8_t nIdx = 0; nIdx < jsRoot.size(); ++nIdx)
+		{
+			m_vAllCards.push_back(jsRoot[nIdx].asUInt());
+		}
 	}
 
-	Json::StyledWriter jswriter;
-	auto strJs = jswriter.write(js);
-	LOGFMTD("poker is : %s",strJs.c_str());
 }
 
 eMJCardType CMJCard::parseCardType(uint8_t nCardNum)

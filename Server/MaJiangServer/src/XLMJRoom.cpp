@@ -12,12 +12,12 @@
 #include "MJRoomStateGameEnd.h"
 #include "XLRoomStateDoPlayerAct.h"
 #include "MJRoomStateAskForPengOrHu.h"
-#include "XLRoomStateWaitSupplyCoin.h"
 #include "IGameRoomManager.h"
 #include "RobotDispatchStrategy.h"
 #include "XLRoomStateWaitPlayerAct.h"
 #include "XLRoomStateAskPengOrHu.h"
 #include "XLRoomStateAskForRobotGang.h"
+#include "ServerMessageDefine.h"
 #define MAX_BEISHU 32
 bool XLMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue)
 {
@@ -26,7 +26,7 @@ bool XLMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	// create state and add state ;
 	IMJRoomState* vState[] = {
 		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new XLRoomStateWaitPlayerAct(), new XLRoomStateStartGame()
-		, new MJRoomStateGameEnd(), new XLRoomStateDoPlayerAct(), new XLRoomStateAskForPengOrHu(), new XLRoomStateAskForRobotGang(),new XLRoomStateWaitDecideQue(), new XLRoomStateWaitSupplyCoin()
+		, new MJRoomStateGameEnd(), new XLRoomStateDoPlayerAct(), new XLRoomStateAskForPengOrHu(), new XLRoomStateAskForRobotGang(),new XLRoomStateWaitDecideQue()
 	};
 	for (uint8_t nIdx = 0; nIdx < sizeof(vState) / sizeof(IMJRoomState*); ++nIdx)
 	{
@@ -53,7 +53,7 @@ bool XLMJRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 	sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_LEAVE); // tell other player leave ;
 
 	auto curState = getCurRoomState()->getStateID();
-	if (eRoomSate_WaitReady == curState || eRoomState_GameEnd == curState || pPlayer->haveState(eRoomPeer_DecideLose) )
+	if (eRoomSate_WaitReady == curState || eRoomState_GameEnd == curState )
 	{
 		// direct leave just stand up ;
 		auto pXLPlayer = (XLMJPlayer*)pPlayer;
@@ -62,9 +62,6 @@ bool XLMJRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 		msgdoLeave.nGameType = getRoomType();
 		msgdoLeave.nRoomID = getRoomID();
 		msgdoLeave.nUserUID = pPlayer->getUID();
-		msgdoLeave.nMaxFangXingType = pXLPlayer->getMaxFanXing();
-		msgdoLeave.nMaxFanShu = pXLPlayer->getMaxFanShu();
-		msgdoLeave.nRoundsPlayed = 1;
 		msgdoLeave.nGameOffset = pPlayer->getOffsetCoin();
 		getRoomMgr()->sendMsg(&msgdoLeave, sizeof(msgdoLeave), pPlayer->getSessionID());
 		LOGFMTD("player uid = %u , leave room id = %u",pPlayer->getUID(),getRoomID());
@@ -72,13 +69,11 @@ bool XLMJRoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 		if (eRoomSate_WaitReady == curState || eRoomState_GameEnd == curState)  // when game over or not start , delte player in room data ;
 		{
 			// tell robot dispatch player leave 
-			getRobotDispatchStrage()->onPlayerLeave(pPlayer->getSessionID(), pPlayer->isRobot());
 			auto ret = standup(nPlayerUID);
 			return ret;
 		}
 		else 
 		{
-			pPlayer->setState((pPlayer->getState() | eRoomPeer_LoserLeave));
 			LOGFMTE("decide player already sync data uid = %u room id = %u" , pPlayer->getUID(),getRoomID());
 		}
 	}
@@ -96,9 +91,10 @@ uint8_t XLMJRoom::checkPlayerCanEnter(stEnterRoomData* pEnterRoomPlayer)
 	}
 
 	auto pPlayer = getMJPlayerByUID(pEnterRoomPlayer->nUserUID);
-	if (pPlayer && pPlayer->haveState(eRoomPeer_DecideLose))
+	if (pPlayer)
 	{
-		return 8;
+		LOGFMTE("you are already in room by let you in again uid = %u", pEnterRoomPlayer->nUserUID);
+		//return 8;
 	}
 	return 0;
 }
@@ -270,12 +266,6 @@ void XLMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		if (pHuPlayer == nullptr)
 		{
 			LOGFMTE("why this hu player is null ? idx = %u",nidx);
-			continue;
-		}
-
-		if (pHuPlayer->haveState(eRoomPeer_DecideLose))
-		{
-			LOGFMTE("do decide lose player can not hu other player card  idx = %u",nidx );
 			continue;
 		}
 
@@ -474,7 +464,7 @@ bool XLMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 {
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_DecideLose) )
+		if (ref == nullptr || nInvokeIdx == ref->getIdx() )
 		{
 			continue;
 		}
@@ -498,7 +488,7 @@ bool XLMJRoom::isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)
 {
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_DecideLose))
+		if (ref == nullptr || nInvokeIdx == ref->getIdx() )
 		{
 			continue;
 		}
@@ -518,7 +508,7 @@ void XLMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::
 	isNeedWaitEat = false;
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_DecideLose) )
+		if (ref == nullptr || nInvokeIdx == ref->getIdx() )
 		{
 			continue;
 		}
@@ -577,7 +567,7 @@ void XLMJRoom::onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<
 	// inform target player do this things 
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx() || ref->haveState(eRoomPeer_DecideLose) )
+		if (ref == nullptr || nInvokeIdx == ref->getIdx() )
 		{
 			continue;
 		}
@@ -622,7 +612,7 @@ uint8_t XLMJRoom::getNextActPlayerIdx(uint8_t nCurActIdx)
 	{
 		auto nActIdx = nIdx % getSeatCnt();
 		auto p = getMJPlayerByIdx(nActIdx);
-		if (p && (p->haveState(eRoomPeer_DecideLose) == false))
+		if (p )
 		{
 			return nActIdx;
 		}
@@ -801,7 +791,7 @@ void XLMJRoom::doChaHuaZhu(std::vector<uint8_t>& vHuaZhu)
 	std::vector<uint8_t> vNotHuaZhu;
 	for (auto& pHuZhu : m_vMJPlayers)
 	{
-		if (pHuZhu == nullptr|| pHuZhu->haveState(eRoomPeer_DecideLose))
+		if (pHuZhu == nullptr )
 		{
 			continue;
 		}
@@ -865,7 +855,7 @@ void XLMJRoom::doChaDaJiao(std::vector<uint8_t>& vHuaZhu)
 	std::vector<uint8_t> vDaJiao, vTingPai;
 	for (auto& pCheckPlayer : m_vMJPlayers)
 	{
-		if (pCheckPlayer == nullptr || pCheckPlayer->haveState(eRoomPeer_DecideLose) || pCheckPlayer->haveState(eRoomPeer_AlreadyHu))
+		if (pCheckPlayer == nullptr || pCheckPlayer->haveState(eRoomPeer_AlreadyHu))
 		{
 			continue;
 		}
@@ -973,7 +963,7 @@ void XLMJRoom::giveBackGangWin(uint8_t nIdx)
 		player->addOffsetCoin(-1 * (int32_t)nBackCoin);
 
 		auto pBackPlayer = getMJPlayerByIdx(nBackIdx);
-		if (pBackPlayer == nullptr || pBackPlayer->haveState(eRoomPeer_DecideLose))
+		if (pBackPlayer == nullptr )
 		{
 			LOGFMTE("give back coin to you , but you not can act or leave idx = %u, system take the coin = %u ", nBackIdx, nBackCoin);
 			//continue;
@@ -1047,13 +1037,9 @@ void XLMJRoom::onGameDidEnd()
 	// every one leave room  and sync game data ;
 	for (auto& pp : m_vMJPlayers)
 	{
-		if (pp == nullptr || pp->haveState(eRoomPeer_LoserLeave)) 
+		if (pp == nullptr ) 
 		{
-			if (pp && pp->haveState(eRoomPeer_LoserLeave))
-			{
-				// tell robot dispatch player leave 
-				getRobotDispatchStrage()->onPlayerLeave(pp->getSessionID(), pp->isRobot());
-			}
+ 
 			continue;
 		}
 
@@ -1063,15 +1049,11 @@ void XLMJRoom::onGameDidEnd()
 		msgdoLeave.nGameType = getRoomType();
 		msgdoLeave.nRoomID = getRoomID();
 		msgdoLeave.nUserUID = pp->getUID();
-		msgdoLeave.nMaxFangXingType = pXLPlayer->getMaxFanXing();
-		msgdoLeave.nMaxFanShu = pXLPlayer->getMaxFanShu();
-		msgdoLeave.nRoundsPlayed = 1;
+ 
 		msgdoLeave.nGameOffset = pp->getOffsetCoin();
 		getRoomMgr()->sendMsg(&msgdoLeave, sizeof(msgdoLeave), pp->getSessionID());
 		LOGFMTD("game over player uid = %u leave room id = %u",pp->getUID(),getRoomID());
-
-		// tell robot dispatch player leave 
-		getRobotDispatchStrage()->onPlayerLeave(pp->getSessionID(), pp->isRobot());
+  
 	}
 
 	// delete all player object ;
@@ -1095,7 +1077,7 @@ bool XLMJRoom::isGameOver()
 	uint8_t nNotDecideLose = 0;
 	for (auto& ref : m_vMJPlayers)
 	{
-		if (ref && (false == ref->haveState(eRoomPeer_DecideLose)))
+		if (ref )
 		{
 			++nNotDecideLose;
 		}
@@ -1112,7 +1094,7 @@ bool XLMJRoom::isGameOver()
 
 uint32_t XLMJRoom::getBaseBet()
 {
-	return ((stMJRoomConfig*)getRoomConfig())->nBaseBet;
+	return ((stNiuNiuRoomConfig*)getRoomConfig())->nBaseBet;
 }
 
 bool XLMJRoom::getWaitSupplyCoinPlayerIdxs(std::vector<uint8_t>& vOutWaitSupplyIdx)
@@ -1121,7 +1103,7 @@ bool XLMJRoom::getWaitSupplyCoinPlayerIdxs(std::vector<uint8_t>& vOutWaitSupplyI
 	auto nLowLimit = getCoinNeedToSitDown();
 	for (auto& pPlayer : m_vMJPlayers)
 	{
-		if (pPlayer == nullptr || pPlayer->haveState(eRoomPeer_DecideLose))
+		if (pPlayer == nullptr)
 		{
 			continue;
 		}
@@ -1138,14 +1120,14 @@ bool XLMJRoom::getWaitSupplyCoinPlayerIdxs(std::vector<uint8_t>& vOutWaitSupplyI
 
 void XLMJRoom::infoPlayerSupplyCoin(std::vector<uint8_t>& vOutWaitSupplyIdx)
 {
-	Json::Value js;
-	Json::Value jsArray;
-	for (auto& ref : vOutWaitSupplyIdx)
-	{
-		jsArray[jsArray.size()] = ref;
-	}
-	js["players"] = jsArray;
-	sendRoomMsg(js, MSG_ROOM_INFORM_SUPPLY_COIN);
+	//Json::Value js;
+	//Json::Value jsArray;
+	//for (auto& ref : vOutWaitSupplyIdx)
+	//{
+	//	jsArray[jsArray.size()] = ref;
+	//}
+	//js["players"] = jsArray;
+	//sendRoomMsg(js, MSG_ROOM_INFORM_SUPPLY_COIN);
 }
 
 uint8_t XLMJRoom::getAutoChuCardWhenWaitActTimeout(uint8_t nIdx)
@@ -1189,7 +1171,7 @@ uint8_t XLMJRoom::getAutoChuCardWhenWaitChuTimeout(uint8_t nIdx)
 bool XLMJRoom::canKouPlayerCoin(uint8_t nPlayerIdx)
 {
 	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
-	if (nullptr == pPlayer || pPlayer->haveState(eRoomPeer_DecideLose) )
+	if (nullptr == pPlayer )
 	{
 		return false;
 	}

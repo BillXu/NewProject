@@ -412,6 +412,8 @@ uint16_t IServerApp::getVerifyType()
 		return MSG_VERIFY_LOGIN ;
 	case ID_MSG_PORT_VERIFY:
 		return MSG_VERIFY_VERIYF ;
+	case ID_MSG_PORT_MJ:
+		return MSG_VERIFY_MJ;
 	case ID_MSG_PORT_APNS:
 		return MSG_VERIFY_APNS ;
 	case ID_MSG_PORT_LOG:

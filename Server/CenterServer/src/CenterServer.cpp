@@ -516,6 +516,10 @@ eServerType CCenterServerApp::GetServerTypeByMsgTarget(uint16_t nTarget)
 			return eSvrType_APNS;
 		}
 		break;
+	case ID_MSG_PORT_MJ:
+		{
+			return eSvrType_MJ;
+		}
 	case ID_MSG_PORT_LOG:
 		{
 			return eSvrType_Log;
