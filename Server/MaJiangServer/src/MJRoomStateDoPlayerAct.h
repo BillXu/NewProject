@@ -127,7 +127,7 @@ public:
 		}
 	}
 protected:
-	void doAct()
+	virtual void doAct()
 	{
 		switch (m_eActType)
 		{
@@ -184,6 +184,8 @@ protected:
 		case eMJAct_MingGang:
 		case eMJAct_BuGang:
 		case eMJAct_AnGang:
+		case eMJAct_BuHua:
+		case eMJAct_HuaGang:
 			return eTime_DoPlayerAct_Gang;
 		case eMJAct_Hu:
 			return eTime_DoPlayerAct_Hu;

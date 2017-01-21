@@ -150,9 +150,18 @@ void IMJRoom::sendRoomInfo(uint32_t nSessionID)
 	jsMsg["curActIdex"] = getCurRoomState()->getCurIdx();
 	jsMsg["leftCardCnt"] = getMJPoker()->getLeftCardCount();
 
+	Json::Value jsSubInfo;
+	getSubRoomInfo(jsSubInfo);
+	jsMsg["subInfo"] = jsSubInfo;
+
 	sendMsgToPlayer(jsMsg, MSG_MJ_ROOM_INFO, nSessionID);
 	LOGFMTD("send msg room info msg to player session id = %u", nSessionID);
 
+	if (getCurRoomState()->getStateID() == eRoomSate_WaitReady || eRoomState_GameEnd == getCurRoomState()->getStateID())
+	{
+		LOGFMTD("current room not start game , so need not send runtime info msg");
+		return;
+	}
 	sendPlayersCardInfo(nSessionID);
 }
 
@@ -541,12 +550,8 @@ void IMJRoom::startGame()
 	}
 
 	// distribute card 
-	Json::Value msg;
-	Json::Value peerCards[4]; // used for sign for msg ;
-
-	uint8_t nDice = 2 + rand() % 11;
 	auto pPoker = getMJPoker();
-	LOGFMTD("room id = %u start game shuffle card , Dice = %u",getRoomID(),nDice);
+	LOGFMTD("room id = %u start game shuffle card ",getRoomID());
 	pPoker->shuffle();
 	LOGFMTD("room id = %u shuffle end", getRoomID());
 	for (auto& pPlayer : m_vMJPlayers)
@@ -570,57 +575,41 @@ void IMJRoom::startGame()
 		
 		for (uint8_t nIdx = 0; nIdx < 13; ++nIdx)
 		{
-			//if (pPlayer->getIdx() == 2 && nIdx < 6)
-			//{
-			//	continue;
-			//}
-
 			auto nCard = pPoker->distributeOneCard();
-			/*auto nCardF = make_Card_Num(eCT_Tiao, 9);
-			auto nCardT = make_Card_Num(eCT_Tong, 7);
-			while ( nCard == nCardF || nCardT == nCard )
-			{
-				nCard = pPoker->distributeOneCard();
-			}*/
-
 			pPlayer->getPlayerCard()->addDistributeCard(nCard);
-
-			peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
 			//LOGFMTD("card idx = %u card number = %u", nIdx,nCard);
 		}
-
-		//if (pPlayer->getIdx() == 2)
-		//{
-		//	auto nCard = make_Card_Num(eCT_Tiao, 9);
-		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
-		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
-		//	nCard = make_Card_Num(eCT_Tiao, 9);
-		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
-		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
-		//	nCard = make_Card_Num(eCT_Tiao, 9);
-		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
-		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
-
-		//	nCard = make_Card_Num(eCT_Tong, 7);
-		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
-		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
-		//	nCard = make_Card_Num(eCT_Tong, 7);
-		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
-		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
-		//	nCard = make_Card_Num(eCT_Tong, 7);
-		//	pPlayer->getPlayerCard()->addDistributeCard(nCard);
-		//	peerCards[pPlayer->getIdx()][peerCards[pPlayer->getIdx()].size()] = nCard; // sign for msg ;
-		//}
 
 		if (getBankerIdx() == pPlayer->getIdx())
 		{
 			auto nCard = pPoker->distributeOneCard();
 			pPlayer->getPlayerCard()->onMoCard(nCard);
-			peerCards[pPlayer->getIdx()][13u] = nCard;  // sign for msg ;
+		}
+	}
+	LOGFMTI("room id = %u start game !",getRoomID());
+}
+
+void IMJRoom::packStartGameMsg(Json::Value& msg)
+{
+	Json::Value peerCards[4]; // used for sign for msg ;
+	for (auto& pPlayer : m_vMJPlayers)
+	{
+		if (!pPlayer)
+		{
+			LOGFMTE("why player is null hz mj must all player is not null");
+			continue;
+		}
+		auto pPlayerCard = pPlayer->getPlayerCard();
+		IMJPlayerCard::VEC_CARD vCard;
+		pPlayerCard->getHoldCard(vCard);
+		for (auto& vC : vCard)
+		{
+			auto& pArray = peerCards[pPlayer->getIdx()];
+			pArray[pArray.size()] = vC;
 		}
 	}
 
-	// construct msg ;
+	uint8_t nDice = 2 + rand() % 11;
 	msg["dice"] = nDice;
 	msg["banker"] = m_nBankerIdx;
 	Json::Value arrPeerCards;
@@ -631,8 +620,6 @@ void IMJRoom::startGame()
 		arrPeerCards[nIdx] = peer;
 	}
 	msg["peerCards"] = arrPeerCards;
-	sendRoomMsg(msg, MSG_ROOM_START_GAME);
-	LOGFMTI("room id = %u start game !",getRoomID());
 }
 
 void IMJRoom::willStartGame()
@@ -854,6 +841,7 @@ void IMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 		return;
 	}
 	pPlayer->signGangFlag();
+	pPlayer->addMingGangCnt();
 
 	auto nGangGetCard = getMJPoker()->distributeOneCard();
 	if (pPlayer->getPlayerCard()->onMingGang(nCard, nGangGetCard) == false)
@@ -880,6 +868,7 @@ void IMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 		return;
 	}
 	pPlayer->signGangFlag();
+	pPlayer->addAnGangCnt();
 	auto nGangGetCard = getMJPoker()->distributeOneCard();
 	if (pPlayer->getPlayerCard()->onAnGang(nCard, nGangGetCard) == false)
 	{
@@ -910,7 +899,7 @@ void IMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 	{
 		LOGFMTE("nidx = %u bu gang card = %u error,", nIdx, nCard);
 	}
-
+	pPlayer->addMingGangCnt();
 	// send msg 
 	Json::Value msg;
 	msg["idx"] = nIdx;

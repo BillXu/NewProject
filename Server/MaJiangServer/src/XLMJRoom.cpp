@@ -702,6 +702,14 @@ void XLMJRoom::willStartGame()
 	m_nBankerIdx = m_nBankerIdx % getSeatCnt();
 }
 
+void XLMJRoom::startGame()
+{
+	IMJRoom::startGame();
+	Json::Value jsMsg;
+	packStartGameMsg(jsMsg);
+	sendRoomMsg(jsMsg, MSG_ROOM_START_GAME);
+}
+
 void XLMJRoom::onGameEnd()
 {
 	// cha hua zhu when liu ju (more then two player not hu , include 2 );

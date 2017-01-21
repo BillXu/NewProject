@@ -569,6 +569,7 @@ void CPrivateRoom<T>::onRoomDoClosed()
 	// sync player coin  ;
 	stPrivateRoomRecorder* pRecoder = new stPrivateRoomRecorder ;
 	pRecoder->nConfigID = 0 ;
+	pRecoder->nSieralNum = m_nSerialNum;
 	pRecoder->nCreaterUID = getOwnerUID() ;
 	pRecoder->nRoomID = getRoomID() ;
 	pRecoder->nTime = time(nullptr) ;
@@ -584,6 +585,7 @@ void CPrivateRoom<T>::onRoomDoClosed()
 	msgResult.nCreatorUID = getOwnerUID() ;
 	msgResult.nClubID = m_nClubID ; 
 	msgResult.nDuringTimeSeconds = m_nDuringSeconds ;
+	msgResult.nSiealNum = m_nSerialNum;
 	memset(msgResult.cRoomName,0,sizeof(msgResult.cRoomName));
 	sprintf_s(msgResult.cRoomName,sizeof(msgResult.cRoomName),"%s",m_strRoomName.c_str());
 				
@@ -1120,8 +1122,11 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 #ifdef GAME_365
 			if (!m_isControlTakeIn && ( nTakeIn == 1000u || nTakeIn == 5000u ) )
 			{
-				nTakeIn = 1500;
-				LOGFMTD("temp let player default coin = 5000 , room id = %u, session id = %u", getRoomID(), nSessionID );
+				if (m_pRoom->getRoomType() != eRoom_NiuNiu)
+				{
+					nTakeIn = 1500;
+					LOGFMTD("temp let player default coin = 5000 , room id = %u, session id = %u", getRoomID(), nSessionID);
+				}
 			}
 #endif 
 			// check coin state ;
@@ -1546,6 +1551,7 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	jsMsgRoomInfo["selfCoin"] = iter->second->nCoinInRoom ;
 	jsMsgRoomInfo["baseTakeIn"] = m_nBaseTakeIn;
 	jsMsgRoomInfo["isCtrlTakeIn"] = (uint32_t)this->m_isControlTakeIn ;
+	jsMsgRoomInfo["sieralNum"] = m_nSerialNum;
 
 	Json::Value jsGame ;
 	pRoom->roomInfoVisitor(jsGame);

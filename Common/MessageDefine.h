@@ -819,6 +819,31 @@ public:
 	PLACE_HOLDER(char* pJson);// [ { uid : 23 , buyIn : 234, offset : -30},{ uid : 23 , buyIn : 234, offset : -30}, .... ]
 };
 
+struct stMsgRequestPrivateRoomRecorderNew  // new edition 
+	:public stMsgToRoom
+{
+public:
+	stMsgRequestPrivateRoomRecorderNew(){ usMsgType = MSG_REQUEST_PRIVATE_ROOM_RECORDER_NEW; }
+	uint32_t nSieralNum;
+};
+
+
+struct stMsgRequestPrivateRoomRecorderNewRet // new edition 
+	:public stMsg
+{
+public:
+	stMsgRequestPrivateRoomRecorderNewRet(){ usMsgType = MSG_REQUEST_PRIVATE_ROOM_RECORDER_NEW; cSysIdentifer = ID_MSG_PORT_CLIENT; }
+	uint8_t nRet; // 0 success , 1 can not find recorder ;
+	uint32_t nRoomID;
+	uint32_t nCreaterUID;
+	uint16_t nConfigID;
+	uint32_t tTime;
+	uint8_t nRoomType;
+	uint32_t nSieralNum;
+	uint16_t nJsLen;
+	PLACE_HOLDER(char* pJson);// [ { uid : 23 , buyIn : 234, offset : -30},{ uid : 23 , buyIn : 234, offset : -30}, .... ]
+};
+
 struct stMsgPlayerRequestGameRecorder
 	:public stMsg
 {
@@ -844,6 +869,34 @@ struct stMsgPlayerRequestGameRecorderRet
 	stMsgPlayerRequestGameRecorderRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT ; usMsgType = MSG_PLAYER_REQUEST_GAME_RECORDER ; }
 	uint8_t nCnt ; 
 	PLACE_HOLDER(stRecorderItem*);
+};
+
+struct stMsgPlayerRequestGameRecorderNew  // new edition 
+	:public stMsg
+{
+	stMsgPlayerRequestGameRecorderNew(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_PLAYER_REQUEST_GAME_RECORDER_NEW; }
+};
+
+struct stRecorderItemNew   // new edition 
+{
+	uint32_t nRoomID;
+	uint16_t nBaseBet;
+	uint32_t nCreateUID;
+	uint32_t nFinishTime;
+	uint32_t nDuiringSeconds;
+	int32_t nOffset;
+	uint32_t nBuyIn;
+	uint32_t nClubID;
+	uint32_t nSieralNum;
+	char cRoomName[MAX_LEN_ROOM_NAME];
+};
+
+struct stMsgPlayerRequestGameRecorderNewRet  // new edition 
+	:public stMsg
+{
+	stMsgPlayerRequestGameRecorderNewRet(){ cSysIdentifer = ID_MSG_PORT_CLIENT; usMsgType = MSG_PLAYER_REQUEST_GAME_RECORDER_NEW; }
+	uint8_t nCnt;
+	PLACE_HOLDER(stRecorderItemNew*);
 };
 
 // sit down ;

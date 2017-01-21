@@ -162,10 +162,10 @@ bool CServerNetworkImp::getFirstPacket(Packet** ppPacket ) // must delete out si
 	return true ;
 }
 
-void CServerNetworkImp::closePeerConnection(uint32_t nConnectID )
+void CServerNetworkImp::closePeerConnection(uint32_t nConnectID, bool bServerClose )
 {
 	//printf("post close id = %d\n",nConnectID);
-	m_ioService.post(boost::bind(&CServerNetworkImp::closeSession, this,nConnectID,true));
+	m_ioService.post(boost::bind(&CServerNetworkImp::closeSession, this, nConnectID, bServerClose));
 }
 
 void CServerNetworkImp::addPacket(Packet* pPacket )

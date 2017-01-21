@@ -13,6 +13,12 @@ public:
 		uint32_t nUID;
 		uint32_t nRealCoin;
 		uint32_t nRoomCoin;
+
+		uint8_t nDianPaoCnt;
+		uint8_t nHuCnt;
+		uint8_t nZiMoCnt;
+		uint8_t nAnGangCnt;
+		uint8_t nMingGangCnt;
 	};
 	typedef std::map<uint32_t, stVipPlayer> MAP_UID_VIP_PLAYERS;
 public:

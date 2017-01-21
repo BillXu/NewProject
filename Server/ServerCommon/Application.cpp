@@ -6,6 +6,17 @@
 #pragma comment(lib,"jsoncpp.lib")
 #endif 
 #include <cassert>
+
+bool CustomAssertFunction(bool isfalse, char* description, int line, char*filepath)
+{
+	if (true == isfalse)
+		return false;
+	LOGFMTE("需要调试的位置为 %s 中的 %d 行\n", filepath, line);
+	if (IDOK == MessageBoxA(0, description, "Assert调试", MB_OKCANCEL))
+		return true;
+	else return false;
+}
+
 CApplication::CApplication(IServerApp* pApp )
 {
 	//CLogMgr::SharedLogMgr()->SetOutputFile(nullptr);

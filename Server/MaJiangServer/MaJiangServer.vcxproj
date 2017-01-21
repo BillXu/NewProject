@@ -41,6 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>../Bin/ServerBin</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -107,6 +108,11 @@
     <ClInclude Include="src\MJRoomStateWaitPlayerChu.h" />
     <ClInclude Include="src\MJRoomStateWaitReady.h" />
     <ClInclude Include="src\MJServer.h" />
+    <ClInclude Include="src\NJMJPlayer.h" />
+    <ClInclude Include="src\NJMJPlayerCard.h" />
+    <ClInclude Include="src\NJMJRoom.h" />
+    <ClInclude Include="src\NJRoomStateDoPlayerAct.h" />
+    <ClInclude Include="src\NJRoomStateWaitPlayerAct.h" />
     <ClInclude Include="src\XLFanXingChecker.h" />
     <ClInclude Include="src\XLMJPlayer.h" />
     <ClInclude Include="src\XLMJPlayerCard.h" />
@@ -127,6 +133,9 @@
     <ClCompile Include="src\MJPrivateRoom.cpp" />
     <ClCompile Include="src\MJRoomManager.cpp" />
     <ClCompile Include="src\MJServer.cpp" />
+    <ClCompile Include="src\NJMJPlayer.cpp" />
+    <ClCompile Include="src\NJMJPlayerCard.cpp" />
+    <ClCompile Include="src\NJMJRoom.cpp" />
     <ClCompile Include="src\XLMJPlayer.cpp" />
     <ClCompile Include="src\XLMJPlayerCard.cpp" />
     <ClCompile Include="src\XLMJRoom.cpp" />

@@ -454,7 +454,7 @@ void IServerApp::onConnectedToSvr()
 
 bool IServerApp::registerModule(IGlobalModule* pModule,uint16_t eModuleType)
 {
-	assert(pModule && "this module is null" );
+	//assert(pModule && "this module is null" );
 	if ( pModule == nullptr )
 	{
 		return false;

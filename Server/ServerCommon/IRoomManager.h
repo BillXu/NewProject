@@ -12,6 +12,7 @@ class IRoom ;
 
 struct stPrivateRoomRecorder
 {
+	uint32_t nSieralNum;
 	uint32_t nRoomID ;
 	uint32_t nCreaterUID ;
 	uint16_t nConfigID ;
@@ -82,5 +83,6 @@ protected:
 	CTimer m_tRequestGoTyeToken ;
 
 	std::map<uint32_t,stPrivateRoomRecorder*> m_mapPrivateRecorder ;
+	std::map<uint32_t, stPrivateRoomRecorder*> m_mapSieralPrivateRecorder;
 	//eOperateStage m_eRequestChatRoomIDs ;
 };

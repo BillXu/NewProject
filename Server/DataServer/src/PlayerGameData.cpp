@@ -245,6 +245,37 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			LOGFMTD("send game recorder cnt = %u , uid = %u",msgRet.nCnt,GetPlayer()->GetUserUID() ) ;
 		}
 		break ;
+		case MSG_PLAYER_REQUEST_GAME_RECORDER_NEW:
+		{
+			stMsgPlayerRequestGameRecorderNewRet msgRet ;
+			msgRet.nCnt = m_vGameRecorders.size() < 12 ? m_vGameRecorders.size() : 12 ;
+			CAutoBuffer auBuffer (sizeof(msgRet) + sizeof(stRecorderItem) * msgRet.nCnt );
+			auBuffer.addContent(&msgRet,sizeof(msgRet)) ;
+			auto iter = m_vGameRecorders.begin() ;
+			for ( uint8_t nIdx = 0 ; iter != m_vGameRecorders.end() && nIdx < msgRet.nCnt ; ++nIdx ,++iter )
+			{
+				stRecorderItemNew rItem ;
+				rItem.nBuyIn = (*iter)->nBuyIn ;
+				rItem.nCreateUID = (*iter)->nCreateUID ;
+				rItem.nDuiringSeconds = (*iter)->nDuiringSeconds ;
+				rItem.nFinishTime = (*iter)->nFinishTime ;
+				rItem.nOffset = (*iter)->nOffset ;
+				rItem.nRoomID = (*iter)->nRoomID ;
+				rItem.nBaseBet = (*iter)->nBaseBet ;
+				rItem.nClubID = (*iter)->nClubID ;
+				rItem.nSieralNum = (*iter)->nSieralNum;
+				memcpy(rItem.cRoomName,(*iter)->cRoomName,sizeof(rItem.cRoomName));
+				auBuffer.addContent(&rItem,sizeof(rItem)) ;
+
+				// delete sended recorder ;
+				delete (*iter) ;
+				(*iter) = nullptr ;
+			}
+			m_vGameRecorders.clear() ;
+			SendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
+			LOGFMTD("send game recorder cnt = %u , uid = %u",msgRet.nCnt,GetPlayer()->GetUserUID() ) ;
+		}
+		break ;
 	case MSG_READ_PLAYER_GAME_DATA:
 		{
 			stMsgReadPlayerGameDataRet* pRet = (stMsgReadPlayerGameDataRet*)pMessage ;
@@ -307,6 +338,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			pRecorder->nBuyIn = pRet->nBuyIn ;
 			pRecorder->nBaseBet = pRet->nBaseBet ;
 			pRecorder->nClubID = pRet->nClubID ;
+			pRecorder->nSieralNum = pRet->nSeiralNum;
 			memcpy(pRecorder->cRoomName,pRet->cRoomName,sizeof(pRet->cRoomName));
 			//LOGFMTD("read basebet = %u ",pRet->nBaseBet) ;
 			addPlayerGameRecorder(pRecorder,false);
@@ -324,6 +356,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			pRecorder->nBuyIn = pRet->nBuyIn ;
 			pRecorder->nBaseBet = pRet->nBaseBet ; 
 			pRecorder->nClubID = pRet->nClubID ;
+			pRecorder->nSieralNum = pRet->nSiealNum;
 			memcpy(pRecorder->cRoomName,pRet->cRoomName,sizeof(pRet->cRoomName));
 			addPlayerGameRecorder(pRecorder) ;
 

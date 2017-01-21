@@ -109,6 +109,7 @@ struct stMsgSyncPrivateRoomResult
 	uint32_t nCreatorUID ;
 	uint32_t nBaseBet ;
 	uint32_t nClubID ;
+	uint32_t nSiealNum;
 	char cRoomName[MAX_LEN_ROOM_NAME];
 };
 
@@ -123,6 +124,7 @@ public:
 	uint32_t tTime ;
 	uint32_t nDuringSeconds ;
 	uint8_t nRoomType ;
+	uint32_t nSieralNum;
 	uint16_t nJsLen ;
 	PLACE_HOLDER(char* pJson);// [ { uid : 23 , buyIn : 234, offset : -30},{ uid : 23 , buyIn : 234, offset : -30}, .... ]
 };
@@ -146,6 +148,7 @@ struct stMsgReadGameResultRet
 	uint32_t tTime ;
 	uint8_t nRoomType ;
 	uint32_t nDuringSeconds ;
+	uint32_t nSieralNum;
 	uint16_t nJsLen ;
 	PLACE_HOLDER(char* pJson);// [ { uid : 23 , buyIn : 234, offset : -30},{ uid : 23 , buyIn : 234, offset : -30}, .... ]
 };
@@ -188,6 +191,7 @@ struct stMsgReadPlayerGameRecorderRet
 	uint32_t nBuyIn ;
 	uint32_t nBaseBet ;
 	uint32_t nClubID ;
+	uint32_t nSeiralNum;
 	char cRoomName[MAX_LEN_ROOM_NAME];
 };
 

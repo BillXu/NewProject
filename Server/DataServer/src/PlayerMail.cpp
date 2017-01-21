@@ -519,6 +519,7 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 			pRecorder->nBuyIn = jArg["buyIn"].asUInt() ;
 			pRecorder->nBaseBet = jArg["baseBet"].asUInt() ;
 			pRecorder->nClubID = jArg["clubID"].asUInt() ;
+			pRecorder->nSieralNum = jArg["serialNum"].asUInt();
 			memcpy_s(pRecorder->cRoomName,sizeof(pRecorder->cRoomName),jArg["roomName"].asCString(),sizeof(jArg["roomName"].asCString()));
 			auto pGame = (CPlayerGameData*)GetPlayer()->GetComponent(ePlayerComponent_PlayerGameData);
 			pGame->addPlayerGameRecorder(pRecorder);

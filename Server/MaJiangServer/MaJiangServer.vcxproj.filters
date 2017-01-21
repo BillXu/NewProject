@@ -28,6 +28,12 @@
     <Filter Include="src\MJXZ">
       <UniqueIdentifier>{44743f07-2e93-45ea-a433-bbfabb1dbeed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\MJNJ">
+      <UniqueIdentifier>{25a44f21-cca6-4035-8640-2ad0ba1eb40d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\MJNJ\NJState">
+      <UniqueIdentifier>{eb144682-17b2-43ef-9d11-90d04a731826}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IMJPoker.h">
@@ -123,6 +129,21 @@
     <ClInclude Include="src\IGameRecorder.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\NJMJPlayer.h">
+      <Filter>src\MJNJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NJMJRoom.h">
+      <Filter>src\MJNJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NJMJPlayerCard.h">
+      <Filter>src\MJNJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NJRoomStateDoPlayerAct.h">
+      <Filter>src\MJNJ\NJState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NJRoomStateWaitPlayerAct.h">
+      <Filter>src\MJNJ\NJState</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MJCard.cpp">
@@ -160,6 +181,15 @@
     </ClCompile>
     <ClCompile Include="src\MJPrivateRoom.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NJMJPlayer.cpp">
+      <Filter>src\MJNJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NJMJRoom.cpp">
+      <Filter>src\MJNJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NJMJPlayerCard.cpp">
+      <Filter>src\MJNJ</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

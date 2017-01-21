@@ -39,4 +39,19 @@ public:
 	virtual bool isTempLeaveRoom() = 0;
 	virtual bool doTempLeaveRoom() = 0 ;
 
+	virtual uint8_t getDianPaoCnt() = 0;
+	virtual void addDianPaoCnt() = 0 ;
+	
+	virtual uint8_t getHuCnt() = 0;
+	virtual void addHuCnt() = 0;
+
+	virtual uint8_t getZiMoCnt() = 0 ;
+	virtual void addZiMoCnt() = 0;
+
+	virtual uint8_t getAnGangCnt() = 0 ;
+	virtual void addAnGangCnt() = 0;
+
+	virtual uint8_t getMingGangCnt() = 0 ;
+	virtual void addMingGangCnt() = 0;
+
 };

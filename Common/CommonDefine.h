@@ -59,6 +59,7 @@ enum eRoomType
 	eRoom_Golden,
 	eRoom_MJ_Blood_River,// ÑªÁ÷³ÉºÓ
 	eRoom_MJ_Blood_End, // ÑªÕ½µ½µ× 
+	eRoom_MJ_NanJing, 
 	eRoom_Max ,
 };
 
@@ -67,6 +68,7 @@ enum eMJGameType
 	eMJ_None,
 	eMJ_BloodRiver = eRoom_MJ_Blood_River,
 	eMJ_BloodTheEnd,
+	eMJ_NanJing,
 	eMJ_COMMON,
 	eMJ_Max,
 };
@@ -144,7 +146,7 @@ enum eRoomState
 	eRoomState_WaitDecideQue,  // µÈ´ıÍæ¼Ò¶¨È±
 	eRoomState_DoDecideQue,  //  Íæ¼Ò¶¨È±
 	eRoomState_DoFetchCard, // Íæ¼ÒÃşÅÆ
-	eRoomState_WaitPlayerAct,  // µÈ´ıÍæ¼Ò²Ù×÷ { idx : 0 , exeAct : eMJActType , isWaitChoseAct : 0 , actCard : 23, onlyChu : 1  }
+	eRoomState_WaitPlayerAct,  // µÈ´ıÍæ¼Ò²Ù×÷ { idx : 0 , huaCard : 23 }
 	eRoomState_WaitPlayerChu, // µÈ´ıÍæ¼Ò³öÅÆ { idx : 2 }
 	eRoomState_DoPlayerAct,  // Íæ¼Ò²Ù×÷ // { idx : 0 ,huIdxs : [1,3,2,], act : eMJAct_Chi , card : 23, invokeIdx : 23, eatWithA : 23 , eatWithB : 22 }
 	eRoomState_WaitOtherPlayerAct,  // µÈ´ıÍæ¼Ò²Ù×÷£¬ÓĞÈË³öÅÆÁË { invokerIdx : 0 , card : 0 ,cardFrom : eMJActType , arrNeedIdxs : [2,0,1] } 
@@ -173,6 +175,9 @@ enum eMJActType
 	eMJAct_Hu,  //  ºúÅÆ
 	eMJAct_Chu, // ³öÅÆ
 	eMJAct_Pass, //  ¹ı 
+	eMJAct_BuHua,  // ²¹»¨
+	eMJAct_HuaGang, // »¨¸Ü
+	eMJAct_Followed, // Á¬Ğø¸úÁË4ÕÅÅÆ£¬Òª·£Ç®ÁË
 	eMJAct_Max,
 };
 
@@ -197,6 +202,15 @@ enum eFanxingType
 
 	eFanxing_QingLongQiDui, //  ÇåÁúÆß¶Ô
 	eFanxing_ShiBaLuoHan, //  Ê®°ËÂŞºº
+
+	eFanxing_MengQing, // ÃÅÇå
+	eFanxing_ShuangQiDui, // Ë«Æß¶Ô
+	eFanxing_QuanQiuDuDiao, // È«Çò¶Àµö
+	eFanxing_YaJue, // Ñ¹¾ø 
+	eFanxing_HunYiSe, // »ìÒ»É«
+	eFanxing_WuHuaGuo, // ÎŞ»¨¹û
+	eFanxing_TianHu , //Ììºú
+	eFanxing_DiHu,//µØºú
 	eFanxing_Max, // Ã»ÓĞºú
 };
 
@@ -214,18 +228,18 @@ enum eSettleType    // Õâ¸öÃ¶¾Ù¶¨ÒåµÄÖ»ÊÇÒ»¸öÖĞÁ¢µÄÊÂ¼ş£¬¶ÔÓÚ·¢ÉúÊÂ¼şµÄË«·½£¬½Ğ·
 
 enum eTime
 {
-	eTime_ExeGameStart = 10,			// Ö´ĞĞÓÎÏ·¿ªÊ¼ µÄÊ±¼ä
+	eTime_ExeGameStart = 2,			// Ö´ĞĞÓÎÏ·¿ªÊ¼ µÄÊ±¼ä
 	eTime_WaitChoseExchangeCard = 5, //  µÈ´ıÍæ¼ÒÑ¡Ôñ»»ÅÆµÄÊ±¼ä
 	eTime_DoExchangeCard = 3, //   Ö´ĞĞ»»ÅÆµÄÊ±¼ä
 	eTime_WaitDecideQue = 10, // µÈ´ıÍæ¼Ò¶¨È±
 	eTime_DoDecideQue = 2, // ¶¨È±Ê±¼ä
 	eTime_WaitPlayerAct = 10,  // µÈ´ıÍæ¼Ò²Ù×÷µÄÊ±¼ä
 	eTime_WaitPlayerChoseAct = eTime_WaitPlayerAct,
-	eTime_DoPlayerMoPai = 1,  //  Íæ¼ÒÃşÅÆÊ±¼ä
-	eTime_DoPlayerActChuPai = 2,  // Íæ¼Ò³öÅÆµÄÊ±¼ä
-	eTime_DoPlayerAct_Gang = 2, // Íæ¼Ò¸ÜÅÆÊ±¼ä
-	eTime_DoPlayerAct_Hu = 3,  // Íæ¼ÒºúÅÆµÄÊ±¼ä
-	eTime_DoPlayerAct_Peng = 2, // Íæ¼ÒÅöÅÆÊ±¼ä
+	eTime_DoPlayerMoPai = 0,  //  Íæ¼ÒÃşÅÆÊ±¼ä
+	eTime_DoPlayerActChuPai = 1,  // Íæ¼Ò³öÅÆµÄÊ±¼ä
+	eTime_DoPlayerAct_Gang = 0, // Íæ¼Ò¸ÜÅÆÊ±¼ä
+	eTime_DoPlayerAct_Hu = 1,  // Íæ¼ÒºúÅÆµÄÊ±¼ä
+	eTime_DoPlayerAct_Peng = 0, // Íæ¼ÒÅöÅÆÊ±¼ä
 	eTime_GameOver = 1, // ÓÎÏ·½áÊø×´Ì¬³ÖĞøÊ±¼ä
 };
 

@@ -159,3 +159,12 @@ enum eCrossSvrReqSubType
 	return; \
 	}\
 	}
+
+#if defined(_DEBUG)
+extern bool CustomAssertFunction(bool isfalse, char* description, int line, char*filepath);
+#define Assert(exp, description) \
+if( CustomAssertFunction( (int) (exp),description, __LINE__, __FILE__ )) \
+{ _asm { int 3 } } 
+#else
+#define Assert( exp, description)
+#endif

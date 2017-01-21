@@ -12,6 +12,7 @@
 #include <time.h>
 #include "XLMJRoom.h"
 #include "XZMJRoom.h"
+#include "NJMJRoom.h"
 #define TIME_WAIT_REPLY_DISMISS 60*5
 MJPrivateRoom::~MJPrivateRoom()
 {
@@ -344,6 +345,7 @@ void MJPrivateRoom::sendRoomInfo(uint32_t nSessionID)
 	jsMsg["baseBet"] = m_stConfig.nBaseBet;
 	jsMsg["creatorUID"] = m_nOwnerUID;
 	jsMsg["initCoin"] = m_nInitCoin;
+	jsMsg["initCircle"] = m_nInitCircle;
 	jsMsg["roomType"] = m_pRoom->getRoomType();
 	// is waiting vote dismiss room ;
 	jsMsg["isWaitingDismiss"] = m_bWaitDismissReply ? 1 : 0;
@@ -512,7 +514,7 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 	auto pRoom = (IMJRoom*)m_pRoom;
 	for (uint8_t nIdx = 0; nIdx < pRoom->getSeatCnt(); ++nIdx)
 	{
-		auto pp = pRoom->getMJPlayerByIdx(nIdx);
+		auto pp = (IMJPlayer*)pRoom->getMJPlayerByIdx(nIdx);
 		if (pp == nullptr)
 		{
 			LOGFMTE("why private player is null room id = %u idx = %u" ,getRoomID(),nIdx);
@@ -527,6 +529,11 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		}
 
 		iter->second.nRoomCoin = pp->getCoin();
+		iter->second.nAnGangCnt = pp->getAnGangCnt();
+		iter->second.nDianPaoCnt = pp->getDianPaoCnt();
+		iter->second.nHuCnt = pp->getHuCnt();
+		iter->second.nMingGangCnt = pp->getMingGangCnt();
+		iter->second.nZiMoCnt = pp->getZiMoCnt();
 
 		// do leave room and tell data svr ;
 		stMsgSvrDoLeaveRoom msgdoLeave;
@@ -553,6 +560,12 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 			Json::Value jsPlayer;
 			jsPlayer["uid"] = ref.second.nUID;
 			jsPlayer["curCoin"] = ref.second.nRoomCoin;
+			jsPlayer["ziMoCnt"] = ref.second.nZiMoCnt;
+			jsPlayer["huCnt"] = ref.second.nHuCnt;
+			jsPlayer["dianPaoCnt"] = ref.second.nDianPaoCnt;
+			jsPlayer["mingGangCnt"] = ref.second.nMingGangCnt;
+			jsPlayer["AnGangCnt"] = ref.second.nAnGangCnt;
+
 			jsVBills[jsVBills.size()] = jsPlayer;
 
 			jsPlayedPlayers[jsPlayedPlayers.size()] = ref.second.nUID;
@@ -620,6 +633,11 @@ IGameRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
 	case eRoom_MJ_Blood_End:
 	{
 		return new XZMJRoom();
+	}
+	break;
+	case eRoom_MJ_NanJing:
+	{
+		return new NJMJRoom();
 	}
 	break;
 	default:

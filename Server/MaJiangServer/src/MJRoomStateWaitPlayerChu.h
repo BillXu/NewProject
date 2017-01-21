@@ -5,6 +5,7 @@
 #include "IMJPlayer.h"
 #include "IMJPlayerCard.h"
 #include <cassert>
+#include "MJCard.h"
 class MJRoomStateWaitPlayerChu
 	:public IMJRoomState
 {
@@ -63,13 +64,23 @@ public:
 				nRet = 2;
 				break;
 			}
-
+			
 			auto pMJCard = pPlayer->getPlayerCard();
 			if (!pMJCard->isHaveCard(nCard))
 			{
 				nRet = 3;
 				break;
 			}
+
+			auto nType = card_Type(nCard);
+			bool isHua = (eCT_Jian == nType || eCT_Hua == nType);
+			if (isHua)
+			{
+				nRet = 4;
+				LOGFMTE("can not chu hua = %u", nCard);
+				break;
+			}
+
 		} while (0);
 
 		if (nRet)

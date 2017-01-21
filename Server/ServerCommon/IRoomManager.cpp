@@ -131,6 +131,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			pRecorder->nConfigID = pRet->nConfigID ;
 			pRecorder->nTime = pRet->tTime ;
 			pRecorder->nDuringSeconds = pRet->nDuringSeconds ;
+			pRecorder->nSieralNum = pRet->nSieralNum;
 
 			char* pJsBuffer = (char*)prealMsg ;
 			pJsBuffer += sizeof(stMsgReadGameResultRet) ;
@@ -161,6 +162,41 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			msgBack.nCreaterUID = iter->second->nCreaterUID ;
 			msgBack.nRoomID = iter->second->nRoomID ;
 			msgBack.tTime = (uint32_t)iter->second->nTime ;
+			msgBack.nRoomType = getMgrRoomType();
+
+			Json::StyledWriter jsWrite ;
+			std::string strJon = jsWrite.write(iter->second->playerDetail) ;
+
+			msgBack.nJsLen = strJon.size() ;
+
+			CAutoBuffer buBffer(sizeof(msgBack) + msgBack.nJsLen );
+			buBffer.addContent(&msgBack,sizeof(msgBack)) ;
+			buBffer.addContent(strJon.c_str(),msgBack.nJsLen) ;
+			sendMsg((stMsg*)buBffer.getBufferPtr(),buBffer.getContentSize(),nSessionID) ;
+			LOGFMTD("send room record msg ") ;
+		}
+		break ;
+		case MSG_REQUEST_PRIVATE_ROOM_RECORDER_NEW:
+		{
+			stMsgRequestPrivateRoomRecorderNew* pRet = (stMsgRequestPrivateRoomRecorderNew*)prealMsg;
+			auto iter = m_mapSieralPrivateRecorder.find(pRet->nSieralNum);
+			stMsgRequestPrivateRoomRecorderNewRet msgBack ;
+			if (iter == m_mapSieralPrivateRecorder.end())
+			{
+				msgBack.nRet = 1 ;
+				msgBack.nRoomID = pRet->nRoomID ;
+				msgBack.nJsLen = 0 ;
+				sendMsg(&msgBack,sizeof(msgBack),nSessionID) ;
+				LOGFMTD("can not find to send room record msg ") ;
+				break ;
+			}
+
+			msgBack.nRet = 0 ;
+			msgBack.nConfigID = iter->second->nConfigID ;
+			msgBack.nCreaterUID = iter->second->nCreaterUID ;
+			msgBack.nRoomID = iter->second->nRoomID ;
+			msgBack.tTime = (uint32_t)iter->second->nTime ;
+			msgBack.nSieralNum = iter->second->nSieralNum;
 			msgBack.nRoomType = getMgrRoomType();
 
 			Json::StyledWriter jsWrite ;
@@ -640,7 +676,7 @@ void IRoomManager::onConnectedSvr()
 {
 	IGlobalModule::onConnectedSvr();
 
-	if ( m_mapPrivateRecorder.empty() ) 
+	if ( m_mapPrivateRecorder.empty() && m_mapSieralPrivateRecorder.empty() ) 
 	{
 		stMsgReadGameResult msg ;
 		msg.nRoomType = getMgrRoomType() ;
@@ -798,9 +834,25 @@ void IRoomManager::deleteRoomChatID( uint32_t nChatID )
 
 void IRoomManager::addPrivateRoomRecorder(stPrivateRoomRecorder* pRecorder, bool isSaveDB )
 {
-	auto iter = m_mapPrivateRecorder.find(pRecorder->nRoomID) ;
-	assert(iter == m_mapPrivateRecorder.end() && "why have duplicate room recorder ?");
-	m_mapPrivateRecorder[pRecorder->nRoomID] = pRecorder ;
+	if (pRecorder->nSieralNum != 0)
+	{
+		auto iter = m_mapSieralPrivateRecorder.find(pRecorder->nSieralNum);
+		Assert(iter == m_mapSieralPrivateRecorder.end() , "why have duplicate room recorder ?");
+		m_mapSieralPrivateRecorder[pRecorder->nSieralNum] = pRecorder;
+	}
+	//else
+	{
+		auto iter = m_mapPrivateRecorder.find(pRecorder->nRoomID);
+		Assert(iter == m_mapPrivateRecorder.end() , "why have duplicate room recorder ?");
+		if (iter != m_mapPrivateRecorder.end())
+		{
+			LOGFMTE("duplicate game recorder , so delete this one room id = %u",pRecorder->nRoomID);
+			delete iter->second;
+			iter->second = nullptr;
+			m_mapPrivateRecorder.erase(iter);
+		}
+		m_mapPrivateRecorder[pRecorder->nRoomID] = pRecorder;
+	}
 
 	if ( isSaveDB == false )
 	{
@@ -814,6 +866,7 @@ void IRoomManager::addPrivateRoomRecorder(stPrivateRoomRecorder* pRecorder, bool
 	msgResult.nRoomType = getMgrRoomType() ;
 	msgResult.tTime = pRecorder->nTime ;
 	msgResult.nDuringSeconds = pRecorder->nDuringSeconds ;
+	msgResult.nSieralNum = pRecorder->nSieralNum;
 	
 	Json::StyledWriter jsWrite ;
 	std::string strJson = jsWrite.write(pRecorder->playerDetail) ;

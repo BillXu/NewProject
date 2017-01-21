@@ -21,7 +21,16 @@ void MJPlayer::init(stEnterRoomData* pData)
 	m_nPlayerType = pData->nPlayerType;
 	m_isTrusteed = false;
 	m_isTempLeave = false;
+
+	m_nHuCnt = 0 ;
+	m_nZiMoCnt = 0 ;
+	m_nDianPaoCnt = 0 ;
+	m_nMingGangCnt = 0 ;
+	m_nAnGangCnt = 0 ;
+
 	clearDecareBuGangFlag();
+	clearGangFlag();
+	getPlayerCard()->reset();
 }
 
 void MJPlayer::onComeBackRoom(stEnterRoomData* pData)
@@ -36,11 +45,13 @@ void MJPlayer::onWillStartGame()
 {
 	m_nOffset = 0;
 	clearGangFlag();
+	clearDecareBuGangFlag();
 }
 
 void MJPlayer::onStartGame()
 {
 	setState(eRoomPeer_CanAct);
+	clearGangFlag();
 	clearDecareBuGangFlag();
 }
 
@@ -48,14 +59,15 @@ void MJPlayer::onGameDidEnd()
 {
 	setState(eRoomPeer_WaitNextGame);
 	getPlayerCard()->reset();
+	clearGangFlag();
 	clearDecareBuGangFlag();
 }
 
 void MJPlayer::onGameEnd()
 {
-	setState(eRoomPeer_WaitNextGame);
-	clearGangFlag();
-	clearDecareBuGangFlag();
+	//setState(eRoomPeer_WaitNextGame);
+	//clearGangFlag();
+	//clearDecareBuGangFlag();
 }
 
 uint8_t MJPlayer::getIdx()
@@ -205,4 +217,54 @@ void MJPlayer::setTrusteeActFunc(CTimer::time_func pFunc)
 	m_tTrusteedActTimer.setIsAutoRepeat(false);
 	m_tTrusteedActTimer.setCallBack(pFunc);
 	m_tTrusteedActTimer.start();
+}
+
+uint8_t MJPlayer::getDianPaoCnt()
+{
+	return m_nDianPaoCnt;
+}
+
+void MJPlayer::addDianPaoCnt()
+{
+	++m_nDianPaoCnt;
+}
+
+uint8_t MJPlayer::getHuCnt()
+{
+	return m_nHuCnt;
+}
+
+void MJPlayer::addHuCnt()
+{
+	++m_nHuCnt;
+}
+
+uint8_t MJPlayer::getZiMoCnt()
+{
+	return m_nZiMoCnt;
+}
+
+void MJPlayer::addZiMoCnt()
+{
+	++m_nZiMoCnt;
+}
+
+uint8_t MJPlayer::getAnGangCnt()
+{
+	return m_nAnGangCnt;
+}
+
+void MJPlayer::addAnGangCnt()
+{
+	++m_nAnGangCnt;
+}
+
+uint8_t MJPlayer::getMingGangCnt()
+{
+	return m_nMingGangCnt;
+}
+
+void MJPlayer::addMingGangCnt()
+{
+	++m_nMingGangCnt;
 }

@@ -70,7 +70,8 @@ void CSession::handleReadHeader(const boost::system::error_code& error)
 	else  
 	{  
 		//printf("handleReadHeader close\n") ;
-		m_pNetwork->closeSession(getConnectID());
+		//m_pNetwork->closeSession(getConnectID());
+		m_pNetwork->closePeerConnection(getConnectID(),false);
 	} 
 }
 
@@ -93,7 +94,8 @@ void CSession::handleReadBody(const boost::system::error_code& error)
 	else  
 	{  
 		//printf("handleReadBody close\n") ;
-		m_pNetwork->closeSession(getConnectID());
+		//m_pNetwork->closeSession(getConnectID());
+		m_pNetwork->closePeerConnection(getConnectID(),false);
 	}  
 }
 
@@ -114,7 +116,8 @@ void CSession::handleWrite(const boost::system::error_code& error)
 	}  
 	else  
 	{  
-		m_pNetwork->closeSession(getConnectID());
+		//m_pNetwork->closeSession(getConnectID());
+		m_pNetwork->closePeerConnection(getConnectID(), false);
 	} 
 }
 
@@ -131,7 +134,8 @@ void CSession::handleCheckFirstMsg( const boost::system::error_code& ec )
 		if ( !m_bRecivedMsg )
 		{
 			printf("find a dead connect \n");
-			m_pNetwork->closeSession(getConnectID());
+			//m_pNetwork->closeSession(getConnectID());
+			m_pNetwork->closePeerConnection(getConnectID(), false);
 		}
 	}
 }
@@ -151,7 +155,8 @@ void CSession::handleWriteHeartbeat(const boost::system::error_code& ec)
 	else{
 		// close ;
 		printf("heat beat failed \n");
-		m_pNetwork->closeSession(getConnectID());
+		//m_pNetwork->closeSession(getConnectID());
+		m_pNetwork->closePeerConnection(getConnectID(), false);
 	}
 }
 

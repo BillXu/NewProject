@@ -206,8 +206,8 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pRequest->eType = eRequestType_Add;
 			CAutoBuffer auBuffer(pRet->nJsLen + 1 );
 			auBuffer.addContent((char*)pmsg + sizeof(stMsgSaveGameResult),pRet->nJsLen) ;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameresult (roomID, roomType,createUID,configID,time,duiringSeconds,playerDetail) VALUES ('%u', '%u','%u','%u','%u','%u','%s')",
-				pRet->nRoomID,pRet->nRoomType,pRet->nCreaterUID,pRet->nConfigID,pRet->tTime,pRet->nDuringSeconds,auBuffer.getBufferPtr()) ;
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO gameresult (sieralNum,roomID, roomType,createUID,configID,time,duiringSeconds,playerDetail) VALUES (%u,'%u', '%u','%u','%u','%u','%u','%s')",
+				pRet->nSieralNum, pRet->nRoomID, pRet->nRoomType, pRet->nCreaterUID, pRet->nConfigID, pRet->tTime, pRet->nDuringSeconds, auBuffer.getBufferPtr());
 		}
 		break;
 	case MSG_SAVE_PLAYER_GAME_RECORDER:
@@ -231,7 +231,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgReadPlayerGameRecorder* pRet = (stMsgReadPlayerGameRecorder*)pmsg ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM playergamerecorder WHERE userUID = '%u'order by finishTime desc limit 35",pRet->nUserUID ) ;
+				"SELECT * FROM playergamerecorder WHERE userUID = '%u'order by finishTime desc limit 15",pRet->nUserUID ) ;
 		}
 		break ;
 	case MSG_SAVE_NOTICE_PLAYER:
@@ -1135,6 +1135,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msgBack.nRoomID = pRow["roomID"]->IntValue();
 				msgBack.nRoomType = pRow["roomType"]->IntValue();
 				msgBack.tTime = pRow["time"]->IntValue(); 
+				msgBack.nSieralNum = pRow["sieralNum"]->IntValue();
 				msgBack.nJsLen = pRow["playerDetail"]->nBufferLen; 
 				auBuffer.addContent(&msgBack,sizeof(msgBack));
 				auBuffer.addContent(pRow["playerDetail"]->BufferData(),msgBack.nJsLen);
@@ -1158,6 +1159,7 @@ void CDBManager::OnDBResult(stDBResult* pResult)
 				msgBack.nBuyIn = pRow["buyIn"]->IntValue() ;
 				msgBack.nBaseBet = pRow["baseBet"]->IntValue() ;
 				msgBack.nClubID = pRow["clubID"]->IntValue() ;
+				msgBack.nSeiralNum = pRow["sieralNum"]->IntValue();
 				memset(msgBack.cRoomName,0,sizeof(msgBack.cRoomName)) ;
 				if ( pRow["roomName"]->nBufferLen > 0 )
 				{

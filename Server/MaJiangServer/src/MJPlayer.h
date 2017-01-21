@@ -36,6 +36,21 @@ public:
 	void setTrusteeActFunc(CTimer::time_func pFunc)final;
 	bool isTempLeaveRoom()final;
 	bool doTempLeaveRoom()final;
+
+	uint8_t getDianPaoCnt() final;
+	void addDianPaoCnt() final;
+
+	uint8_t getHuCnt() final;
+	void addHuCnt()final;
+
+	uint8_t getZiMoCnt() final;
+	void addZiMoCnt()final;
+
+	uint8_t getAnGangCnt()final;
+	void addAnGangCnt()final;
+
+	uint8_t getMingGangCnt()final;
+	void addMingGangCnt()final;
 private:
 	bool m_isTempLeave;
 	uint8_t m_nPlayerType;
@@ -50,4 +65,10 @@ private:
 	bool m_isTrusteed; // is tuo guan ?
 
 	CTimer m_tTrusteedActTimer;
+
+	uint8_t m_nHuCnt;
+	uint8_t m_nZiMoCnt; 
+	uint8_t m_nDianPaoCnt;
+	uint8_t m_nMingGangCnt;
+	uint8_t m_nAnGangCnt;
 };

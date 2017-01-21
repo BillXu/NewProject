@@ -32,6 +32,8 @@ public:
 	bool isWaitPlayerActForever(){ return getDelegate() != nullptr; }
 protected:
 	virtual void sendPlayersCardInfo(uint32_t nSessionID );
+	virtual void getSubRoomInfo(Json::Value& jsSubInfo){};
+	virtual void packStartGameMsg(Json::Value& jsMsg );
 public:
 	uint32_t getRoomID()final;
 	stBaseRoomConfig* getRoomConfig()final{ return m_pRoomConfig; }
@@ -64,8 +66,8 @@ public:
 	virtual void onWaitPlayerAct(uint8_t nIdx, bool& isCanPass);
 	virtual uint8_t getAutoChuCardWhenWaitActTimeout(uint8_t nIdx);
 	virtual uint8_t getAutoChuCardWhenWaitChuTimeout(uint8_t nIdx);
-	void onPlayerMo( uint8_t nIdx );
-	void onPlayerPeng( uint8_t nIdx , uint8_t nCard , uint8_t nInvokeIdx );
+	virtual void onPlayerMo(uint8_t nIdx);
+	virtual void onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx);
 	void onPlayerEat(uint8_t nIdx, uint8_t nCard, uint8_t nWithA, uint8_t nWithB, uint8_t nInvokeIdx);
 	virtual void onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx);
 	virtual void onPlayerAnGang(uint8_t nIdx, uint8_t nCard);

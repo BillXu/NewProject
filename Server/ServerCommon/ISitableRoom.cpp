@@ -117,7 +117,7 @@ void ISitableRoom::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t& n
 			{
 				LOGFMTD("uid = %u reenter room coin is not the same . stand = %u , sit = %u", pp->getUserUID(), pStandPlayer->nCoin, pp->getCoin());
 			}
-			pStandPlayer->nCoin -= pp->getCoin();
+			pStandPlayer->nCoin = 0;
 		}
 		else
 		{

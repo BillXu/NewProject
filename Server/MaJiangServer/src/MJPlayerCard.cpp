@@ -1391,34 +1391,34 @@ bool MJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
 	}
 	return vCanHuCards.size() > 0;
 	// check dan diao 
-	SET_NOT_SHUN& vFirst = vNotShun[vNotEmptyShunIdx[0]];
-	for (auto& v : vFirst)
-	{
-		if (v.getSize() == 1 )
-		{
-			// other type shound have hu card ;
-			vCanHuCards.insert(v.vCards[0]);
-			continue;
-		}
+	//SET_NOT_SHUN& vFirst = vNotShun[vNotEmptyShunIdx[0]];
+	//for (auto& v : vFirst)
+	//{
+	//	if (v.getSize() == 1 )
+	//	{
+	//		// other type shound have hu card ;
+	//		vCanHuCards.insert(v.vCards[0]);
+	//		continue;
+	//	}
 
-		if (v.getSize() == 4)
-		{
-			VEC_CARD vTempCard;
-			if (v.vCards[0] == v.vCards[1])
-			{
-				vTempCard.push_back(v.vCards[2]); vTempCard.push_back(v.vCards[3]);
-				pfnGetCanHuCardIgnoreJiang(vTempCard, vCanHuCards);
-			}
-			
-			vTempCard.clear();
-			if (v.vCards[2] == v.vCards[3])
-			{
-				vTempCard.push_back(v.vCards[0]); vTempCard.push_back(v.vCards[1]);
-				pfnGetCanHuCardIgnoreJiang(vTempCard, vCanHuCards);
-			}
-		}
-	}
-	return vCanHuCards.size() > 0;
+	//	if (v.getSize() == 4)
+	//	{
+	//		VEC_CARD vTempCard;
+	//		if (v.vCards[0] == v.vCards[1])
+	//		{
+	//			vTempCard.push_back(v.vCards[2]); vTempCard.push_back(v.vCards[3]);
+	//			pfnGetCanHuCardIgnoreJiang(vTempCard, vCanHuCards);
+	//		}
+	//		
+	//		vTempCard.clear();
+	//		if (v.vCards[2] == v.vCards[3])
+	//		{
+	//			vTempCard.push_back(v.vCards[0]); vTempCard.push_back(v.vCards[1]);
+	//			pfnGetCanHuCardIgnoreJiang(vTempCard, vCanHuCards);
+	//		}
+	//	}
+	//}
+	//return vCanHuCards.size() > 0;
 	// have jiang 
 	
 	///-----------------------------------------------
@@ -1712,7 +1712,7 @@ uint8_t MJPlayerCard::tryBestFindLeastNotShun(VEC_CARD& vCard, SET_NOT_SHUN& vNo
 	vCheckCard.assign(vCard.begin(), vCard.end());
 	std::sort(vCheckCard.begin(), vCheckCard.end());
 	
-	if (vCheckCard.size() < 3 || bMustKeZi )  // this function not contai ke zi shun ; 
+	if (vCheckCard.size() < 3 && bMustKeZi )  // this function not contai ke zi shun ; 
 	{
 		stNotShunCard st;
 		st.vCards.swap(vCheckCard);

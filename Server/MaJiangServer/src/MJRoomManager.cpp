@@ -18,7 +18,7 @@ void MJRoomManager::init(IServerApp* svrApp)
 	//temp code ;
 	Json::Value js;
 	js["circle"] = 4;
-	js["roomType"] = eRoom_MJ_Blood_River ;
+	js["roomType"] = eRoom_MJ_NanJing ;
 	doCreatePrivateRoom(0, js);
 }
 
@@ -538,7 +538,7 @@ void MJRoomManager::addVipRoomBill(std::shared_ptr<stVipRoomBill>& pBill, bool i
 	{
 		auto asy = getSvrApp()->getAsynReqQueue();
 		Json::Value jsReq;
-		char pBuffer[500] = { 0 };
+		char pBuffer[800] = { 0 };
 		Json::StyledWriter jsWrite;
 		auto str = jsWrite.write(pBill->jsDetail);
 		sprintf_s(pBuffer, sizeof(pBuffer), "insert into viproombills (billID,roomID,roomType,createUID,billTime,detail,roomInitCoin ,circleCnt ) values( %u,%u,%u,%u,now(),'%s',%u,%u);"

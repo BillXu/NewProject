@@ -25,6 +25,7 @@ public:
 	uint8_t getNextActPlayerIdx(uint8_t nCurActIdx);
 	uint8_t getRoomType()override{ return eMJ_BloodRiver; }
 	void willStartGame()override;
+	void startGame()override;
 	void onGameEnd()override;
 	void onGameDidEnd()override;
 	bool isGameOver()override;

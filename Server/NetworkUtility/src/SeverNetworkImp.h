@@ -26,7 +26,7 @@ public:
 	bool sendMsg(uint32_t nConnectID , const char* pData , size_t nLen );
 	bool getAllPacket(LIST_PACKET& vOutPackets ); // must delete out side ;
 	bool getFirstPacket(Packet** ppPacket ); // must delete out side ;
-	void closePeerConnection(uint32_t nConnectID );
+	void closePeerConnection(uint32_t nConnectID, bool bServerClose = true );
 protected:
 	void closeSession(uint32_t nConnectID, bool bServerClose = false );
 	void startAccept() ;
