@@ -22,7 +22,7 @@ public:
 public:
 	IMJRoom(){ setDelegate(nullptr); }
 	~IMJRoom();
-	bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue) override;
+	bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue) override;
 	uint8_t checkPlayerCanEnter(stEnterRoomData* pEnterRoomPlayer)override;
 	bool onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)override;
 	bool isRoomFull()override;
@@ -36,6 +36,7 @@ protected:
 	virtual void packStartGameMsg(Json::Value& jsMsg );
 public:
 	uint32_t getRoomID()final;
+	uint32_t getSeiralNum()final;
 	stBaseRoomConfig* getRoomConfig()final{ return m_pRoomConfig; }
 	void update(float fDelta) override;
 	bool onMessage(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nPlayerSessionID)override;
@@ -103,6 +104,7 @@ protected:
 	IGameRoomManager* m_pRoomMgr;
 	stBaseRoomConfig* m_pRoomConfig;
 	uint32_t m_nRoomID;
+	uint32_t m_nSeiralNum;
 	uint8_t m_nBankerIdx;
 	IMJRoomDelegate* m_pDelegate;
 

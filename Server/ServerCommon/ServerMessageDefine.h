@@ -168,6 +168,7 @@ struct stMsgSavePlayerGameRecorder
 	uint32_t nBuyIn ;
 	uint32_t nBaseBet ;
 	uint32_t nClubID ;
+	uint32_t nSieralNum;
 	char cRoomName[MAX_LEN_ROOM_NAME];
 };
 

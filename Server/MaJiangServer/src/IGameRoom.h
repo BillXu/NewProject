@@ -10,7 +10,7 @@ class IGameRoom
 {
 public:
 	virtual ~IGameRoom(){}
-	virtual bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue) = 0;
+	virtual bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue) = 0;
 	virtual uint8_t checkPlayerCanEnter(stEnterRoomData* pEnterRoomPlayer ) = 0 ;
 	virtual bool onPlayerEnter(stEnterRoomData* pEnterRoomPlayer) = 0;
 	virtual bool onPlayerApplyLeave( uint32_t nPlayerUID ) = 0 ;
@@ -18,6 +18,7 @@ public:
 
 	//virtual void roomItemDetailVisitor(Json::Value& vOutJsValue) = 0;
 	virtual uint32_t getRoomID() = 0;
+	virtual uint32_t getSeiralNum() = 0;
 	virtual uint8_t getRoomType() = 0;
 	virtual void update(float fDelta) = 0;
 	virtual void sendRoomMsg(Json::Value& prealMsg, uint16_t nMsgType) = 0;

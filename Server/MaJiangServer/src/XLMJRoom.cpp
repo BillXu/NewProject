@@ -19,9 +19,9 @@
 #include "XLRoomStateAskForRobotGang.h"
 #include "ServerMessageDefine.h"
 #define MAX_BEISHU 32
-bool XLMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue)
+bool XLMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSiealNum,uint32_t nRoomID, Json::Value& vJsValue)
 {
-	IMJRoom::init(pRoomMgr, pConfig, nRoomID, vJsValue);
+	IMJRoom::init(pRoomMgr, pConfig, nSiealNum, nRoomID, vJsValue);
 	m_tPoker.initAllCard(eMJ_BloodRiver);
 	// create state and add state ;
 	IMJRoomState* vState[] = {

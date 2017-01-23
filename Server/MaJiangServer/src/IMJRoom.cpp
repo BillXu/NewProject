@@ -28,13 +28,14 @@ IMJRoom::~IMJRoom()
 	}
 }
 
-bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue)
+bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	// zero data 
 	memset(m_vMJPlayers, 0, sizeof(m_vMJPlayers));
 	m_pCurState = nullptr;
 	m_pRoomMgr = pRoomMgr;
 	m_nRoomID = nRoomID;
+	m_nSeiralNum = nSeialNum;
 	m_pRoomConfig = (stNiuNiuRoomConfig*)pConfig;
 	if (MAX_SEAT_CNT < ((stNiuNiuRoomConfig*)m_pRoomConfig)->nMaxSeat)
 	{
@@ -235,6 +236,11 @@ void IMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 uint32_t IMJRoom::getRoomID()
 {
 	return m_nRoomID;
+}
+
+uint32_t IMJRoom::getSeiralNum()
+{
+	return m_nSeiralNum;
 }
 
 void IMJRoom::update(float fDelta)

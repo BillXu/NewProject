@@ -420,7 +420,7 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 			CPlayer* pp = GetPlayerByUserUID(pRet->nTargetPlayerUID) ;
 			if (!pp || pp->IsState(CPlayer::ePlayerState_Online) == false )
 			{
-				LOGFMTE("uid = %d not find , so can not process MSG_SYNC_PRIVATE_ROOM_RESULT ",pRet->nTargetPlayerUID);
+				LOGFMTE("uid = %d not find , so can not process MSG_SYNC_PRIVATE_ROOM_RESULT, seiral = %u ",pRet->nTargetPlayerUID,pRet->nSiealNum );
 				Json::Value jsArg ;
 				jsArg["createUID"] = pRet->nCreatorUID ;
 				jsArg["duiringTime"] = pRet->nDuringTimeSeconds ;

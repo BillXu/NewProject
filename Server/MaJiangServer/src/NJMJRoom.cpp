@@ -18,14 +18,33 @@
 #define AN_GANG_COIN_BASE 5 
 #define MING_GANG_COIN_BASE 5
 #define HU_GANG_COIN_BASE 10
-bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue)
+bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
-	IMJRoom::init(pRoomMgr,pConfig,nRoomID,vJsValue);
+	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
 	m_isBiXiaHu = false;
 	m_isWillBiXiaHu = false;
 	m_isBankerHu = false;
+	m_isEnableBixiaHu = false;
+	m_isEnableHuaZa = false ;
 	m_vSettle.clear();
 	m_tChuedCards.clear();
+	if (vJsValue["isHuaZa"].isNull() || vJsValue["isHuaZa"].isUInt() == false)
+	{
+		LOGFMTE("argument is not proper room id = %u , hua za ? " , getRoomID());
+	}
+	else
+	{
+		m_isEnableHuaZa = vJsValue["isHuaZa"].asUInt() == 0 ? false : true;
+	}
+
+	if (vJsValue["isBiXiaHu"].isNull() || vJsValue["isBiXiaHu"].isUInt() == false)
+	{
+		LOGFMTE("argument is not proper room id = %u , isBiXiaHu  ? ", getRoomID());
+	}
+	else
+	{
+		m_isEnableBixiaHu = vJsValue["isBiXiaHu"].asUInt() == 0 ? false : true;
+	}
 
 	m_tPoker.initAllCard(eMJ_NanJing);
 	// create state and add state ;
@@ -103,6 +122,7 @@ void NJMJRoom::startGame()
 void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
 {
 	jsSubInfo["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
+	jsSubInfo["isHuaZa"] = m_isEnableHuaZa ? 1 : 0;
 }
 
 void NJMJRoom::onGameDidEnd()
@@ -852,5 +872,10 @@ bool NJMJRoom::canPlayerCardHuaGang(uint8_t nPlayerIdx, uint8_t nHuaCard)
 
 bool NJMJRoom::isBiXiaHu()
 {
+	if (!m_isEnableBixiaHu)
+	{
+		return false;
+	}
+
 	return m_isBiXiaHu;
 }

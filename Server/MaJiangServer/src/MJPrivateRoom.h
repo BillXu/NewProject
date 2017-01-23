@@ -23,7 +23,7 @@ public:
 	typedef std::map<uint32_t, stVipPlayer> MAP_UID_VIP_PLAYERS;
 public:
 	~MJPrivateRoom();
-	bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue)override;
+	bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)override;
 	bool onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)override;
 	uint8_t checkPlayerCanEnter(stEnterRoomData* pEnterRoomPlayer)override;
 	bool onPlayerApplyLeave(uint32_t nPlayerUID)override;
@@ -46,6 +46,7 @@ public:
 
 	void onDidGameOver(IMJRoom* pRoom);
 	void onRoomGameOver(bool isDismissed);
+	uint32_t getSeiralNum()final;
 protected:
 	IGameRoomManager* m_pRoomMgr;
 	uint32_t m_nOwnerUID;

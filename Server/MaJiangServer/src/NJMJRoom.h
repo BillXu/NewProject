@@ -54,7 +54,7 @@ public:
 		}
 	};
 public:
-	bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue) override;
+	bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue) override;
 	void willStartGame()override;
 	void startGame()override;
 	void onGameDidEnd()override;
@@ -83,11 +83,14 @@ protected:
 	void onPlayerZiMo(uint8_t nIdx , uint8_t nCard , Json::Value& jsDetail );
 	void settleInfoToJson(Json::Value& jsInfo);
 	void packStartGameMsg(Json::Value& jsMsg)override;
+	bool isHuaZa(){ return m_isEnableHuaZa; }
 protected:
 	stChuedCards m_tChuedCards;
 	std::vector<stSettle> m_vSettle;
 	bool m_isBiXiaHu;
 	bool m_isWillBiXiaHu;
 	bool m_isBankerHu;
+	bool m_isEnableBixiaHu;
+	bool m_isEnableHuaZa;
 	CMJCard m_tPoker;
 };

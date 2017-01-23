@@ -264,14 +264,15 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 				rItem.nBaseBet = (*iter)->nBaseBet ;
 				rItem.nClubID = (*iter)->nClubID ;
 				rItem.nSieralNum = (*iter)->nSieralNum;
+				LOGFMTD("seiral = %u , room id = %u",rItem.nSieralNum,rItem.nRoomID);
 				memcpy(rItem.cRoomName,(*iter)->cRoomName,sizeof(rItem.cRoomName));
 				auBuffer.addContent(&rItem,sizeof(rItem)) ;
 
 				// delete sended recorder ;
-				delete (*iter) ;
-				(*iter) = nullptr ;
+				//delete (*iter) ;
+				//(*iter) = nullptr ;
 			}
-			m_vGameRecorders.clear() ;
+			//m_vGameRecorders.clear() ;
 			SendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
 			LOGFMTD("send game recorder cnt = %u , uid = %u",msgRet.nCnt,GetPlayer()->GetUserUID() ) ;
 		}
@@ -364,12 +365,12 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			if ( isNotInAnyRoom() )
 			{
 				GetPlayer()->GetBaseData()->setCoin( pRet->nFinalCoin + GetPlayer()->GetBaseData()->getCoin() ) ;
-				LOGFMTD("sync private Room coin player not enter other room just uid = %d add coin = %u, final = %u,",GetPlayer()->GetUserUID(),pRet->nFinalCoin,GetPlayer()->GetBaseData()->getCoin()) ;
+				LOGFMTD("sync private Room coin player not enter other room just uid = %d add coin = %u, final = %u,sieral = %u", GetPlayer()->GetUserUID(), pRet->nFinalCoin, GetPlayer()->GetBaseData()->getCoin(), pRet->nSiealNum);
 			}
 			else
 			{
 				GetPlayer()->GetBaseData()->setTempCoin(GetPlayer()->GetBaseData()->getTempCoin() + pRet->nFinalCoin) ;
-				LOGFMTD("sync private Room coin  player enter other room so uid = %d add temp = %u, final = %u,",GetPlayer()->GetUserUID(),pRet->nFinalCoin,GetPlayer()->GetBaseData()->getTempCoin(),GetPlayer()->GetBaseData()->getCoin() ) ;
+				LOGFMTD("sync private Room coin  player enter other room so uid = %d add temp = %u, final = %u, sieral = %u", GetPlayer()->GetUserUID(), pRet->nFinalCoin, GetPlayer()->GetBaseData()->getTempCoin(), GetPlayer()->GetBaseData()->getCoin(), pRet->nSiealNum);
 			}
 		}
 		break ;
@@ -847,6 +848,7 @@ void CPlayerGameData::addPlayerGameRecorder(stPlayerGameRecorder* pRecorder , bo
 	msgSave.nBuyIn = pRecorder->nBuyIn ;
 	msgSave.nBaseBet = pRecorder->nBaseBet ; 
 	msgSave.nClubID = pRecorder->nClubID ;
+	msgSave.nSieralNum = pRecorder->nSieralNum;
 	memcpy(msgSave.cRoomName,pRecorder->cRoomName,sizeof(msgSave.cRoomName));
 	SendMsg(&msgSave,sizeof(msgSave)) ;
 	

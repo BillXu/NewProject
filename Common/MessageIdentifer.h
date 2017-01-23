@@ -324,6 +324,9 @@ enum eMsgType
 	// NIU NIU  opts : { unbankerType : 0 }  // 0 no niu leave banker , 1 lose to all  leave banker , 2 manual leave banker;
 	// Taxas Poker opts : { maxTakeIn : 2345, isInsured : 0  }
 	// Golden opts : { maxSingleBet : 20,maxRound : 30 }
+
+	//南京麻将 mj : { roomType : eRoomType ,circle : 2345 , initCoin : 23 , isBiXiaHu : 0 , isHuaZa : 0  } 
+
 	// svr : { ret : 0 , roomID : 235 , clubID : 23 } ;
 	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error ; 4, req chat room id error ;
 	MSG_DELETE_ROOM, // ID_MSG_PORT_DATA ;
@@ -677,6 +680,50 @@ enum eMsgType
 	// actType 此次结算的原因是什么，参考eMJActType ;
 	// winers : 所有赢钱人的数组 ， { 赢钱人的索引， 赢了多少钱 }
 	// loserIdxs : 所有输钱人的数组， { 输钱的索引， 输了多少钱 } 
+
+	MSG_REQ_MJ_ROOM_BILL_INFO,  // 请求vip 房间的账单, 此消息发往麻将游戏服务器；
+	// client : { sieral : 2345 }
+	// svr : { ret : 0 , sieral : 234, billTime : 23453, roomID : 235, roomType : eRoomType , creatorUID : 345 , circle： 8 ，initCoin : 2345 , detail : [  { uid : 2345 , curCoin : 234, ziMoCnt : 2 , huCnt : 23,dianPaoCnt :2, mingGangCnt : 23,AnGangCnt : 23  }, ....]  } 
+	// ret : 0 成功，1 账单id不存在，billID, 账单ID， billTime ： 账单产生的时间, roomID : 房间ID ， roomType 房间类型eRoomType， creatorUID 创建者的ID，circle 房间的圈数，initCoin ： 初始金币，detail : 每个人的输赢详情 json数组
+	// uid : 玩家的uid，curCoin 结束时剩余钱；
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

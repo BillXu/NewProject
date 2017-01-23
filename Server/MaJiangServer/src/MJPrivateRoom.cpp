@@ -20,11 +20,11 @@ MJPrivateRoom::~MJPrivateRoom()
 	m_pRoom = nullptr;
 }
 
-bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nRoomID, Json::Value& vJsValue)
+bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	m_nInitCircle = vJsValue["circle"].asUInt();
 	m_nLeftCircle = m_nInitCircle ;
-	m_nInitCoin = 1000;//vJsValue["initCoin"].asUInt();
+	m_nInitCoin = vJsValue["initCoin"].asUInt();
 	memset(&m_stConfig, 0, sizeof(m_stConfig));
 	m_stConfig.nConfigID = 0;
 	m_stConfig.nBaseBet = 1;//;vJsValue["baseBet"].asUInt();
@@ -66,7 +66,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	}
 	LOGFMTD("create 1 private room");
 	((IMJRoom*)m_pRoom)->setDelegate(this);
-	return m_pRoom->init(pRoomMgr, &m_stConfig, nRoomID, vJsValue);
+	return m_pRoom->init(pRoomMgr, &m_stConfig, nSeialNum, nRoomID, vJsValue);
 }
 
 bool MJPrivateRoom::onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)
@@ -553,6 +553,15 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		jsMsg["ret"] = isDismissed ? 1 : 0;
 		jsMsg["initCoin"] = m_nInitCoin;
 
+		// sys bill id to data svr 
+		stMsgSyncPrivateRoomResult msgResult;
+		msgResult.nRoomID = getRoomID();
+		msgResult.nCreatorUID = m_nOwnerUID;
+		msgResult.nClubID = 0;
+		msgResult.nDuringTimeSeconds = m_nInitCircle;
+		msgResult.nSiealNum = getSeiralNum();
+		memset(msgResult.cRoomName, 0, sizeof(msgResult.cRoomName));
+
 		Json::Value jsVBills;
 		Json::Value jsPlayedPlayers;
 		for (auto& ref : m_vAllPlayers)
@@ -569,6 +578,14 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 			jsVBills[jsVBills.size()] = jsPlayer;
 
 			jsPlayedPlayers[jsPlayedPlayers.size()] = ref.second.nUID;
+
+			// to data svr msg 
+			msgResult.nOffset = ref.second.nRoomCoin - m_nInitCoin;
+			msgResult.nTargetPlayerUID = ref.second.nUID;
+			msgResult.nFinalCoin = ref.second.nRoomCoin;
+			msgResult.nBuyIn = m_nInitCoin;
+			msgResult.nBaseBet = 1;
+			m_pRoomMgr->sendMsg(&msgResult, sizeof(msgResult), 0);
 		}
 		jsMsg["bills"] = jsVBills;
 
@@ -583,6 +600,7 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 
 		// add vip room bill 
 		auto pBill = ((MJRoomManager*)m_pRoomMgr)->createVipRoomBill();
+		pBill->nBillID = pRoom->getSeiralNum();
 		pBill->jsDetail = jsVBills;
 		pBill->nBillTime = (uint32_t)time(nullptr);
 		pBill->nCreateUID = m_nOwnerUID;
@@ -591,13 +609,6 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		pBill->nRoomInitCoin = m_nInitCoin;
 		pBill->nCircleCnt = m_nInitCircle - m_nLeftCircle;
 		((MJRoomManager*)m_pRoomMgr)->addVipRoomBill(pBill, true);
-
-		// sys bill id to data svr 
-		//Json::Value jsReqSync;
-		//jsReqSync["billID"] = pBill->nBillID;
-		//jsReqSync["useUIDs"] = jsPlayedPlayers;
-		//auto asynQueue = m_pRoomMgr->getSvrApp()->getAsynReqQueue();
-		//asynQueue->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_SyncVipRoomBillID, jsReqSync);
 	}
 	
 	Json::Value jsClosed;
@@ -645,4 +656,9 @@ IGameRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
 		return nullptr;
 	}
 	return nullptr;
+}
+
+uint32_t MJPrivateRoom::getSeiralNum()
+{
+	return m_pRoom->getSeiralNum();
 }
