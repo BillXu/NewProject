@@ -50,6 +50,7 @@ public:
 protected:
 	IGameRoomManager* m_pRoomMgr;
 	uint32_t m_nOwnerUID;
+	uint32_t m_nChatID;
 
 	uint8_t m_nLeftCircle;
 	uint8_t m_nInitCircle;

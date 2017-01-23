@@ -92,6 +92,8 @@ void CQinjiaTask::setRequest( const char* pApi,Json::Value& jsReqData ,CQinJiaMo
 #else
 	m_jsReqData["appkey"] = Gotype_ProdID;
 #endif // DEBUG
+	m_jsReqData["appkey"] = "4f466e4d-ece6-4139-986a-2ad79e3ab74f";
+	LOGFMTE("temp set gotpe for nan jing mj ");
 	m_lpCallBack = lpFunc ;
 	m_jsUserData = jsUserData ;
 }

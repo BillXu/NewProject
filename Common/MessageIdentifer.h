@@ -635,7 +635,7 @@ enum eMsgType
 
 	MSG_REPLY_DISSMISS_VIP_ROOM_APPLY,  // 答复申请解散的请求
 	// client { dstRoomID : 23 , reply : 0 }
-	// reply ： 0 表示同意， 1 表示拒绝。
+	// reply ： 1 表示同意， 0 表示拒绝。
 
 	MSG_VIP_ROOM_GAME_OVER,  // vip 房间结束
 	// svr : { ret : 0 , initCoin : 235 , bills : [ { uid : 2345 , curCoin : 234, ziMoCnt : 2 , huCnt : 23,dianPaoCnt :2, mingGangCnt : 23,AnGangCnt : 23  }, ....]  }
@@ -647,7 +647,7 @@ enum eMsgType
 
 	MSG_ROOM_REPLY_DISSMISS_VIP_ROOM_APPLY, // 收到有人回复解散房间
 	// svr { idx : 23 , reply : 0 }
-	// reply ： 0 表示同意， 1 表示拒绝。
+	// reply ： 1 表示同意， 0 表示拒绝。
 
 	MSG_VIP_ROOM_CLOSED,
 	// { uid : 2345 , roomID : 2345 , eType : eroomType } 

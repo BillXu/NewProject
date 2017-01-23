@@ -25,6 +25,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	m_nInitCircle = vJsValue["circle"].asUInt();
 	m_nLeftCircle = m_nInitCircle ;
 	m_nInitCoin = vJsValue["initCoin"].asUInt();
+	m_nChatID = vJsValue["chatRoomID"].asUInt();
 	memset(&m_stConfig, 0, sizeof(m_stConfig));
 	m_stConfig.nConfigID = 0;
 	m_stConfig.nBaseBet = 1;//;vJsValue["baseBet"].asUInt();
@@ -244,7 +245,7 @@ bool MJPrivateRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSe
 			return true;
 		}
 
-		m_mapRecievedReply[pp->getUID()] = 0;
+		m_mapRecievedReply[pp->getUID()] = 1;
 		if (m_bWaitDismissReply)
 		{
 			LOGFMTE("already waiting reply %u why you go on apply ?", pp->getUID() );
@@ -347,6 +348,7 @@ void MJPrivateRoom::sendRoomInfo(uint32_t nSessionID)
 	jsMsg["initCoin"] = m_nInitCoin;
 	jsMsg["initCircle"] = m_nInitCircle;
 	jsMsg["roomType"] = m_pRoom->getRoomType();
+	jsMsg["chatID"] = m_nChatID;
 	// is waiting vote dismiss room ;
 	jsMsg["isWaitingDismiss"] = m_bWaitDismissReply ? 1 : 0;
 	int32_t nLeftSec = 0;
@@ -387,11 +389,31 @@ void MJPrivateRoom::sendRoomInfo(uint32_t nSessionID)
 
 void MJPrivateRoom::onCheckDismissReply(bool bTimerOut)
 {
+	auto pRoom = (IMJRoom*)m_pRoom;
+	bool bNotOpen = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady);
+	if (bNotOpen)
+	{
+		auto iter = m_mapRecievedReply.find(m_nOwnerUID);
+		if (iter != m_mapRecievedReply.end())
+		{
+			if (iter->second == 0)
+			{
+				onRoomGameOver(true);
+				m_mapRecievedReply.clear();
+				m_bWaitDismissReply = false;
+				m_tWaitRepklyTimer.canncel();
+				LOGFMTD("room id = %u room owner dismiss room when not open direct dissmiss ", getRoomID());
+				return;
+			}
+		}
+	}
+
+	// normal tou piao 
 	uint8_t nAgreeCnt = 0;
 	uint8_t nDisAgreeCnt = 0;
 	for (auto& ref : m_mapRecievedReply)
 	{
-		if (ref.second)
+		if ( ref.second == 0 )
 		{
 			++nDisAgreeCnt;
 		}
@@ -402,7 +424,6 @@ void MJPrivateRoom::onCheckDismissReply(bool bTimerOut)
 	}
 
 	uint8_t nSeatCnt = ((IMJRoom*)m_pRoom)->getSeatCnt();
-	auto pRoom = (IMJRoom*)m_pRoom;
 	for (uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx)
 	{
 		auto pp = pRoom->getMJPlayerByIdx(nIdx);
