@@ -37,7 +37,7 @@ bool CServerNetwork::StartupNetwork( unsigned short nPort , int nMaxInComming ,c
 		ShutDown();
 	}
 
-	m_pNetPeer = new CServerNetworkImp;
+	m_pNetPeer = new CServerNetworkImp();
 	if (  !m_pNetPeer->init(nPort))
 	{
 		printf( "Can not Start ServerNetwork \n" );

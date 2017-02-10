@@ -67,4 +67,8 @@ private:
 	char m_pSendBuffer[MAX_MSG_BUFFER_LEN] ;
 
 	std::map<uint16_t,IGlobalModule*> m_vAllModule ;
+
+	uint32_t m_nFrameCnt;
+	float m_fFrameTicket;
+	float m_fOutputfpsTickt;
 };

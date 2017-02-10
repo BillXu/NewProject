@@ -775,6 +775,10 @@ void IMJRoom::onPlayerMo(uint8_t nIdx)
 	}
 
 	auto nNewCard = getMJPoker()->distributeOneCard();
+	if (nNewCard == 0)
+	{
+		Assert(0,"invlid card" );
+	}
 	pPlayer->getPlayerCard()->onMoCard(nNewCard);
 	pPlayer->clearGangFlag();
 	pPlayer->clearDecareBuGangFlag();
@@ -1033,6 +1037,10 @@ void IMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::v
 			jsActs[jsActs.size()] = eMJAct_Pass;
 		}
 
+		if ( jsActs.size() == 0 )
+		{
+			continue;
+		}
 		jsMsg["acts"] = jsActs;
 		sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_ABOUT_OTHER_CARD, ref->getSessionID());
 		LOGFMTD("inform uid = %u act about other card room id = %u card = %u", ref->getUID(), getRoomID(),nCard );

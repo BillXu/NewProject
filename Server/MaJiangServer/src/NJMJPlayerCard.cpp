@@ -583,9 +583,13 @@ bool NJMJPlayerCard::checkHunYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nHu
 		}
 	}
 
-	vHuTypes.push_back(eFanxing_HunYiSe);
-	nHuaCnt += 30;
-	return true;
+	if (bFindFeng)
+	{
+		vHuTypes.push_back(eFanxing_HunYiSe);
+		nHuaCnt += 30;
+	}
+
+	return bFindFeng;
 }
 
 bool NJMJPlayerCard::checkMenQing(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt)

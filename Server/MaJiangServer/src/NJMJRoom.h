@@ -77,6 +77,7 @@ public:
 	bool onPlayerApplyLeave(uint32_t nPlayerUID)override;
 	uint8_t getRoomType()override { return eRoom_MJ_NanJing; }
 	void sendPlayersCardInfo(uint32_t nSessionID)override;
+	bool isInternalShouldClosedAll()override;
 protected:
 	void getSubRoomInfo(Json::Value& jsSubInfo)override;
 	void addSettle(stSettle& tSettle );
@@ -84,6 +85,7 @@ protected:
 	void settleInfoToJson(Json::Value& jsInfo);
 	void packStartGameMsg(Json::Value& jsMsg)override;
 	bool isHuaZa(){ return m_isEnableHuaZa; }
+	bool isKuaiChong(){ return m_isKuaiChong; }
 protected:
 	stChuedCards m_tChuedCards;
 	std::vector<stSettle> m_vSettle;
@@ -93,4 +95,8 @@ protected:
 	bool m_isEnableBixiaHu;
 	bool m_isEnableHuaZa;
 	CMJCard m_tPoker;
+
+	bool m_isKuaiChong;
+	uint32_t m_nInitKuaiChongPool;
+	uint32_t m_nKuaiChongPool;
 };

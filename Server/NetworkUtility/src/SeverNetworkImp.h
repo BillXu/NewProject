@@ -7,6 +7,7 @@
 #include <map>
 #include <list>
 #include <boost/thread.hpp>
+#include "../../ServerCommon/log4z.h"
 using boost::asio::ip::tcp;  
 class CSession;
 class CServerNetworkImp

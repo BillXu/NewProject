@@ -30,6 +30,7 @@ public:
 	void setDelegate(IMJRoomDelegate* pDelegate){ m_pDelegate = pDelegate; }
 	IMJRoomDelegate* getDelegate(){ return m_pDelegate; }
 	bool isWaitPlayerActForever(){ return getDelegate() != nullptr; }
+	bool isInternalShouldClosedAll()override{ return false; }
 protected:
 	virtual void sendPlayersCardInfo(uint32_t nSessionID );
 	virtual void getSubRoomInfo(Json::Value& jsSubInfo){};

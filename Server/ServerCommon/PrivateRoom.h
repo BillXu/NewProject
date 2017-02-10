@@ -156,6 +156,17 @@ public:
 	void sendRoomInfo(uint32_t nSessionID );
 	uint32_t getCardNeed()
 	{
+		auto t = time(nullptr);
+		struct tm tt;
+		auto tr = localtime_s(&tt,&t);
+		if ((tt.tm_mday >= 27 && tt.tm_mon == 0) || (tt.tm_mday <= 3 && tt.tm_mon == 1))
+		{
+			if (tt.tm_hour >= 8 && tt.tm_hour <= 12)
+			{
+				LOGFMTD("temp free for room card id = %u",getRoomID());
+				return 0;
+			}
+		}
 #ifndef GAME_365
 		return (( m_nDuringSeconds / 60 / 15 ) ) ;
 #else
@@ -1531,7 +1542,7 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	jsMsgRoomInfo["seatCnt"] = (uint8_t)pRoom->getSeatCount();
 	jsMsgRoomInfo["chatID"] = pRoom->getChatRoomID();
 	jsMsgRoomInfo["curState"] = getRoomState();
-	jsMsgRoomInfo["cardNeed"] = getCardNeed(); ;
+	jsMsgRoomInfo["cardNeed"] =( (uint32_t)m_nDuringSeconds) / 10; ///getCardNeed(); 
 	LOGFMTD("card need = %u",getCardNeed());
 	if ( getRoomState() == eRoomState_Opening )
 	{

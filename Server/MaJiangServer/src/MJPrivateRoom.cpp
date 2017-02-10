@@ -501,8 +501,8 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 	{
 		m_bComsumedRoomCards = true;
 		// comsum room card ;
-		uint16_t nCardCnt = m_nLeftCircle / ROOM_CIRCLES_PER_VIP_ROOM_CARDS;
-		LOGFMTD("send msg to consumed vip room card");
+		uint16_t nCardCnt = m_nInitCircle * 2;
+		LOGFMTD("send msg to consumed vip room card = %u",nCardCnt);
 		Json::Value jsConsumed;
 		jsConsumed["cardCnt"] = nCardCnt;
 		jsConsumed["uid"] = m_nOwnerUID;
@@ -512,7 +512,7 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 	// decrease circle ;
 	std::vector<uint8_t> vLoseOver;
 	--m_nLeftCircle;
-	if (m_nLeftCircle > 0 )
+	if (m_nLeftCircle > 0 && m_pRoom->isInternalShouldClosedAll() == false )
 	{
 		LOGFMTD("vip room not over , leftCircle = %u ", m_nLeftCircle );
 		return;

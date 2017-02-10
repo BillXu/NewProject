@@ -316,7 +316,20 @@ bool CPlayerManager::onMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort
 		return true;
 	}
 
-	CPlayer* pTargetPlayer = GetPlayerBySessionID(nSessionID,true );
+	CPlayer* pTargetPlayer = nullptr;
+	if (MSG_CONSUM_VIP_ROOM_CARDS == nmsgType)
+	{
+		pTargetPlayer = GetPlayerByUserUID(recvValue["uid"].asUInt());
+	}
+	else if (MSG_VIP_ROOM_CLOSED == nmsgType)
+	{
+		pTargetPlayer = GetPlayerByUserUID(recvValue["uid"].asUInt());
+	}
+	else
+	{
+		pTargetPlayer = GetPlayerBySessionID(nSessionID, true);
+	}
+
 	if ( pTargetPlayer && pTargetPlayer->OnMessage(recvValue,nmsgType,eSenderPort ) )
 	{
 		if (pTargetPlayer->IsState(CPlayer::ePlayerState_Offline) )

@@ -23,6 +23,10 @@ bool IServerApp::init()
 
 	m_fReconnectTick = 0 ;
 
+	m_nFrameCnt = 0;
+	m_fFrameTicket = 0;
+	m_fOutputfpsTickt = 0;
+
 	for ( uint16_t nIdx = eDefMod_None ; nIdx < eDefMod_Max ;  ++nIdx )
 	{
 		installModule(nIdx);
@@ -358,6 +362,26 @@ void IServerApp::update(float fDeta )
 	for ( auto pp : m_vAllModule )
 	{
 		pp.second->update(fDeta);
+	}
+
+	// caculate fps 
+	++m_nFrameCnt;
+	m_fFrameTicket += fDeta;
+	m_fOutputfpsTickt += fDeta;
+	if (m_fFrameTicket >= 1.0f)
+	{
+		if ( m_fOutputfpsTickt > 50 )
+		{
+			LOGFMTD("FPS : %u\n", m_nFrameCnt);
+			m_fOutputfpsTickt = 0;
+		}
+		else
+		{
+			printf("FPS : %u\n", m_nFrameCnt);
+		}
+		
+		m_nFrameCnt = 0;
+		m_fFrameTicket -= 1.0;
 	}
 }
 

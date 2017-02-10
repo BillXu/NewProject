@@ -8,7 +8,10 @@
 #include "ServerMessageDefine.h"
 #include "ServerNetwork.h"
 #include <time.h>
-#define TIME_WAIT_FOR_RECONNECTE 1*60
+#define TIME_WAIT_FOR_RECONNECTE 20*60
+#ifdef _DEBUG
+#define TIME_WAIT_FOR_RECONNECTE 50
+#endif
 CGateClientMgr::CGateClientMgr()
 {
 	m_vNetWorkIDGateClientIdx.clear();
@@ -178,7 +181,7 @@ void CGateClientMgr::OnServerMsg( const char* pRealMsgData, uint16_t nDataLen,ui
 
 	if ( pClient->tTimeForRemove )
 	{
-		LOGFMTD("client is waiting for reconnected session id = %d, msg = %d",uTargetSessionID,pReal->usMsgType) ;
+		//LOGFMTD("client is waiting for reconnected session id = %d, msg = %d",uTargetSessionID,pReal->usMsgType) ;
 		return ;
 	}
 

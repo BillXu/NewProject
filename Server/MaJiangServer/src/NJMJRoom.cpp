@@ -26,6 +26,9 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_isBankerHu = false;
 	m_isEnableBixiaHu = false;
 	m_isEnableHuaZa = false ;
+	m_isKuaiChong = false;
+	m_nKuaiChongPool = 0;
+	m_nInitKuaiChongPool = 0;
 	m_vSettle.clear();
 	m_tChuedCards.clear();
 	if (vJsValue["isHuaZa"].isNull() || vJsValue["isHuaZa"].isUInt() == false)
@@ -44,6 +47,28 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	else
 	{
 		m_isEnableBixiaHu = vJsValue["isBiXiaHu"].asUInt() == 0 ? false : true;
+	}
+
+	if ( vJsValue["isKuaiChong"].isNull() || vJsValue["isKuaiChong"].isUInt() == false)
+	{
+		LOGFMTE("argument is not proper room id = %u , isKuaiChong  ? ", getRoomID());
+	}
+	else
+	{
+		m_isKuaiChong = vJsValue["isKuaiChong"].asUInt() == 0 ? false : true;
+	}
+
+	if ( m_isKuaiChong )
+	{
+		if (vJsValue["kuaiChongCoin"].isNull() || vJsValue["kuaiChongCoin"].isUInt() == false)
+		{
+			LOGFMTE("argument is not proper room id = %u , kuaiChongCoin  ? ", getRoomID());
+		}
+		else
+		{
+			m_nKuaiChongPool = vJsValue["kuaiChongCoin"].asUInt();
+			m_nInitKuaiChongPool = m_nKuaiChongPool;
+		}
 	}
 
 	m_tPoker.initAllCard(eMJ_NanJing);
@@ -122,7 +147,14 @@ void NJMJRoom::startGame()
 void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
 {
 	jsSubInfo["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
+	jsSubInfo["isRoomBiXiaHu"] = m_isBiXiaHu ? 1 : 0;
 	jsSubInfo["isHuaZa"] = m_isEnableHuaZa ? 1 : 0;
+	jsSubInfo["isKuaiChong"] = isKuaiChong() ? 1 : 0;
+	if (isKuaiChong())
+	{
+		jsSubInfo["kuaiChongCoin"] = m_nInitKuaiChongPool;
+		jsSubInfo["curKuaiChongCoin"] = m_nKuaiChongPool;
+	}
 }
 
 void NJMJRoom::onGameDidEnd()
@@ -149,6 +181,7 @@ void NJMJRoom::onGameEnd()
 		{
 			js["idx"] = ref->getIdx();
 			js["offset"] = ref->getOffsetCoin();
+			js["final"] = ref->getCoin();
 			jsDetial[jsDetial.size()] = js;
 		}
 
@@ -190,12 +223,20 @@ bool NJMJRoom::isGameOver()
 {
 	if ( IMJRoom::isGameOver() )
 	{
-		return false;
+		return true;
 	}
 
 	for (auto& ref : m_vMJPlayers)
 	{
 		if (ref && ref->haveState(eRoomPeer_AlreadyHu))
+		{
+			return true;
+		}
+	}
+
+	if (isKuaiChong())
+	{
+		if (m_nKuaiChongPool <= 0)
 		{
 			return true;
 		}
@@ -260,12 +301,25 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 
 		auto pPlayer = getMJPlayerByIdx(nCheckIdx);
 		uint16_t nLose = nLosePerPlayer;
-		if (pPlayer->getCoin() < nLose)
+		if (isKuaiChong())
 		{
-			nLose = pPlayer->getCoin();
+			if (m_nKuaiChongPool < nLose)
+			{
+				nLose = m_nKuaiChongPool;
+			}
+
+			m_nKuaiChongPool -= nLose;
+			st.addLose(nCheckIdx, 0);
 		}
-		pPlayer->addOffsetCoin(-1 * (int32_t)nLose);
-		st.addLose(nCheckIdx, nLose);
+		else
+		{
+			if (pPlayer->getCoin() < nLose)
+			{
+				nLose = pPlayer->getCoin();
+			}
+			pPlayer->addOffsetCoin(-1 * (int32_t)nLose);
+			st.addLose(nCheckIdx, nLose);
+		}
 		nWin += nLose;
 	}
 
@@ -294,14 +348,27 @@ void NJMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	// do cacualte ;
 	stSettle st;
 	st.eSettleReason = eMJAct_MingGang;
-	uint16_t nLose = MING_GANG_COIN_BASE;
-	if (nLose > pInvokerPlayer->getCoin())
+	uint16_t nLose = MING_GANG_COIN_BASE * (isBiXiaHu() ? 2 : 1);
+	if (isKuaiChong())
 	{
-		nLose = pInvokerPlayer->getCoin();
-	}
+		if (nLose > m_nKuaiChongPool )
+		{
+			nLose = m_nKuaiChongPool;
+		}
 
-	pInvokerPlayer->addOffsetCoin(-1 * (int32_t)nLose);
-	st.addLose(nInvokeIdx,nLose);
+		m_nKuaiChongPool -= nLose;
+		st.addLose(nInvokeIdx, 0);
+	}
+	else
+	{
+		if (nLose > pInvokerPlayer->getCoin())
+		{
+			nLose = pInvokerPlayer->getCoin();
+		}
+
+		pInvokerPlayer->addOffsetCoin(-1 * (int32_t)nLose);
+		st.addLose(nInvokeIdx, nLose);
+	}
 
 	pActPlayer->addOffsetCoin(nLose);
 	st.addWin(nIdx,nLose);
@@ -326,12 +393,26 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 
 		auto pPlayer = getMJPlayerByIdx(nCheckIdx);
 		uint16_t nLose = nLosePerPlayer;
-		if (pPlayer->getCoin() < nLose)
+
+		if (isKuaiChong())
 		{
-			nLose = pPlayer->getCoin();
+			if (nLose > m_nKuaiChongPool)
+			{
+				nLose = m_nKuaiChongPool;
+			}
+
+			m_nKuaiChongPool -= nLose;
+			st.addLose(nCheckIdx, 0);
 		}
-		pPlayer->addOffsetCoin( -1 * (int32_t)nLose);
-		st.addLose(nCheckIdx,nLose);
+		else
+		{
+			if (pPlayer->getCoin() < nLose)
+			{
+				nLose = pPlayer->getCoin();
+			}
+			pPlayer->addOffsetCoin(-1 * (int32_t)nLose);
+			st.addLose(nCheckIdx, nLose);
+		}
 		nWin += nLose;
 	}
 	
@@ -359,14 +440,28 @@ void NJMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 	// do cacualte ;
 	stSettle st;
 	st.eSettleReason = eMJAct_BuGang;
-	uint16_t nLose = MING_GANG_COIN_BASE;
-	if (nLose > pInvokerPlayer->getCoin())
+	uint16_t nLose = MING_GANG_COIN_BASE * (isBiXiaHu() ? 2 : 1);
+	if (isKuaiChong())
 	{
-		nLose = pInvokerPlayer->getCoin();
+		if (nLose > m_nKuaiChongPool)
+		{
+			nLose = m_nKuaiChongPool;
+		}
+
+		m_nKuaiChongPool -= nLose;
+		st.addLose(nInvokeIdx, 0);
+	}
+	else
+	{
+		if (nLose > pInvokerPlayer->getCoin())
+		{
+			nLose = pInvokerPlayer->getCoin();
+		}
+
+		pInvokerPlayer->addOffsetCoin(-1 * (int32_t)nLose);
+		st.addLose(nInvokeIdx, nLose);
 	}
 
-	pInvokerPlayer->addOffsetCoin(-1 * (int32_t)nLose);
-	st.addLose(nInvokeIdx, nLose);
 
 	pActPlayer->addOffsetCoin(nLose);
 	st.addWin(nIdx, nLose);
@@ -424,6 +519,7 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 	bool isZiMo = vHuIdx.front() == nInvokeIdx;
 	jsMsg["isZiMo"] = isZiMo ? 1 : 0;
 	jsMsg["realTimeCal"] = jsRealTime;
+	jsMsg["huCard"] = nCard;
 	if (isZiMo)
 	{
 		onPlayerZiMo(nInvokeIdx, nCard, jsDetail);
@@ -451,7 +547,27 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 	pLosePlayer->addDianPaoCnt();
 	Json::Value jsHuPlayers;
 	uint32_t nTotalLose = 0;
-	for ( auto& nHuIdx : vHuIdx)
+	// adjust caculate order 
+	std::vector<uint8_t> vOrderHu;
+	if (vHuIdx.size() > 1)
+	{
+		for (uint8_t offset = 1; offset <= 3; ++offset)
+		{
+			auto nCheckIdx = nInvokeIdx + offset;
+			nCheckIdx = nCheckIdx % 4;
+			auto iter = std::find(vHuIdx.begin(), vHuIdx.end(), nCheckIdx);
+			if (iter != vHuIdx.end())
+			{
+				vOrderHu.push_back(nCheckIdx);
+			}
+		}
+	}
+	else
+	{
+		vOrderHu.swap(vHuIdx);
+	}
+
+	for (auto& nHuIdx : vOrderHu)
 	{
 		auto pHuPlayer = getMJPlayerByIdx(nHuIdx);
 		if (pHuPlayer == nullptr)
@@ -514,11 +630,25 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		{
 			m_isWillBiXiaHu = true;
 			auto pPlayerBao = getMJPlayerByIdx(nBaoPaiIdx);
-			if (nAllHuaCnt > pPlayerBao->getCoin())
+
+			if (isKuaiChong())
 			{
-				nAllHuaCnt = pPlayerBao->getCoin();
+				if (nAllHuaCnt > m_nKuaiChongPool)
+				{
+					nAllHuaCnt = m_nKuaiChongPool;
+				}
+
+				m_nKuaiChongPool -= nAllHuaCnt;
 			}
-			pPlayerBao->addOffsetCoin(-1 * (int32_t)nAllHuaCnt);
+			else
+			{
+				if (nAllHuaCnt > pPlayerBao->getCoin())
+				{
+					nAllHuaCnt = pPlayerBao->getCoin();
+				}
+				pPlayerBao->addOffsetCoin(-1 * (int32_t)nAllHuaCnt);
+			}
+
 			if (nBaoPaiIdx == pLosePlayer->getIdx())
 			{
 				nTotalLose += nAllHuaCnt;
@@ -528,11 +658,24 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		}
 		else
 		{
-			if (nAllHuaCnt > pLosePlayer->getCoin())
+			if (isKuaiChong())
 			{
-				nAllHuaCnt = pLosePlayer->getCoin();
+				if (nAllHuaCnt > m_nKuaiChongPool)
+				{
+					nAllHuaCnt = m_nKuaiChongPool;
+				}
+
+				m_nKuaiChongPool -= nAllHuaCnt;
 			}
-			pLosePlayer->addOffsetCoin(-1 * (int32_t)nAllHuaCnt);
+			else
+			{
+				if (nAllHuaCnt > pLosePlayer->getCoin())
+				{
+					nAllHuaCnt = pLosePlayer->getCoin();
+				}
+				pLosePlayer->addOffsetCoin(-1 * (int32_t)nAllHuaCnt);
+			}
+
 			nTotalLose += nAllHuaCnt;
 		}
 	
@@ -591,17 +734,18 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	jsDetail["vhuTypes"] = jsHuTyps;
 
 	jsDetail["huardSoftHua"] = nHardSoftHua;
-	jsDetail["isGangKai"] = 0;
+	jsDetail["gangKaiCoin"] = 0;
 	// xiao gang kai hua 
 	if (pZiMoPlayer->haveBuHuaFlag())
 	{
 		nHuHuaCnt += 10;
+		jsDetail["gangKaiCoin"] = 10;
 	}
 	else if (pZiMoPlayer->haveHuaGangFlag() || pZiMoPlayer->haveGangFalg())
 	{
 		nHuHuaCnt += 20;
 		m_isWillBiXiaHu = true;
-		jsDetail["isGangKai"] = 1;
+		jsDetail["gangKaiCoin"] = 20;
 	}
 
 	// check da hu for will bi xia hu 
@@ -636,11 +780,25 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	{
 		nTotalWin = nAllHuaCnt * 3; // bao pai 
 		auto pPlayerBao = getMJPlayerByIdx(nBaoPaiIdx);
-		if (nTotalWin > pPlayerBao->getCoin())
+
+		if (isKuaiChong())
 		{
-			nTotalWin = pPlayerBao->getCoin();
+			if (nTotalWin > m_nKuaiChongPool )
+			{
+				nTotalWin = m_nKuaiChongPool;
+			}
+			m_nKuaiChongPool -= nTotalWin;
 		}
-		pPlayerBao->addOffsetCoin( -1 * (int32_t)nTotalWin );
+		else
+		{
+			if (nTotalWin > pPlayerBao->getCoin())
+			{
+				nTotalWin = pPlayerBao->getCoin();
+			}
+			pPlayerBao->addOffsetCoin(-1 * (int32_t)nTotalWin);
+		}
+
+
 		LOGFMTD("room id = %u uid = %u bao pai winer", getRoomID(), pPlayerBao->getUID());
 		m_isWillBiXiaHu = true;
 		jsDetail["baoPaiIdx"] = nBaoPaiIdx;
@@ -650,14 +808,32 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		Json::Value jsVLoses;
 		for (auto& pLosePlayer : m_vMJPlayers)
 		{
-			auto nKouHua = nAllHuaCnt;
-			if (nKouHua > pLosePlayer->getCoin())
+			if (pLosePlayer == pZiMoPlayer)
 			{
-				nKouHua = pLosePlayer->getCoin();
+				continue;
 			}
 
+			auto nKouHua = nAllHuaCnt;
+
+			if (isKuaiChong())
+			{
+				if (nKouHua > m_nKuaiChongPool)
+				{
+					nKouHua = m_nKuaiChongPool;
+				}
+				m_nKuaiChongPool -= nKouHua;
+			}
+			else
+			{
+				if (nKouHua > pLosePlayer->getCoin())
+				{
+					nKouHua = pLosePlayer->getCoin();
+				}
+				pLosePlayer->addOffsetCoin(-1 * (int32_t)nKouHua);
+			}
+
+
 			nTotalWin += nKouHua;
-			pLosePlayer->addOffsetCoin(-1 * (int32_t)nKouHua);
 			Json::Value jsLose;
 			jsLose["loseCoin"] = nKouHua;
 			jsLose["idx"] = pLosePlayer->getIdx();
@@ -740,6 +916,27 @@ void NJMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 	LOGFMTD("send player card infos !");
 }
 
+bool NJMJRoom::isInternalShouldClosedAll()
+{
+	// kuai chong chi wei 0 ;
+	if ( isKuaiChong() )
+	{
+		return m_nKuaiChongPool <= 0 ;
+	}
+
+	// si ge ren jin yuanzi 
+	uint8_t nCnt = 0;
+	for (auto& player : m_vMJPlayers)
+	{
+		if (player->getCoin() <= 0)
+		{
+			++nCnt;
+		}
+	}
+
+	return nCnt >= 2;
+}
+
 void NJMJRoom::addSettle(stSettle& tSettle)
 {
 	m_vSettle.push_back(tSettle);
@@ -765,7 +962,7 @@ void NJMJRoom::addSettle(stSettle& tSettle)
 		js["offset"] = ref.second;
 		jsLose[jsLose.size()] = js;
 	}
-	jsMsg["winers"] = jsLose;
+	jsMsg["loserIdxs"] = jsLose;
 
 	sendRoomMsg(jsMsg, MSG_ROOM_NJ_REAL_TIME_SETTLE);
 }
@@ -780,6 +977,7 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	if ( m_tChuedCards.isInvokerFanQian(nFanQianTarget) )
 	{
 		nSettleType = eMJAct_Followed;
+		LOGFMTD("room id = %u gen feng fa qian , card = %u , idx = %u",getRoomID(),nCard,nIdx );
 	}
 	else
 	{
@@ -792,6 +990,8 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 
 		nFanQianTarget = nIdx;
 		nSettleType = eMJAct_Chu;
+
+		LOGFMTD("room id = %u chu 4 ge pai , card = %u , idx = %u", getRoomID(), nCard, nIdx);
 	}
 
 	if ((uint8_t)-1 == nFanQianTarget)
@@ -805,13 +1005,26 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	uint8_t nNeedAllCoin = PUNISH_COIN_BASE * 3 * (isBiXiaHu() ? 2 : 1 );
 	uint8_t nPerPlayer = PUNISH_COIN_BASE * (isBiXiaHu() ? 2 : 1 );
 	uint8_t nLingTou = 0;
-	if (nNeedAllCoin > pLosePlayer->getCoin())
+	if (isKuaiChong())
 	{
-		nPerPlayer = pLosePlayer->getCoin()  / 3;
-		nLingTou = pLosePlayer->getCoin() - nPerPlayer * 3;
-		nNeedAllCoin = pLosePlayer->getCoin();
+		if (nNeedAllCoin > m_nKuaiChongPool )
+		{
+			nPerPlayer = m_nKuaiChongPool / 3;
+			nLingTou = m_nKuaiChongPool - nPerPlayer * 3;
+			nNeedAllCoin = m_nKuaiChongPool;
+		}
+		m_nKuaiChongPool -= nNeedAllCoin;
 	}
-	pLosePlayer->addOffsetCoin(-1 * (int32_t)nNeedAllCoin);
+	else
+	{
+		if (nNeedAllCoin > pLosePlayer->getCoin())
+		{
+			nPerPlayer = pLosePlayer->getCoin() / 3;
+			nLingTou = pLosePlayer->getCoin() - nPerPlayer * 3;
+			nNeedAllCoin = pLosePlayer->getCoin();
+		}
+		pLosePlayer->addOffsetCoin(-1 * (int32_t)nNeedAllCoin);
+	}
 
 	stSettle st;
 	st.eSettleReason = (eMJActType)nSettleType;
