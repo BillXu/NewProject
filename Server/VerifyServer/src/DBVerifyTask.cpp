@@ -3,6 +3,7 @@
 #include "ServerConfig.h"
 #include "DBTask.h"
 #include "DBRequest.h"
+#include "../ServerCommon/ConfigDefine.h"
 CDBVerfiyTask::CDBVerfiyTask(uint32_t nTaskID )
 	:IVerifyTask(nTaskID),m_pDBTask(nullptr)
 {
@@ -10,7 +11,7 @@ CDBVerfiyTask::CDBVerfiyTask(uint32_t nTaskID )
 	stSvrConfigMgr.LoadFile("../configFile/serverConfig.txt");
 	// set up data base thread 
 	stServerConfig* pDatabase = stSvrConfigMgr.GetServerConfig(eSvrType_DataBase);
-	m_pDBTask = std::shared_ptr<CDBTask> ( new CDBTask( nTaskID,pDatabase->strIPAddress,pDatabase->nPort,pDatabase->strAccount,pDatabase->strPassword,"taxpokerdb") );
+	m_pDBTask = std::shared_ptr<CDBTask>(new CDBTask(nTaskID, pDatabase->strIPAddress, pDatabase->nPort, pDatabase->strAccount, pDatabase->strPassword, Game_DB_Name));
 }
 
 uint8_t CDBVerfiyTask::performTask()

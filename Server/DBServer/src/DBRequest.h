@@ -1,6 +1,6 @@
 #pragma once 
 #ifndef Max_Sql_String
-#define Max_Sql_String 1024*4 
+#define Max_Sql_String 1024*6 
 #endif 
 #include "MySqlData.h"
 #include <vector>

@@ -29,4 +29,5 @@ public:
 	virtual void sendRoomInfo(uint32_t nSessionID) = 0;
 	virtual uint32_t getCoinNeedToSitDown() = 0;
 	virtual bool isInternalShouldClosedAll() = 0;
+	virtual bool isOneCirleEnd() = 0;
 };

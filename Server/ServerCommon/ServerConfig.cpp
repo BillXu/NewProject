@@ -23,7 +23,7 @@ bool CSeverConfigMgr::OnPaser(CReaderRow& refReaderRow )
 	memset(&configItem,0,sizeof(configItem));
 	configItem.nPort = refReaderRow["svrPort"]->IntValue();
 	configItem.nSvrType = cSvrType;
-	if (strlen(refReaderRow["svrIP"]->StringValue().c_str()) >= 16 )
+	if (strlen(refReaderRow["svrIP"]->StringValue().c_str()) >= 261 )
 	{
 		LOGFMTE("too long ip address = %s",refReaderRow["svrIP"]->StringValue().c_str()) ;
 		return false ;

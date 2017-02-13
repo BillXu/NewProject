@@ -85,6 +85,7 @@ public:
 	virtual bool isCanGoOnMoPai();
 	virtual IMJPlayer* doCreateMJPlayer() = 0;
 	virtual IMJPoker* getMJPoker() = 0;
+	bool isOneCirleEnd()override{ return true; }
 	IGameRoomManager* getRoomMgr(){ return m_pRoomMgr; }
 	IMJRoomState* getCurRoomState(){ return m_pCurState; }
 	uint32_t getCoinNeedToSitDown();

@@ -47,7 +47,8 @@ public:
 	void onDidGameOver(IMJRoom* pRoom);
 	void onRoomGameOver(bool isDismissed);
 	uint32_t getSeiralNum()final;
-	bool isInternalShouldClosedAll(void)override{ return false; }
+	bool isInternalShouldClosedAll(void)override{ return m_pRoom->isInternalShouldClosedAll(); }
+	bool isOneCirleEnd()override{ return m_pRoom->isOneCirleEnd(); }
 protected:
 	IGameRoomManager* m_pRoomMgr;
 	uint32_t m_nOwnerUID;

@@ -511,7 +511,11 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 
 	// decrease circle ;
 	std::vector<uint8_t> vLoseOver;
-	--m_nLeftCircle;
+	if (m_pRoom->isOneCirleEnd())
+	{
+		--m_nLeftCircle;
+	}
+
 	if (m_nLeftCircle > 0 && m_pRoom->isInternalShouldClosedAll() == false )
 	{
 		LOGFMTD("vip room not over , leftCircle = %u ", m_nLeftCircle );

@@ -871,6 +871,14 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 {
 	switch ( nmsgType )
 	{
+	case MSG_CONSUM_VIP_ROOM_CARDS:
+	{
+		m_bMoneyDataDirty = true;
+		uint8_t nConsued = recvValue["cardCnt"].asUInt();
+		decressMoney(nConsued, true);
+		LOGFMTD("consumed vip room card = %u , uid = %u", nConsued, GetPlayer()->GetUserUID());
+	}
+	break;
 	default:
 		return false;
 	}

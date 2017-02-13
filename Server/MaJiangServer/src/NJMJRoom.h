@@ -39,7 +39,7 @@ public:
 				clear();
 			}
 
-			nChuCard = nCard;
+			nCard = nChuCard;
 			vFollowedIdxs.push_back(nIdx);
 		}
 
@@ -78,6 +78,7 @@ public:
 	uint8_t getRoomType()override { return eRoom_MJ_NanJing; }
 	void sendPlayersCardInfo(uint32_t nSessionID)override;
 	bool isInternalShouldClosedAll()override;
+	bool isOneCirleEnd()override;
 protected:
 	void getSubRoomInfo(Json::Value& jsSubInfo)override;
 	void addSettle(stSettle& tSettle );

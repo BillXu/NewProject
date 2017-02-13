@@ -51,12 +51,20 @@ public:
 			return;
 		}
 
-		// auto do hua gang , peng 
-		Json::Value jsAct;
-		jsAct["actType"] = ((NJMJRoom*)getRoom())->canPlayerCardHuaGang(m_nIdx, m_nHuaCard) ? eMJAct_HuaGang : eMJAct_BuHua;
-		jsAct["card"] = m_nHuaCard;
-		auto p = getRoom()->getMJPlayerByIdx(m_nIdx);
-		this->onMsg(jsAct, MSG_PLAYER_ACT, ID_MSG_PORT_CLIENT, p->getSessionID());
+		if (getRoom()->isCanGoOnMoPai())
+		{
+			// auto do hua gang , peng 
+			Json::Value jsAct;
+			jsAct["actType"] = ((NJMJRoom*)getRoom())->canPlayerCardHuaGang(m_nIdx, m_nHuaCard) ? eMJAct_HuaGang : eMJAct_BuHua;
+			jsAct["card"] = m_nHuaCard;
+			auto p = getRoom()->getMJPlayerByIdx(m_nIdx);
+			this->onMsg(jsAct, MSG_PLAYER_ACT, ID_MSG_PORT_CLIENT, p->getSessionID());
+		}
+		else
+		{
+			// game over ;
+			getRoom()->goToState(eRoomState_GameEnd);
+		}
 	}
 
 	bool onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)override

@@ -685,11 +685,11 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		jsHuPlayers[jsHuPlayers.size()] = jsHuPlayer;
 		
 		// check da hu for will bi xia hu 
-		if (m_isWillBiXiaHu == false && vType.size() == 1)
+		if (m_isWillBiXiaHu == false )
 		{
-			auto iterPing = std::find(vType.begin(), vType.end(), eFanxing_QingYiSe);
-			auto iterMengQing = std::find(vType.begin(), vType.end(), eFanxing_DuiDuiHu);
-			if (iterPing != vType.end() || iterMengQing != vType.end())
+			auto iterPing = std::find(vType.begin(), vType.end(), eFanxing_PingHu);
+			auto iterMengQing = std::find(vType.begin(), vType.end(), eFanxing_MengQing);
+			if (vType.size() == 1 && ( iterPing != vType.end() || iterMengQing != vType.end() ) )
 			{
 
 			}
@@ -937,6 +937,11 @@ bool NJMJRoom::isInternalShouldClosedAll()
 	return nCnt >= 2;
 }
 
+bool NJMJRoom::isOneCirleEnd()
+{
+	return ((3 == m_nBankerIdx) && (m_isBankerHu == false));
+}
+
 void NJMJRoom::addSettle(stSettle& tSettle)
 {
 	m_vSettle.push_back(tSettle);
@@ -955,7 +960,7 @@ void NJMJRoom::addSettle(stSettle& tSettle)
 	jsMsg["winers"] = jsWin;
 
 	Json::Value jsLose;
-	for (auto& ref : tSettle.vWinIdxs)
+	for (auto& ref : tSettle.vLoseIdx)
 	{
 		Json::Value js;
 		js["idx"] = ref.first;
@@ -983,7 +988,7 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	{
 		auto pChuPaiPlayer = getMJPlayerByIdx(nIdx);
 		auto pcard = (NJMJPlayerCard*)pChuPaiPlayer->getPlayerCard();
-		if (!pcard->isChued4Card(nIdx))
+		if (!pcard->isChued4Card(nCard))
 		{
 			return;
 		}

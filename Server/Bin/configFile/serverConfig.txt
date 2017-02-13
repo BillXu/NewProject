@@ -4,7 +4,7 @@ svrType	svrTips	svrIP	svrPort	password	account
 2	db	127.0.0.1	6000	0	0
 3	game	127.0.0.1	0	0	0
 4	verify	127.0.0.1	7000	0	0
-5	database	139.196.56.147	3306	123456	bill
+5	database	rm-uf644xv9j6813j4zwo.mysql.rds.aliyuncs.com	3306	Paiyouquan123	billadmin
 6	apns	139.196.56.147	8000	0	0
 7	logSvr	127.0.0.1	9000	123456	0
 8	logdataBase	127.0.0.1	3306	123456	root

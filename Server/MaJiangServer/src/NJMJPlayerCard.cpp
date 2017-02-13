@@ -452,13 +452,30 @@ bool NJMJPlayerCard::canCardHuaGang(uint8_t nCard)
 	}
 	else if (eCT_Hua == eType)
 	{
+		bool isXiaoYuSi = card_Value(nCard) <= 4;
 		uint8_t nHuaCnt = 0;
 		for (auto& ref : m_vBuHuaCard)
 		{
 			auto nt = card_Type(ref);
-			if ( nt == eCT_Hua )
+			auto nCheckV = card_Value(ref);
+			if (nt != eCT_Hua)
 			{
-				++nHuaCnt;
+				continue;
+			}
+			
+			if (isXiaoYuSi)
+			{
+				if (nCheckV <= 4 )
+				{
+					++nHuaCnt;
+				}
+			}
+			else
+			{
+				if (nCheckV > 4)
+				{
+					++nHuaCnt;
+				}
 			}
 		}
 
@@ -723,9 +740,6 @@ bool NJMJPlayerCard::checkQiDui(uint8_t nCard, std::vector<uint16_t>& vHuTypes, 
 		return false;
 	}
 
-	vHuTypes.push_back(eFanxing_QiDui);
-	nHuaCnt += 50;
-
 	auto nType = card_Type(nCard);
 	auto& vCard = m_vCards[nType];
 	auto nCnt = std::count(vCard.begin(),vCard.end(),nCard);
@@ -734,6 +748,12 @@ bool NJMJPlayerCard::checkQiDui(uint8_t nCard, std::vector<uint16_t>& vHuTypes, 
 		vHuTypes.push_back(eFanxing_ShuangQiDui);
 		nHuaCnt += 100;
 	}
+	else
+	{
+		vHuTypes.push_back(eFanxing_QiDui);
+		nHuaCnt += 50;
+	}
+
 	return true;
 }
 
@@ -998,14 +1018,25 @@ bool NJMJPlayerCard::checkBianZhi(uint8_t nCard)
 
 bool NJMJPlayerCard::checkQueYi(uint8_t nCard)
 {
-	std::vector<uint8_t> vSign;
+	std::map<uint8_t,uint8_t> vSign;
 	for (uint8_t nIdx = 0; nIdx < eCT_Max; ++nIdx)
 	{
 		if (nIdx == eCT_Tiao || eCT_Wan == nIdx || eCT_Tong == nIdx)
 		{
-			vSign.push_back( ( m_vCards[nIdx].empty() ? 0 : 1 ) );
+			if (m_vCards[nIdx].empty() == false)
+			{
+				vSign[nIdx] = 1;
+			}
 		}
 	}
 	
-	return std::count(vSign.begin(),vSign.end(),0 ) == 1 ;
+	for (auto& ref : m_vActCardSign)
+	{
+		auto eType = card_Type(ref.nCard);
+		if (eType == eCT_Tiao || eCT_Wan == eType || eCT_Tong == eType)
+		{
+			vSign[eType] = 1;
+		}
+	}
+	return vSign.size() == 2 ;
 }

@@ -278,8 +278,9 @@ void CClientNetworkImp::doClose()
 		return ;
 	}
 	m_nState = eState_None ;
-	m_socket->shutdown(boost::asio::socket_base::shutdown_type::shutdown_both);
-	m_socket->close();
+	static boost::system::error_code ec2;  // temp 
+	m_socket->shutdown(boost::asio::socket_base::shutdown_type::shutdown_both, ec2);
+	m_socket->close(ec2);
 
 	Packet* pack = new Packet ;
 	pack->_brocast = false ;

@@ -54,7 +54,8 @@ void CSession::start()
 void CSession::close()
 {
 	LOGFMTD("serssion close close") ;
-	m_socket.close() ;
+	boost::system::error_code ec;
+	m_socket.close(ec);
 	m_tHeatBeat.cancel();
 	m_tWaitFirstMsg.cancel();
 }
@@ -128,7 +129,7 @@ void CSession::handleWrite(const boost::system::error_code& error)
 void CSession::startWaitFirstMsg()
 {
 	m_tWaitFirstMsg.expires_from_now(boost::posix_time::seconds(TIME_CHECK_FIRST_MSG));
-	m_tWaitFirstMsg.async_wait(boost::bind(&CSession::handleCheckFirstMsg, this,boost::asio::placeholders::error ));
+	m_tWaitFirstMsg.async_wait(boost::bind(&CSession::handleCheckFirstMsg, shared_from_this(), boost::asio::placeholders::error));
 }
 
 void CSession::handleCheckFirstMsg( const boost::system::error_code& ec )
@@ -147,7 +148,7 @@ void CSession::handleCheckFirstMsg( const boost::system::error_code& ec )
 void CSession::startHeartbeatTimer()
 {
 	m_tHeatBeat.expires_from_now(boost::posix_time::seconds(TIME_HEAT_BET));
-	m_tHeatBeat.async_wait(boost::bind(&CSession::sendHeatBeat, this,boost::asio::placeholders::error));
+	m_tHeatBeat.async_wait(boost::bind(&CSession::sendHeatBeat, shared_from_this(), boost::asio::placeholders::error));
 }
 
 void CSession::handleWriteHeartbeat(const boost::system::error_code& ec)
@@ -174,7 +175,7 @@ void CSession::sendHeatBeat( const boost::system::error_code& ec )
 		p[2] = 0 ;
 		p[3] = 0 ;
 		boost::asio::async_write(m_socket, boost::asio::buffer(p, sizeof(p)),
-			boost::bind(&CSession::handleWriteHeartbeat, this,
+			boost::bind(&CSession::handleWriteHeartbeat, shared_from_this(),
 			boost::asio::placeholders::error ));
 	}
 }
