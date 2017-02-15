@@ -409,6 +409,17 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			}
 			uint32_t nClubID = recvValue["clubID"].asUInt() ;
 			eRoomType eroomType = (eRoomType)recvValue["roomType"].asUInt() ;
+			auto nCirle = recvValue["circle"].asUInt();
+			bool isFree = false;
+			if (recvValue["isFree"].isNull() == false)
+			{
+				isFree = recvValue["isFree"].asUInt() == 1;
+				LOGFMTD("create private room isFree is = %u", isFree);
+			}
+			else
+			{
+				LOGFMTD("create private room isFree is null ?");
+			}
 			// if can create room  ;
 			Json::Value jsMsgBack ;
 			jsMsgBack["ret"] = 0 ;
@@ -419,6 +430,20 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			{
 				jsMsgBack["ret"] = 3 ;
 				SendMsg(jsMsgBack,nmsgType);
+				break;
+			}
+
+			if (nCirle <= 0)
+			{
+				jsMsgBack["ret"] = 6;
+				SendMsg(jsMsgBack, nmsgType);
+				break;
+			}
+
+			if ( ( isFree == false )  && (nCirle * ROOM_CARD_CNT_PER_CIRLE_NJMJ) > GetPlayer()->GetBaseData()->GetAllDiamoned())
+			{
+				jsMsgBack["ret"] = 5;
+				SendMsg(jsMsgBack, nmsgType);
 				break;
 			}
 

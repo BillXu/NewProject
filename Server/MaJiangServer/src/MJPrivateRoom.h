@@ -49,10 +49,12 @@ public:
 	uint32_t getSeiralNum()final;
 	bool isInternalShouldClosedAll(void)override{ return m_pRoom->isInternalShouldClosedAll(); }
 	bool isOneCirleEnd()override{ return m_pRoom->isOneCirleEnd(); }
+	bool isCurrentFree(){ return m_isForFree; }
 protected:
 	IGameRoomManager* m_pRoomMgr;
 	uint32_t m_nOwnerUID;
 	uint32_t m_nChatID;
+	bool m_isForFree;
 
 	uint8_t m_nLeftCircle;
 	uint8_t m_nInitCircle;

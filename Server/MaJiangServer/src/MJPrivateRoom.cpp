@@ -26,6 +26,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	m_nLeftCircle = m_nInitCircle ;
 	m_nInitCoin = vJsValue["initCoin"].asUInt();
 	m_nChatID = vJsValue["chatRoomID"].asUInt();
+	m_isForFree = false;
 	memset(&m_stConfig, 0, sizeof(m_stConfig));
 	m_stConfig.nConfigID = 0;
 	m_stConfig.nBaseBet = 1;//;vJsValue["baseBet"].asUInt();
@@ -56,6 +57,16 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	{
 		m_nOwnerUID = 0;
 		LOGFMTD("create private room ownerUID is null ?");
+	}
+
+	if (vJsValue["isFree"].isNull() == false)
+	{
+		m_isForFree = vJsValue["isFree"].asUInt() == 1 ;
+		LOGFMTD("create private room isFree is = %u", m_isForFree);
+	}
+	else
+	{
+		LOGFMTD("create private room isFree is null ?");
 	}
 
 	m_pRoom = doCreateMJRoom((eRoomType)m_stConfig.nGameType);
@@ -269,6 +280,20 @@ bool MJPrivateRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSe
 			m_tInvokerTime = time(nullptr);
 			m_nInvokerDismissUID = pp->getUID();
 		}
+	}
+	break;
+	case MSG_PLAYER_CHAT_MSG:
+	{
+		auto pp = ((IMJRoom*)m_pRoom)->getMJPlayerBySessionID(nSessionID);
+		if (pp == nullptr)
+		{
+			prealMsg["ret"] = 1;
+			sendMsgToPlayer(prealMsg, MSG_PLAYER_CHAT_MSG, nSessionID);
+			break;
+		}
+
+		prealMsg["playerIdx"] = pp->getIdx();
+		sendRoomMsg(prealMsg, MSG_ROOM_CHAT_MSG);
 	}
 	break;
 	case MSG_REPLY_DISSMISS_VIP_ROOM_APPLY:
@@ -501,12 +526,15 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 	{
 		m_bComsumedRoomCards = true;
 		// comsum room card ;
-		uint16_t nCardCnt = m_nInitCircle * 2;
-		LOGFMTD("send msg to consumed vip room card = %u",nCardCnt);
-		Json::Value jsConsumed;
-		jsConsumed["cardCnt"] = nCardCnt;
-		jsConsumed["uid"] = m_nOwnerUID;
-		m_pRoomMgr->sendMsg(jsConsumed, MSG_CONSUM_VIP_ROOM_CARDS, 0, ID_MSG_PORT_DATA);
+		if (false == isCurrentFree())
+		{
+			uint16_t nCardCnt = m_nInitCircle * ROOM_CARD_CNT_PER_CIRLE_NJMJ;
+			LOGFMTD("send msg to consumed vip room card = %u", nCardCnt);
+			Json::Value jsConsumed;
+			jsConsumed["cardCnt"] = nCardCnt;
+			jsConsumed["uid"] = m_nOwnerUID;
+			m_pRoomMgr->sendMsg(jsConsumed, MSG_CONSUM_VIP_ROOM_CARDS, 0, ID_MSG_PORT_DATA);
+		}
 	}
 
 	// decrease circle ;
@@ -632,7 +660,7 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		pBill->nRoomID = getRoomID();
 		pBill->nRoomType = getRoomType();
 		pBill->nRoomInitCoin = m_nInitCoin;
-		pBill->nCircleCnt = m_nInitCircle - m_nLeftCircle;
+		pBill->nCircleCnt = m_nInitCircle /*- m_nLeftCircle*/;
 		((MJRoomManager*)m_pRoomMgr)->addVipRoomBill(pBill, true);
 	}
 	

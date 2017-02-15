@@ -328,7 +328,7 @@ enum eMsgType
 	//南京麻将 mj : { roomType : eRoomType ,circle : 2345 , initCoin : 23 , isBiXiaHu : 0 , isHuaZa : 0  } 
 
 	// svr : { ret : 0 , roomID : 235 , clubID : 23 } ;
-	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error ; 4, req chat room id error ;
+	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error ; 4, req chat room id error , 5 vip room is not enough , 6 argument error;
 	MSG_DELETE_ROOM, // ID_MSG_PORT_DATA ;
 	// client : { roomID : 2345 , clubID : 23  }
 	// svr : { ret : 0 }
@@ -605,8 +605,9 @@ enum eMsgType
 	// anGangPai : 就是安杠的牌，单张，不是4张。比如 暗杠8万，那么就是一个8万，也不是4个8万。
 
 	// NanJing ma jiang :
-	// svr: { idx : 2 , anPai : [2,3,4,34] , chuPai: [2,34,4] , huaPai: [23,23,23] , anGangPai : [23,24],buGang : [23,45] ,pengGangInfo : [ { targetIdx : 23 , actType : 23 , card : 23 } , .... ]  }
+	// svr: { idx : 2 , newMoCard : 2, anPai : [2,3,4,34] , chuPai: [2,34,4] , huaPai: [23,23,23] , anGangPai : [23,24],buGang : [23,45] ,pengGangInfo : [ { targetIdx : 23 , actType : 23 , card : 23 } , .... ]  }
 	// idx ： 玩家索引,  anPai 就是牌，没有展示出来的, chuPai ： 就是已经出了的牌。buGang : 补杠的牌
+	// newMoCard : 最新摸的牌，可能是杠 或者 摸牌
 	// pengGangInfo: 杠牌和碰牌的数组。{ targetIdx ： 23， actType ： 23 ， card ： 234 } 分别是： 触发动作的索引，actType ， 就是碰了 还是杠了，card 就是哪张牌；
 
 	MSG_MJ_ROOM_INFO,  // 房间的基本信息
@@ -670,10 +671,11 @@ enum eMsgType
 	// 实时结算子类型是：actType 是什么类型时间导致的结算，参考eMJActType， detial： 也是一个数组 表示，这次结算每个玩家的输赢，idx 玩家的索引，offset，表示加钱 还是减钱，正负表示。
 
 	MSG_ROOM_NJ_GAME_OVER, // 南京麻将结束
-	// svr: { isLiuJu : 0 , detail : [ {idx : 0 , offset : 23 }, ...  ], realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] } 
+	// svr: { isLiuJu : 0 , isNextBiXiaHu : 0 , detail : [ {idx : 0 , offset : 23 }, ...  ], realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] } 
 	// svr : isLiuJu : 是否是流局
 	// detail : 数组就是每个玩家的本局的最终输赢 ；
 	// realTimeCal : 实时结算信息，只有流局的情况才存在这个字段；
+	// isNextBiXiaHu : 下一局是否要比下胡
 
 	MSG_ROOM_NJ_REAL_TIME_SETTLE, // 南京麻将实时结算
 	// svr : {  actType : 0 , winers : [ {idx : 2, offset : 23}, .... ] , loserIdxs : [ {idx : 2 , offset : 23} , ... ]  } } 
@@ -686,6 +688,15 @@ enum eMsgType
 	// svr : { ret : 0 , sieral : 234, billTime : 23453, roomID : 235, roomType : eRoomType , creatorUID : 345 , circle： 8 ，initCoin : 2345 , detail : [  { uid : 2345 , curCoin : 234, ziMoCnt : 2 , huCnt : 23,dianPaoCnt :2, mingGangCnt : 23,AnGangCnt : 23  }, ....]  } 
 	// ret : 0 成功，1 账单id不存在，billID, 账单ID， billTime ： 账单产生的时间, roomID : 房间ID ， roomType 房间类型eRoomType， creatorUID 创建者的ID，circle 房间的圈数，initCoin ： 初始金币，detail : 每个人的输赢详情 json数组
 	// uid : 玩家的uid，curCoin 结束时剩余钱；
+
+	MSG_PLAYER_CHAT_MSG, // 玩家发送 聊天信息
+	// client : { dstRoomID : 234 , type : 1 , content : "biao qing or viceID" }
+	// svr : { ret : 0 } 
+
+	MSG_ROOM_CHAT_MSG, // 房间内有玩家 发送聊天信息；
+	// svr:  { playerIdx : 2 , type : 1 , content : "biao qing or viceID" } 
+
+
 
 
 

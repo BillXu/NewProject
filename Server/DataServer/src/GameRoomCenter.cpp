@@ -116,9 +116,6 @@ void CGameRoomCenter::onConnectedSvr()
 			m_nCurSerailNum = jsRow["maxSerial"].asUInt();
 			LOGFMTD("read max serial number = %u",m_nCurSerailNum);
 		}
-
-		m_nCurSerailNum = 1; 
-		LOGFMTE("Nan jing majiang temp not save room info sieral num = 0 ");
 	});
 
 	// read room item info from db svr ;

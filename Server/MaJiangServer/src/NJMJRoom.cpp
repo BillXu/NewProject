@@ -84,7 +84,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	setInitState(vState[0]);
 
 	// init banker
-	m_nBankerIdx = getSeatCnt() - 1;
+	m_nBankerIdx = - 1;
 
 	return true;
 }
@@ -103,10 +103,18 @@ void NJMJRoom::willStartGame()
 
 	m_isWillBiXiaHu = false;
 
-	if (m_isBankerHu == false)
+	if ((uint8_t)-1 == m_nBankerIdx)
 	{
-		m_nBankerIdx = (m_nBankerIdx + 1) % MAX_SEAT_CNT;
+		m_nBankerIdx = 0;
 	}
+	else
+	{
+		if (m_isBankerHu == false)
+		{
+			m_nBankerIdx = (m_nBankerIdx + 1) % MAX_SEAT_CNT;
+		}
+	}
+
 
 	m_isBankerHu = false;
 }
@@ -147,7 +155,7 @@ void NJMJRoom::startGame()
 void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
 {
 	jsSubInfo["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
-	jsSubInfo["isRoomBiXiaHu"] = m_isBiXiaHu ? 1 : 0;
+	jsSubInfo["isRoomBiXiaHu"] = m_isEnableBixiaHu ? 1 : 0;
 	jsSubInfo["isHuaZa"] = m_isEnableHuaZa ? 1 : 0;
 	jsSubInfo["isKuaiChong"] = isKuaiChong() ? 1 : 0;
 	if (isKuaiChong())
@@ -203,6 +211,9 @@ void NJMJRoom::onGameEnd()
 		settleInfoToJson(jsReal);
 		jsMsg["realTimeCal"] = jsReal;
 	}
+
+	bool isNextBiXiaWhu = m_isEnableBixiaHu && m_isWillBiXiaHu ;
+	jsMsg["isNextBiXiaHu"] = isNextBiXiaWhu ? 1 : 0;
 
 	sendRoomMsg(jsMsg, MSG_ROOM_NJ_GAME_OVER);
 	// send msg to player ;
@@ -749,11 +760,11 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	}
 
 	// check da hu for will bi xia hu 
-	if (m_isWillBiXiaHu == false && vType.size() == 1 )
+	if (m_isWillBiXiaHu == false)
 	{
-		auto iterPing = std::find(vType.begin(), vType.end(), eFanxing_QingYiSe);
-		auto iterMengQing = std::find(vType.begin(), vType.end(), eFanxing_DuiDuiHu);
-		if (iterPing != vType.end() || iterMengQing != vType.end())
+		auto iterPing = std::find(vType.begin(), vType.end(), eFanxing_PingHu);
+		auto iterMengQing = std::find(vType.begin(), vType.end(), eFanxing_MengQing);
+		if (vType.size() == 1 && (iterPing != vType.end() || iterMengQing != vType.end()))
 		{
 
 		}
@@ -904,6 +915,12 @@ void NJMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 		auto pCard = (NJMJPlayerCard*)pp->getPlayerCard();
 		Json::Value jsCardInfo;
 		jsCardInfo["idx"] = pp->getIdx();
+		jsCardInfo["newMoCard"] = 0;
+		if (getCurRoomState()->getStateID() == eRoomState_WaitPlayerAct && getCurRoomState()->getCurIdx() == pp->getIdx())
+		{
+			jsCardInfo["newMoCard"] = pp->getPlayerCard()->getNewestFetchedCard();
+		}
+
 		pCard->getCardInfo(jsCardInfo);
 		sendMsgToPlayer(jsCardInfo, MSG_ROOM_PLAYER_CARD_INFO, nSessionID);
 	}
