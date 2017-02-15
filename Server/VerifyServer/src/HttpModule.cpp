@@ -44,7 +44,7 @@ void CHttpModule::init(IServerApp* svrApp)
 	registerHttpHandle("/AnyLogin.yh", boost::bind(&CHttpModule::handleAnySdkLogin, this, boost::placeholders::_1));
 
 	// halde config file 
-	registerHttpHandle("/configN.php", boost::bind(&CHttpModule::onHandleConfigN, this, boost::placeholders::_1));
+	registerHttpHandle("/NJMJa.php", boost::bind(&CHttpModule::onHandleConfigN, this, boost::placeholders::_1));
 	registerHttpHandle("/configNA.php", boost::bind(&CHttpModule::onHandleConfigNA, this, boost::placeholders::_1));
 	registerHttpHandle("/configGolden.php", boost::bind(&CHttpModule::onHandleConfigGolden, this, boost::placeholders::_1));
 	registerHttpHandle("/configGoldenA.php", boost::bind(&CHttpModule::onHandleConfigGoldenA, this, boost::placeholders::_1));
@@ -424,7 +424,7 @@ bool CHttpModule::handleAnySdkLogin(http::server::connection_ptr ptr)
 // handle config file 
 bool CHttpModule::onHandleConfigN(http::server::connection_ptr ptr)
 {
-	return responeConfigToConnect("../configFile/configN.php",ptr);
+	return responeConfigToConnect("../configFile/NJMJa.php",ptr);
 }
 
 bool CHttpModule::onHandleConfigNA(http::server::connection_ptr ptr)

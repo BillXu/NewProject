@@ -443,7 +443,7 @@ uint8_t CGameRoomCenter::getRoomType(uint32_t nRoomID)
 {
 	uint32_t nTypeNumber = nRoomID / 100000 ;
 	uint32_t nRealID = nRoomID % 100000 ;
-	uint32_t narg = nRealID % 5;
+	uint32_t narg = nRealID % 4 + 1;
 	return (nTypeNumber - narg) ;
 }
 
@@ -457,7 +457,7 @@ uint32_t CGameRoomCenter::generateRoomID(eRoomType eType,uint32_t& nserailNum )
 	do 
 	{
 		uint32_t nRealID = rand() % 100000 ;
-		uint32_t narg = nRealID % 5;
+		uint32_t narg = nRealID % 4 + 1;
 		uint32_t nTypeNumber = eType + narg ;
 		nRoomID = nTypeNumber * 100000 + nRealID ;	
 
