@@ -214,7 +214,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 		{
 			stMsgSavePlayerGameRecorder* pRet = (stMsgSavePlayerGameRecorder*)pmsg ;
 			pRequest->eType = eRequestType_Add;
-			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamerecorder (sieralNum,userUID,roomID, roomType,createUID,finishTime,duiringSeconds,offset,buyIn,baseBet,roomName,clubID ) VALUES ('%u', '%u','%u','%u','%u','%u','%d','%u','%u','%s',%u )",
+			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,"INSERT INTO playergamerecorder (sieralNum,userUID,roomID, roomType,createUID,finishTime,duiringSeconds,offset,buyIn,baseBet,roomName,clubID ) VALUES ('%u','%u', '%u','%u','%u','%u','%u','%d','%u','%u','%s',%u )",
 				pRet->nSieralNum,pRet->nUserUID,pRet->nRoomID,pRet->nRoomType,pRet->nCreateUID,pRet->nFinishTime,pRet->nDuiringSeconds,pRet->nOffset,pRet->nBuyIn,pRet->nBaseBet,pRet->cRoomName,pRet->nClubID) ;
 		}
 		break ;
