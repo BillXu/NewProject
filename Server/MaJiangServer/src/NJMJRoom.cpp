@@ -214,6 +214,7 @@ void NJMJRoom::onGameEnd()
 
 	bool isNextBiXiaWhu = m_isEnableBixiaHu && m_isWillBiXiaHu ;
 	jsMsg["isNextBiXiaHu"] = isNextBiXiaWhu ? 1 : 0;
+	jsMsg["nNextBankIdx"] = m_isBankerHu ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT); 
 
 	sendRoomMsg(jsMsg, MSG_ROOM_NJ_GAME_OVER);
 	// send msg to player ;

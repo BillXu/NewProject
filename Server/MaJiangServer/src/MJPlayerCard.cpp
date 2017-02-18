@@ -429,7 +429,7 @@ bool MJPlayerCard::isTingPai()
 	}
 
 	auto nct = getMiniQueCnt(m_vCards);
-	if ( getMiniQueCnt(m_vCards) <= 1 )
+	if ( nct <= 1)
 	{
 		if (0 == nct)
 		{

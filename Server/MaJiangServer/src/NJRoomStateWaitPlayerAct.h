@@ -90,7 +90,14 @@ public:
 				getRoom()->goToState(eRoomState_DoPlayerAct, &jsTran);
 				return true;
 			}
+
+			if (m_isAutoBuHuaOrHuaGang)
+			{
+				LOGFMTD("doing bu hua or hua gang , can not do other things ");
+				return true;
+			}
 		}
+
 
 		return MJRoomStateWaitPlayerAct::onMsg(prealMsg,nMsgType,eSenderPort,nSessionID);
 	}

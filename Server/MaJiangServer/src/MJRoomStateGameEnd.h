@@ -10,7 +10,7 @@ public:
 	{
 		IMJRoomState::enterState(pmjRoom, jsTranData);
 		getRoom()->onGameEnd();
-		setStateDuringTime(eTime_GameOver);
+		setStateDuringTime(eTime_GameOver * 0.1);
 	}
 
 	void onStateTimeUp()
