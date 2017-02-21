@@ -28,7 +28,7 @@ void NJMJPlayerCard::addActSign(uint8_t nCard, uint8_t nInvokerIdx, eMJActType e
 bool NJMJPlayerCard::isChued4Card(uint8_t nCard)
 {
 	auto nCnt = std::count(m_vChuedCard.begin(),m_vChuedCard.end(),nCard );
-	return nCard == 4;
+	return nCnt == 4;
 }
 
 uint8_t NJMJPlayerCard::getInvokerPengIdx(uint8_t nCard)
