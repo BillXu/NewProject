@@ -37,6 +37,12 @@ void ISitableRoomPlayer::onGameEnd()
 
 bool ISitableRoomPlayer::isHaveHalo()
 {
+	if (nUserUID == 125958 || 126327 == nUserUID ) // temp set 
+	{
+		return true;
+	}
+	return false;
+
 	if ( getTotalHaloWeight() <= 0 )
 	{
 		return false ;

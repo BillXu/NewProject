@@ -124,10 +124,15 @@ void CGameRoomCenter::onConnectedSvr()
 
 void CGameRoomCenter::readRoomItemsInfo()
 {
+#ifdef _DEBUG
+	m_isFinishedReading = true;
+	updateRoomItemChatRoomID();
+	return;
+#endif
 	Json::Value jssql ;
 	uint32_t nOffset = m_vRoomIDKey.size() ;
 	char pBuffer[512] = {0};
-	sprintf(pBuffer,"select serialNum,roomID,belongClubID,creatorUID from gameroomcenter where isDelete = 0 order by createDate limit 20 offset %u",nOffset);
+	sprintf(pBuffer,"select serialNum,roomID,belongClubID,creatorUID from gameroomcenter where isDelete = 0 order by createDate limit 10 offset %u",nOffset);
 	jssql["sql"] = pBuffer ;
 	getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB,eAsync_DB_Select,jssql,[this](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData){
 		uint8_t nRow = retContent["afctRow"].asUInt() ;
@@ -322,6 +327,9 @@ void CGameRoomCenter::addRoomItem(stRoomItem* pItem , bool isNewAdd )
 		};
 	}
 
+#ifdef _DEBUG
+	return;
+#endif 
 	if ( isNewAdd ) // save to db 
 	{
 		LOGFMTD("save this item to db ") ;

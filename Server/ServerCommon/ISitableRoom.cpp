@@ -580,10 +580,12 @@ void ISitableRoom::doProcessNewPlayerHalo()
 
 	// sort by peer card 
 	std::sort(m_vSortByPeerCardsAsc.begin(),m_vSortByPeerCardsAsc.end(),sortPlayerByCard);
-	//if ( isOmitNewPlayerHalo() )
-	//{
-	//	return ;
-	//}
+	if (getDelegate() && getDelegate()->isOmitNewPlayerHalo(this) )
+	{
+		return ;
+	}
+
+	LOGFMTI("log fmt process halo room id = %u-----------------------",getRoomID());
 
 	// process halo 
 	uint8_t nHalfCnt = m_vSortByPeerCardsAsc.size() ;

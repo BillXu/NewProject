@@ -180,7 +180,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			pdata->nExtenArg1 = pRet->nRoomID ;
 			pRequest->eType = eRequestType_Select ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"SELECT * FROM privateroomplayer WHERE serialNum = '%u' limit 80", pRet->nRoomSerialNum);
+				"SELECT * FROM privateroomplayer WHERE serialNum = '%u' limit 10", pRet->nRoomSerialNum);
 		}
 		break ;
 	case MSG_SAVE_ENCRYPT_NUMBER:

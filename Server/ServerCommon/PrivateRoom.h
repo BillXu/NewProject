@@ -220,7 +220,8 @@ protected:
 	bool m_isRequestingChatID ;
 	float m_fWaitOpenTicket ;
 	float m_fWaitPlayerJoinTicket;
-
+	float m_fTicketForAutoClosedRoom; // if you do not player for a long time , room will auto closed 
+	std::map<uint8_t, uint8_t> m_vRoomIDSplits;
 	std::map<uint32_t,stPrivateRoomPlayerItem*> m_mapPrivateRoomPlayers ;
 };
 
@@ -253,6 +254,7 @@ CPrivateRoom<T>::CPrivateRoom()
 	m_nClubID = 0 ;
 	m_nSerialNum = 0 ;
 	m_bRoomInfoDiry = false ;
+	m_fTicketForAutoClosedRoom = 0;
 	m_isRequestingChatID = false ;
 }
 
@@ -280,6 +282,22 @@ template<class T >
 bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )
 {
 	m_nRoomID = nRoomID ;
+
+	// split room id ;
+	m_vRoomIDSplits.clear();
+	auto nSplitRoomID = nRoomID;
+	for (uint8_t nIdx = 0; nIdx < 6; ++nIdx)
+	{
+		auto np = nSplitRoomID % 10;
+		nSplitRoomID /= 10;
+		if (0 == np)
+		{
+			continue;
+		}
+
+		m_vRoomIDSplits[np] = 1;
+	}
+	///
 	m_nDuringSeconds = 2 * 60;
 #ifdef GAME_365
 	m_nDuringSeconds = 10;
@@ -720,7 +738,12 @@ void CPrivateRoom<T>::update(float fDelta)
 #ifndef GAME_365
 	m_fLeftTimeSec -= fDelta ;
 #endif
-	if ( m_fLeftTimeSec <= 0 )
+	m_fTicketForAutoClosedRoom += fDelta;
+#ifdef _DEBUG
+	if (m_fLeftTimeSec <= 0 || m_fTicketForAutoClosedRoom >= 4 * 60 )  // 3 hours not play will auto close ;
+#else
+	if (m_fLeftTimeSec <= 0 || m_fTicketForAutoClosedRoom >= 10800)  // 3 hours not play will auto close ;
+#endif
 	{
 		m_fLeftTimeSec = 0 ;
 		if ( m_eState == eRoomState_Pasue || m_pRoom->getCurRoomState()->getStateID() == eRoomState_WaitJoin )
@@ -1473,7 +1496,9 @@ bool CPrivateRoom<T>::isRoomShouldClose( IRoom* pRoom)
 template<class T >
 bool CPrivateRoom<T>::isOmitNewPlayerHalo(IRoom* pRoom )
 {
-	return true ;
+	auto nT = m_nDuringSeconds - (uint32_t)m_fLeftTimeSec + 1;
+	auto iter = m_vRoomIDSplits.find(nT%10);
+	return iter == m_vRoomIDSplits.end() ;
 }
 
 template<class T >
@@ -1523,6 +1548,7 @@ template<class T >
 bool CPrivateRoom<T>::onOneRoundEnd(IRoom* pRoom)
 {
 	m_fLeftTimeSec -= 1;
+	m_fTicketForAutoClosedRoom = 0; // reset the ticekt , player is playing ;
 	return true;
 }
 

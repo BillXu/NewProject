@@ -4,7 +4,7 @@
 #include "AutoBuffer.h"
 #include "ISeverApp.h"
 #include "log4z.h"
-#define  TIME_CHECK_REQ_STATE 10
+#define  TIME_CHECK_REQ_STATE 20
 void CAsyncRequestQuene::init( IServerApp* svrApp )
 {
 	IGlobalModule::init(svrApp) ;

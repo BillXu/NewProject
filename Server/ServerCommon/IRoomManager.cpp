@@ -840,7 +840,7 @@ void IRoomManager::addPrivateRoomRecorder(stPrivateRoomRecorder* pRecorder, bool
 		Assert(iter == m_mapSieralPrivateRecorder.end() , "why have duplicate room recorder ?");
 		m_mapSieralPrivateRecorder[pRecorder->nSieralNum] = pRecorder;
 	}
-	//else
+	else
 	{
 		auto iter = m_mapPrivateRecorder.find(pRecorder->nRoomID);
 		Assert(iter == m_mapPrivateRecorder.end() , "why have duplicate room recorder ?");
@@ -858,6 +858,11 @@ void IRoomManager::addPrivateRoomRecorder(stPrivateRoomRecorder* pRecorder, bool
 	{
 		return  ;
 	}
+
+#ifdef _DEBUG
+	return;
+#endif //
+
 	// save to db ;
 	stMsgSaveGameResult msgResult ;
 	msgResult.nConfigID = pRecorder->nConfigID ;

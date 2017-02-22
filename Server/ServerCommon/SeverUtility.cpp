@@ -10,16 +10,19 @@ void CSendPushNotification::reset()
 
 void CSendPushNotification::addTarget(uint32_t nUserUID )
 {
+	return;
 	m_arrayTargetIDs[m_arrayTargetIDs.size()] = nUserUID ;
 }
 
 void CSendPushNotification::setContent(const char* pContent,uint32_t nFlag )
 {
+	return;
 	m_strApns["content"] = pContent ;
 }
 
 void CSendPushNotification::postApns( CAsyncRequestQuene* pAsync , bool isGroup, const char* pmsgID , const char* pmsgdesc )
 {
+	return;
 	if ( m_arrayTargetIDs.isNull() || m_strApns["content"].isNull() )
 	{
 		printf("push notice argument not finish\n") ;
