@@ -82,7 +82,7 @@ int8_t CPeerCard::PKPeerCard(CPeerCard* pPeerCard)
 	{
 		myBig = m_vCard[i]->GetCardFaceNum() == 1 ? 14 : m_vCard[i]->GetCardFaceNum() ;
 		nOtherBig = pPeerCard->m_vCard[i]->GetCardFaceNum() == 1 ? 14 : pPeerCard->m_vCard[i]->GetCardFaceNum() ;
-		if (isShunZi)
+		if (isShunZi && 0 )
 		{
 			if (m_vCard[0]->GetCardFaceNum() == 2 && m_vCard[1]->GetCardFaceNum() == 3 && m_vCard[2]->GetCardFaceNum() == 1)
 			{
