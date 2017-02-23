@@ -77,10 +77,49 @@ int8_t CPeerCard::PKPeerCard(CPeerCard* pPeerCard)
 
 	int myBig = 0 ;
 	int nOtherBig = 0 ;
+	bool isShunZi = (GetType() == ePeerCard_Sequence || ePeerCard_SameColorSequence == GetType());
 	for ( int i = PEER_CARD_COUNT -1 ; i >= 0 ; --i )
 	{
 		myBig = m_vCard[i]->GetCardFaceNum() == 1 ? 14 : m_vCard[i]->GetCardFaceNum() ;
 		nOtherBig = pPeerCard->m_vCard[i]->GetCardFaceNum() == 1 ? 14 : pPeerCard->m_vCard[i]->GetCardFaceNum() ;
+		if (isShunZi)
+		{
+			if (m_vCard[0]->GetCardFaceNum() == 2 && m_vCard[1]->GetCardFaceNum() == 3 && m_vCard[2]->GetCardFaceNum() == 1)
+			{
+				if (0 == i)
+				{
+					myBig = 1;
+				}
+				else if (1 == i)
+				{
+					myBig = 2;
+				}
+				else 
+				{
+					myBig = 3;
+				}
+
+			}
+
+			// other 
+			if (pPeerCard->m_vCard[0]->GetCardFaceNum() == 2 && pPeerCard->m_vCard[1]->GetCardFaceNum() == 3 && pPeerCard->m_vCard[2]->GetCardFaceNum() == 1)
+			{
+				if (0 == i)
+				{
+					nOtherBig = 1;
+				}
+				else if (1 == i)
+				{
+					nOtherBig = 2;
+				}
+				else
+				{
+					nOtherBig = 3;
+				}
+
+			}
+		}
+
 		if ( myBig > nOtherBig )
 		{
 			return 1 ;
