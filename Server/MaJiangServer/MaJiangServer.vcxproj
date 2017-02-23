@@ -111,7 +111,9 @@
     <ClInclude Include="src\NJMJPlayer.h" />
     <ClInclude Include="src\NJMJPlayerCard.h" />
     <ClInclude Include="src\NJMJRoom.h" />
+    <ClInclude Include="src\NJRoomStateBuHua.h" />
     <ClInclude Include="src\NJRoomStateDoPlayerAct.h" />
+    <ClInclude Include="src\NJRoomStateStartGame.h" />
     <ClInclude Include="src\NJRoomStateWaitPlayerAct.h" />
     <ClInclude Include="src\XLFanXingChecker.h" />
     <ClInclude Include="src\XLMJPlayer.h" />

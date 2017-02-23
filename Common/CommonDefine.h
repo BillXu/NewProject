@@ -155,6 +155,7 @@ enum eRoomState
 	eRoomState_AskForHuAndPeng, // 询问玩家碰或者胡  { invokeIdx : 2 , card : 23 }
 	eRoomState_WaitSupplyCoin, // 等待玩家补充金币  {nextState: 234 , transData : { ... } }
 	eRoomState_WaitPlayerRecharge = eRoomState_WaitSupplyCoin,  //  等待玩家充值
+	eRoomState_NJ_Auto_Buhua, // 南京麻将自动不花 
 	eRoomState_GameEnd, // 游戏结束
 	eRoomState_Max,
 };

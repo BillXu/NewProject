@@ -670,6 +670,10 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 	jsClosed["eType"] = getRoomType();
 	m_pRoomMgr->sendMsg(jsClosed, MSG_VIP_ROOM_CLOSED, 0, ID_MSG_PORT_DATA);
 
+	if ( !bCanncelBill )
+	{
+		return;
+	}
 	// tell client closed room ;
 	Json::Value jsDoClosed;
 	jsDoClosed["roomID"] = getRoomID();

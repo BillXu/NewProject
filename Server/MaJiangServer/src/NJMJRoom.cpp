@@ -12,7 +12,8 @@
 #include "NJRoomStateDoPlayerAct.h"
 #include "MJRoomStateAskForPengOrHu.h"
 #include "IGameRoomManager.h"
-#include "MJRoomStateStartGame.h"
+#include "NJRoomStateBuHua.h"
+#include "NJRoomStateStartGame.h"
 #include "MJRoomStateAskForRobotGang.h"
 #define PUNISH_COIN_BASE 5 
 #define AN_GANG_COIN_BASE 5 
@@ -74,7 +75,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_tPoker.initAllCard(eMJ_NanJing);
 	// create state and add state ;
 	IMJRoomState* vState[] = {
-		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new NJRoomStateWaitPlayerAct(), new MJRoomStateStartGame()
+		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new NJRoomStateWaitPlayerAct(), new NJRoomStateStartGame(), new NJRoomStateWaitPlayerAct()
 		, new MJRoomStateGameEnd(), new NJRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(), new MJRoomStateAskForRobotGang()
 	};
 	for (uint8_t nIdx = 0; nIdx < sizeof(vState) / sizeof(IMJRoomState*); ++nIdx)
