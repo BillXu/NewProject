@@ -532,11 +532,19 @@ bool NJMJPlayerCard::getCardInfo(Json::Value& jsPeerCards)
 uint8_t NJMJPlayerCard::getHuaCardToBuHua()
 {
 	auto nNewCard = getNewestFetchedCard();
-	auto nType = card_Type(nNewCard);
-	if (eCT_Jian == nType || eCT_Hua == nType)
+	if (0 == nNewCard)
 	{
-		return nNewCard;
+
 	}
+	else
+	{
+		auto nType = card_Type(nNewCard);
+		if (eCT_Jian == nType || eCT_Hua == nType)
+		{
+			return nNewCard;
+		}
+	}
+
 
 	if (m_vCards[eCT_Jian].empty() == false)
 	{

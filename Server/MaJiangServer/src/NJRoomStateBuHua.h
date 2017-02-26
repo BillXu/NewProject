@@ -4,7 +4,7 @@
 #include "NJMJRoom.h"
 #include "NJMJPlayerCard.h"
 #include "IMJPlayer.h"
-class NJRoomStateWaitPlayerAct
+class NJRoomStateBuHua
 	:public IMJRoomState
 {
 public:

@@ -672,6 +672,8 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 
 	if ( !bCanncelBill )
 	{
+		// will delete this room ;
+		((MJRoomManager*)m_pRoomMgr)->addWillDeleteRoomID(getRoomID());
 		return;
 	}
 	// tell client closed room ;

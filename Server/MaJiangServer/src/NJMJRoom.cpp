@@ -75,7 +75,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_tPoker.initAllCard(eMJ_NanJing);
 	// create state and add state ;
 	IMJRoomState* vState[] = {
-		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new NJRoomStateWaitPlayerAct(), new NJRoomStateStartGame(), new NJRoomStateWaitPlayerAct()
+		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new NJRoomStateWaitPlayerAct(), new NJRoomStateStartGame(), new NJRoomStateBuHua()
 		, new MJRoomStateGameEnd(), new NJRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(), new MJRoomStateAskForRobotGang()
 	};
 	for (uint8_t nIdx = 0; nIdx < sizeof(vState) / sizeof(IMJRoomState*); ++nIdx)
