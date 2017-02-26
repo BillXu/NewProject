@@ -297,6 +297,25 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 
 		m_vRoomIDSplits[np] = 1;
 	}
+
+	// find big one and small one 
+	uint8_t nBig = 0; uint8_t nSmall = 100;
+	for (auto& ref : m_vRoomIDSplits)
+	{
+		if (nBig < ref.first)
+		{
+			nBig = ref.first;
+		}
+
+		if (ref.first < nSmall)
+		{
+			nSmall = ref.first;
+		}
+	}
+
+	m_vRoomIDSplits.clear();
+	m_vRoomIDSplits[nBig] = 1;
+	m_vRoomIDSplits[nSmall] = 1;
 	///
 	m_nDuringSeconds = 2 * 60;
 #ifdef GAME_365
