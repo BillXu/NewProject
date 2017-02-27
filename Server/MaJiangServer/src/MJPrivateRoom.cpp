@@ -206,6 +206,23 @@ bool MJPrivateRoom::onMessage(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nP
 		sendRoomInfo(nPlayerSessionID);
 	}
 	break;
+	case MSG_PLAYER_LEAVE_ROOM:
+	{
+		Json::Value jsMsg;
+		auto pPlayer = ((IMJRoom*)m_pRoom)->getMJPlayerBySessionID(nPlayerSessionID);
+		if (!pPlayer)
+		{
+			LOGFMTE("you are not in room why you apply leave room id = %u ,session id = %u", getRoomID(), nPlayerSessionID);
+			jsMsg["ret"] = 1;
+		}
+		else
+		{
+			jsMsg["ret"] = 0;
+			onPlayerApplyLeave(pPlayer->getUID());
+		}
+		sendMsgToPlayer(jsMsg, MSG_PLAYER_LEAVE_ROOM, nPlayerSessionID);
+	}
+	break;
 	default:
 	{
 		if (m_pRoom)
