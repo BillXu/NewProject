@@ -675,7 +675,9 @@ bool IRoomManager::reqeustChatRoomID(IRoom* pRoom)
 void IRoomManager::onConnectedSvr()
 {
 	IGlobalModule::onConnectedSvr();
-
+#ifdef _DEBUG
+	return;
+#endif
 	if ( m_mapPrivateRecorder.empty() && m_mapSieralPrivateRecorder.empty() ) 
 	{
 		stMsgReadGameResult msg ;

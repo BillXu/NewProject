@@ -5,6 +5,7 @@
 #include <cassert>
 #include "ISitableRoomPlayer.h"
 #include "ConfigDefine.h"
+#include <algorithm>
 struct stBuyInEntry
 {
 	uint32_t nBuyInCoin ;
@@ -221,7 +222,7 @@ protected:
 	float m_fWaitOpenTicket ;
 	float m_fWaitPlayerJoinTicket;
 	float m_fTicketForAutoClosedRoom; // if you do not player for a long time , room will auto closed 
-	std::map<uint8_t, uint8_t> m_vRoomIDSplits;
+	std::map<uint8_t,uint8_t> m_vRoomIDSplits;
 	std::map<uint32_t,stPrivateRoomPlayerItem*> m_mapPrivateRoomPlayers ;
 };
 
@@ -283,40 +284,6 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 {
 	m_nRoomID = nRoomID ;
 
-	// split room id ;
-	m_vRoomIDSplits.clear();
-	auto nSplitRoomID = nRoomID;
-	for (uint8_t nIdx = 0; nIdx < 6; ++nIdx)
-	{
-		auto np = nSplitRoomID % 10;
-		nSplitRoomID /= 10;
-		if (0 == np)
-		{
-			continue;
-		}
-
-		m_vRoomIDSplits[np] = 1;
-	}
-
-	// find big one and small one 
-	uint8_t nBig = 0; uint8_t nSmall = 100;
-	for (auto& ref : m_vRoomIDSplits)
-	{
-		if (nBig < ref.first)
-		{
-			nBig = ref.first;
-		}
-
-		if (ref.first < nSmall)
-		{
-			nSmall = ref.first;
-		}
-	}
-
-	m_vRoomIDSplits.clear();
-	m_vRoomIDSplits[nBig] = 1;
-	m_vRoomIDSplits[nSmall] = 1;
-	///
 	m_nDuringSeconds = 2 * 60;
 #ifdef GAME_365
 	m_nDuringSeconds = 10;
@@ -364,6 +331,38 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	m_nMaxTakeIn = m_pRoom->getMaxTakeIn();
 	LOGFMTD("create 1 private room") ;
 
+	// split room id ;
+	m_vRoomIDSplits.clear();
+	auto nSplitRoomID = nRoomID;
+	for (uint8_t nIdx = 0; nIdx < 6; ++nIdx)
+	{
+		auto np = nSplitRoomID % 10;
+		nSplitRoomID /= 10;
+		if (0 == np)
+		{
+			continue;
+		}
+
+		m_vRoomIDSplits[np] = 1;
+	}
+
+	if (eRoom_Golden != m_pRoom->getRoomType())  // not jin hua .so this 
+	{
+		std::vector<uint8_t> vSort;
+		for (auto& ref : m_vRoomIDSplits)
+		{
+			vSort.push_back(ref.first);
+		}
+		std::sort(vSort.begin(), vSort.end());
+		if (vSort.size() >= 2)
+		{
+			m_vRoomIDSplits.clear();
+			m_vRoomIDSplits[vSort[1]] = 1;
+			m_vRoomIDSplits[vSort[vSort.size() - 2]] = 1;
+		}
+	}
+
+	///------------------------
 
 	return true ;
 }
