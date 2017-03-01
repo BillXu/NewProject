@@ -696,8 +696,11 @@ enum eMsgType
 	MSG_ROOM_CHAT_MSG, // 房间内有玩家 发送聊天信息；
 	// svr:  { playerIdx : 2 , type : 1 , content : "biao qing or viceID" } 
 
+	MSG_PLAYER_WX_HEAD_URL ,  // 收到玩家的头像地址
+	// svr： { uid : 234, url : "http://heoshdg" } 
 
-
+	MSG_PLAYER_SET_WX_HEAD_URL,  // 设置玩家的微信头像
+	// client : { url : "hello" } 
 
 
 

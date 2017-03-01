@@ -21,13 +21,15 @@ public:
 		uint32_t nPlayerUID ;
 		stPlayerDetailData* pData ;
 		time_t tRequestDataTime ;
+		std::string strWxHeadUrl;
 		
 		std::map<uint32_t,stSubscriber> vBrifeSubscribers ;
 		std::map<uint32_t,stSubscriber> vDetailSubscribers ;
+	public:
 		stPlayerDataPrifle(){ nPlayerUID = 0 ; pData = nullptr ; tRequestDataTime = 0 ; }
 		~stPlayerDataPrifle(){ delete pData ; pData = nullptr ; vBrifeSubscribers.clear() ; vDetailSubscribers.clear() ;}
 		bool isContentData(){ return pData != nullptr ; }
-		void recivedData(stPlayerBrifData* pRecData) ;
+		void recivedData(stPlayerBrifData* pRecData,const char* pWxHeadUrl) ;
 		void addSubscriber( uint32_t nSessionId , bool isDetail );
 	};
 

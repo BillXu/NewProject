@@ -38,6 +38,7 @@ public:
 	char* GetPlayerName(){ return m_stBaseData.cName ;}
 	char* GetPlayerSignature(){ return m_stBaseData.cSignature ;}
 	void GetPlayerBrifData(stPlayerBrifData* pData );
+	std::string getWxHeadUrl();
 	void GetPlayerDetailData(stPlayerDetailData* pData );
 	unsigned char GetSex(){ return m_stBaseData.nSex ;}
 	unsigned char GetVipLevel(){ return m_stBaseData.nVipLevel ; }

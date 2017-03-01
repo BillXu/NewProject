@@ -67,8 +67,9 @@ struct stServerBaseData
 	uint32_t tLastTakeCharityCoinTime ;
 	uint8_t nTakeCharityTimes ;
 	bool isRegister ;
-	uint8_t nNewPlayerHaloWeight ;
+	uint8_t nNewPlayerHaloWeight ;	
 	uint32_t tLastTakeCardGiftTime ;
+	char vWXHeardUrl[MAX_LEN_WX_HEAD_RUL];
 };
 
 struct stTaxasInRoomPeerData

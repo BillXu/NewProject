@@ -531,10 +531,11 @@ struct stMsgSelectPlayerData
 struct stMsgSelectPlayerDataRet
 	:public stMsg
 {
-	stMsgSelectPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA ; usMsgType = MSG_SELECT_DB_PLAYER_DATA ;}
+	stMsgSelectPlayerDataRet(){ cSysIdentifer = ID_MSG_PORT_DATA; usMsgType = MSG_SELECT_DB_PLAYER_DATA; }
 	uint8_t nRet ; // 0 success , 1 can not find player ;
 	bool isDetail ;
 	uint32_t nDataPlayerUID ;
+	char vWXHeadUrl[MAX_LEN_WX_HEAD_RUL];
 	PLACE_HOLDER(stPlayerBrifData* tData ) ;
 };
 

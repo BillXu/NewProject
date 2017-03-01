@@ -13,7 +13,7 @@
 #include "RewardConfig.h"
 #include "RobotCenter.h"
 
-void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* pRecData)
+void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* pRecData,const char* pWxHeadUrl)
 {
 	if ( isContentData() )
 	{
@@ -21,6 +21,7 @@ void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* 
 		return ;
 	}
 
+	strWxHeadUrl = pWxHeadUrl;
 	if ( pRecData )
 	{
 		pData = new stPlayerDetailData ;
@@ -49,6 +50,10 @@ void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* 
 		{
 			CGameServerApp::SharedGameServerApp()->sendMsg(pp.second.nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
 			LOGFMTD("send data detail profile to subscrible = %d",pp.second.nSessionID) ;
+			Json::Value jsHeadUrl;
+			jsHeadUrl["uid"] = pData->nUserUID;
+			jsHeadUrl["url"] = strWxHeadUrl;
+			CGameServerApp::SharedGameServerApp()->sendMsg(pp.second.nSessionID, jsHeadUrl, MSG_PLAYER_WX_HEAD_URL);
 		}
 
 		vBrifeSubscribers.clear() ;
@@ -72,6 +77,11 @@ void CSelectPlayerDataCacher::stPlayerDataPrifle::recivedData(stPlayerBrifData* 
 		{
 			CGameServerApp::SharedGameServerApp()->sendMsg(pp.second.nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
 			LOGFMTD("send data profile detail to subscrible = %d",pp.second.nSessionID) ;
+			
+			Json::Value jsHeadUrl;
+			jsHeadUrl["uid"] = pData->nUserUID;
+			jsHeadUrl["url"] = strWxHeadUrl;
+			CGameServerApp::SharedGameServerApp()->sendMsg(pp.second.nSessionID,jsHeadUrl, MSG_PLAYER_WX_HEAD_URL);
 		}
 	}
 
@@ -155,7 +165,7 @@ void CSelectPlayerDataCacher::cachePlayerData(stMsgSelectPlayerDataRet* pmsg )
 		{
 			stPlayerDataPrifle* pDataPri = new stPlayerDataPrifle ;
 			pDataPri->nPlayerUID = pData->nUserUID ;
-			pDataPri->recivedData(pData);
+			pDataPri->recivedData(pData,pmsg->vWXHeadUrl);
 			m_vDetailData[pDataPri->nPlayerUID] = pDataPri  ;
 			LOGFMTE("why no cacher foot print uid = %d",pData->nUserUID) ;
 		}
@@ -167,7 +177,7 @@ void CSelectPlayerDataCacher::cachePlayerData(stMsgSelectPlayerDataRet* pmsg )
 	else
 	{
 		LOGFMTD("recievd data prifle uid = %d",pData->nUserUID) ;
-		iter->second->recivedData(pData) ;
+		iter->second->recivedData(pData,pmsg->vWXHeadUrl);
 	}
 }
 
@@ -499,6 +509,12 @@ bool CPlayerManager::ProcessPublicMessage( stMsg* prealMsg , eMsgPort eSenderPor
 				auB.addContent(&msgBack,sizeof(msgBack));
 				auB.addContent(&stData,pRet->isDetail ? sizeof(stPlayerDetailDataClient) : sizeof(stPlayerBrifData) ) ;
 				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID,auB.getBufferPtr(),auB.getContentSize()) ;
+				// send head url
+				auto urlh = pPlayer->GetBaseData()->getWxHeadUrl();
+				Json::Value jsHeadUrl;
+				jsHeadUrl["uid"] = stData.nUserUID;
+				jsHeadUrl["url"] = urlh;
+				CGameServerApp::SharedGameServerApp()->sendMsg(nSessionID, jsHeadUrl, MSG_PLAYER_WX_HEAD_URL);
 				return true ;
 			}
 

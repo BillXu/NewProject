@@ -879,6 +879,19 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 		LOGFMTD("consumed vip room card = %u , uid = %u", nConsued, GetPlayer()->GetUserUID());
 	}
 	break;
+	case MSG_PLAYER_SET_WX_HEAD_URL:
+	{
+		if (recvValue["url"].isNull())
+		{
+			LOGFMTE("url arument is not supply uid = %u",GetPlayer()->GetUserUID());
+			break;
+		}
+
+		memset(m_stBaseData.vWXHeardUrl,0,sizeof(m_stBaseData.vWXHeardUrl));
+		sprintf_s(m_stBaseData.vWXHeardUrl, sizeof(m_stBaseData.vWXHeardUrl), "%s", recvValue["url"].asCString() );
+		LOGFMTD("head url set is ok uid = %u",GetPlayer()->GetUserUID());
+	}
+	break;
 	default:
 		return false;
 	}
@@ -1023,6 +1036,11 @@ void CPlayerBaseData::SendBaseDatToClient()
 		SendMsg(&msg,sizeof(msg)) ;
 		LOGFMTD("send base data to session id = %d ",GetPlayer()->GetSessionID() );
 		LOGFMTI("send data uid = %d , final coin = %d, sex = %d",GetPlayer()->GetUserUID(),GetAllCoin(),msg.stBaseData.nSex);
+
+		Json::Value jsHeadUrl;
+		jsHeadUrl["uid"] = GetPlayer()->GetUserUID();
+		jsHeadUrl["url"] = m_stBaseData.vWXHeardUrl;
+		SendMsg(jsHeadUrl, MSG_PLAYER_WX_HEAD_URL);
 	}
 	else
 	{
@@ -1286,6 +1304,11 @@ void CPlayerBaseData::GetPlayerBrifData(stPlayerBrifData* pData )
 	memcpy(pData,&m_stBaseData,sizeof(stPlayerBrifData));
 	auto pGameData = (CPlayerGameData*)GetPlayer()->GetComponent(ePlayerComponent_PlayerGameData);
 	pData->nCurrentRoomID = pGameData->getCurRoomID();
+}
+
+std::string CPlayerBaseData::getWxHeadUrl()
+{
+	return m_stBaseData.vWXHeardUrl;
 }
 
 void CPlayerBaseData::GetPlayerDetailData(stPlayerDetailData* pData )
