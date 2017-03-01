@@ -63,14 +63,17 @@ void CServerNetworkImp::handleAccept(boost::shared_ptr<CSession> session,const b
 
 		std::string str = session->getIPString() ;
 		LOGFMTD("a peer connected ip = %s id = %u", str.c_str(), session->getConnectID());
-		Packet* pack = new Packet ;
-		pack->_brocast = false ;
-		pack->_packetType = _PACKET_TYPE_CONNECTED ;
-		pack->_connectID = session->getConnectID() ;
-		pack->_len = str.size();
-		memset(pack->_orgdata,0,sizeof(pack->_orgdata));
-		memcpy_s(pack->_orgdata, sizeof(pack->_orgdata), str.c_str(), pack->_len);
-		addPacket(pack);
+		if (str.size() > 3)  // not throw expception 
+		{
+			Packet* pack = new Packet;
+			pack->_brocast = false;
+			pack->_packetType = _PACKET_TYPE_CONNECTED;
+			pack->_connectID = session->getConnectID();
+			pack->_len = str.size();
+			memset(pack->_orgdata, 0, sizeof(pack->_orgdata));
+			memcpy_s(pack->_orgdata, sizeof(pack->_orgdata), str.c_str(), pack->_len);
+			addPacket(pack);
+		}
 
 		session->startHeartbeatTimer();
 		session->startWaitFirstMsg();

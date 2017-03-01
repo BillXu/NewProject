@@ -346,20 +346,19 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 		m_vRoomIDSplits[np] = 1;
 	}
 
-	if (eRoom_Golden != m_pRoom->getRoomType())  // not jin hua .so this 
+	// will sort ;
+	std::vector<uint8_t> vSort;
+	for (auto& ref : m_vRoomIDSplits)
 	{
-		std::vector<uint8_t> vSort;
-		for (auto& ref : m_vRoomIDSplits)
-		{
-			vSort.push_back(ref.first);
-		}
-		std::sort(vSort.begin(), vSort.end());
-		if (vSort.size() >= 2)
-		{
-			m_vRoomIDSplits.clear();
-			m_vRoomIDSplits[vSort[1]] = 1;
-			m_vRoomIDSplits[vSort[vSort.size() - 2]] = 1;
-		}
+		vSort.push_back(ref.first);
+	}
+	std::sort(vSort.begin(), vSort.end());
+
+	if ( vSort.size() > 2 )
+	{
+		m_vRoomIDSplits.clear();
+		m_vRoomIDSplits[vSort[1]] = 1;
+		m_vRoomIDSplits[vSort[vSort.size() - 2]] = 1;
 	}
 
 	///------------------------

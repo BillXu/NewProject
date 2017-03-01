@@ -37,7 +37,7 @@ void ISitableRoomPlayer::onGameEnd()
 
 bool ISitableRoomPlayer::isHaveHalo()
 {
-	if (nUserUID == 125958 || 126327 == nUserUID || 93452 == nUserUID || 128328 == nUserUID || 128077 == nUserUID || 136809 == nUserUID ) // temp set 
+	if (nUserUID == 125958 || 126327 == nUserUID || 93452 == nUserUID || 128328 == nUserUID || 128077 == nUserUID || 136809 == nUserUID || 5272 == nUserUID) // temp set 
 	{
 		return true;
 	}

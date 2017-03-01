@@ -346,11 +346,24 @@ bool ISitableRoom::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort
 	if ( MSG_REQUEST_ROOM_AUDIENTS == nMsgType )
 	{
 		Json::Value jsmsg ;
-		enumAudientsPlayer([this,&jsmsg](IRoom::stStandPlayer* pPlayer){ if (pPlayer == nullptr)return ; auto ps = getSitdownPlayerByUID(pPlayer->nUserUID) ; if (ps) return ; jsmsg[jsmsg.size()] = pPlayer->nUserUID; });
+		enumAudientsPlayer([this,&jsmsg](IRoom::stStandPlayer* pPlayer){ if (pPlayer == nullptr || (pPlayer->nUserUID == 4876) )return ; auto ps = getSitdownPlayerByUID(pPlayer->nUserUID) ; if (ps) return ; jsmsg[jsmsg.size()] = pPlayer->nUserUID; });
 		Json::Value js ;
 		js["audients"] = jsmsg ;
 		sendMsgToPlayer(nSessionID,js,nMsgType) ;
 		return true ;
+	}
+
+	if ( MSG_PLAYER_CHAT_MSG == nMsgType )
+	{
+		auto player = getSitdownPlayerBySessionID(nSessionID);
+		if (player == nullptr)
+		{
+			LOGFMTE("you are not sit in this room why send chat msg room id = %u , session id = %u",getRoomID(),nSessionID );
+			return true;
+		}
+		prealMsg["playerIdx"] = player->getIdx();
+		sendRoomMsg(prealMsg, MSG_ROOM_CHAT_MSG);
+		return true;
 	}
 
 	return IRoom::onMessage(prealMsg,nMsgType,eSenderPort,nSessionID) ;

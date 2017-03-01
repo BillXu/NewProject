@@ -39,7 +39,15 @@ uint32_t CSession::getConnectID()
 
 std::string CSession::getIPString()
 {
-	return m_socket.remote_endpoint().address().to_string();
+	try {
+		return m_socket.remote_endpoint().address().to_string();
+	}
+	catch (boost::system::system_error &ec) {
+		std::cerr << "Disconnected " << ec.what() << std::endl;
+		LOGFMTE("terrble error ip : connect id = %u , %s", getConnectID(), ec.what());
+		return "";
+	}
+	
 }
 
 void CSession::start()

@@ -690,7 +690,7 @@ enum eMsgType
 	// uid : 玩家的uid，curCoin 结束时剩余钱；
 
 	MSG_PLAYER_CHAT_MSG, // 玩家发送 聊天信息
-	// client : { dstRoomID : 234 , type : 1 , content : "biao qing or viceID" }
+	// client : { roomID : 234 , type : 1 , content : "biao qing or viceID" }
 	// svr : { ret : 0 } 
 
 	MSG_ROOM_CHAT_MSG, // 房间内有玩家 发送聊天信息；
