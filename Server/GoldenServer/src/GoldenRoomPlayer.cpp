@@ -7,6 +7,7 @@ void CGoldenRoomPlayer::reset(IRoom::stStandPlayer* pPlayer)
 	m_nBetCoin = 0 ;
 	m_tPeerCard.reset();
 	m_nWinCoin = 0 ;
+	m_isHavePKFlag = false;
 	setState(eRoomPeer_WaitNextGame) ;
 }
 
@@ -30,6 +31,7 @@ void CGoldenRoomPlayer::onGameBegin()
 	setState(eRoomPeer_CanAct) ;
 	m_nBetCoin = 0 ;
 	m_nWinCoin = 0 ;
+	m_isHavePKFlag = false;
 	m_tPeerCard.reset();
 }
 

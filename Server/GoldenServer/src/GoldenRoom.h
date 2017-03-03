@@ -31,6 +31,7 @@ public:
 	bool isReachedMaxRound();
 	bool onPlayerPK(ISitableRoomPlayer* pActPlayer , ISitableRoomPlayer* pTargetPlayer );
 	void sendResultToPlayerWhenDuringResultState(uint32_t nSessionID)override;
+	bool isReachedMenCnt();
 protected:
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;
 protected:
@@ -41,6 +42,7 @@ protected:
 	uint8_t  m_nCurActIdx ;
 	uint16_t m_nBetRound ;
 	uint8_t  m_nMaxBetRound;
+	uint8_t m_nMenCnt;
 
 	Json::Value m_arrPlayers ;
 	Json::Value m_jsGameResult;

@@ -21,6 +21,7 @@ CGoldenRoom::CGoldenRoom()
 	m_nCurActIdx = m_nBankerIdx ;
 	m_nBetRound = 0 ;
 	m_nMaxBetRound = 20;
+	m_nMenCnt = 0;
 	getPoker()->InitTaxasPoker() ;
 }
 
@@ -41,6 +42,16 @@ bool CGoldenRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID , con
 	else
 	{
 		LOGFMTE("do not set max round");
+	}
+
+	if (jsOpt.isNull() == false && jsOpt["menCnt"].isUInt())
+	{
+		m_nMenCnt = jsOpt["menCnt"].asUInt();
+		LOGFMTD("room id = %u menCnt = %u", getRoomID(), m_nMenCnt);
+	}
+	else
+	{
+		LOGFMTE("do not set menCnt");
 	}
 	return true ;
 }
@@ -127,6 +138,7 @@ void CGoldenRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["curActIdx"] = m_nCurActIdx ;
 	vOutJsValue["betRound"] = m_nBetRound ;
 	vOutJsValue["maxRound"] = m_nMaxBetRound;
+	vOutJsValue["menCnt"] = m_nMenCnt;
 }
 
 void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
@@ -327,9 +339,9 @@ void CGoldenRoom::caculateGameResult()
 	Json::Value jsMsg;
 	jsMsg["winnerIdx"] = pWinner->getIdx();
 	Json::Value jsPlayers;
-	for (int8_t nIdx = nSortedCnt - 1; nIdx >= 0; --nIdx)
+	for (int8_t nIdx = 0; nIdx < getSeatCount(); ++nIdx)
 	{
-		auto pp = (CGoldenRoomPlayer*)getSortedPlayerByIdx(nIdx);
+		auto pp = (CGoldenRoomPlayer*)getPlayerByIdx(nIdx);
 		if (pp && pp->isHaveState(eRoomPeer_StayThisRound))
 		{
 			Json::Value jsPlayer;
@@ -338,13 +350,14 @@ void CGoldenRoom::caculateGameResult()
 			jsPlayer["offset"] = pp->getGameOffset();
 			jsPlayer["final"] = pp->getCoin();
 			
-			if (!pp->isHaveState(eRoomPeer_GiveUp))
+			//if (!pp->isHaveState(eRoomPeer_GiveUp))
 			{
 				Json::Value jsCard;
 				jsCard[jsCard.size()] = pp->getCardByIdx(0);
 				jsCard[jsCard.size()] = pp->getCardByIdx(1);
 				jsCard[jsCard.size()] = pp->getCardByIdx(2);
 				jsPlayer["card"] = jsCard;
+				jsPlayer["isShowCard"] = pp->ishavePKFlag() ? 1 : 0;
 			}
 
 			jsPlayers[jsPlayers.size()] = jsPlayer;
@@ -421,6 +434,11 @@ uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoo
 		break;
 	case eRoomPeerAction_ViewCard:
 		{
+			if ( false == isReachedMenCnt() )
+			{
+				LOGFMTE("room id = %u meng = %u , bet round = %u can not look card ",getRoomID(),m_nMenCnt,m_nBetRound );
+				return 7;
+			}
 			pPlayer->setState(eRoomPeer_Looked) ;
 		}
 		break;
@@ -445,6 +463,15 @@ uint8_t CGoldenRoom::onPlayerAction(uint32_t nAct, uint32_t& nValue, ISitableRoo
 		return 4;
 	}
 	return 0 ;
+}
+
+bool CGoldenRoom::isReachedMenCnt()
+{
+	if (m_nBetRound < m_nMenCnt && m_nMenCnt > 0)
+	{
+		return false;
+	}
+	return true;
 }
 
 uint8_t CGoldenRoom::informPlayerAct( bool bStepNext )
@@ -496,7 +523,7 @@ bool CGoldenRoom::isReachedMaxRound()
 		}
 	}
 
-	return  ((nNextRound + 1) >= m_nMaxBetRound);
+	return  ((nNextRound ) >= m_nMaxBetRound);
 }
 
 bool CGoldenRoom::onPlayerPK(ISitableRoomPlayer* pActPlayer , ISitableRoomPlayer* pTargetPlayer )

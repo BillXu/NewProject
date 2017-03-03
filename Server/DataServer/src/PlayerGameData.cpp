@@ -420,6 +420,19 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			{
 				LOGFMTD("create private room isFree is null ?");
 			}
+
+			uint8_t nComsumeType = 0;
+			if (recvValue["deductCardType"].isNull() == false)
+			{
+				nComsumeType = recvValue["deductCardType"].asUInt();
+			}
+
+			uint8_t nSeatCnt = 5;
+			if ( false == recvValue["seatCnt"].isNull())
+			{
+				nSeatCnt = recvValue["seatCnt"].asUInt();
+			}
+
 			// if can create room  ;
 			Json::Value jsMsgBack ;
 			jsMsgBack["ret"] = 0 ;
@@ -438,6 +451,18 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				jsMsgBack["ret"] = 6;
 				SendMsg(jsMsgBack, nmsgType);
 				break;
+			}
+
+			if (isFree == false && nComsumeType == 1)
+			{
+				auto ncnt = nSeatCnt * (nCirle / 10);
+				if (ncnt > GetPlayer()->GetBaseData()->GetAllDiamoned())
+				{
+					jsMsgBack["ret"] = 7;
+					SendMsg(jsMsgBack, nmsgType);
+					LOGFMTE("create room diamond is not enough uid = %u , seat = %u , cirle = %u",GetPlayer()->GetUserUID(),nSeatCnt,nCirle);
+					break;
+				}
 			}
 
 			auto pgameCenter = CGameServerApp::SharedGameServerApp()->getGameRoomCenter() ;

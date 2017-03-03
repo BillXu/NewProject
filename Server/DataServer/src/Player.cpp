@@ -55,7 +55,7 @@ void CPlayer::Init(unsigned int nUserUID, unsigned int nSessionID )
 	//m_vAllComponents[ePlayerComponent_PlayerItemMgr] = new CPlayerItemComponent(this);
 	//m_vAllComponents[ePlayerComponent_PlayerMission] = new CPlayerMission(this);
 	//m_vAllComponents[ePlayerComponent_PlayerShop] = new CPlayerShop(this);
-	m_vAllComponents[ePlayerComponent_Friend] = new CPlayerFriend(this);
+	//m_vAllComponents[ePlayerComponent_Friend] = new CPlayerFriend(this);
 	for ( int i = ePlayerComponent_None; i < ePlayerComponent_Max ; ++i )
 	{
 		IPlayerComponent* p = m_vAllComponents[i] ;

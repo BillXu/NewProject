@@ -319,11 +319,13 @@ enum eMsgType
 	// ret : 0 success , 1 club not exist 
 
 	MSG_CREATE_ROOM, // ID_MSG_PORT_DATA ;
-	// client : { name : "this is room name" ,roomType : eRoomType , baseBet : 23 , duringMin : 2345 , clubID : 23 , baseTakeIn : 235, isControlTakeIn : 0 , seatCnt : 2 , opts : { ... } }
+	// client : { deductCardType : 0, name : "this is room name" ,roomType : eRoomType , baseBet : 23 , duringMin : 2345 , clubID : 23 , baseTakeIn : 235, isControlTakeIn : 0 , seatCnt : 2 , opts : { ... } }
 	// roomType : means eRoomType . baseBet , for taxas , it represent small blind . duringMin : room keep running time , by minite . clubID : when equal 0 , means ,quick game , opts : depend on game type ;
 	// NIU NIU  opts : { unbankerType : 0 }  // 0 no niu leave banker , 1 lose to all  leave banker , 2 manual leave banker;
 	// Taxas Poker opts : { maxTakeIn : 2345, isInsured : 0  }
-	// Golden opts : { maxSingleBet : 20,maxRound : 30 }
+	// Golden opts : { maxSingleBet : 20, maxRound : 30, menCnt : 0 }
+	// deductCardType : 扣卡方式，牛牛金花通用，0是AA扣卡，1是房主扣卡
+	// menCnt: 闷牌轮数 金花才有，0是不闷，2是2轮，3是3轮
 
 	//南京麻将 mj : { roomType : eRoomType ,circle : 2345 , initCoin : 23 , isBiXiaHu : 0 , isHuaZa : 0  } 
 
@@ -474,7 +476,7 @@ enum eMsgType
 	// svr : { idx : 234 }
 
 	MSG_GOLDEN_ROOM_RESULT_NEW ,
-	// svr : { winnerIdx : 234 , players : [ {idx : 23 ,UID :2, offset : 23 , final : 234, card:[2,3,5 ] } , {idx : 23 , offset : 23 ,UID :2, final : 234, card:[2,3,5 ] } , ..... ] }
+	// svr : { winnerIdx : 234 , players : [ { isShowCard : 0 ,idx : 23 ,UID :2, offset : 23 , final : 234, card:[2,3,5 ] } , { isShowCard : 0 ,idx : 23 , offset : 23 ,UID :2, final : 234, card:[2,3,5 ] } , ..... ] }
 	
 	MSG_REQUEST_PLAYER_IP,  // send to data svr 
 	// client : { reqUID : 23456 }

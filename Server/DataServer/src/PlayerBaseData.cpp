@@ -23,6 +23,7 @@
 #include "ServerStringTable.h"
 #include "encryptNumber.h"
 #include "Group.h"
+#include "AsyncRequestQuene.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
 #define COIN_BE_INVITED 588
@@ -890,6 +891,12 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 		memset(m_stBaseData.vWXHeardUrl,0,sizeof(m_stBaseData.vWXHeardUrl));
 		sprintf_s(m_stBaseData.vWXHeardUrl, sizeof(m_stBaseData.vWXHeardUrl), "%s", recvValue["url"].asCString() );
 		LOGFMTD("head url set is ok uid = %u",GetPlayer()->GetUserUID());
+
+		Json::Value jsreq;
+		char pBuffer[256] = { 0 };
+		sprintf_s(pBuffer, sizeof(pBuffer), "update playerbasedata set signature = '%s' where userUID = %u ;", m_stBaseData.vWXHeardUrl,GetPlayer()->GetUserUID());
+		jsreq["sql"] = pBuffer;
+		 CGameServerApp::SharedGameServerApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Select, jsreq);
 	}
 	break;
 	default:

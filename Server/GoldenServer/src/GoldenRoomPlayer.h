@@ -17,8 +17,11 @@ public:
 	int32_t getGameOffset() override { return m_nWinCoin - m_nBetCoin ;}
 	void addWinCoin(uint32_t nWinCoin );
 	IPeerCard* getPeerCard()override{ return &m_tPeerCard; }
+	bool ishavePKFlag(){ return m_isHavePKFlag; };
+	void setPKFlag(){ m_isHavePKFlag = true; }
 protected:
 	uint32_t m_nWinCoin ;
 	uint32_t m_nBetCoin ;
+	bool m_isHavePKFlag;
 	CGoldenPeerCardAdpater m_tPeerCard ;
 };

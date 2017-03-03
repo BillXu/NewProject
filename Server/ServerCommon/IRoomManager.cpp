@@ -211,84 +211,6 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 			LOGFMTD("send room record msg ") ;
 		}
 		break ;
-	//case MSG_GET_MAX_ROOM_ID:
-	//	{
-	//		stMsgGetMaxRoomIDRet* pRet = (stMsgGetMaxRoomIDRet*)prealMsg ;
-	//		m_nMaxRoomID = pRet->nMaxRoomID ;
-	//	}
-	//	break;
-	//case MSG_READ_MY_OWN_ROOMS:
-	//	{
-	//		stMsgReadMyOwnRooms* pRet = (stMsgReadMyOwnRooms*)prealMsg ;
-	//		LIST_ROOM vRL ;
-	//		if ( getRoomCreatorRooms(pRet->nUserUID,vRL) == false )
-	//		{
-	//			LOGFMTD("uid = %d do not create room so , need not respone list" ,pRet->nUserUID ) ;
-	//			return true ;
-	//		}
-
-	//		stMsgReadMyOwnRoomsRet msgRead ;
-	//		msgRead.nCnt = vRL.size() ;
-	//		msgRead.nRoomType = getMgrRoomType();
-	//		CAutoBuffer auBuffer(msgRead.nCnt * sizeof(stMyOwnRoom) + sizeof(msgRead));
-	//		auBuffer.addContent(&msgRead,sizeof(msgRead)) ;
-	//		stMyOwnRoom info ;
-	//		for ( IRoomInterface* proom : vRL )
-	//		{
-	//			info.nRoomID = proom->getRoomID() ;
-	//			auBuffer.addContent(&info,sizeof(info)) ;
-	//		}
-	//		sendMsg((stMsg*)auBuffer.getBufferPtr(),auBuffer.getContentSize(),nSessionID) ;
-	//		LOGFMTD("respone uid = %d have owns cnt = %d",pRet->nUserUID,vRL.size()) ;
-	//	}
-	//	break;
-	//case MSG_READ_ROOM_INFO:
-	//	{
-	//		stMsgReadRoomInfoRet* pRet = (stMsgReadRoomInfoRet*)prealMsg ;
-	//		LOGFMTD("read room info room id = %d",pRet->nRoomID);
-	//		IRoomInterface* pRoom = doCreateRoomObject((eRoomType)pRet->nRoomType,pRet->nRoomOwnerUID != MATCH_MGR_UID ) ;
-	//		Json::Reader jsReader ;
-	//		Json::Value jsRoot;
-	//		CAutoBuffer auBufo (pRet->nJsonLen + 1 );
-	//		auBufo.addContent( ((char*)pRet) + sizeof(stMsgReadRoomInfoRet),pRet->nJsonLen);
-	//		jsReader.parse(auBufo.getBufferPtr(),jsRoot);
-	//		stBaseRoomConfig* pConfig = m_pConfigMgr->GetConfigByConfigID(pRet->nConfigID) ;
-	//		if ( pConfig == nullptr )
-	//		{
-	//			delete pRoom ;
-	//			pRoom = nullptr ;
-	//			LOGFMTE("read room info , room = %d , config = %d is null",pRet->nRoomID,pRet->nConfigID) ;
-	//			break;
-	//		}
-	//		pRoom->serializationFromDB(this,pConfig,pRet->nRoomID,jsRoot);
-	//		m_vRooms[pRoom->getRoomID()] = pRoom ;
-
-	//		if ( pRet->nRoomID > m_nMaxRoomID )
-	//		{
-	//			m_nMaxRoomID = pRet->nRoomID ;
-	//		}
-
-	//		addRoomToCreator(pRoom->getOwnerUID(),pRoom);
-	//	}
-	//	break;
-	//case MSG_REQUEST_MY_OWN_ROOM_DETAIL:
-	//	{
-	//		stMsgToRoom* pRet = (stMsgToRoom*)prealMsg ;
-	//		stMsgRequestMyOwnRoomDetailRet msgRet ;
-	//		msgRet.nRet = 0 ;
-	//		IRoomInterface* pRoom = GetRoomByID(pRet->nRoomID);
-	//		if ( pRoom == nullptr )
-	//		{
-	//			msgRet.nRet = 1 ;
-	//			sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
-	//			return true ;
-	//		}
-
-	//		msgRet.nRoomType = pRoom->getRoomType() ;
-	//		msgRet.nRoomID = pRoom->getRoomID() ;
-	//		sendMsg(&msgRet,sizeof(msgRet),nSessionID) ;
-	//	}
-	//	break;
 	case MSG_SVR_ENTER_ROOM:
 		{
 			stMsgSvrEnterRoomRet msgBack ;
@@ -436,29 +358,7 @@ void IRoomManager::onHttpCallBack(char* pResultData, size_t nDatalen , void* pUs
 
 	if ( eHttpReq_Token == nUserTypeArg )
 	{
-		//printf("%s\n",pResultData);
-		//if ( bSuccess == false )
-		//{
-		//	requestGotypeToken();
-		//	return ;
-		//}
-
-		//std::string str = "Authorization:Bearer ";
-		//str += jsResult["access_token"].asString();
-		//m_pGoTyeAPI.setHead(str.c_str()) ;
-		//m_pGoTyeAPI.setBaseURL(jsResult["api_url"].asCString());
-
-		//// request token after expire ;
-		//m_tRequestGoTyeToken.setInterval(jsResult["expires_in"].asUInt());
-		//m_tRequestGoTyeToken.setIsAutoRepeat(false);
-		//m_tRequestGoTyeToken.setCallBack([this](CTimer* pT , float f ){ requestGotypeToken() ;} );
-		//m_tRequestGoTyeToken.start() ;
-
-		//// request room ids ;
-		//if ( m_eRequestChatRoomIDs == eOperate_NotDo )
-		//{
-		//	requestChatRoomIDList();
-		//}
+ 
 	}
 	else if ( nUserTypeArg == eHttpReq_CreateChatRoom )
 	{
@@ -609,68 +509,9 @@ bool IRoomManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& jsR
 
 bool IRoomManager::reqeustChatRoomID(IRoom* pRoom)
 {
-	// not use now 
-//#ifdef _DEBUG
-//	return true ;
-//#endif // _DEBUG
-//
-//	Json::Value cValue ;
-//	cValue["email"] = "378569952@qq.com" ;
-//	cValue["devpwd"] = "bill007" ;
-//	cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
-//	cValue["room_name"] = pRoom->getRoomID() ;
-//	cValue["room_type"] = 1;
-//	cValue["room_create_type"] = 0 ;
-//	Json::StyledWriter sWrite ;
-//	std::string str = sWrite.write(cValue);
-//	return m_pGoTyeAPI.performRequest("CreateRoom",str.c_str(),str.size(),pRoom,eHttpReq_CreateChatRoom);
+
 	return false ;
 }
-
-//bool IRoomManager::requestChatRoomIDList()
-//{
-//
-//	// temp code
-//	//m_pGoTyeAPI.setBaseURL("https://api-a.gotye.com.cn/api");
-//	//m_pGoTyeAPI.setHead("Authorization:Bearer d13f4b35e729331c606f64069eb82955");
-//	//m_pGoTyeAPI.setHead("UKEY:abffee4b-deea-4e96-ac8d-b9d58f246c3f");
-//	// temp code 
-//	Json::Value cValue ;
-//	//cValue["email"] = "378569952@qq.com" ;
-//	//cValue["devpwd"] = "bill007" ;
-//	//cValue["appkey"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ;
-//	//cValue["index"] = 0 ;
-//	//cValue["count"] = 10;
-//	//Json::StyledWriter sWrite ;
-//	//std::string str = sWrite.write(cValue);
-//	//m_eRequestChatRoomIDs = eOperate_Doing ;
-//	//return m_pGoTyeAPI.performRequest("/GetIMRooms",str.c_str(),str.size(),this,eHttpReq_ChatRoomList);
-//
-//	//curl -k -d '{"grant_type":"client_credentials","client_id":"abffee4b-deea-4e96-ac8d-b9d58f246c3f","client_secret":"baf83395-af9f-4858-90d8-6f442df8fa2e"}' -H 'Content-Type:application/json' -H 'Accept:application/json' https://api.gotye.com.cn/api/accessToken
-//
-//	//curl -k -d '{"appkey":"abffee4b-deea-4e96-ac8d-b9d58f246c3f","index":0,"count":10}' -H 'Content-Type:application/json' -H 'Accept:application/json' -H 'Auhorization:Bearer a263dc4bab9962de8720fa0a154de259' https://api-a.gotye.com.cn/api/GetIMRooms
-//}
-//
-//bool IRoomManager::requestGotypeToken()
-//{
-//	//m_pGoTyeAPI.setBaseURL("https://api.gotye.com.cn/api/") ;
-//	//Json::Value cValue ;
-//	//cValue["grant_type"] = "client_credentials" ;
-//	//cValue["client_id"] = "abffee4b-deea-4e96-ac8d-b9d58f246c3f" ; 
-//	//cValue["client_secret"] = "baf83395-af9f-4858-90d8-6f442df8fa2e" ;
-//	//Json::StyledWriter sWrite ;
-//	//std::string str = sWrite.write(cValue);
-//	//return m_pGoTyeAPI.performRequest("accessToken",str.c_str(),str.size(),this,eHttpReq_Token);
-//
-//	//m_pGoTyeAPI.setBaseURL("https://rest.gotye.com.cn/api/accessToken") ;
-//	//Json::Value cValue ;
-//	//cValue["grant_type"] = "password" ;
-//	//cValue["username"] = "378569952@qq.com" ; 
-//	//cValue["password"] = "bill007" ;
-//	//Json::StyledWriter sWrite ;
-//	//std::string str = sWrite.write(cValue);
-//	//return m_pGoTyeAPI.performRequest("accessToken",str.c_str(),str.size(),this,eHttpReq_Token);
-//}
 
 void IRoomManager::onConnectedSvr()
 {

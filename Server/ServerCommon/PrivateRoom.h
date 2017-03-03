@@ -157,32 +157,15 @@ public:
 	void sendRoomInfo(uint32_t nSessionID );
 	uint32_t getCardNeed()
 	{
-		auto t = time(nullptr);
-		struct tm tt;
-		auto tr = localtime_s(&tt,&t);
-		if ((tt.tm_mday >= 27 && tt.tm_mon == 0) || (tt.tm_mday <= 3 && tt.tm_mon == 1))
-		{
-			if (tt.tm_hour >= 8 && tt.tm_hour <= 12)
-			{
-				LOGFMTD("temp free for room card id = %u",getRoomID());
-				return 0;
-			}
-		}
 #ifndef GAME_365
 		return (( m_nDuringSeconds / 60 / 15 ) ) ;
 #else
-		switch ((uint32_t)m_nDuringSeconds)
+		auto nCnt = (uint8_t)m_nDuringSeconds / 10;
+		if (1 == m_nComsumeCardTye)  // kou fang zhu 
 		{
-		case 10:
-			return 1;
-		case 20:
-			return 2;
-		case 30 :
-			return 3;
-		default:
-			LOGFMTD("unknown total round cnt = %u , so need 1 card", (uint32_t)m_nDuringSeconds);
-			return 1;
+			nCnt *= m_pRoom->getSeatCount();
 		}
+		return nCnt;
 #endif
 		return 1;
 	}
@@ -222,6 +205,7 @@ protected:
 	float m_fWaitOpenTicket ;
 	float m_fWaitPlayerJoinTicket;
 	float m_fTicketForAutoClosedRoom; // if you do not player for a long time , room will auto closed 
+	uint8_t m_nComsumeCardTye; // 0 is  AA metherd£¬1 owner kou
 	std::map<uint8_t,uint8_t> m_vRoomIDSplits;
 	std::map<uint32_t,stPrivateRoomPlayerItem*> m_mapPrivateRoomPlayers ;
 };
@@ -257,6 +241,7 @@ CPrivateRoom<T>::CPrivateRoom()
 	m_bRoomInfoDiry = false ;
 	m_fTicketForAutoClosedRoom = 0;
 	m_isRequestingChatID = false ;
+	m_nComsumeCardTye = 0;
 }
 
 template<class T >
@@ -321,6 +306,16 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 		LOGFMTE("create private room ownerUID is null ?") ;
 	}
 
+	if (vJsValue["deductCardType"].isNull() == false)
+	{
+		m_nComsumeCardTye = vJsValue["deductCardType"].asUInt();
+		LOGFMTD("create private room ownerUID is = %u", m_nOwnerUID);
+	}
+	else
+	{
+		LOGFMTE("create private room deductCardType is null ?");
+	}
+
 	m_fLeftTimeSec = (float)m_nDuringSeconds ;
 
 	m_pRoom = new REAL_ROOM ;
@@ -362,6 +357,15 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	}
 
 	///------------------------
+
+	if ( 1 == m_nComsumeCardTye ) // kou fang zhu 
+	{
+		Json::Value jsReqData;
+		jsReqData["targetUID"] = getOwnerUID();
+		jsReqData["diamond"] = getCardNeed();
+		auto pAsync = m_pRoomMgr->getSvrApp()->getAsynReqQueue();
+		pAsync->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_ComsumDiamond, jsReqData);
+	}
 
 	return true ;
 }
@@ -926,6 +930,15 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			}
 			else // do pay
 			{
+				if (1 == m_nComsumeCardTye) // kou fang zhu 
+				{
+					if (m_pRoom)
+					{
+						return m_pRoom->onMessage(prealMsg, eSenderPort, nPlayerSessionID);
+					}
+					return true;
+				}
+
 				pPrivatePlayer->doPayingDeskFee();
 				auto pAsync = m_pRoomMgr->getSvrApp()->getAsynReqQueue();
 
@@ -1465,26 +1478,41 @@ void CPrivateRoom<T>::deleteRoom()
 {
 	if (eRoomState_WaitOpen == getRoomState())
 	{
-		// give back room card here ;
-		LIST_ROOM_RANK_ITEM::iterator iter = m_vSortedRankItems.begin();
-		for (uint16_t nIdx = 0; iter != m_vSortedRankItems.end(); ++iter, ++nIdx)
+		if (1 == m_nComsumeCardTye)  // kou fang zhu 
 		{
-			// push rank 5 to send to client ;
-			stRoomRankItem* pItem = (*iter);
-			auto pP = getPlayerByUID(pItem->nUserUID);
-			if (pP == nullptr)
-			{
-				continue;
-			}
 
 			auto nCnt = getCardNeed();
 
 			Json::Value jsReq;
-			jsReq["targetUID"] = pItem->nUserUID;
+			jsReq["targetUID"] = getOwnerUID();
 			jsReq["diamond"] = nCnt;
 			m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_GiveBackDiamond, jsReq);
-			LOGFMTI("delete room give back room card = %u , uid =%u", nCnt, pItem->nUserUID);
+			LOGFMTI("delete room give back room card = %u , uid =%u", nCnt, getOwnerUID());
 		}
+		else
+		{
+			// give back room card here ;
+			LIST_ROOM_RANK_ITEM::iterator iter = m_vSortedRankItems.begin();
+			for (uint16_t nIdx = 0; iter != m_vSortedRankItems.end(); ++iter, ++nIdx)
+			{
+				// push rank 5 to send to client ;
+				stRoomRankItem* pItem = (*iter);
+				auto pP = getPlayerByUID(pItem->nUserUID);
+				if (pP == nullptr)
+				{
+					continue;
+				}
+
+				auto nCnt = getCardNeed();
+
+				Json::Value jsReq;
+				jsReq["targetUID"] = pItem->nUserUID;
+				jsReq["diamond"] = nCnt;
+				m_pRoomMgr->getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DATA, eAsync_GiveBackDiamond, jsReq);
+				LOGFMTI("delete room give back room card = %u , uid =%u", nCnt, pItem->nUserUID);
+			}
+		}
+
 	}
 
 	m_eState = eRoomState_Close;
@@ -1585,7 +1613,9 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	jsMsgRoomInfo["seatCnt"] = (uint8_t)pRoom->getSeatCount();
 	jsMsgRoomInfo["chatID"] = pRoom->getChatRoomID();
 	jsMsgRoomInfo["curState"] = getRoomState();
-	jsMsgRoomInfo["cardNeed"] =( (uint32_t)m_nDuringSeconds) / 10; ///getCardNeed(); 
+	jsMsgRoomInfo["cardNeed"] = getCardNeed(); 
+	jsMsgRoomInfo["initRound"] = m_nDuringSeconds;
+	jsMsgRoomInfo["deductCardType"] = m_nComsumeCardTye;
 	LOGFMTD("card need = %u",getCardNeed());
 	if ( getRoomState() == eRoomState_Opening )
 	{
