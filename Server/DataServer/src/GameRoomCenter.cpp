@@ -33,6 +33,8 @@ void CGameRoomCenter::init( IServerApp* svrApp )
 
 void CGameRoomCenter::reqChatRoomIDs()
 {
+	m_isFinishReadingChatRoomID = true;
+	return;
 	// get chat room ids ;
 	auto pMode = CGameServerApp::SharedGameServerApp()->getQinjiaModule() ;
 	Json::Value js ;
@@ -82,6 +84,7 @@ void CGameRoomCenter::reqChatRoomIDs()
 
 void CGameRoomCenter::checkChatRoomIDReserve()
 {
+	return;
 	if ( m_vReserveChatRoomIDs.size() > 5 )
 	{
 		LOGFMTD("reserver chat room id cnt > 5 , ok") ;
@@ -124,6 +127,8 @@ void CGameRoomCenter::onConnectedSvr()
 
 void CGameRoomCenter::readRoomItemsInfo()
 {
+	m_isFinishedReading = true;
+	return; // temp skip room items ;
 	Json::Value jssql ;
 	uint32_t nOffset = m_vRoomIDKey.size() ;
 	char pBuffer[512] = {0};
