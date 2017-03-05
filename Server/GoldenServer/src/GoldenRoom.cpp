@@ -335,6 +335,15 @@ void CGoldenRoom::caculateGameResult()
 	LOGFMTD("room id = %u uid = %u win game , tax = %u , win = %u , final = %u", getRoomID(), pWinner->getUserUID(), nTax, msgResult.nWinCoin, msgResult.nFinalCoin);
 
 	//sendRoomMsg(&msgResult,sizeof(msgResult)) ;  // new game will not use it ;
+	uint8_t nCanActCnt = 0;
+	for (int8_t npeerIdx = 0; npeerIdx < getSeatCount(); ++npeerIdx)
+	{
+		auto pp = (CGoldenRoomPlayer*)getPlayerByIdx(npeerIdx);
+		if (pp && pp->isHaveState(eRoomPeer_CanAct))
+		{
+			++nCanActCnt;
+		}
+	}
 	// produce new msg ;
 	Json::Value jsMsg;
 	jsMsg["winnerIdx"] = pWinner->getIdx();
@@ -350,14 +359,23 @@ void CGoldenRoom::caculateGameResult()
 			jsPlayer["offset"] = pp->getGameOffset();
 			jsPlayer["final"] = pp->getCoin();
 			
-			//if (!pp->isHaveState(eRoomPeer_GiveUp))
+
+			if ( pp->ishavePKFlag() )
+			{
+				jsPlayer["isShowCard"] = 1 ;
+			}
+			else
+			{
+				jsPlayer["isShowCard"] = (nCanActCnt > 1 && pp->isHaveState(eRoomPeer_CanAct)) ? 1 : 0;
+			}
+
+			if (jsPlayer["isShowCard"].asUInt() == 1)
 			{
 				Json::Value jsCard;
 				jsCard[jsCard.size()] = pp->getCardByIdx(0);
 				jsCard[jsCard.size()] = pp->getCardByIdx(1);
 				jsCard[jsCard.size()] = pp->getCardByIdx(2);
 				jsPlayer["card"] = jsCard;
-				jsPlayer["isShowCard"] = pp->ishavePKFlag() ? 1 : 0;
 			}
 
 			jsPlayers[jsPlayers.size()] = jsPlayer;
