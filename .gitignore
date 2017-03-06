@@ -392,3 +392,5 @@ Server/ServerCommon/boost/
 Server/VerifyServer/src/testTask.h
 MyGame/
 !/Server/Bin/Lib/
+*.opendb
+Server/ServerSP.VC.db
