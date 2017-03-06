@@ -1,6 +1,6 @@
 #include "TaskPoolModule.h"
 #include "WeChatOrderTask.h"
-#include "testTask.h"
+
 #include "Timer.h"
 #include "ServerMessageDefine.h"
 #include "log4z.h"
