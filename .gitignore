@@ -237,8 +237,8 @@ pip-log.txt
 +
 +# Ignore files build by Visual Studio
 +*.obj
-+*.exe
-+*.pdb
+#+*.exe
+#+*.pdb
 +*.aps
 +*.vcproj.*.user
 +*.vcxproj.user
@@ -377,20 +377,12 @@ MyGame/proj.win32/lib/
 #*.lib
 DezhouPoker/
 工作计划表.xls
-*.exe
-*.exe
-*.exe
 Server/Bin/ServerRelease/
-*.exe
-*.exe
-Server/Bin/ServerRelease/GateServer.exe
-Server/Bin/ServerRelease/LoginServer.exe
-*.exe
 PaiYouQuan/
 Server/ServerCommon/boost/
-*.exe
 Server/VerifyServer/src/testTask.h
 MyGame/
 !/Server/Bin/Lib/
 *.opendb
 Server/ServerSP.VC.db
+*.db

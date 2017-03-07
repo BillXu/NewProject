@@ -600,7 +600,7 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		uint16_t nHuHuaCnt = 0;
 		uint16_t nHardSoftHua = 0;
 		pHuPlayerCard->onDoHu(false, nCard,isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua);
-		auto nAllHuaCnt = nHuHuaCnt + nHardSoftHua * 2;
+		auto nAllHuaCnt = nHuHuaCnt + nHardSoftHua * ( isHuaZa() ? 2 : 1 );
 		if (isBiXiaHu())
 		{
 			nAllHuaCnt *= 2;
@@ -776,7 +776,7 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		}
 	}
 	// da gang kai hua 
-	auto nAllHuaCnt = nHuHuaCnt + nHardSoftHua * 2;
+	auto nAllHuaCnt = nHuHuaCnt + nHardSoftHua * (isHuaZa() ? 2 : 1);
 	if (isBiXiaHu())
 	{
 		nAllHuaCnt *= 2;

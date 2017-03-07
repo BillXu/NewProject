@@ -42,11 +42,21 @@ bool MJRoomManager::onMsg(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nSessi
 	{
 		return processEnterRoomMsg(prealMsg,eSenderPort,nSessionID);
 	}
+
 	// msg give to room process 
 	stMsgToRoom* pRoomMsg = (stMsgToRoom*)prealMsg;
 	auto pRoom = getRoomByID(pRoomMsg->nRoomID);
 	if (pRoom == NULL)
 	{
+		if (MSG_REQUEST_ROOM_INFO == prealMsg->usMsgType) // special solve the problem
+		{
+			stMsgPlayerEnterRoomRet msgRet;
+			msgRet.nRet = 5;
+			msgRet.nRoomID = pRoomMsg->nRoomID;
+			sendMsg(&msgRet, sizeof(msgRet),nSessionID);
+			LOGFMTD("request room info but room is dissmised id = %u , session id = %u",pRoomMsg->nRoomID,nSessionID);
+			return true;
+		}
 		LOGFMTE("can not find room to process id = %d ,from = %d, room id = %d", prealMsg->usMsgType, eSenderPort, pRoomMsg->nRoomID);
 		return  false;
 	}
@@ -328,11 +338,6 @@ bool MJRoomManager::processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, u
 		msgBack.nRet = 5;
 		sendMsg(&msgBack, sizeof(msgBack), nSessionID);
 		LOGFMTD("target room id = %u is null", pRet->nRoomID);
-		return false;
-	}
-	if (pRoomEnter == nullptr)
-	{
-		LOGFMTE("can not rand a room to enter , this msg may not process in this room mgr");
 		return false;
 	}
 
