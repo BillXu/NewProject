@@ -60,6 +60,7 @@ enum eRoomType
 	eRoom_MJ_Blood_River,// 血流成河
 	eRoom_MJ_Blood_End, // 血战到底 
 	eRoom_MJ_NanJing, 
+	eRoom_MJ_SuZhou,
 	eRoom_Max ,
 };
 
@@ -69,6 +70,7 @@ enum eMJGameType
 	eMJ_BloodRiver = eRoom_MJ_Blood_River,
 	eMJ_BloodTheEnd,
 	eMJ_NanJing,
+	eMJ_SuZhou,
 	eMJ_COMMON,
 	eMJ_Max,
 };

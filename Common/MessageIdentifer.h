@@ -610,6 +610,11 @@ enum eMsgType
 	// newMoCard : 最新摸的牌，可能是杠 或者 摸牌
 	// pengGangInfo: 杠牌和碰牌的数组。{ targetIdx ： 23， actType ： 23 ， card ： 234 } 分别是： 触发动作的索引，actType ， 就是碰了 还是杠了，card 就是哪张牌；
 
+	// SuZhou ma jiang
+	// svr: { idx : 2 , newMoCard : 2, anPai : [2,3,4,34] , chuPai: [2,34,4] , huaPai: [23,23,23] , anGangPai : [23,24],buGang : [23,45], pengCard : [23,45] }
+	// idx ： 玩家索引,  anPai 就是牌，没有展示出来的, chuPai ： 就是已经出了的牌。buGang : 补杠的牌, pengCard: 碰的牌
+	// newMoCard : 最新摸的牌，可能是杠 或者 摸牌
+
 	MSG_MJ_ROOM_INFO,  // 房间的基本信息
 	// svr : { roomID ： 23 , configID : 23 , waitTimer : 23, bankerIdx : 0 , curActIdex : 2 , leftCardCnt : 23 , roomState :  23 , players : [ {idx : 0 , uid : 233, coin : 2345 , state : 34, isTrusteed : 0  }, {idx : 0 , uid : 233, coin : 2345, state : 34, isTrusteed : 0 },{idx : 0 , uid : 233, coin : 2345 , state : 34,isTrusteed : 0 } , ... ] }
 	// roomState  , 房间状态
@@ -696,6 +701,20 @@ enum eMsgType
 	MSG_ROOM_CHAT_MSG, // 房间内有玩家 发送聊天信息；
 	// svr:  { playerIdx : 2 , type : 1 , content : "biao qing or viceID" } 
 
+	// su zhou ma jiang
+	MSG_ROOM_SZ_PLAYER_HU, // 苏州麻将玩家胡牌 
+   // svr : { isZiMo : 0 ,isFanBei : 0 , detail : {} }
+   //  当是自摸的时候，isZiMo : 1 , detail = { huIdx : 234 , winCoin : 234,huHuaCnt : 23,holdHuaCnt : 0, isGangKai :0 , invokerGangIdx : 0, vhuTypes : [ eFanxing , ] }
+   // 当不是自摸的时候，isZiMo : 0 , detail = { dianPaoIdx : 23 , isRobotGang : 0 , nLose : 23, huPlayers : [{ idx : 234 , win : 234 , huHuaCnt : 23,holdHuaCnt : 0, vhuTypes : [ eFanxing , ] } , .... ] } 
+   // huPlayers : json 数组包含子类型，表示胡牌玩家的数组，一炮多响，有多个胡牌玩家 
+   // 胡牌子类型: idx :胡牌玩家的idx ， huaCnt : 花数量，offset ：胡牌玩家赢的钱，isGangKai ，胡牌玩家是否是杠开， vhuTypes 是一个数组，表示胡牌时候的 各种翻型叠加,
+   // invokerGangIdx : 引杠者的索引，当明杠，直杠才有这个key值,暗杠的时候这个就是胡牌者自己
+
+	MSG_ROOM_SZ_GAME_OVER, // 苏州麻将结束
+	// svr: { isLiuJu : 0 , isNextFanBei : 0 , detail : [ {idx : 0 , offset : 23 }, ...  ] } 
+   // svr : isLiuJu : 是否是流局
+	// detail : 数组就是每个玩家的本局的最终输赢 ；
+	// isNextFanBei : 下一局是否要翻倍
 
 
 
