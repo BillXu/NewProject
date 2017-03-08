@@ -4,15 +4,14 @@
 #include "log4z.h"
 #include "IMJPoker.h"
 #include "ServerMessageDefine.h"
-#include "NJRoomStateWaitPlayerAct.h"
 #include "MJRoomStateWaitReady.h"
 #include "MJRoomStateWaitPlayerChu.h"
-#include "MJRoomStateWaitPlayerAct.h"
+#include "SZRoomStateWaitPlayerAct.h"
 #include "MJRoomStateGameEnd.h"
-#include "NJRoomStateDoPlayerAct.h"
+#include "SZRoomStateDoPlayerAct.h"
 #include "MJRoomStateAskForPengOrHu.h"
 #include "IGameRoomManager.h"
-#include "NJRoomStateBuHua.h"
+#include "SZRoomStateBuHua.h"
 #include "NJRoomStateStartGame.h"
 #include "MJRoomStateAskForRobotGang.h"
 bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
@@ -25,8 +24,8 @@ bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_tPoker.initAllCard(eMJ_NanJing);
 	// create state and add state ;
 	IMJRoomState* vState[] = {
-		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new NJRoomStateWaitPlayerAct(), new NJRoomStateStartGame(), new NJRoomStateBuHua()
-		, new MJRoomStateGameEnd(), new NJRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(), new MJRoomStateAskForRobotGang()
+		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new SZRoomStateWaitPlayerAct(), new NJRoomStateStartGame(), new SZRoomStateBuHua()
+		, new MJRoomStateGameEnd(), new SZRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(), new MJRoomStateAskForRobotGang()
 	};
 	for (uint8_t nIdx = 0; nIdx < sizeof(vState) / sizeof(IMJRoomState*); ++nIdx)
 	{

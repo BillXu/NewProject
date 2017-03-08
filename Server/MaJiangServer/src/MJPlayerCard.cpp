@@ -735,7 +735,7 @@ bool MJPlayerCard::getAnGangedCard(VEC_CARD& vAnGanged)
 	return vAnGanged.empty() == false;
 }
 
-bool MJPlayerCard::getGangedCard(VEC_CARD& vGangCard)
+bool MJPlayerCard::getMingGangedCard(VEC_CARD& vGangCard)
 {
 	vGangCard.insert(vGangCard.end(), m_vGanged.begin(), m_vGanged.end());
 	return false == vGangCard.empty();

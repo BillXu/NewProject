@@ -50,7 +50,7 @@ public:
 	bool getHoldCard(VEC_CARD& vHoldCard) final;
 	bool getChuedCard(VEC_CARD& vChuedCard) final;
 	bool getAnGangedCard(VEC_CARD& vAnGanged)final;
-	bool getGangedCard(VEC_CARD& vGangCard) final;
+	bool getMingGangedCard(VEC_CARD& vGangCard) final;
 	bool getPengedCard(VEC_CARD& vPengedCard) final;
 	bool getEatedCard(VEC_CARD& vEatedCard) final;
 

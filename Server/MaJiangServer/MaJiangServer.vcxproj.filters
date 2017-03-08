@@ -37,6 +37,9 @@
     <Filter Include="src\MJSZ">
       <UniqueIdentifier>{c1672935-ec25-4dd0-aaa3-eabd4e1a8388}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\MJSZ\SZState">
+      <UniqueIdentifier>{2f58d820-73e0-48b2-bab2-b6f7bd923ab7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IMJPoker.h">
@@ -161,6 +164,15 @@
     </ClInclude>
     <ClInclude Include="src\SZMJRoom.h">
       <Filter>src\MJSZ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SZRoomStateWaitPlayerAct.h">
+      <Filter>src\MJSZ\SZState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SZRoomStateDoPlayerAct.h">
+      <Filter>src\MJSZ\SZState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SZRoomStateBuHua.h">
+      <Filter>src\MJSZ\SZState</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

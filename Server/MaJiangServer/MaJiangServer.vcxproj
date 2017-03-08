@@ -118,6 +118,9 @@
     <ClInclude Include="src\SZMJPlayer.h" />
     <ClInclude Include="src\SZMJPlayerCard.h" />
     <ClInclude Include="src\SZMJRoom.h" />
+    <ClInclude Include="src\SZRoomStateBuHua.h" />
+    <ClInclude Include="src\SZRoomStateDoPlayerAct.h" />
+    <ClInclude Include="src\SZRoomStateWaitPlayerAct.h" />
     <ClInclude Include="src\XLFanXingChecker.h" />
     <ClInclude Include="src\XLMJPlayer.h" />
     <ClInclude Include="src\XLMJPlayerCard.h" />

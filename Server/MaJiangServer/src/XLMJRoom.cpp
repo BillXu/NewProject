@@ -433,7 +433,7 @@ void XLMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 			vMingPai.push_back(pc); vMingPai.push_back(pc); vMingPai.push_back(pc);
 		}
 		temp.clear();
-		pCard->getGangedCard(temp);
+		pCard->getMingGangedCard(temp);
 		for (auto& pc : temp)
 		{
 			vMingPai.push_back(pc); vMingPai.push_back(pc); vMingPai.push_back(pc); vMingPai.push_back(pc);
