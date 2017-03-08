@@ -176,7 +176,7 @@ void CGoldenRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 				}
 				else
 				{
-					item.vHoldChard[nCardIdx] = 3; //psit->getCardByIdx(nCardIdx) ;
+					item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx) ;
 				}
 			}
 			auBuffer.addContent(&item,sizeof(item)) ;
