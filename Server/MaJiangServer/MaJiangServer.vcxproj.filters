@@ -34,6 +34,9 @@
     <Filter Include="src\MJNJ\NJState">
       <UniqueIdentifier>{eb144682-17b2-43ef-9d11-90d04a731826}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\MJSZ">
+      <UniqueIdentifier>{c1672935-ec25-4dd0-aaa3-eabd4e1a8388}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IMJPoker.h">
@@ -150,6 +153,15 @@
     <ClInclude Include="src\NJRoomStateBuHua.h">
       <Filter>src\MJNJ\NJState</Filter>
     </ClInclude>
+    <ClInclude Include="src\SZMJPlayer.h">
+      <Filter>src\MJSZ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SZMJPlayerCard.h">
+      <Filter>src\MJSZ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SZMJRoom.h">
+      <Filter>src\MJSZ</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MJCard.cpp">
@@ -196,6 +208,15 @@
     </ClCompile>
     <ClCompile Include="src\NJMJPlayerCard.cpp">
       <Filter>src\MJNJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SZMJPlayer.cpp">
+      <Filter>src\MJSZ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SZMJPlayerCard.cpp">
+      <Filter>src\MJSZ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SZMJRoom.cpp">
+      <Filter>src\MJSZ</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

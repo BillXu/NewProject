@@ -115,6 +115,9 @@
     <ClInclude Include="src\NJRoomStateDoPlayerAct.h" />
     <ClInclude Include="src\NJRoomStateStartGame.h" />
     <ClInclude Include="src\NJRoomStateWaitPlayerAct.h" />
+    <ClInclude Include="src\SZMJPlayer.h" />
+    <ClInclude Include="src\SZMJPlayerCard.h" />
+    <ClInclude Include="src\SZMJRoom.h" />
     <ClInclude Include="src\XLFanXingChecker.h" />
     <ClInclude Include="src\XLMJPlayer.h" />
     <ClInclude Include="src\XLMJPlayerCard.h" />
@@ -138,6 +141,9 @@
     <ClCompile Include="src\NJMJPlayer.cpp" />
     <ClCompile Include="src\NJMJPlayerCard.cpp" />
     <ClCompile Include="src\NJMJRoom.cpp" />
+    <ClCompile Include="src\SZMJPlayer.cpp" />
+    <ClCompile Include="src\SZMJPlayerCard.cpp" />
+    <ClCompile Include="src\SZMJRoom.cpp" />
     <ClCompile Include="src\XLMJPlayer.cpp" />
     <ClCompile Include="src\XLMJPlayerCard.cpp" />
     <ClCompile Include="src\XLMJRoom.cpp" />

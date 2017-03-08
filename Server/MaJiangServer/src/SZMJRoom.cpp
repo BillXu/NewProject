@@ -376,31 +376,19 @@ void SZMJRoom::onPlayerZiMo(uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail)
 
 			auto nKouHua = nAllHuaCnt;
 
-			if (isKuaiChong())
+			if (nKouHua > pLosePlayer->getCoin())
 			{
-				if (nKouHua > m_nKuaiChongPool)
-				{
-					nKouHua = m_nKuaiChongPool;
-				}
-				m_nKuaiChongPool -= nKouHua;
+				nKouHua = pLosePlayer->getCoin();
 			}
-			else
-			{
-				if (nKouHua > pLosePlayer->getCoin())
-				{
-					nKouHua = pLosePlayer->getCoin();
-				}
-				pLosePlayer->addOffsetCoin(-1 * (int32_t)nKouHua);
-			}
-
+			pLosePlayer->addOffsetCoin(-1 * (int32_t)nKouHua);
 
 			nTotalWin += nKouHua;
-			Json::Value jsLose;
-			jsLose["loseCoin"] = nKouHua;
-			jsLose["idx"] = pLosePlayer->getIdx();
-			jsVLoses[jsVLoses.size()] = jsLose;
+			//Json::Value jsLose;
+			//jsLose["loseCoin"] = nKouHua;
+			//jsLose["idx"] = pLosePlayer->getIdx();
+			//jsVLoses[jsVLoses.size()] = jsLose;
 		}
-		jsDetail["LoseIdxs"] = jsVLoses;
+		/*jsDetail["LoseIdxs"] = jsVLoses;*/
 	}
 	pZiMoPlayer->addOffsetCoin(nTotalWin);
 	jsDetail["winCoin"] = nTotalWin;
