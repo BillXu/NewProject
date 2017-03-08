@@ -349,14 +349,14 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	}
 	std::sort(vSort.begin(), vSort.end());
 
-	if ( vSort.size() > 2 )
+	if ( vSort.size() > 1 )
 	{
 		m_vRoomIDSplits.clear();
 		m_vRoomIDSplits[vSort[1]] = 1;
-		if (eRoom_Golden != m_pRoom->getRoomType())
-		{
-			m_vRoomIDSplits[vSort[vSort.size() - 2]] = 1;
-		}
+		//if (eRoom_Golden != m_pRoom->getRoomType())
+		//{
+		//	m_vRoomIDSplits[vSort[vSort.size() - 2]] = 1;
+		//}
 	}
 
 	///------------------------
