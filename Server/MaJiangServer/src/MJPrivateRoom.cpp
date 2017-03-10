@@ -13,6 +13,7 @@
 #include "XLMJRoom.h"
 #include "XZMJRoom.h"
 #include "NJMJRoom.h"
+#include "SZMJRoom.h"
 #define TIME_WAIT_REPLY_DISMISS 60*5
 MJPrivateRoom::~MJPrivateRoom()
 {
@@ -725,6 +726,11 @@ IGameRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
 	case eRoom_MJ_NanJing:
 	{
 		return new NJMJRoom();
+	}
+	break;
+	case eRoom_MJ_SuZhou:
+	{
+		return new SZMJRoom();
 	}
 	break;
 	default:

@@ -34,7 +34,7 @@ public:
 
 	virtual bool getHoldCard(VEC_CARD& vHoldCard ) = 0 ;
 	virtual bool getChuedCard(VEC_CARD& vChuedCard ) = 0 ;
-	virtual bool getGangedCard(VEC_CARD& vGangCard) = 0 ;
+	virtual bool getMingGangedCard(VEC_CARD& vGangCard) = 0 ;
 	virtual bool getPengedCard(VEC_CARD& vPengedCard ) = 0 ;
 	virtual bool getEatedCard(VEC_CARD& vEatedCard ) = 0 ;
 	virtual bool getAnGangedCard(VEC_CARD& vAnGanged) = 0;

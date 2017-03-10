@@ -214,6 +214,13 @@ enum eFanxingType
 	eFanxing_WuHuaGuo, // 无花果
 	eFanxing_TianHu , //天胡
 	eFanxing_DiHu,//地胡
+
+	eFanxing_HaiDiLaoYue, // 海底捞月
+	eFanxing_DaMenQing, // 大门清
+	eFanxing_XiaoMenQing, // 小门清
+	eFanxing_HaoHuaQiDui, // 豪华七对
+	eFanxing_DaDiaoChe, // 大吊车
+
 	eFanxing_Max, // 没有胡
 };
 

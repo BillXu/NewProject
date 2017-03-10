@@ -23,7 +23,7 @@ public:
 	uint8_t getInvokerGangIdx(uint8_t nCard);  // -1 means no target ;
 	void onHuaGang( uint8_t nCard ,uint8_t nNewCard );
 	void onBuHua( uint8_t nHuaCard ,uint8_t nCard );
-	bool onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::vector<uint16_t>& vHuTypes, uint16_t& nHuHuaCnt, uint16_t& nHardAndSoftHua );
+	bool onDoHu(bool isZiMo,uint8_t nCard, bool isBePenged, std::vector<uint16_t>& vHuTypes, uint16_t& nHuHuaCnt, uint16_t& nHardAndSoftHua );
 	bool canHuWitCard(uint8_t nCard)override;
 	bool getCanHuCards(std::set<uint8_t>& vCanHuCards)override;
 	bool isHoldCardCanHu() override;

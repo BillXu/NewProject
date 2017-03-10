@@ -20,6 +20,8 @@ public:
 	uint8_t getRoomType()override { return eRoom_MJ_SuZhou; }
 	void sendPlayersCardInfo(uint32_t nSessionID)override;
 	bool isOneCirleEnd()override;
+	void onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
+	void onPlayerChu(uint8_t nIdx, uint8_t nCard)override;
 protected:
 	bool isFanBei() { return m_isFanBei; }
 	void getSubRoomInfo(Json::Value& jsSubInfo)override;

@@ -262,7 +262,7 @@ void SZMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		std::vector<uint16_t> vType;
 		uint16_t nHuHuaCnt = 0;
 		uint16_t nHardSoftHua = 0;
-		pHuPlayerCard->onDoHu(false, nCard, vType, nHuHuaCnt, nHardSoftHua);
+		pHuPlayerCard->onDoHu(false,false, nCard, vType, nHuHuaCnt, nHardSoftHua);
 		auto nAllHuaCnt = nHuHuaCnt + nHardSoftHua;
 		if (isFanBei())
 		{
@@ -323,7 +323,7 @@ void SZMJRoom::onPlayerZiMo(uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail)
 	std::vector<uint16_t> vType;
 	uint16_t nHuHuaCnt = 0;
 	uint16_t nHardSoftHua = 0;
-	pHuPlayerCard->onDoHu(true, nCard,vType, nHuHuaCnt, nHardSoftHua);
+	pHuPlayerCard->onDoHu(true, getMJPoker()->getLeftCardCount() < getSeatCnt() ,nCard,vType, nHuHuaCnt, nHardSoftHua);
 
 	Json::Value jsHuTyps;
 	for (auto& refHu : vType)
@@ -449,7 +449,7 @@ void SZMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 			continue;
 		}
 
-		auto pCard = (NJMJPlayerCard*)pp->getPlayerCard();
+		auto pCard = (SZMJPlayerCard*)pp->getPlayerCard();
 		Json::Value jsCardInfo;
 		jsCardInfo["idx"] = pp->getIdx();
 		jsCardInfo["newMoCard"] = 0;
@@ -473,4 +473,20 @@ void SZMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 bool SZMJRoom::isOneCirleEnd()
 {
 	return true;
+}
+
+void SZMJRoom::onPlayerMingGang( uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx )
+{
+	IMJRoom::onPlayerMingGang(nIdx, nCard, nInvokeIdx);
+	auto pActPlayer = getMJPlayerByIdx(nIdx);
+	auto pActCard = (SZMJPlayerCard*)pActPlayer->getPlayerCard();
+	pActCard->setSongGangIdx(nInvokeIdx);
+}
+
+void SZMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
+{
+	IMJRoom::onPlayerChu(nIdx, nCard);
+	auto pActPlayer = getMJPlayerByIdx(nIdx);
+	auto pActCard = (SZMJPlayerCard*)pActPlayer->getPlayerCard();
+	pActCard->setSongGangIdx(-1); // reset song gang ;
 }
