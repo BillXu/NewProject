@@ -2,10 +2,12 @@
 #include "NativeTypes.h"
 #include "json/json.h"
 #include "MessageIdentifer.h"
+#include <memory>
 class IGameRoomManager;
 struct stBaseRoomConfig;
 struct stMsg;
 struct stEnterRoomData;
+class RoomRecorder;
 class IGameRoom
 {
 public:
@@ -30,4 +32,5 @@ public:
 	virtual uint32_t getCoinNeedToSitDown() = 0;
 	virtual bool isInternalShouldClosedAll() = 0;
 	virtual bool isOneCirleEnd() = 0;
+	virtual std::shared_ptr<RoomRecorder> getRoomRecorder() = 0;
 };

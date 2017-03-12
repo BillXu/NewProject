@@ -40,6 +40,9 @@
     <Filter Include="src\MJSZ\SZState">
       <UniqueIdentifier>{2f58d820-73e0-48b2-bab2-b6f7bd923ab7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Recorder">
+      <UniqueIdentifier>{8cb7d5a7-fc63-4508-980c-19e84507afa1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IMJPoker.h">
@@ -174,6 +177,12 @@
     <ClInclude Include="src\SZRoomStateBuHua.h">
       <Filter>src\MJSZ\SZState</Filter>
     </ClInclude>
+    <ClInclude Include="src\GameRecorderMgr.h">
+      <Filter>src\Recorder</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GameReplayMgr.h">
+      <Filter>src\Recorder</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MJCard.cpp">
@@ -229,6 +238,12 @@
     </ClCompile>
     <ClCompile Include="src\SZMJRoom.cpp">
       <Filter>src\MJSZ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameRecorderMgr.cpp">
+      <Filter>src\Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameReplayMgr.cpp">
+      <Filter>src\Recorder</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

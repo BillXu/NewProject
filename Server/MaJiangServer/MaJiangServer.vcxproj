@@ -87,6 +87,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\GameRecorderMgr.h" />
+    <ClInclude Include="src\GameReplayMgr.h" />
     <ClInclude Include="src\IGameRecorder.h" />
     <ClInclude Include="src\IGameRoom.h" />
     <ClInclude Include="src\IMJPlayer.h" />
@@ -133,6 +135,8 @@
     <ClInclude Include="src\XZMJRoom.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\GameRecorderMgr.cpp" />
+    <ClCompile Include="src\GameReplayMgr.cpp" />
     <ClCompile Include="src\IMJRoom.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MJCard.cpp" />

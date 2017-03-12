@@ -32,15 +32,18 @@ public:
 	bool canCardHuaGang( uint8_t nCard );
 	bool getCardInfo(Json::Value& jsPeerCards);
 	uint8_t getHuaCardToBuHua(); // -1 means no target ;
+	void setSongGangIdx(uint8_t nSongGangIdx );
+	uint8_t getSongGangIdx();
+	bool getIsSpecailHu( uint8_t nTargetCard );
 protected:
 	bool canHuWitCardLocal(uint8_t nCard);
 	// check pai xing 
 	bool checkHunYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt );
 	bool checkMenQing(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
 	bool checkQingYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
-	bool checkDuiDuiHu(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
+	bool checkDuiDuiHu(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt,bool isSpecailHu );
 	bool checkQiDui(uint8_t nCard, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
-	bool checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
+	bool checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt, bool isSpecailHu );
 	bool checkYaJue(uint8_t nCard, bool isBePenged, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
 	bool checkWuHuaGuo(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
 
@@ -54,4 +57,5 @@ protected:
 	//VEC_CARD m_vHuaGang;
 	std::vector<stActCardSign> m_vActCardSign;
 	NJMJRoom* m_pCurRoom;
+	uint8_t m_nSongGangIdx;
 };

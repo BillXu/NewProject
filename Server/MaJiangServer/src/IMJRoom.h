@@ -1,5 +1,6 @@
 #pragma once
 #include "IGameRoom.h"
+#include "GameRecorderMgr.h"
 class IMJPlayer;
 struct stEnterRoomData;
 class IMJPoker;
@@ -96,6 +97,7 @@ public:
 
 	void onCheckTrusteeForHuOtherPlayerCard(std::vector<uint8_t> vPlayerIdx, uint8_t nTargetCard );
 	void onPlayerTrusteedStateChange( uint8_t nPlayerIdx , bool isTrusteed );
+	std::shared_ptr<RoomRecorder> getRoomRecorder()override;
 protected:
 	bool addRoomState(IMJRoomState* pState);
 	void setInitState(IMJRoomState* pState);
@@ -111,4 +113,5 @@ protected:
 	IMJRoomDelegate* m_pDelegate;
 
 	CRobotDispatchStrategy* m_pRobotDispatchStrage;
+	std::shared_ptr<RoomRecorder> m_spRoomRecorder;
 };

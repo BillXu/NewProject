@@ -354,6 +354,7 @@ void NJMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	IMJRoom::onPlayerMingGang(nIdx, nCard, nInvokeIdx);
 	auto pActPlayer = getMJPlayerByIdx(nIdx);
 	auto pActCard = (NJMJPlayerCard*)pActPlayer->getPlayerCard();
+	pActCard->setSongGangIdx(nInvokeIdx);  // set song gang idx ;
 	pActCard->addActSign(nCard, nInvokeIdx, eMJAct_MingGang);
 
 	auto pInvokerPlayer = getMJPlayerByIdx(nInvokeIdx);
@@ -785,7 +786,7 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	auto nBaoPaiIdx = pHuPlayerCard->getKuaiZhaoBaoPaiIdx();
 	if ((uint8_t)-1 == nBaoPaiIdx && pZiMoPlayer->haveGangFalg()) // gang kai bao pai 
 	{
-		nBaoPaiIdx = pHuPlayerCard->getInvokerGangIdx(nCard);
+		nBaoPaiIdx = pHuPlayerCard->getSongGangIdx();
 	}
 
 	auto nTotalWin = 0;
@@ -958,7 +959,8 @@ bool NJMJRoom::isInternalShouldClosedAll()
 
 bool NJMJRoom::isOneCirleEnd()
 {
-	return ((3 == m_nBankerIdx) && (m_isBankerHu == false));
+	/*return ((3 == m_nBankerIdx) && (m_isBankerHu == false));*/
+	return true;
 }
 
 void NJMJRoom::addSettle(stSettle& tSettle)
@@ -974,6 +976,7 @@ void NJMJRoom::addSettle(stSettle& tSettle)
 		Json::Value js;
 		js["idx"] = ref.first;
 		js["offset"] = ref.second;
+		js["isWin"] = 1;
 		jsWin[jsWin.size()] = js;
 	}
 	jsMsg["winers"] = jsWin;
@@ -984,6 +987,7 @@ void NJMJRoom::addSettle(stSettle& tSettle)
 		Json::Value js;
 		js["idx"] = ref.first;
 		js["offset"] = ref.second;
+		js["isWin"] = 0;
 		jsLose[jsLose.size()] = js;
 	}
 	jsMsg["loserIdxs"] = jsLose;
@@ -998,6 +1002,11 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	m_tChuedCards.addChuedCard(nCard,nIdx);
 	uint8_t nFanQianTarget = -1;
 	uint8_t nSettleType = 0;
+	// reset songGang idx 
+	auto pActPlayer = getMJPlayerByIdx(nIdx);
+	auto pcard = (NJMJPlayerCard*)pActPlayer->getPlayerCard();
+	pcard->setSongGangIdx(-1);
+
 	if ( m_tChuedCards.isInvokerFanQian(nFanQianTarget) )
 	{
 		nSettleType = eMJAct_Followed;
@@ -1115,4 +1124,9 @@ bool NJMJRoom::isBiXiaHu()
 	}
 
 	return m_isBiXiaHu;
+}
+
+void NJMJRoom::doAddOneRoundEntery()
+{
+
 }

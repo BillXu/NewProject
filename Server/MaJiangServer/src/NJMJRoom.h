@@ -87,6 +87,7 @@ protected:
 	void packStartGameMsg(Json::Value& jsMsg)override;
 	bool isHuaZa(){ return m_isEnableHuaZa; }
 	bool isKuaiChong(){ return m_isKuaiChong; }
+	void doAddOneRoundEntery();
 protected:
 	stChuedCards m_tChuedCards;
 	std::vector<stSettle> m_vSettle;

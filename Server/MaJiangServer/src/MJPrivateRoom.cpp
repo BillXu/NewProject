@@ -14,6 +14,7 @@
 #include "XZMJRoom.h"
 #include "NJMJRoom.h"
 #include "SZMJRoom.h"
+#include "MJServer.h"
 #define TIME_WAIT_REPLY_DISMISS 60*5
 MJPrivateRoom::~MJPrivateRoom()
 {
@@ -546,7 +547,19 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 		// comsum room card ;
 		if (false == isCurrentFree())
 		{
-			uint16_t nCardCnt = m_nInitCircle * ROOM_CARD_CNT_PER_CIRLE_NJMJ;
+			uint16_t nCardCnt = 2;//m_nInitCircle * ROOM_CARD_CNT_PER_CIRLE_NJMJ; // { 2, 3, 6}
+			if (4 == m_nInitCircle)
+			{
+				nCardCnt = 2;
+			}
+			else if (8 == m_nInitCircle)
+			{
+				nCardCnt = 3;
+			}
+			else // 16 
+			{
+				nCardCnt = 6;
+			}
 			LOGFMTD("send msg to consumed vip room card = %u", nCardCnt);
 			Json::Value jsConsumed;
 			jsConsumed["cardCnt"] = nCardCnt;
@@ -633,6 +646,9 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		msgResult.nSiealNum = getSeiralNum();
 		memset(msgResult.cRoomName, 0, sizeof(msgResult.cRoomName));
 
+		// add room recorder 
+		auto pRoomRecorder = getRoomRecorder();
+
 		Json::Value jsVBills;
 		Json::Value jsPlayedPlayers;
 		for (auto& ref : m_vAllPlayers)
@@ -657,8 +673,14 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 			msgResult.nBuyIn = m_nInitCoin;
 			msgResult.nBaseBet = 1;
 			m_pRoomMgr->sendMsg(&msgResult, sizeof(msgResult), 0);
+
+			// add to recorder ;
+			pRoomRecorder->addPlayerOffset(msgResult.nTargetPlayerUID,msgResult.nOffset);
 		}
 		jsMsg["bills"] = jsVBills;
+		// add room recorder to game recorder mg ;
+		auto pRecorderMgr = CMJServerApp::getInstance()->getRecorderMgr();
+		pRecorderMgr->addRoomRecorder(pRoomRecorder,true);
 
 		for (auto& ref : m_vAllPlayers)
 		{
@@ -743,4 +765,9 @@ IGameRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
 uint32_t MJPrivateRoom::getSeiralNum()
 {
 	return m_pRoom->getSeiralNum();
+}
+
+std::shared_ptr<RoomRecorder> MJPrivateRoom::getRoomRecorder()
+{
+	return m_pRoom->getRoomRecorder();
 }

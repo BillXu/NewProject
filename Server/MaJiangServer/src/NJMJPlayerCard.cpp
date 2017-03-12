@@ -9,6 +9,7 @@ void NJMJPlayerCard::reset()
 	m_vActCardSign.clear();
 	m_vBuHuaCard.clear();
 	m_pCurRoom = nullptr;
+	setSongGangIdx(-1);
 }
 
 bool NJMJPlayerCard::canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB)
@@ -83,6 +84,7 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 {
 	nHuHuaCnt = 0;
 	vHuTypes.clear();
+	bool bisSpecailHu = false;
 	// if not zi mo , must add to fo check hu ;
 	if (!isZiMo)
 	{
@@ -92,6 +94,7 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 			LOGFMTE("invalid card type for card = %u", nCard);
 			return false;
 		}
+		bisSpecailHu = getIsSpecailHu(nCard);
 		addCardToVecAsc(m_vCards[type], nCard);
 	}
 
@@ -107,7 +110,7 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 		m_vCards[type].erase(iter);
 	};
 
-	if ( MJPlayerCard::isHoldCardCanHu() == false)
+	if ( false == bisSpecailHu && MJPlayerCard::isHoldCardCanHu() == false)
 	{
 		LOGFMTE("do hu act , but can not hu ? why ? bug card = %u ", nCard);
 		debugCardInfo();
@@ -128,11 +131,11 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 	auto bQiDui = checkQiDui(nCard, vHuTypes, nHuHuaCnt);
 	if (!bQiDui)
 	{
-		checkDuiDuiHu(vHuTypes, nHuHuaCnt);
+		checkDuiDuiHu(vHuTypes, nHuHuaCnt,bisSpecailHu );
 		checkMenQing(vHuTypes, nHuHuaCnt);
 	}
 	
-	checkQuanQiuDuDiao(nCard, vHuTypes, nHuHuaCnt);
+	checkQuanQiuDuDiao(nCard, vHuTypes, nHuHuaCnt, bisSpecailHu );
 	checkYaJue(nCard, isBePenged, vHuTypes, nHuHuaCnt);
 	checkWuHuaGuo(vHuTypes, nHuHuaCnt);
 
@@ -167,6 +170,11 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 		return false;
 	}
 
+	if (getIsSpecailHu(nCard)) // specail hu must be da hu ;
+	{
+		return true;
+	}
+
 	onMoCard(nCard);
 
 	std::vector<uint16_t> vType;
@@ -193,6 +201,59 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 	auto iter = std::find(m_vCards[eType].begin(), m_vCards[eType].end(), nCard);
 	m_vCards[eType].erase(iter);
 	return bRet;
+}
+
+bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
+{
+	VEC_CARD vHoldCard;
+	getHoldCard(vHoldCard);
+	if (vHoldCard.size() != 4)
+	{
+		return false;
+	}
+
+	if (!canPengWithCard(nTargetCard))
+	{
+		return false;
+	}
+
+	// dui rong yi ren san zui 
+	auto nBaoPaiidx = getKuaiZhaoBaoPaiIdx();
+	if (nBaoPaiidx != -1 )
+	{
+		return true;
+	}
+
+	// qing yi se qingkuang , dui yi zui ;
+	VEC_CARD vAllCard;
+	getHoldCard(vAllCard);
+	if (card_Type(nTargetCard) != card_Type(vAllCard.front()))
+	{
+		return false;
+	}
+
+	VEC_CARD vTemp;
+	getAnGangedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	vTemp.clear();
+	getMingGangedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	vTemp.clear();
+	getPengedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	auto nType = card_Type(vAllCard.front());
+	for (auto& ref : vAllCard)
+	{
+		auto tt = card_Type(ref);
+		if (nType != tt)
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 bool NJMJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
@@ -558,6 +619,17 @@ uint8_t NJMJPlayerCard::getHuaCardToBuHua()
 
 	return -1;
 }
+
+void NJMJPlayerCard::setSongGangIdx(uint8_t nSongGangIdx)
+{
+	m_nSongGangIdx = nSongGangIdx;
+}
+
+uint8_t NJMJPlayerCard::getSongGangIdx()
+{
+	return m_nSongGangIdx;
+}
+
 // check pai xing 
 bool NJMJPlayerCard::checkHunYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt)
 {
@@ -679,8 +751,15 @@ bool NJMJPlayerCard::checkQingYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nH
 	return true;
 }
 
-bool NJMJPlayerCard::checkDuiDuiHu(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt)
+bool NJMJPlayerCard::checkDuiDuiHu(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt, bool isSpecailHu)
 {
+	if (isSpecailHu)
+	{
+		vHuTypes.push_back(eFanxing_DuiDuiHu);
+		nHuaCnt += 30;
+		return true;
+	}
+
 	auto pfunCheckKeZi = [](VEC_CARD vCards, uint8_t nType, uint8_t nJiang)->bool
 	{
 		if (vCards.empty())
@@ -765,8 +844,15 @@ bool NJMJPlayerCard::checkQiDui(uint8_t nCard, std::vector<uint16_t>& vHuTypes, 
 	return true;
 }
 
-bool NJMJPlayerCard::checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt)
+bool NJMJPlayerCard::checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt, bool isSpecailHu)
 {
+	if (isSpecailHu)
+	{
+		vHuTypes.push_back(eFanxing_QuanQiuDuDiao);
+		nHuaCnt += 40;
+		return true;
+	}
+
 	uint8_t nCnt = 0;
 	for (auto& vCard : m_vCards)
 	{

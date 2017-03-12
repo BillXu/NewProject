@@ -25,6 +25,7 @@ bool CMJServerApp::init()
 
 	installModule(eMod_RoomMgr);
 	installModule(eMod_RoomMgrOld);
+	installModule(eMod_RecorderMgr);
 	return true ;
 }
 
@@ -45,6 +46,16 @@ IGlobalModule* CMJServerApp::createModule(uint16_t eModuleType)
 	{
 		p = new MJRoomManager();
 	}
+	 else if (eMod_RecorderMgr == eModuleType )
+	 {
+		 p = new GameRecorderMgr();
+	 }
 	return p;
+}
+
+GameRecorderMgr* CMJServerApp::getRecorderMgr()
+{
+	auto p = getModuleByType(eMod_RecorderMgr);
+	return (GameRecorderMgr*)p;
 }
 

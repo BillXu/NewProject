@@ -43,6 +43,7 @@ bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32
 		((stNiuNiuRoomConfig*)m_pRoomConfig)->nMaxSeat = MAX_SEAT_CNT;
 	}
 	setBankIdx(-1);
+	m_spRoomRecorder->setRoomInfo(getSeiralNum(), getRoomID(), getRoomType());
 	return true;
 }
 
@@ -641,13 +642,18 @@ void IMJRoom::willStartGame()
 
 void IMJRoom::onGameEnd()
 {
+	// add Entery ;
+	std::shared_ptr<RoomRecorderEntery> pEntery( new RoomRecorderEntery());
+	pEntery->setEnteryInfo(0, (uint32_t)time(nullptr));
 	for (auto& pPlayer : m_vMJPlayers)
 	{
 		if (pPlayer)
 		{
+			pEntery->addPlayerOffset(pPlayer->getUID(),pPlayer->getOffsetCoin());
 			pPlayer->onGameEnd();
 		}
 	}
+	getRoomRecorder()->addRoomRecorderEntery(pEntery);
 }
 
 void IMJRoom::onGameDidEnd()
@@ -1266,4 +1272,9 @@ void IMJRoom::onPlayerTrusteedStateChange(uint8_t nPlayerIdx, bool isTrusteed)
 	//js["isTrusteed"] = isTrusteed ? 1 : 0 ;
 	//sendRoomMsg(js, MSG_ROOM_REQUEST_TRUSTEED);
 	//LOGFMTD("room id = %u , player idx = %u update trusteed state = %u " ,getRoomID(),nPlayerIdx,isTrusteed );
+}
+
+std::shared_ptr<RoomRecorder> IMJRoom::getRoomRecorder()
+{
+	return m_spRoomRecorder;
 }
