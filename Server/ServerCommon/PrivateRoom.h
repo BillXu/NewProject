@@ -327,7 +327,7 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	LOGFMTD("create 1 private room") ;
 
 	// split room id ;
-	m_vRoomIDSplits.clear();
+	std::vector<uint8_t> vSort;
 	auto nSplitRoomID = nRoomID;
 	for (uint8_t nIdx = 0; nIdx < 6; ++nIdx)
 	{
@@ -338,24 +338,17 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 			continue;
 		}
 
-		m_vRoomIDSplits[np] = 1;
+		vSort.insert(vSort.begin(), np);
 	}
 
-	// will sort ;
-	std::vector<uint8_t> vSort;
-	for (auto& ref : m_vRoomIDSplits)
-	{
-		vSort.push_back(ref.first);
-	}
-	std::sort(vSort.begin(), vSort.end());
-
-	if ( vSort.size() >= 3 )
+	m_vRoomIDSplits.clear();
+	if ( vSort.empty() == false )
 	{
 		m_vRoomIDSplits.clear();
-		m_vRoomIDSplits[vSort[1]] = 1;
+		m_vRoomIDSplits[vSort.front()] = 1;
 		if (eRoom_Golden != m_pRoom->getRoomType())
 		{
-			m_vRoomIDSplits[vSort[vSort.size() - 2]] = 1;
+			m_vRoomIDSplits[vSort.back()] = 1;
 		}
 	}
 
@@ -954,7 +947,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 				jsReqData["targetUID"] = pPrivatePlayer->nUserUID ;
 				jsReqData["diamond"] = getCardNeed() ;
 
-				pAsync->pushAsyncRequest(ID_MSG_PORT_DATA,eAsync_ComsumDiamond,jsReqData,[this,pAsync,pPrivatePlayer](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData){
+				pAsync->pushAsyncRequest(ID_MSG_PORT_DATA,eAsync_ComsumDiamond,jsReqData,[this,pAsync](uint16_t nReqType ,const Json::Value& retContent,Json::Value& jsUserData){
 					uint32_t nDiamond = retContent["diamond"].asUInt() ;
 					uint32_t nRet = retContent["ret"].asUInt();
 
@@ -965,6 +958,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 					auto stStandPlayer = m_pRoom->getPlayerBySessionID(nSessionID);
 					auto pSitDown = m_pRoom->getPlayerByIdx(nIdx);
 					bool bSitSuccess = nRet == 0 && stStandPlayer && pSitDown == nullptr && m_pRoom && getRoomState() != eRoomState_Close ;
+					auto pPrivatePlayer = getPlayerByUID(nUID);
 					if ( bSitSuccess )
 					{
 						stMsgPlayerSitDown msg ;
@@ -975,12 +969,19 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 						{
 							m_pRoom->onMessage(&msg,ID_MSG_PORT_CLIENT,nSessionID) ;
 						}
-						pPrivatePlayer->doPayedDeskFee() ;
+						if ( pPrivatePlayer )
+						{
+							pPrivatePlayer->doPayedDeskFee();
+						}
 						return  ;
 					}
 					else
 					{
-						pPrivatePlayer->payDeskFeeFailed() ;
+						if (pPrivatePlayer)
+						{
+							pPrivatePlayer->payDeskFeeFailed();
+						}
+
 						if ( nRet == 0 )
 						{
 							// give back diamond 
@@ -1105,7 +1106,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			for ( auto& itemSendPlayer : vWillSend )
 			{
 				msgBuffer.addContent(&itemSendPlayer.second,sizeof(stRoomRankEntry));
-				LOGFMTD("room id = %u rank player uid = %u offset = %d",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
+				LOGFMTD("room id = %u rank player uid = %u offset = %lld",getRoomID(),itemSendPlayer.second.nUserUID,itemSendPlayer.second.nGameOffset);
 			}
 			m_pRoomMgr->sendMsg((stMsg*)msgBuffer.getBufferPtr(),msgBuffer.getContentSize(),nPlayerSessionID) ;
 		}

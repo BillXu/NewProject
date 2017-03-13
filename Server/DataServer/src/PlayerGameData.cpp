@@ -540,7 +540,7 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				},jsUserData) ;
 			} ;
 
-			if ( nChatRoomID != 0 )
+			if ( nChatRoomID != 0 || 1  )
 			{
 				createRoomFunc(recvValue);
 				break;
