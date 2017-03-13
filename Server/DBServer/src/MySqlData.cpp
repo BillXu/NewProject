@@ -113,7 +113,7 @@ stMysqlField* CMysqlRow::GetFiledByName( const char* pFiledName )
 			return pField ;
 		}
 	}
-	printf("cell is null for name = %u \n",pFiledName);
+	printf("cell is null for name = %s \n",pFiledName);
 	return NULL ;
 }
 

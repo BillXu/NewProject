@@ -144,6 +144,13 @@
 #include "Application.h"
 int main()
 {
+	{
+		Json::StyledWriter jsWriter;
+		Json::Value js;
+		auto str = jsWriter.write(js);
+	}
+
+
 	CGameServerApp theApp ;
 	CApplication theAplication(&theApp);
 	theAplication.startApp();

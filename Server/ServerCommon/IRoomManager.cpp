@@ -178,6 +178,7 @@ bool IRoomManager::onPublicMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		break ;
 		case MSG_REQUEST_PRIVATE_ROOM_RECORDER_NEW:
 		{
+			LOGFMTD("send room record msg begin");
 			stMsgRequestPrivateRoomRecorderNew* pRet = (stMsgRequestPrivateRoomRecorderNew*)prealMsg;
 			auto iter = m_mapSieralPrivateRecorder.find(pRet->nSieralNum);
 			stMsgRequestPrivateRoomRecorderNewRet msgBack ;

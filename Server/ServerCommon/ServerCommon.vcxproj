@@ -52,7 +52,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;JSON_DLL;SERVER;_DEBUG;_LIB;%(PreprocessorDefinitions);SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SERVER;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../ServerCommon;../../Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -68,7 +68,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;JSON_DLL;SERVER;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SERVER;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../ServerCommon;../../Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -89,6 +89,7 @@
     <ClCompile Include="AsyncRequestQuene.cpp" />
     <ClCompile Include="catch_dump_file.cpp" />
     <ClCompile Include="ISeverApp.cpp" />
+    <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="log4z.cpp" />
     <ClCompile Include="ServerConfig.cpp" />
     <ClCompile Include="ServerStringTable.cpp" />
