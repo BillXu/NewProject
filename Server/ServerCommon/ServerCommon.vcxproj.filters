@@ -54,6 +54,9 @@
     <ClCompile Include="log4z.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="jsoncpp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">

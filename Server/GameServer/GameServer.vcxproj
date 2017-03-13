@@ -58,7 +58,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;JSON_DLL;DATA_SERVER</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);SERVER;DATA_SERVER</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../NetworkUtility/src;../../Common;../ServerCommon;../ServerCommon/pthreadLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

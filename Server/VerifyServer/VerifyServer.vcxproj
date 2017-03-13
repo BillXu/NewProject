@@ -57,7 +57,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;SERVER;VERIFY_SERVER;_WIN32_WINNT=0x0601;_DEBUG;_CONSOLE;JSON_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SERVER;VERIFY_SERVER;_WIN32_WINNT=0x0601;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./src/;../../Common;../ServerCommon;../DBServer/src;../ServerCommon/pthreadLib;../DBServer/src/include;../NetworkUtility/src;C:\local\boost_1_63_0;./src/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-DBOOST_DATE_TIME_NO_LIB -DBOOST_REGEX_NO_LIB  -DASIO_HAS_BOOST_REGEX %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

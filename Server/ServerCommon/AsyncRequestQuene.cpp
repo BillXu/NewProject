@@ -4,7 +4,8 @@
 #include "AutoBuffer.h"
 #include "ISeverApp.h"
 #include "log4z.h"
-#define  TIME_CHECK_REQ_STATE 10
+#include "catch_dump_file.h"
+#define  TIME_CHECK_REQ_STATE 20
 void CAsyncRequestQuene::init( IServerApp* svrApp )
 {
 	IGlobalModule::init(svrApp) ;
@@ -16,6 +17,22 @@ void CAsyncRequestQuene::init( IServerApp* svrApp )
 	m_tCheckReqStateTimer.start() ;
 }
 
+bool tempFunc( CAsyncRequestQuene::stAsyncRequest* pReq,Json::Value& jsResultContent, Json::Value& jsUserData )
+{
+	//LOGFMTD("tempFunc");
+	__try
+	{
+		pReq->lpCallBack(pReq->nReqType, jsResultContent, jsUserData );
+		return true;
+	}
+	__except (CatchDumpFile::CDumpCatch::UnhandledExceptionFilterEx(GetExceptionInformation()))
+	{
+		//LOGFMTI("catertsf ----- tempFunc");
+		return false;
+	}
+	return true;
+}
+
 bool CAsyncRequestQuene::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nSessionID)
 {
 	if ( prealMsg->usMsgType != MSG_ASYNC_REQUEST_RESULT )
@@ -24,6 +41,7 @@ bool CAsyncRequestQuene::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 	}
 
 	stMsgAsyncRequestRet* pRet = (stMsgAsyncRequestRet*)prealMsg ;
+
 	Json::Value jsResultContent ;
 	if ( pRet->nResultContentLen > 0 )
 	{
@@ -33,14 +51,21 @@ bool CAsyncRequestQuene::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		jsReader.parse(pBuffer,pBuffer + pRet->nResultContentLen,jsResultContent) ;
 		//LOGFMTD("as str : %s",pBuffer);
 	}
- 
+
 	auto pReqIter = m_mapRunningRequest.find(pRet->nReqSerailID) ;
 	if ( pReqIter != m_mapRunningRequest.end() )
 	{
 		auto pReq = pReqIter->second ;
 		if ( pReq->lpCallBack )
 		{
-			pReq->lpCallBack(pReq->nReqType,jsResultContent,pReq->jsUserData);
+			//pReq->lpCallBack(pReq->nReqType, jsResultContent, pReq->jsUserData);
+			auto bRet = tempFunc(pReq, jsResultContent, pReq->jsUserData );
+			if (!bRet)
+			{
+				LOGFMTE("do have a exption for this request type = %u",pReq->nReqType );
+				canncelAsyncRequest(pRet->nReqSerailID);
+				return true;
+			}
 		}
 		else
 		{
@@ -52,6 +77,7 @@ bool CAsyncRequestQuene::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		LOGFMTD("serial num = %u , already canncel" , pRet->nReqSerailID) ;
 		return true;
 	}
+
 
 	// end the req ;
 	canncelAsyncRequest(pRet->nReqSerailID);
@@ -120,12 +146,13 @@ void CAsyncRequestQuene::sendAsyncRequest(stAsyncRequest* pReq)
 {
 	++pReq->nSendTimes ;
 	pReq->tLastSend = time(nullptr) ;
-
 	stMsgAsyncRequest msgReq ;
 	msgReq.cSysIdentifer = pReq->nTargetPortID ;
 	msgReq.nReqSerailID = pReq->nReqSerialNum ;
 	msgReq.nReqType = pReq->nReqType ;
 	
+	
+
 	Json::StyledWriter jsWriter ;
 	auto str = jsWriter.write(pReq->jsReqContent) ;
 	msgReq.nReqContentLen = str.size() ;
@@ -159,9 +186,16 @@ void CAsyncRequestQuene::timerCheckReqState(CTimer* pTimer, float fTick )
 	}
 
 	time_t tNow = time(nullptr) ;
+	std::vector<uint32_t> vCanncelReq;
 	for ( auto pairReq : m_mapRunningRequest )
 	{
 		auto pReq = pairReq.second ;
+		if (pReq->nSendTimes > 40 )
+		{
+			vCanncelReq.push_back(pReq->nReqSerialNum);
+			continue;
+		}
+
 		if ( pReq->tLastSend + TIME_CHECK_REQ_STATE <= tNow )
 		{
 			sendAsyncRequest(pReq) ;
@@ -174,4 +208,11 @@ void CAsyncRequestQuene::timerCheckReqState(CTimer* pTimer, float fTick )
 			LOGFMTE("req type = %u , target port = %u  str = %s, tried too many times = %u , why ",pReq->nReqType,pReq->nTargetPortID,str.c_str(),pReq->nSendTimes) ;
 		}
 	}
+
+	// do canncel send too many times not respone ;
+	for (auto& ref : vCanncelReq)
+	{
+		canncelAsyncRequest(ref);
+	}
+	vCanncelReq.clear();
 }

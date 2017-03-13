@@ -1,10 +1,5 @@
 #include "Application.h"
 #include "log4z.h"
-#ifdef _DEBUG
-#pragma comment(lib,"jsoncppD.lib")
-#else
-#pragma comment(lib,"jsoncpp.lib")
-#endif 
 #include <cassert>
 
 bool CustomAssertFunction(bool isfalse, char* description, int line, char*filepath)
