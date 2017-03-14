@@ -10,6 +10,7 @@ void NJMJPlayerCard::reset()
 	m_vBuHuaCard.clear();
 	m_pCurRoom = nullptr;
 	setSongGangIdx(-1);
+	m_vAllActCardSign.clear();
 }
 
 bool NJMJPlayerCard::canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB)
@@ -23,7 +24,11 @@ void NJMJPlayerCard::addActSign(uint8_t nCard, uint8_t nInvokerIdx, eMJActType e
 	st.eAct = eAct;
 	st.InvokerIdx = nInvokerIdx;
 	st.nCard = nCard;
-	m_vActCardSign.push_back(st);
+	m_vAllActCardSign.push_back(st);
+	if ( eMJAct_AnGang != eAct )
+	{
+		m_vActCardSign.push_back(st);
+	}
 }
 
 bool NJMJPlayerCard::isChued4Card(uint8_t nCard)
@@ -175,12 +180,10 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 		return true;
 	}
 
-	onMoCard(nCard);
-
 	std::vector<uint16_t> vType;
 	uint16_t nHuHuaCnt = 0;
 	uint16_t nHardSoftHua = 0;
-	auto bRet = onDoHu(true, getNewestFetchedCard(), m_pCurRoom->isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua);
+	auto bRet = onDoHu(false, nCard, m_pCurRoom->isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua);
 	
 	do
 	{
@@ -217,8 +220,8 @@ bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 		return false;
 	}
 
-	// dui rong yi ren san zui 
-	auto nBaoPaiidx = getKuaiZhaoBaoPaiIdx();
+	// dui tong yi ren san zui 
+	auto nBaoPaiidx = getSpecailHuBaoPaiKuaiZhaoIdx();
 	if (nBaoPaiidx != -1 )
 	{
 		return true;
@@ -503,6 +506,7 @@ bool NJMJPlayerCard::isHoldCardCanHu()
 	}
 	return true;
 }
+
 bool NJMJPlayerCard::canCardHuaGang(uint8_t nCard)
 {
 	auto eType = card_Type(nCard);
@@ -1133,4 +1137,31 @@ bool NJMJPlayerCard::checkQueYi(uint8_t nCard)
 		}
 	}
 	return vSign.size() == 2 ;
+}
+
+uint8_t NJMJPlayerCard::getSpecailHuBaoPaiKuaiZhaoIdx()
+{
+	if (m_vAllActCardSign.size() < 3)
+	{
+		return -1;
+	 }
+
+	uint8_t nBaoIdx = -1;
+	for (uint8_t nIdx = 0; nIdx < 3 ; ++nIdx)
+	{
+		if ( m_vAllActCardSign[nIdx].eAct != eMJAct_AnGang)
+		{
+			if (nBaoIdx == (uint8_t)-1)
+			{
+				nBaoIdx = m_vAllActCardSign[nIdx].InvokerIdx;
+				continue;
+			}
+
+			if ( nBaoIdx != m_vAllActCardSign[nIdx].InvokerIdx )
+			{
+				return -1;
+			}
+		}
+	}
+	return nBaoIdx;
 }

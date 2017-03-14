@@ -52,10 +52,12 @@ protected:
 	bool checkDuZhan(uint8_t nCard);
 	bool checkBianZhi( uint8_t nCard );
 	bool checkQueYi( uint8_t nCard);
+	uint8_t getSpecailHuBaoPaiKuaiZhaoIdx();
 protected:
 	VEC_CARD m_vBuHuaCard;
 	//VEC_CARD m_vHuaGang;
 	std::vector<stActCardSign> m_vActCardSign;
+	std::vector<stActCardSign> m_vAllActCardSign;
 	NJMJRoom* m_pCurRoom;
 	uint8_t m_nSongGangIdx;
 };

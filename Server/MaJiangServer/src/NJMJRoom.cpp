@@ -434,6 +434,9 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 	pPlayerWin->addOffsetCoin(nWin);
 	st.addWin(nIdx, nWin);
 	addSettle(st);
+
+	auto pActCard = (NJMJPlayerCard*)pPlayerWin->getPlayerCard();
+	pActCard->addActSign(nCard, nIdx, eMJAct_AnGang );
 }
 
 void NJMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
@@ -959,7 +962,7 @@ bool NJMJRoom::isInternalShouldClosedAll()
 
 bool NJMJRoom::isOneCirleEnd()
 {
-	/*return ((3 == m_nBankerIdx) && (m_isBankerHu == false));*/
+	return ((3 == m_nBankerIdx) && (m_isBankerHu == false));
 	return true;
 }
 
