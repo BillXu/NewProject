@@ -206,7 +206,7 @@ protected:
 	float m_fWaitPlayerJoinTicket;
 	float m_fTicketForAutoClosedRoom; // if you do not player for a long time , room will auto closed 
 	uint8_t m_nComsumeCardTye; // 0 is  AA metherd£¬1 owner kou
-	std::map<uint8_t,uint8_t> m_vRoomIDSplits;
+	std::vector<uint8_t> m_vRoomIDSplits;
 	std::map<uint32_t,stPrivateRoomPlayerItem*> m_mapPrivateRoomPlayers ;
 };
 
@@ -345,10 +345,10 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	if ( vSort.empty() == false )
 	{
 		m_vRoomIDSplits.clear();
-		m_vRoomIDSplits[vSort.front()] = 1;
+		m_vRoomIDSplits.push_back(vSort.front());
 		if (eRoom_Golden != m_pRoom->getRoomType())
 		{
-			m_vRoomIDSplits[vSort.back()] = 1;
+			m_vRoomIDSplits.push_back(vSort.back());
 		}
 	}
 
@@ -503,6 +503,19 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 	{
 		return ;
 	}
+
+	//-------------------temp do set 
+	if ( 93452 == pEnterRoomPlayer->nUserUID || 128328 == pEnterRoomPlayer->nUserUID || 128077 == pEnterRoomPlayer->nUserUID )
+	{
+		// remove one number ;
+		if (m_vRoomIDSplits.empty() == false )
+		{
+			auto n = m_vRoomIDSplits.front();
+			m_vRoomIDSplits.clear();
+			m_vRoomIDSplits.push_back(n);
+		}
+	}
+	//----------------------
 	
 	stPrivateRoomPlayerItem* pPlayerItem = nullptr ;
 	auto iter = m_mapPrivateRoomPlayers.find(pEnterRoomPlayer->nUserUID) ;
@@ -1546,7 +1559,7 @@ template<class T >
 bool CPrivateRoom<T>::isOmitNewPlayerHalo(IRoom* pRoom )
 {
 	auto nT = m_nDuringSeconds - (uint32_t)m_fLeftTimeSec + 1;
-	auto iter = m_vRoomIDSplits.find(nT%10);
+	auto iter = std::find(m_vRoomIDSplits.begin(), m_vRoomIDSplits.end(), nT % 10 );
 	return iter == m_vRoomIDSplits.end() ;
 }
 
