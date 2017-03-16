@@ -27,6 +27,7 @@ void MJPlayer::init(stEnterRoomData* pData)
 	m_nDianPaoCnt = 0 ;
 	m_nMingGangCnt = 0 ;
 	m_nAnGangCnt = 0 ;
+	m_isOnline = true;
 
 	clearDecareBuGangFlag();
 	clearGangFlag();
@@ -39,6 +40,7 @@ void MJPlayer::onComeBackRoom(stEnterRoomData* pData)
 	m_nCoin = pData->nCoin;
 	m_nPlayerType = pData->nPlayerType;
 	m_isTempLeave = false;
+	setIsOnline(true);
 }
 
 void MJPlayer::onWillStartGame()
@@ -267,4 +269,14 @@ uint8_t MJPlayer::getMingGangCnt()
 void MJPlayer::addMingGangCnt()
 {
 	++m_nMingGangCnt;
+}
+
+void MJPlayer::setIsOnline(bool isOnline)
+{
+	m_isOnline = isOnline;
+}
+
+bool MJPlayer::isOnline()
+{
+	return m_isOnline;
 }

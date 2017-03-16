@@ -303,6 +303,8 @@ enum eMsgType
 	// new request zhan ji ;
 	MSG_REQUEST_PRIVATE_ROOM_RECORDER_NEW,
 	MSG_PLAYER_REQUEST_GAME_RECORDER_NEW,
+	// server used 
+	MSG_INFORM_PLAYER_ONLINE_STATE,
 	// msg js content type 
 	MSG_CREATE_CLUB = 1511,  // ID_MSG_PORT_DATA ;
 	// client : { newClubID : 2345 , cityCode : 23 }
@@ -616,9 +618,9 @@ enum eMsgType
 	// newMoCard : 最新摸的牌，可能是杠 或者 摸牌
 
 	MSG_MJ_ROOM_INFO,  // 房间的基本信息
-	// svr : { roomID ： 23 , configID : 23 , waitTimer : 23, bankerIdx : 0 , curActIdex : 2 , leftCardCnt : 23 , roomState :  23 , players : [ {idx : 0 , uid : 233, coin : 2345 , state : 34, isTrusteed : 0  }, {idx : 0 , uid : 233, coin : 2345, state : 34, isTrusteed : 0 },{idx : 0 , uid : 233, coin : 2345 , state : 34,isTrusteed : 0 } , ... ] }
+	// svr : { roomID ： 23 , configID : 23 , waitTimer : 23, bankerIdx : 0 , curActIdex : 2 , leftCardCnt : 23 , roomState :  23 , players : [ {idx : 0 , uid : 233, coin : 2345 , state : 34, isOnline : 0  }, {idx : 0 , uid : 233, coin : 2345, state : 34, isOnline : 0 },{idx : 0 , uid : 233, coin : 2345 , state : 34,isOnline : 0 } , ... ] }
 	// roomState  , 房间状态
-	// isTrusteed : 玩家是否托管
+	// isOnline : 玩家是在线 ， 1 是在线， 0 是不在线
 	// leftCardCnt : 剩余牌的数量，重新进入已经在玩的房间，或者断线重连，就会收到这个消息，
 	// bankerIdx : 庄家的索引
 	// curActIdx :  当前正在等待操作的玩家
@@ -667,8 +669,9 @@ enum eMsgType
 
 	MSG_ROOM_NJ_PLAYER_HU, // 南京麻将玩家胡牌 
 	// svr : { isZiMo : 0 , detail : {}, realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] }
-	//  当是自摸的时候，isZiMo : 1 , detail = { huIdx : 234 , baoPaiIdx : 2 , winCoin : 234,huardSoftHua : 23, gangKaiCoin : 0 ,vhuTypes : [ eFanxing , ], LoseIdxs : [ {idx : 1 , loseCoin : 234 }, .... ]   }
-	// 当不是自摸的时候，isZiMo : 0 , detail = { dianPaoIdx : 23 , isRobotGang : 0 , nLose : 23, huPlayers : [{ idx : 234 , win : 234 , baoPaiIdx : 2 , huardSoftHua : 23, vhuTypes : [ eFanxing , ] } , .... ] } 
+	//  当是自摸的时候，isZiMo : 1 , detail = { huIdx : 234 , isKuaiZhaoHu : 0, baoPaiIdx : 2 , winCoin : 234,huardSoftHua : 23, gangKaiCoin : 0 ,vhuTypes : [ eFanxing , ], LoseIdxs : [ {idx : 1 , loseCoin : 234 }, .... ]   }
+	// 当不是自摸的时候，isZiMo : 0 , detail = { dianPaoIdx : 23 , isRobotGang : 0 , nLose : 23, huPlayers : [{ idx : 234 , win : 234 , baoPaiIdx : 2  , isKuaiZhaoHu : 0, huardSoftHua : 23, vhuTypes : [ eFanxing , ] } , .... ] } 
+	//	isKuaiZhaoHu : 是否是快照胡牌
 	// huPlayers : json 数组包含子类型，表示胡牌玩家的数组，一炮多响，有多个胡牌玩家 
 	// 胡牌子类型: idx :胡牌玩家的idx ， huardSoftHua : 花数量，offset ：胡牌玩家赢的钱，gangFlag ，胡牌玩家是否是杠开， vhuTypes 是一个数组，表示胡牌时候的 各种翻型叠加, baoPaiIdx : 包牌者的索引，只有包牌情况，才有这个key值，引用钱要判断
 	// invokerIdx : 点炮者的UID,  InvokerGangFlag : 放炮者 是不是被抢杠。 当自摸的时候，这个idx 和 胡牌的玩家是一样的。
@@ -715,6 +718,9 @@ enum eMsgType
    // svr : isLiuJu : 是否是流局
 	// detail : 数组就是每个玩家的本局的最终输赢 ；
 	// isNextFanBei : 下一局是否要翻倍
+
+	MSG_ROOM_UPDATE_PLAYER_NET_STATE, // 更新房间内玩家的在线状态
+	// svr : { idx : 0 , isOnLine : 0 } // isOnline 0 不在线，1 在线 。  
 
 
 

@@ -374,6 +374,17 @@ bool CPlayer::ProcessPublicPlayerMsg(stMsg* pMsg , eMsgPort eSenderPort)
 					}
 				}
 			}
+
+			auto p = (CPlayerGameData*)GetComponent(ePlayerComponent_PlayerGameData);
+			if (p->isNotInAnyRoom() == false)
+			{
+				stMsgInformPlayerOnlineState msg;
+				msg.nRoomID = p->getCurRoomID();
+				msg.nSubRoomIdx = 0;
+				msg.isOnline = pRet->nState == 1 ;
+				msg.nUID = GetUserUID();
+				CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(), (char*)&msg, sizeof(msg), false);
+			}
 		}
 		break ;
 	case MSG_ADD_MONEY:

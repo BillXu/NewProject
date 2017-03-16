@@ -11,6 +11,8 @@ void NJMJPlayerCard::reset()
 	m_pCurRoom = nullptr;
 	setSongGangIdx(-1);
 	m_vAllActCardSign.clear();
+	m_isHaveAnGangFlag = false;
+	m_isHaveZhiGangFlag = false;
 }
 
 bool NJMJPlayerCard::canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB)
@@ -85,7 +87,7 @@ void NJMJPlayerCard::onBuHua(uint8_t nHuaCard, uint8_t nCard)
 	m_vBuHuaCard.push_back(nHuaCard);
 }
 
-bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::vector<uint16_t>& vHuTypes, uint16_t& nHuHuaCnt, uint16_t& nHardAndSoftHua)
+bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::vector<uint16_t>& vHuTypes, uint16_t& nHuHuaCnt, uint16_t& nHardAndSoftHua, bool& isSpecailHuPai, uint8_t nInvokerIdx )
 {
 	nHuHuaCnt = 0;
 	vHuTypes.clear();
@@ -102,6 +104,11 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 		bisSpecailHu = getIsSpecailHu(nCard);
 		addCardToVecAsc(m_vCards[type], nCard);
 	}
+	else
+	{
+		bisSpecailHu = getIsZiMoSpecailHu();
+	}
+	isSpecailHuPai = bisSpecailHu;
 
 	auto funRemoveAddToCard = [this](uint8_t nCard)
 	{
@@ -140,8 +147,11 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 		checkMenQing(vHuTypes, nHuHuaCnt);
 	}
 	
-	checkQuanQiuDuDiao(nCard, vHuTypes, nHuHuaCnt, bisSpecailHu );
-	checkYaJue(nCard, isBePenged, vHuTypes, nHuHuaCnt);
+	checkQuanQiuDuDiao(nCard, vHuTypes, nHuHuaCnt, bisSpecailHu, nInvokerIdx,isZiMo);
+	if (bisSpecailHu == false)
+	{
+		checkYaJue(nCard, isBePenged, vHuTypes, nHuHuaCnt);
+	}
 	checkWuHuaGuo(vHuTypes, nHuHuaCnt);
 
 	if (vHuTypes.empty())
@@ -183,7 +193,8 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 	std::vector<uint16_t> vType;
 	uint16_t nHuHuaCnt = 0;
 	uint16_t nHardSoftHua = 0;
-	auto bRet = onDoHu(false, nCard, m_pCurRoom->isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua);
+	bool isSpecialHu = false;
+	auto bRet = onDoHu(false, nCard, m_pCurRoom->isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua, isSpecialHu);
 	
 	do
 	{
@@ -199,10 +210,6 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 		}
 
 	} while (0);
-
-
-	auto iter = std::find(m_vCards[eType].begin(), m_vCards[eType].end(), nCard);
-	m_vCards[eType].erase(iter);
 	return bRet;
 }
 
@@ -222,7 +229,7 @@ bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 
 	// dui tong yi ren san zui 
 	auto nBaoPaiidx = getSpecailHuBaoPaiKuaiZhaoIdx();
-	if (nBaoPaiidx != -1 )
+	if (nBaoPaiidx != (uint8_t)-1 )
 	{
 		return true;
 	}
@@ -257,6 +264,79 @@ bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 		}
 	}
 	return true;
+}
+
+bool NJMJPlayerCard::getIsZiMoSpecailHu()
+{
+	VEC_CARD vHoldCard;
+	getHoldCard(vHoldCard);
+	if (vHoldCard.size() != 2 )
+	{
+		return false;
+	}
+
+	// have gang flag ;
+	if ( ( false == m_isHaveAnGangFlag ) && ( false == m_isHaveZhiGangFlag ) )
+	{
+		return false;
+	}
+
+	// dui tong yi ren san zui 
+	auto nBaoPaiidx = getSpecailHuBaoPaiKuaiZhaoIdx();
+	if (nBaoPaiidx != (uint8_t)-1)
+	{
+		return true;
+	}
+
+	// qing yi se qingkuang , dui yi zui ;
+	VEC_CARD vAllCard;
+	getHoldCard(vAllCard);
+	if (card_Type(vAllCard.back()) != card_Type(vAllCard.front()))
+	{
+		return false;
+	}
+
+	VEC_CARD vTemp;
+	getAnGangedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	vTemp.clear();
+	getMingGangedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	vTemp.clear();
+	getPengedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	auto nType = card_Type(vAllCard.front());
+	for (auto& ref : vAllCard)
+	{
+		auto tt = card_Type(ref);
+		if (nType != tt)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
+{
+	m_isHaveAnGangFlag = false;
+	m_isHaveZhiGangFlag = false;
+	return MJPlayerCard::onChuCard(nChuCard);
+}
+
+bool NJMJPlayerCard::onMingGang(uint8_t nCard, uint8_t nGangGetCard)
+{
+	m_isHaveZhiGangFlag = true;
+	return MJPlayerCard::onMingGang(nCard, nGangGetCard);
+}
+
+bool NJMJPlayerCard::onAnGang(uint8_t nCard, uint8_t nGangGetCard)
+{
+	m_isHaveAnGangFlag = true;
+	return MJPlayerCard::onAnGang(nCard, nGangGetCard);
 }
 
 bool NJMJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
@@ -491,10 +571,16 @@ uint8_t NJMJPlayerCard::getLastActSignIdx()
 
 bool NJMJPlayerCard::isHoldCardCanHu()
 {
+	if (getIsZiMoSpecailHu())
+	{
+		return true;
+	}
+
 	std::vector<uint16_t> vType;
 	uint16_t nHuHuaCnt = 0;
 	uint16_t nHardSoftHua = 0;
-	auto bRet = onDoHu(true, getNewestFetchedCard(), false, vType, nHuHuaCnt, nHardSoftHua);
+	bool bIsSpecialHu = false;
+	auto bRet = onDoHu(true, getNewestFetchedCard(), false, vType, nHuHuaCnt, nHardSoftHua, bIsSpecialHu);
 	if (bRet == false)
 	{
 		return false;
@@ -848,13 +934,20 @@ bool NJMJPlayerCard::checkQiDui(uint8_t nCard, std::vector<uint16_t>& vHuTypes, 
 	return true;
 }
 
-bool NJMJPlayerCard::checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt, bool isSpecailHu)
+bool NJMJPlayerCard::checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt, bool isSpecailHu, uint8_t nInvokerIdx, bool isZiMo )
 {
 	if (isSpecailHu)
 	{
-		vHuTypes.push_back(eFanxing_QuanQiuDuDiao);
-		nHuaCnt += 40;
-		return true;
+		auto iter = std::find(vHuTypes.begin(),vHuTypes.end(),eFanxing_QingYiSe);
+		bool isQingYISe = iter != vHuTypes.end();
+		auto nSpecailZhaopIdx = getSpecailHuBaoPaiKuaiZhaoIdx();
+		if ( (isZiMo && ( m_isHaveAnGangFlag || (m_isHaveZhiGangFlag && nSpecailZhaopIdx == getSongGangIdx() ) ) ) || isQingYISe || ( isZiMo == false && nSpecailZhaopIdx == nInvokerIdx && (uint8_t)-1 != nInvokerIdx ) )
+		{
+			vHuTypes.push_back(eFanxing_QuanQiuDuDiao);
+			nHuaCnt += 40;
+			return true;
+		}
+		return false;
 	}
 
 	uint8_t nCnt = 0;

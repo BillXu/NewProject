@@ -1031,6 +1031,18 @@ struct stMsgVerifyEncryptNumberRet
 	uint32_t nUserUID ;
 	uint8_t nCoinType ;   // 1 coin£¬0 diamond
 };
+
+struct stMsgInformPlayerOnlineState
+	:public stMsgToRoom
+{
+	stMsgInformPlayerOnlineState()
+	{
+		cSysIdentifer = ID_MSG_PORT_MJ;
+		usMsgType = MSG_INFORM_PLAYER_ONLINE_STATE;
+	}
+	uint32_t nUID;
+	bool isOnline;
+};
 //----above is new , below is old---------
 
 

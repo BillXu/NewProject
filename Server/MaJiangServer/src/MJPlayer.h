@@ -51,6 +51,9 @@ public:
 
 	uint8_t getMingGangCnt()final;
 	void addMingGangCnt()final;
+
+	void setIsOnline(bool isOnline) final;
+	bool isOnline() final;
 private:
 	bool m_isTempLeave;
 	uint8_t m_nPlayerType;
@@ -71,4 +74,6 @@ private:
 	uint8_t m_nDianPaoCnt;
 	uint8_t m_nMingGangCnt;
 	uint8_t m_nAnGangCnt;
+
+	bool m_isOnline;
 };

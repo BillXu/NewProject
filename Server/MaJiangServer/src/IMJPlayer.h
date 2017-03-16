@@ -53,5 +53,7 @@ public:
 
 	virtual uint8_t getMingGangCnt() = 0 ;
 	virtual void addMingGangCnt() = 0;
+	virtual void setIsOnline(bool isOnline) = 0;
+	virtual bool isOnline() = 0;
 
 };

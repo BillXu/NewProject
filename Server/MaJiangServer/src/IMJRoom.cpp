@@ -43,6 +43,7 @@ bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32
 		((stNiuNiuRoomConfig*)m_pRoomConfig)->nMaxSeat = MAX_SEAT_CNT;
 	}
 	setBankIdx(-1);
+	m_spRoomRecorder = std::make_shared<RoomRecorder>();
 	m_spRoomRecorder->setRoomInfo(getSeiralNum(), getRoomID(), getRoomType());
 	return true;
 }
@@ -63,7 +64,7 @@ bool IMJRoom::onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)
 		jsMsg["uid"] = player->getUID();
 		jsMsg["coin"] = player->getCoin();
 		jsMsg["state"] = player->getState();
-		jsMsg["isTrusteed"] = player->isTrusteed() ? 1 : 0;
+		jsMsg["isOnLine"] = player->isOnline() ? 1 : 0;
 		sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_ENTER);
 		return true;
 	}
@@ -136,7 +137,7 @@ void IMJRoom::sendRoomInfo(uint32_t nSessionID)
 		jsPlayer["uid"] = pPlayer->getUID();
 		jsPlayer["coin"] = pPlayer->getCoin();
 		jsPlayer["state"] = pPlayer->getState();
-		jsPlayer["isTrusteed"] = pPlayer->isTrusteed() ? 1 : 0;
+		jsPlayer["isOnline"] = pPlayer->isOnline() ? 1 : 0;
 		arrPlayers[pPlayer->getIdx()] = jsPlayer;
 	}
 
@@ -270,6 +271,23 @@ bool IMJRoom::onMessage(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nSession
 		sendMsgToPlayer(jsMsg, prealMsg->usMsgType, nSessionID);
 		LOGFMTI("返回玩家离开房间的消息， sesssioniID = %u", nSessionID);
 		return true;;
+	}
+	else if (MSG_INFORM_PLAYER_ONLINE_STATE == prealMsg->usMsgType)
+	{
+		auto pMsg = (stMsgInformPlayerOnlineState*)prealMsg;
+		auto pPlayer = getMJPlayerByUID(pMsg->nUID);
+		if (pPlayer == nullptr)
+		{
+			LOGFMTE("player uid = %u not in room id = %u so can not update player net state",pMsg->nUID,getRoomID());
+			return true;
+		}
+		pPlayer->setIsOnline(pMsg->isOnline);
+
+		Json::Value jsmsg;
+		jsmsg["idx"] = pPlayer->getIdx();
+		jsmsg["isOnLine"] = pMsg->isOnline ? 1 : 0;
+		sendRoomMsg(jsmsg, MSG_ROOM_UPDATE_PLAYER_NET_STATE);
+		return true;
 	}
 
 	return getCurRoomState()->onMessage(prealMsg, eSenderPort, nSessionID);
@@ -426,7 +444,7 @@ bool IMJRoom::sitdown(IMJPlayer* pPlayer, uint8_t nIdx)
 	jsMsg["uid"] = pPlayer->getUID();
 	jsMsg["coin"] = pPlayer->getCoin();
 	jsMsg["state"] = pPlayer->getState();
-	jsMsg["isTrusteed"] = pPlayer->isTrusteed() ? 1 : 0;
+	jsMsg["isOnLine"] = pPlayer->isOnline() ? 1 : 0;
 	sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_ENTER);
 	return true;
 }

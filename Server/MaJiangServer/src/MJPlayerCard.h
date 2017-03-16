@@ -41,11 +41,11 @@ public:
 
 	void onMoCard(uint8_t nMoCard) final;
 	bool onPeng(uint8_t nCard) final;
-	bool onMingGang(uint8_t nCard, uint8_t nGangGetCard) final;
-	bool onAnGang(uint8_t nCard, uint8_t nGangGetCard) final;
+	bool onMingGang(uint8_t nCard, uint8_t nGangGetCard) override;
+	bool onAnGang(uint8_t nCard, uint8_t nGangGetCard) override;
 	bool onBuGang(uint8_t nCard, uint8_t nGangGetCard) final;
 	bool onEat(uint8_t nCard, uint8_t nWithA, uint8_t withB) final;
-	bool onChuCard(uint8_t nChuCard)final;
+	bool onChuCard(uint8_t nChuCard)override;
 
 	bool getHoldCard(VEC_CARD& vHoldCard) final;
 	bool getChuedCard(VEC_CARD& vChuedCard) final;

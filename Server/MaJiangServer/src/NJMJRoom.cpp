@@ -603,7 +603,8 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		std::vector<uint16_t> vType;
 		uint16_t nHuHuaCnt = 0;
 		uint16_t nHardSoftHua = 0;
-		pHuPlayerCard->onDoHu(false, nCard,isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua);
+		bool isSpecailHu = false;
+		pHuPlayerCard->onDoHu(false, nCard,isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua, isSpecailHu,nInvokeIdx);
 		auto nAllHuaCnt = nHuHuaCnt + nHardSoftHua * ( isHuaZa() ? 2 : 1 );
 		if (isBiXiaHu())
 		{
@@ -611,6 +612,7 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		}
 
 		jsHuPlayer["huardSoftHua"] = nHardSoftHua;
+		jsHuPlayer["isKuaiZhaoHu"] = isSpecailHu ? 1 : 0;
 		Json::Value jsHuTyps;
 		for (auto& refHu : vType)
 		{
@@ -632,7 +634,12 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 			}
 		}
 
-		if ( pLosePlayer->haveDecareBuGangFalg() ) // robot gang ;
+		if ( nBaoPaiIdx == (uint8_t)-1)
+		{
+			nBaoPaiIdx = pHuPlayerCard->getSpecailHuBaoPaiKuaiZhaoIdx();
+		}
+
+		if ( pLosePlayer->haveDecareBuGangFalg() || isSpecailHu || nBaoPaiIdx != (uint8_t)-1 ) // robot gang ;
 		{
 			nAllHuaCnt *= 3;  // robot gang means bao pai, and zi mo ; menas zi mo 
 			LOGFMTD("room id = %u , ploseplayer = %u have gang dec ",getRoomID(),pLosePlayer->getUID());
@@ -741,7 +748,8 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	std::vector<uint16_t> vType;
 	uint16_t nHuHuaCnt = 0;
 	uint16_t nHardSoftHua = 0;
-	pHuPlayerCard->onDoHu(true, nCard, isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua);
+	bool bIsSpecailHu = false;
+	pHuPlayerCard->onDoHu(true, nCard, isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua, bIsSpecailHu );
 
 	Json::Value jsHuTyps;
 	for (auto& refHu : vType)
@@ -749,11 +757,15 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		jsHuTyps[jsHuTyps.size()] = refHu;
 	}
 	jsDetail["vhuTypes"] = jsHuTyps;
-
+	jsDetail["isKuaiZhaoHu"] = bIsSpecailHu ? 1 : 0;
 	jsDetail["huardSoftHua"] = nHardSoftHua;
 	jsDetail["gangKaiCoin"] = 0;
 	// xiao gang kai hua 
-	if (pZiMoPlayer->haveBuHuaFlag())
+	if ( bIsSpecailHu )
+	{
+
+	}
+	else if (pZiMoPlayer->haveBuHuaFlag())
 	{
 		nHuHuaCnt += 10;
 		jsDetail["gangKaiCoin"] = 10;
@@ -787,9 +799,17 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	}
 
 	auto nBaoPaiIdx = pHuPlayerCard->getKuaiZhaoBaoPaiIdx();
-	if ((uint8_t)-1 == nBaoPaiIdx && pZiMoPlayer->haveGangFalg()) // gang kai bao pai 
+	if ((uint8_t)-1 == nBaoPaiIdx && bIsSpecailHu )
 	{
-		nBaoPaiIdx = pHuPlayerCard->getSongGangIdx();
+		nBaoPaiIdx = pHuPlayerCard->getSpecailHuBaoPaiKuaiZhaoIdx();
+	}
+
+	if ((uint8_t)-1 == nBaoPaiIdx ) // gang kai bao pai 
+	{
+		if (pZiMoPlayer->haveGangFalg())
+		{
+			nBaoPaiIdx = pHuPlayerCard->getSongGangIdx();
+		}
 	}
 
 	auto nTotalWin = 0;

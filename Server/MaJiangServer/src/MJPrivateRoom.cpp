@@ -15,7 +15,7 @@
 #include "NJMJRoom.h"
 #include "SZMJRoom.h"
 #include "MJServer.h"
-#define TIME_WAIT_REPLY_DISMISS 60*5
+#define TIME_WAIT_REPLY_DISMISS 90
 MJPrivateRoom::~MJPrivateRoom()
 {
 	delete m_pRoom;
@@ -283,9 +283,15 @@ bool MJPrivateRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSe
 		}
 		else
 		{
-			Json::Value jsMsg;
-			jsMsg["applyerIdx"] = pp->getIdx();
-			sendRoomMsg(jsMsg, MSG_ROOM_APPLY_DISMISS_VIP_ROOM);
+			auto pRoom = (IMJRoom*)m_pRoom;
+			bool bNotOpen = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady);
+			if ( bNotOpen == false )
+			{
+				Json::Value jsMsg;
+				jsMsg["applyerIdx"] = pp->getIdx();
+				sendRoomMsg(jsMsg, MSG_ROOM_APPLY_DISMISS_VIP_ROOM);
+			}
+
 			m_tWaitRepklyTimer.reset();
 			m_tWaitRepklyTimer.setInterval(TIME_WAIT_REPLY_DISMISS);
 			m_tWaitRepklyTimer.setIsAutoRepeat(false);
