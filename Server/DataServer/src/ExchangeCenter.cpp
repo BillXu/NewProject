@@ -111,7 +111,7 @@ bool CExchangeCenter::onMsg(stMsg* pMsg , eMsgPort eSenderPort , uint32_t nSessi
 			auBuffer.addContent(&msgLog,sizeof(msgLog)) ;
 			auBuffer.addContent(strArg.c_str(),msgLog.nJsonExtnerLen) ;
 			getSvrApp()->sendMsg(nSessionID,auBuffer.getBufferPtr(),auBuffer.getContentSize()) ;
-			LOGFMTD("uid = %d do exchange item id = %d, remark = %s",pPlayer->GetUserUID(),pExchangeItem->nConfigID,rootValue["address"].asString()) ;
+			LOGFMTD("uid = %d do exchange item id = %d, remark = %s",pPlayer->GetUserUID(),pExchangeItem->nConfigID,rootValue["address"].asString().c_str()) ;
 
 			// update recorder ;
 			auto pRec = vExchangeEntrys.find(pRet->nExchangeID);

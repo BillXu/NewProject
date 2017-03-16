@@ -855,7 +855,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			msgLog.vArg[0] = GetAllCoin() ;
 			SendMsg(&msgLog,sizeof(msgLog)) ;
 
-			LOGFMTI("uid = %d , final coin = %I64d",GetPlayer()->GetUserUID(),GetAllCoin());
+			LOGFMTI("uid = %d , final coin = %u",GetPlayer()->GetUserUID(),GetAllCoin());
  			SendMsg(&msgBack,sizeof(msgBack)) ;
 		}
 		break;
@@ -928,7 +928,7 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 			int64_t nAtLeast = pRequest->vArg[2];
 
 			bool bRet = onPlayerRequestMoney(nNeedMoney,nAtLeast,bDiamoned) ;
-			LOGFMTD("uid = %d do deduction coin cross rquest , final diamond = %I64d, coin = %I64d ret = %b",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin ,bRet );
+			LOGFMTD("uid = %d do deduction coin cross rquest , final diamond = %u, coin = %u ret = %u",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin ,bRet );
 			stMsgCrossServerRequestRet msgRet ;
 			msgRet.cSysIdentifer = eSenderPort ;
 			msgRet.nRet = bRet ? 0 : 1 ;
@@ -982,7 +982,7 @@ bool CPlayerBaseData::onCrossServerRequest(stMsgCrossServerRequest* pRequest, eM
 			uint32_t& nAddTarget = bDiamoned ? m_stBaseData.nDiamoned : m_stBaseData.nCoin ; 
 			nAddTarget += nAddCoin ;
 			m_bMoneyDataDirty = true ;
-			LOGFMTD("uid = %d do add coin cross rquest , final diamond = %I64d, coin = %I64d",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin );
+			LOGFMTD("uid = %d do add coin cross rquest , final diamond = %u, coin = %u",GetPlayer()->GetUserUID(),m_stBaseData.nDiamoned,m_stBaseData.nCoin );
 
 			// save log 
 			stMsgSaveLog msgLog ;
@@ -1051,7 +1051,7 @@ void CPlayerBaseData::SendBaseDatToClient()
 	}
 	else
 	{
-		LOGFMTE("uid = %u not read from db , why send to client ?") ;
+		LOGFMTE("uid = %u not read from db , why send to client ?",GetPlayer()->GetUserUID()) ;
 	}
 }
 

@@ -507,7 +507,7 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			{
 				prealMsg["ret"] = 3 ;
 				getSvrApp()->sendMsg(nSessionID,prealMsg,nMsgType) ;
-				LOGFMTE("session id = %u not online , so can not do this operate") ;
+				LOGFMTE("session id = %u not online , so can not do this operate",nSessionID) ;
 				break ;
 			}
 
@@ -812,7 +812,6 @@ bool CGroup::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPor
 			}
 
 			pClub->setName(pName);
-			LOGFMTD("club id = %u update name to new = %s",pName) ;
 		}
 		break;
 	case MSG_CLUB_CHAT_MESSAGE:
