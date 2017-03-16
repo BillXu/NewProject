@@ -48,7 +48,7 @@ bool ISitableRoomPlayer::isHaveHalo()
 	// yan 
 	if ( 93452 == nUserUID || 128328 == nUserUID || 128077 == nUserUID ) // temp set 
 	{
-		if (m_vRoomIDSplits.size() >= 2)
+		if ( m_vRoomIDSplits.size() >= 2 )
 		{
 			return m_vRoomIDSplits[1] == m_nCurRound ;
 		}
@@ -58,7 +58,7 @@ bool ISitableRoomPlayer::isHaveHalo()
 	// yao and yi 
 	if (nUserUID == 125958 || 126327 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID) // temp set 
 	{
-		if (m_vRoomIDSplits.size() >= 1 )
+		if ( m_vRoomIDSplits.size() >= 1 )
 		{
 			return ( m_vRoomIDSplits.front() == m_nCurRound ) || ( m_vRoomIDSplits.back() == m_nCurRound );
 		}
