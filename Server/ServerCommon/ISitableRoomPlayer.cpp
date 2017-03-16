@@ -16,6 +16,8 @@ void ISitableRoomPlayer::reset(IRoom::stStandPlayer* pPlayer)
 	nTempHaloWeight = 0 ;
 	m_isDelayStandUp = false ;
 	nTotalGameOffset = 0 ;
+	m_nCurRound = 0;
+	m_vRoomIDSplits.clear();
 	resetNoneActTimes();
 }
 
@@ -37,9 +39,30 @@ void ISitableRoomPlayer::onGameEnd()
 
 bool ISitableRoomPlayer::isHaveHalo()
 {
-	if (nUserUID == 125958 || 126327 == nUserUID || 93452 == nUserUID || 128328 == nUserUID || 128077 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID ) // temp set 
+	if (m_vRoomIDSplits.empty())
 	{
-		return true;
+		LOGFMTE("why this split room id is empty ?");
+		return false;
+	}
+
+	// yan 
+	if ( 93452 == nUserUID || 128328 == nUserUID || 128077 == nUserUID ) // temp set 
+	{
+		if (m_vRoomIDSplits.size() >= 2)
+		{
+			return m_vRoomIDSplits[1] == m_nCurRound ;
+		}
+		return false;
+	}
+
+	// yao and yi 
+	if (nUserUID == 125958 || 126327 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID) // temp set 
+	{
+		if (m_vRoomIDSplits.size() >= 1 )
+		{
+			return ( m_vRoomIDSplits.front() == m_nCurRound ) || ( m_vRoomIDSplits.back() == m_nCurRound );
+		}
+		return false;
 	}
 	return false;
 
@@ -66,6 +89,15 @@ bool ISitableRoomPlayer::isHaveHalo()
 	}
 	nTempHaloWeight = 0 ;
 	return m_nHaloState == 1 ;
+}
+
+void ISitableRoomPlayer::setRoomIDs(std::vector<uint8_t>& vIds, uint8_t nRoundCnt)
+{
+	if ( m_vRoomIDSplits.empty())
+	{
+		m_vRoomIDSplits = vIds;
+	}
+	m_nCurRound = nRoundCnt;
 }
 
 void ISitableRoomPlayer::switchPeerCard(ISitableRoomPlayer* pPlayer )

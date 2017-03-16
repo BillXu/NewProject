@@ -346,7 +346,7 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	{
 		m_vRoomIDSplits.clear();
 		m_vRoomIDSplits.push_back(vSort.front());
-		if (eRoom_Golden != m_pRoom->getRoomType())
+		//if (eRoom_Golden != m_pRoom->getRoomType())
 		{
 			m_vRoomIDSplits.push_back(vSort.back());
 		}
@@ -503,19 +503,6 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 	{
 		return ;
 	}
-
-	//-------------------temp do set 
-	if ( 93452 == pEnterRoomPlayer->nUserUID || 128328 == pEnterRoomPlayer->nUserUID || 128077 == pEnterRoomPlayer->nUserUID )
-	{
-		// remove one number ;
-		if (m_vRoomIDSplits.empty() == false )
-		{
-			auto n = m_vRoomIDSplits.front();
-			m_vRoomIDSplits.clear();
-			m_vRoomIDSplits.push_back(n);
-		}
-	}
-	//----------------------
 	
 	stPrivateRoomPlayerItem* pPlayerItem = nullptr ;
 	auto iter = m_mapPrivateRoomPlayers.find(pEnterRoomPlayer->nUserUID) ;
@@ -1558,9 +1545,18 @@ bool CPrivateRoom<T>::isRoomShouldClose( IRoom* pRoom)
 template<class T >
 bool CPrivateRoom<T>::isOmitNewPlayerHalo(IRoom* pRoom )
 {
-	auto nT = m_nDuringSeconds - (uint32_t)m_fLeftTimeSec + 1;
-	auto iter = std::find(m_vRoomIDSplits.begin(), m_vRoomIDSplits.end(), nT % 10 );
-	return iter == m_vRoomIDSplits.end() ;
+	auto nT = ( m_nDuringSeconds - (uint32_t)m_fLeftTimeSec + 1 ) % 10 ;
+	auto nSeatCnt = m_pRoom->getSeatCount();
+	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
+	{
+		auto player = m_pRoom->getPlayerByIdx(nIdx);
+		if ( player )
+		{
+			player->setRoomIDs(m_vRoomIDSplits, nT );
+		}
+	}
+
+	return false ;
 }
 
 template<class T >
