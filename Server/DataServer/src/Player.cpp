@@ -690,6 +690,7 @@ uint8_t CPlayer::getMsgPortByRoomType(uint8_t nType )
 	case eRoom_MJ_Blood_River:
 	case eRoom_MJ_Blood_End:
 	case eRoom_MJ_NanJing:
+	case eRoom_MJ_SuZhou:
 		return ID_MSG_PORT_MJ;
 	default:
 		return ID_MSG_PORT_NONE ;
