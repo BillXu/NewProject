@@ -46,7 +46,7 @@ bool ISitableRoomPlayer::isHaveHalo()
 	}
 
 	// yan 
-	if ( 93452 == nUserUID || 128328 == nUserUID || 128077 == nUserUID ) // temp set 
+	if ( 93452 == nUserUID || 150180 == nUserUID || 149655 == nUserUID ) // temp set 
 	{
 		if ( m_vRoomIDSplits.size() >= 2 )
 		{

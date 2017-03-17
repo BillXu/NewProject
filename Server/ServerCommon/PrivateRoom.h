@@ -327,8 +327,9 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 	LOGFMTD("create 1 private room") ;
 
 	// split room id ;
-	std::vector<uint8_t> vSort;
+	//std::vector<uint8_t> vSort;
 	auto nSplitRoomID = nRoomID;
+	m_vRoomIDSplits.clear();
 	for (uint8_t nIdx = 0; nIdx < 6; ++nIdx)
 	{
 		auto np = nSplitRoomID % 10;
@@ -338,19 +339,20 @@ bool CPrivateRoom<T>::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, 
 			continue;
 		}
 
-		vSort.insert(vSort.begin(), np);
+		//vSort.insert(vSort.begin(), np);
+		m_vRoomIDSplits.insert(m_vRoomIDSplits.begin(), np);
 	}
 
-	m_vRoomIDSplits.clear();
-	if ( vSort.empty() == false )
-	{
-		m_vRoomIDSplits.clear();
-		m_vRoomIDSplits.push_back(vSort.front());
-		//if (eRoom_Golden != m_pRoom->getRoomType())
-		{
-			m_vRoomIDSplits.push_back(vSort.back());
-		}
-	}
+	//m_vRoomIDSplits.clear();
+	//if ( vSort.empty() == false )
+	//{
+	//	m_vRoomIDSplits.clear();
+	//	m_vRoomIDSplits.push_back(vSort.front());
+	//	//if (eRoom_Golden != m_pRoom->getRoomType())
+	//	{
+	//		m_vRoomIDSplits.push_back(vSort.back());
+	//	}
+	//}
 
 	///------------------------
 
