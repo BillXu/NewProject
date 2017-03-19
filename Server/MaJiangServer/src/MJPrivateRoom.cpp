@@ -554,15 +554,15 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 		if (false == isCurrentFree())
 		{
 			uint16_t nCardCnt = 2;//m_nInitCircle * ROOM_CARD_CNT_PER_CIRLE_NJMJ; // { 2, 3, 6}
-			if (4 == m_nInitCircle)
+			if (1 == m_nInitCircle)
 			{
 				nCardCnt = 2;
 			}
-			else if (8 == m_nInitCircle)
+			else if (2 == m_nInitCircle)
 			{
 				nCardCnt = 3;
 			}
-			else // 16 
+			else // 4 quan
 			{
 				nCardCnt = 6;
 			}
