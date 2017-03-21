@@ -54,7 +54,12 @@ public:
 
 	void setIsOnline(bool isOnline) final;
 	bool isOnline() final;
+
+	bool isHaveLouHuFlag()final;
+	void clearLouHuFlag() final;
+	void signLouHuFlag() final;
 private:
+	bool m_isLouHu;
 	bool m_isTempLeave;
 	uint8_t m_nPlayerType;
 	uint32_t m_eState;

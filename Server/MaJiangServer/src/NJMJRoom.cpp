@@ -17,7 +17,7 @@
 #include "MJRoomStateAskForRobotGang.h"
 #define PUNISH_COIN_BASE 5 
 #define AN_GANG_COIN_BASE 5 
-#define MING_GANG_COIN_BASE 5
+#define MING_GANG_COIN_BASE 10
 #define HU_GANG_COIN_BASE 10
 bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
@@ -247,12 +247,9 @@ bool NJMJRoom::isGameOver()
 		}
 	}
 
-	if (isKuaiChong())
+	if ( isInternalShouldClosedAll() )
 	{
-		if (m_nKuaiChongPool <= 0)
-		{
-			return true;
-		}
+		return true;
 	}
 
 	return false;
@@ -986,6 +983,71 @@ bool NJMJRoom::isOneCirleEnd()
 	return true;
 }
 
+bool NJMJRoom::isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)
+{
+	auto pInvoker = getMJPlayerByIdx( nInvokeIdx );
+	if (pInvoker == nullptr || pInvoker->getCoin() > 0 )
+	{
+		return IMJRoom::isAnyPlayerRobotGang(nInvokeIdx,nCard);
+	}
+
+	// invoker already jin yuan zi ;
+	for (auto& ref : m_vMJPlayers)
+	{
+		if (ref == nullptr || nInvokeIdx == ref->getIdx())
+		{
+			continue;
+		}
+
+		auto pMJCard = ref->getPlayerCard();
+		if ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard))
+		{
+			ref->signLouHuFlag();
+		}
+	}
+
+	return false;
+}
+
+bool NJMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
+{
+	auto pInvoker = getMJPlayerByIdx(nInvokeIdx);
+	if (pInvoker == nullptr || pInvoker->getCoin() > 0)
+	{
+		return IMJRoom::isAnyPlayerPengOrHuThisCard(nInvokeIdx, nCard);
+	}
+
+	bool bIsHaveOneNeedThisCard = false;
+	// invoker already jing yuan zi , so find can hu player and sign louhu flag , 
+	// in this situation other player can only peng this card , if any one peng this card ;
+	for (auto& ref : m_vMJPlayers)
+	{
+		if (ref == nullptr || nInvokeIdx == ref->getIdx())
+		{
+			continue;
+		}
+
+		auto pMJCard = ref->getPlayerCard();
+		if ( ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard)) )
+		{
+			ref->signLouHuFlag();
+			continue;
+		}
+
+		if (bIsHaveOneNeedThisCard)  // already now some one can peng this card , son need not check 
+		{
+			continue;
+		}
+
+		if ( pMJCard->canPengWithCard(nCard) )
+		{
+			bIsHaveOneNeedThisCard = true;
+		}
+	}
+
+	return bIsHaveOneNeedThisCard;
+}
+
 void NJMJRoom::addSettle(stSettle& tSettle)
 {
 	m_vSettle.push_back(tSettle);
@@ -1021,6 +1083,58 @@ void NJMJRoom::addSettle(stSettle& tSettle)
 void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 {
 	IMJRoom::onPlayerChu(nIdx,nCard);
+
+	// check chu 4 feng 
+	{
+		auto pChuPaiPlayer = getMJPlayerByIdx(nIdx);
+		auto pcard = (NJMJPlayerCard*)pChuPaiPlayer->getPlayerCard();
+		if ( pcard->isChued4Feng() )
+		{
+			// do caculate ;
+			stSettle st;
+			st.eSettleReason = eMJAct_4Feng;
+			uint16_t nWin = 0;
+			uint16_t nLosePerPlayer = AN_GANG_COIN_BASE * (isBiXiaHu() ? 2 : 1);
+			for (uint8_t nCheckIdx = 0; nCheckIdx < 4; ++nCheckIdx)
+			{
+				if (nIdx == nCheckIdx)
+				{
+					continue;
+				}
+
+				auto pPlayer = getMJPlayerByIdx(nCheckIdx);
+				uint16_t nLose = nLosePerPlayer;
+
+				if (isKuaiChong())
+				{
+					if (nLose > m_nKuaiChongPool)
+					{
+						nLose = m_nKuaiChongPool;
+					}
+
+					m_nKuaiChongPool -= nLose;
+					st.addLose(nCheckIdx, 0);
+				}
+				else
+				{
+					if (pPlayer->getCoin() < nLose)
+					{
+						nLose = pPlayer->getCoin();
+					}
+					pPlayer->addOffsetCoin(-1 * (int32_t)nLose);
+					st.addLose(nCheckIdx, nLose);
+				}
+				nWin += nLose;
+			}
+
+			auto pPlayerWin = getMJPlayerByIdx(nIdx);
+			pPlayerWin->addOffsetCoin(nWin);
+			st.addWin(nIdx, nWin);
+			addSettle(st);
+			//return;
+		}
+
+	}
 
 	m_tChuedCards.addChuedCard(nCard,nIdx);
 	uint8_t nFanQianTarget = -1;

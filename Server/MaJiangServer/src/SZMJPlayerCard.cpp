@@ -346,7 +346,7 @@ bool SZMJPlayerCard::checkDuiDuiHu()
 		auto nThirdIdx = nIdx + 2;
 		if ( nThirdIdx < vAllCard.size() && vAllCard[nIdx] == vAllCard[nThirdIdx] )
 		{
-			nThirdIdx += 3;
+			nIdx += 3;
 			continue;
 		}
 

@@ -31,6 +31,7 @@ void MJPlayer::init(stEnterRoomData* pData)
 
 	clearDecareBuGangFlag();
 	clearGangFlag();
+	clearLouHuFlag();
 	getPlayerCard()->reset();
 }
 
@@ -48,6 +49,7 @@ void MJPlayer::onWillStartGame()
 	m_nOffset = 0;
 	clearGangFlag();
 	clearDecareBuGangFlag();
+	clearLouHuFlag();
 }
 
 void MJPlayer::onStartGame()
@@ -279,4 +281,19 @@ void MJPlayer::setIsOnline(bool isOnline)
 bool MJPlayer::isOnline()
 {
 	return m_isOnline;
+}
+
+bool MJPlayer::isHaveLouHuFlag()
+{
+	return m_isLouHu;
+}
+
+void MJPlayer::clearLouHuFlag()
+{
+	m_isLouHu = false;
+}
+
+void MJPlayer::signLouHuFlag()
+{
+	m_isLouHu = true;
 }

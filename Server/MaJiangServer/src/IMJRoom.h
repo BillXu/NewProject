@@ -86,6 +86,8 @@ public:
 	virtual bool isCanGoOnMoPai();
 	virtual IMJPlayer* doCreateMJPlayer() = 0;
 	virtual IMJPoker* getMJPoker() = 0;
+	virtual void onPlayerLouHu( uint8_t nIdx , uint8_t nInvokerIdx );
+	virtual bool isHaveLouHu() { return true; };
 	bool isOneCirleEnd()override{ return true; }
 	IGameRoomManager* getRoomMgr(){ return m_pRoomMgr; }
 	IMJRoomState* getCurRoomState(){ return m_pCurState; }

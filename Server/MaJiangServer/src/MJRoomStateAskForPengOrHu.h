@@ -258,6 +258,12 @@ public:
 		if (iter != m_vWaitHuIdx.end())
 		{
 			m_vWaitHuIdx.erase(iter);
+
+			// inform lou hu 
+			if (eMJAct_Pass == actType)
+			{
+				getRoom()->onPlayerLouHu(pPlayer->getIdx(), m_nInvokeIdx);
+			}
 		}
 
 		auto iterPeng = std::find(m_vWaitPengGangIdx.begin(), m_vWaitPengGangIdx.end(), pPlayer->getIdx());

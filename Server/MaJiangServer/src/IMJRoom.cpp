@@ -806,6 +806,7 @@ void IMJRoom::onPlayerMo(uint8_t nIdx)
 	pPlayer->getPlayerCard()->onMoCard(nNewCard);
 	pPlayer->clearGangFlag();
 	pPlayer->clearDecareBuGangFlag();
+	pPlayer->clearLouHuFlag();
 	// send msg ;
 	Json::Value msg;
 	msg["idx"] = nIdx;
@@ -829,6 +830,7 @@ void IMJRoom::onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 		LOGFMTE( "nidx = %u peng card = %u error",nIdx,nCard );
 	}
 	pInvoker->getPlayerCard()->onCardBeGangPengEat(nCard);
+	pPlayer->clearLouHuFlag();
 
 	Json::Value jsmsg;
 	jsmsg["idx"] = nIdx;
@@ -875,6 +877,7 @@ void IMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 		return;
 	}
 	pPlayer->signGangFlag();
+	pPlayer->clearLouHuFlag();
 	pPlayer->addMingGangCnt();
 
 	auto nGangGetCard = getMJPoker()->distributeOneCard();
@@ -985,7 +988,7 @@ bool IMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 		}
 
 		auto pMJCard = ref->getPlayerCard();
-		if (pMJCard->canPengWithCard(nCard) || pMJCard->canHuWitCard(nCard))
+		if (pMJCard->canPengWithCard(nCard) || ( (ref->isHaveLouHuFlag() == false ) && pMJCard->canHuWitCard(nCard) ) )
 		{
 			return true;
 		}
@@ -1050,7 +1053,7 @@ void IMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::v
 		}
 
 		// check hu ;
-		if (pMJCard->canHuWitCard(nCard))
+		if ( ( ref->isHaveLouHuFlag() == false ) &&  pMJCard->canHuWitCard(nCard))
 		{
 			jsActs[jsActs.size()] = eMJAct_Hu;
 			vWaitHuIdx.push_back(ref->getIdx());
@@ -1082,7 +1085,7 @@ bool IMJRoom::isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)
 
 		auto pMJCard = ref->getPlayerCard();
 		uint8_t a = 0, b = 0;
-		if (pMJCard->canHuWitCard(nCard))
+		if ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard))
 		{
 			return true;
 		}
@@ -1115,7 +1118,7 @@ void IMJRoom::onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<u
 		Json::Value jsActs;
 		auto pMJCard = ref->getPlayerCard();
 		// check hu 
-		if (pMJCard->canHuWitCard(nCard))
+		if ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard))
 		{
 			jsActs[jsActs.size()] = eMJAct_Hu;
 			vCandinates.push_back(ref->getIdx());
@@ -1145,6 +1148,20 @@ bool IMJRoom::isGameOver()
 bool IMJRoom::isCanGoOnMoPai()
 {
 	return getMJPoker()->getLeftCardCount() > 0 ;
+}
+
+void IMJRoom::onPlayerLouHu(uint8_t nIdx, uint8_t nInvokerIdx)
+{
+	if ( isHaveLouHu() == false )
+	{
+		return;
+	}
+
+	auto p = getMJPlayerByIdx(nIdx);
+	if ( p )
+	{
+		p->signLouHuFlag();
+	}
 }
 
 bool IMJRoom::addRoomState(IMJRoomState* pState)
@@ -1217,7 +1234,6 @@ void IMJRoom::onCheckTrusteeForWaitPlayerAct(uint8_t nIdx, bool isMayBeHu)
 	}
 	);
 }
-
 
 void IMJRoom::onCheckTrusteeForHuOtherPlayerCard(std::vector<uint8_t> vPlayerIdx, uint8_t nTargetCard)
 {

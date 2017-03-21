@@ -34,6 +34,25 @@ public:
 	{
 		switch (m_eActType)
 		{
+		case eMJAct_HuaGang:
+		case eMJAct_BuGang:
+		case eMJAct_BuGang_Declare:
+		case eMJAct_AnGang:
+		case eMJAct_MingGang:
+		{
+			if (getRoom()->isGameOver())
+			{
+				getRoom()->goToState(eRoomState_GameEnd);
+				return;
+			}
+		}
+		break;
+		default:
+			break;
+		}
+
+		switch (m_eActType)
+		{
 		case eMJAct_BuHua:
 		case eMJAct_HuaGang:
 		{
@@ -63,7 +82,13 @@ public:
 		case eMJAct_AnGang:
 		case eMJAct_BuHua:
 		case eMJAct_HuaGang:
+		{
+			if (getRoom()->isGameOver())
+			{
+				return 1.0f;
+			}
 			return eTime_DoPlayerAct_Gang;
+		}
 		case eMJAct_Hu:
 			return eTime_DoPlayerAct_Hu;
 			break;

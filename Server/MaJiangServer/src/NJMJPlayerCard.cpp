@@ -39,6 +39,27 @@ bool NJMJPlayerCard::isChued4Card(uint8_t nCard)
 	return nCnt == 4;
 }
 
+bool NJMJPlayerCard::isChued4Feng()
+{
+	if ( m_vChuedCard.size() != 4 )
+	{
+		return false;
+	}
+
+	auto nFeng = make_Card_Num(eCT_Feng, 1);
+	uint8_t nCnt = 4;
+	while (nCnt--)
+	{
+		auto iter = std::find(m_vChuedCard.begin(),m_vChuedCard.end(),nFeng);
+		if (iter == m_vChuedCard.end())
+		{
+			return false;
+		}
+		++nFeng;
+	}
+	return true;
+}
+
 uint8_t NJMJPlayerCard::getInvokerPengIdx(uint8_t nCard)
 {
 	for (auto& ref : m_vActCardSign)
@@ -203,7 +224,7 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 			break;
 		}
 
-		if ((vType.size() == 1 && vType.front() == eFanxing_PingHu) && nHardSoftHua < 4)
+		if ((vType.size() == 1 && vType.front() == eFanxing_PingHu) && m_vBuHuaCard.size() < 4 )
 		{
 			bRet = false;
 			break;
@@ -586,7 +607,7 @@ bool NJMJPlayerCard::isHoldCardCanHu()
 		return false;
 	}
 
-	if ((vType.size() == 1 && vType.front() == eFanxing_PingHu) && nHardSoftHua < 4 )
+	if ((vType.size() == 1 && vType.front() == eFanxing_PingHu) && m_vBuHuaCard.size() < 4 )
 	{
 		return false;
 	}

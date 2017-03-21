@@ -32,6 +32,9 @@ public:
 	virtual void signDecareBuGangFlag() = 0;
 	virtual void clearDecareBuGangFlag() = 0;
 	virtual bool haveDecareBuGangFalg() = 0;
+	virtual bool isHaveLouHuFlag() = 0;
+	virtual void clearLouHuFlag() = 0 ;
+	virtual void signLouHuFlag() = 0;
 	virtual bool isRobot() = 0;
 	virtual bool isTrusteed() = 0;
 	virtual void switchTrusteed(bool isTrusted) = 0;

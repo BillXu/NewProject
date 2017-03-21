@@ -79,6 +79,8 @@ public:
 	void sendPlayersCardInfo(uint32_t nSessionID)override;
 	bool isInternalShouldClosedAll()override;
 	bool isOneCirleEnd()override;
+	bool isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)override;
+	bool isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)override;
 protected:
 	void getSubRoomInfo(Json::Value& jsSubInfo)override;
 	void addSettle(stSettle& tSettle );

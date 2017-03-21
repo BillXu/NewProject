@@ -386,3 +386,6 @@ MyGame/
 *.opendb
 Server/ServerSP.VC.db
 *.db
+Server/enc_temp_folder/447693933efb5e7ab8684a365e32f18/NJRoomStateDoPlayerAct.h
+Server/enc_temp_folder/461c1e0c8e5bd6d1bb4901ccda1cce7/MJRoomStateDoPlayerAct.h
+Server/enc_temp_folder/cb3cc153162ee6f4a2a671985c70c8a5/CommonDefine.h

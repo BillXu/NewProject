@@ -440,7 +440,17 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				break;
 			}
 
-			if ( ( isFree == false )  && (nCirle * ROOM_CARD_CNT_PER_CIRLE_NJMJ) > GetPlayer()->GetBaseData()->GetAllDiamoned())
+			uint8_t nDiamondNeed = 2;
+			if (2 == nCirle)
+			{
+				nDiamondNeed = 3;
+			}
+			else if (4 == nCirle)
+			{
+				nDiamondNeed = 6;
+			}
+
+			if ( ( isFree == false )  && nDiamondNeed > GetPlayer()->GetBaseData()->GetAllDiamoned())
 			{
 				jsMsgBack["ret"] = 5;
 				SendMsg(jsMsgBack, nmsgType);

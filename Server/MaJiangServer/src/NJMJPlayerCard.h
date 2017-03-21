@@ -19,6 +19,7 @@ public:
 	bool canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB) override;
 	void addActSign(uint8_t nCard, uint8_t nInvokerIdx, eMJActType eAct );
 	bool isChued4Card(uint8_t nCard );
+	bool isChued4Feng();
 	uint8_t getInvokerPengIdx( uint8_t nCard );  // -1 means no target ;
 	uint8_t getInvokerGangIdx(uint8_t nCard);  // -1 means no target ;
 	void onHuaGang( uint8_t nCard ,uint8_t nNewCard );
