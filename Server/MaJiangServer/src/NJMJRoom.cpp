@@ -1143,7 +1143,7 @@ bool NJMJRoom::isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)
 
 bool NJMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 {
-	auto pInvoker = getMJPlayerByIdx(nInvokeIdx);
+	auto pInvoker = getMJPlayerByIdx(nInvokeIdx) ;  
 	if (pInvoker == nullptr || pInvoker->getCoin() > 0 )
 	{
 		return IMJRoom::isAnyPlayerPengOrHuThisCard(nInvokeIdx, nCard);
@@ -1169,6 +1169,7 @@ bool NJMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 				if ( pMJCard->getIsDanDiaoHu(nCard) || pMJCard->getIsSpecailHu(nCard) )
 				{
 					// kuai zhao ke yi hu pai 
+					bIsHaveOneNeedThisCard = true;
 					LOGFMTD("kuai zhao player can hu pai of jing yuanzi de ren ");
 				}
 				else

@@ -44,8 +44,15 @@ public:
 	void buildInfoForZhanJi( Json::Value& jsUserInfo )override
 	{
 		jsUserInfo["uid"] = m_nUserUID;
-		jsUserInfo["offset"] = m_nOffset;
-		jsUserInfo["waiBaoOffset"] = m_nWaiBaoOffset;
+		if ( 0 != m_nOffset)
+		{
+			jsUserInfo["offset"] = m_nOffset;
+		}
+		
+		if (m_nWaiBaoOffset != 0)
+		{
+			jsUserInfo["waiBaoOffset"] = m_nWaiBaoOffset;
+		}
 	}
 
 protected:
