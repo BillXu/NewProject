@@ -956,7 +956,11 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 					uint32_t nSessionID = jsUserData["session"].asUInt() ;
 					uint32_t nIdx = jsUserData["idx"].asUInt();
 					uint32_t nUID = jsUserData["uid"].asUInt();
-					
+					if ( m_pRoom == nullptr)
+					{
+						LOGFMTE( "why sit down ,but room is nullptr ? bug" );
+						return;
+					}
 					auto stStandPlayer = m_pRoom->getPlayerBySessionID(nSessionID);
 					auto pSitDown = m_pRoom->getPlayerByIdx(nIdx);
 					bool bSitSuccess = nRet == 0 && stStandPlayer && pSitDown == nullptr && m_pRoom && getRoomState() != eRoomState_Close ;

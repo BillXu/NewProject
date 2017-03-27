@@ -51,7 +51,7 @@ void CServerNetworkImp::startAccept()
 		boost::asio::placeholders::error)); 
 }
 
-void CServerNetworkImp::handleAccept(boost::shared_ptr<CSession> session,const boost::system::error_code& error) 
+void CServerNetworkImp::handleAccept(Session_ptr session,const boost::system::error_code& error)
 {
 	if (!error)  
 	{  
