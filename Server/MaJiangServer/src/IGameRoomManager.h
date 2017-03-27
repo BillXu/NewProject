@@ -1,8 +1,8 @@
 #pragma once
-#include "IGameRoom.h"
 #include "IGlobalModule.h"
 #include <json/json.h>
 struct stMsg;
+class IGameRoom;
 class IGameRoomManager
 	:public IGlobalModule
 {

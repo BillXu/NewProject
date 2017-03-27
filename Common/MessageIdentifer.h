@@ -327,7 +327,7 @@ enum eMsgType
 	// Taxas Poker opts : { maxTakeIn : 2345, isInsured : 0  }
 	// Golden opts : { maxSingleBet : 20,maxRound : 30 }
 
-	//南京麻将 mj : { roomType : eRoomType ,circle : 2345 , initCoin : 23 , isBiXiaHu : 0 , isHuaZa : 0  } 
+	//南京麻将 mj : { roomType : eRoomType ,circle : 2345 , initCoin : 23 , isWaiBao : 0 , isBiXiaHu : 0 , isHuaZa : 0  } 
 
 	// svr : { ret : 0 , roomID : 235 , clubID : 23 } ;
 	// ret : 0 means success , 1 can not create more room , 2 you have not permission to creator room for club; 3 , room type error ; 4, req chat room id error , 5 vip room is not enough , 6 argument error;
@@ -646,8 +646,8 @@ enum eMsgType
 	// reply ： 1 表示同意， 0 表示拒绝。
 
 	MSG_VIP_ROOM_GAME_OVER,  // vip 房间结束
-	// svr : { ret : 0 , initCoin : 235 , bills : [ { uid : 2345 , curCoin : 234, ziMoCnt : 2 , huCnt : 23,dianPaoCnt :2, mingGangCnt : 23,AnGangCnt : 23  }, ....]  }
-	// ret , 0 正常结束， 1 房间被解散。 initCoin 房间的初始金币，bills，是一个数组 放着具体每个玩家的情况，curCoin 表示玩家最终剩余金额, uid 玩家的唯一id 
+	// svr : { ret : 0 , initCoin : 235 , bills : [ { uid : 2345 ,waiBaoCoin : -23, curCoin : 234, ziMoCnt : 2 , huCnt : 23,dianPaoCnt :2, mingGangCnt : 23,AnGangCnt : 23  }, ....]  }
+	// ret , 0 正常结束， 1 房间被解散。 initCoin 房间的初始金币，bills，是一个数组 放着具体每个玩家的情况，curCoin 表示玩家最终剩余金额, uid 玩家的唯一id waiBaoCoin :南京麻将外包的钱 
 
 	MSG_VIP_ROOM_DO_CLOSED, // vip 房间结束通知
 	// svr : { isDismiss : 0 , roomID : 2345 , eType : eroomType }  
@@ -670,7 +670,7 @@ enum eMsgType
 	MSG_ROOM_NJ_PLAYER_HU, // 南京麻将玩家胡牌 
 	// svr : { isZiMo : 0 , detail : {}, realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] }
 	//  当是自摸的时候，isZiMo : 1 , detail = { huIdx : 234 , isKuaiZhaoHu : 0, baoPaiIdx : 2 , winCoin : 234,huardSoftHua : 23, gangKaiCoin : 0 ,vhuTypes : [ eFanxing , ], LoseIdxs : [ {idx : 1 , loseCoin : 234 }, .... ]   }
-	// 当不是自摸的时候，isZiMo : 0 , detail = { dianPaoIdx : 23 , isRobotGang : 0 , nLose : 23, huPlayers : [{ idx : 234 , win : 234 , baoPaiIdx : 2  , isKuaiZhaoHu : 0, huardSoftHua : 23, vhuTypes : [ eFanxing , ] } , .... ] } 
+	// 当不是自摸的时候，isZiMo : 0 , detail = { dianPaoIdx : 23 , isRobotGang : 0 , nLose : 23, nWaiBaoLose : 23 huPlayers : [{ idx : 234 , win : 234 , baoPaiIdx : 2  , isKuaiZhaoHu : 0, huardSoftHua : 23, vhuTypes : [ eFanxing , ] } , .... ] } 
 	//	isKuaiZhaoHu : 是否是快照胡牌
 	// huPlayers : json 数组包含子类型，表示胡牌玩家的数组，一炮多响，有多个胡牌玩家 
 	// 胡牌子类型: idx :胡牌玩家的idx ， huardSoftHua : 花数量，offset ：胡牌玩家赢的钱，gangFlag ，胡牌玩家是否是杠开， vhuTypes 是一个数组，表示胡牌时候的 各种翻型叠加, baoPaiIdx : 包牌者的索引，只有包牌情况，才有这个key值，引用钱要判断
@@ -679,7 +679,7 @@ enum eMsgType
 	// 实时结算子类型是：actType 是什么类型时间导致的结算，参考eMJActType， detial： 也是一个数组 表示，这次结算每个玩家的输赢，idx 玩家的索引，offset，表示加钱 还是减钱，正负表示。
 
 	MSG_ROOM_NJ_GAME_OVER, // 南京麻将结束
-	// svr: { isLiuJu : 0 , isNextBiXiaHu : 0 , detail : [ {idx : 0 , offset : 23 }, ...  ], realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] } 
+	// svr: { isLiuJu : 0 , isNextBiXiaHu : 0 , detail : [ {idx : 0 , offset : 23, waiBaoOffset : 234 }, ...  ], realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] } 
 	// svr : isLiuJu : 是否是流局
 	// detail : 数组就是每个玩家的本局的最终输赢 ；
 	// realTimeCal : 实时结算信息，只有流局的情况才存在这个字段；
@@ -722,8 +722,21 @@ enum eMsgType
 	MSG_ROOM_UPDATE_PLAYER_NET_STATE, // 更新房间内玩家的在线状态
 	// svr : { idx : 0 , isOnLine : 0 } // isOnline 0 不在线，1 在线 。  
 
+	MSG_REQ_ZHAN_JI, // send to mj server 
+	// client : { userUID : 234 , curSerial : 2345 }
+	// svr : { nRet : 0 ,sieral : 2345 ,cirleCnt : 2, roomID : 235 , createrUID : 234, roomOpts : {} , rounds : [ { replayID : 234, time : 234 , result : [ { uid :234， offset ： 234  }, ... ]  }, .... ]    } 
+	//	nRet: 0 成功， 1 找不到战绩, 2 uid 不没参与制定战绩房间
+	// userUID : 请求者的Uid ， curSerial ： 客户端当前的 的序列号，返回的 战绩从这个序列号开始
+	// sieral : 当前返回战绩的房间序列号，roomOpts ： 不同的游戏参数不一样，
+	// cirleCnt ： 圈数 或者 局数
+	//  rounds ： 每一局的战绩详情数组，数组内 replayID 回放ID， time 结束时间，result： 每个玩家的输赢记录数组，{ 玩家id ， 玩家输赢} 
 
+	// 当南京麻将的时候，opts ： { isBiXiaHu : 0 , isHuaZa : 0 , isKuaiChong : 0 , kuaiChongPool : 234 , isJinYuanZi : 0 , yuanZi : 200 }
+	// 每个局 每个玩家的输赢 多一个 特殊的key值较 waiBaoOffset : 表示外包输赢； 
 
+	MSG_CHANGE_BAOPAI_CARD,
+	// svr: {idx : 0,card : 0}
+	//card : 0是取消，其它的是包牌的card
 
 
 

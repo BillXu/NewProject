@@ -236,6 +236,11 @@ bool CGameRoomCenter::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nS
 
 bool CGameRoomCenter::onMsg(Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID)
 {
+	if ( MSG_VIP_ROOM_CLOSED == nMsgType)
+	{
+		deleteRoomItem(prealMsg["roomID"].asUInt());
+		return true;
+	}
 	return false ;
 }
 
@@ -478,7 +483,7 @@ uint32_t CGameRoomCenter::generateRoomID(eRoomType eType,uint32_t& nserailNum )
 			iter_willUse = std::find(m_vWillUseRoomIDs.begin(),m_vWillUseRoomIDs.end(),nRoomID) ;
 		}
 	}
-	while (iter != m_vRoomIDKey.end() || iter_willUse != m_vWillUseRoomIDs.end() ) ;
+	while ( nRoomID > 999999 || iter != m_vRoomIDKey.end() || iter_willUse != m_vWillUseRoomIDs.end() ) ;
 
 	m_vWillUseRoomIDs.push_back(nRoomID) ;
 	return nRoomID ;

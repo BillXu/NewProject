@@ -43,8 +43,8 @@ bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32
 		((stNiuNiuRoomConfig*)m_pRoomConfig)->nMaxSeat = MAX_SEAT_CNT;
 	}
 	setBankIdx(-1);
-	m_spRoomRecorder = std::make_shared<RoomRecorder>();
-	m_spRoomRecorder->setRoomInfo(getSeiralNum(), getRoomID(), getRoomType());
+	m_ptrGameRecorder = createRoomRecorder();
+	m_ptrGameRecorder->init(nSeialNum, vJsValue["circle"].asUInt(),nRoomID, getRoomType(),vJsValue["createUID"].asUInt() );
 	return true;
 }
 
@@ -661,17 +661,13 @@ void IMJRoom::willStartGame()
 void IMJRoom::onGameEnd()
 {
 	// add Entery ;
-	std::shared_ptr<RoomRecorderEntery> pEntery( new RoomRecorderEntery());
-	pEntery->setEnteryInfo(0, (uint32_t)time(nullptr));
 	for (auto& pPlayer : m_vMJPlayers)
 	{
 		if (pPlayer)
 		{
-			pEntery->addPlayerOffset(pPlayer->getUID(),pPlayer->getOffsetCoin());
 			pPlayer->onGameEnd();
 		}
 	}
-	getRoomRecorder()->addRoomRecorderEntery(pEntery);
 }
 
 void IMJRoom::onGameDidEnd()
@@ -965,17 +961,17 @@ void IMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 		return;
 	}
 
-	if (!pPlayer->getPlayerCard()->onChuCard(nCard))
-	{
-		LOGFMTE("chu card error idx = %u , card = %u",nIdx,nCard );
-	}
-
 	// send msg ;
 	Json::Value msg;
 	msg["idx"] = nIdx;
 	msg["actType"] = eMJAct_Chu;
 	msg["card"] = nCard;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
+
+	if (!pPlayer->getPlayerCard()->onChuCard(nCard))
+	{
+		LOGFMTE("chu card error idx = %u , card = %u",nIdx,nCard );
+	}
 }
 
 bool IMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
@@ -1164,6 +1160,22 @@ void IMJRoom::onPlayerLouHu(uint8_t nIdx, uint8_t nInvokerIdx)
 	}
 }
 
+void IMJRoom::onPlayerLouPeng(uint8_t nIdx, uint32_t nLouCard)
+{
+	if (isHaveLouPeng() == false)
+	{
+		return;
+	}
+
+	auto p = getMJPlayerByIdx(nIdx);
+	if (p == nullptr)
+	{
+		LOGFMTE( "why lou peng player idx = %u is nullptr card = %u",nIdx,nLouCard  );
+		return;
+	}
+	p->getPlayerCard()->addLouPengedCard(nLouCard);
+}
+
 bool IMJRoom::addRoomState(IMJRoomState* pState)
 {
 	auto iter = m_vRoomStates.find(pState->getStateID());
@@ -1306,9 +1318,4 @@ void IMJRoom::onPlayerTrusteedStateChange(uint8_t nPlayerIdx, bool isTrusteed)
 	//js["isTrusteed"] = isTrusteed ? 1 : 0 ;
 	//sendRoomMsg(js, MSG_ROOM_REQUEST_TRUSTEED);
 	//LOGFMTD("room id = %u , player idx = %u update trusteed state = %u " ,getRoomID(),nPlayerIdx,isTrusteed );
-}
-
-std::shared_ptr<RoomRecorder> IMJRoom::getRoomRecorder()
-{
-	return m_spRoomRecorder;
 }

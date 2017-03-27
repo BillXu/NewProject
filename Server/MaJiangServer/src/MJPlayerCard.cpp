@@ -140,6 +140,7 @@ void MJPlayerCard::reset()
 	m_nNesetFetchedCard = 0 ;
 	m_nJIang = 0;
 	m_nDanDiao = 0;
+	m_vLouPenged.clear();
 }
 
 void MJPlayerCard::addDistributeCard(uint8_t nCardNum)
@@ -217,6 +218,15 @@ bool MJPlayerCard::canPengWithCard(uint8_t nCard)
 		LOGFMTE("canPengWithCard parse card type error so do not have this card = %u", nCard);
 		return false;
 	}
+
+	// is in lou peng vec 
+	auto nLouCnt = std::count(m_vLouPenged.begin(), m_vLouPenged.end(), nCard);
+	if ( nLouCnt )
+	{
+		LOGFMTD("this card is in lou peng vec , so can not peng = %u",nCard );
+		return false;
+	}
+
 	auto& vCard = m_vCards[eType];
 	auto nCnt = std::count(vCard.begin(), vCard.end(), nCard);
 	return nCnt >= 2;
@@ -707,6 +717,7 @@ bool MJPlayerCard::onChuCard(uint8_t nChuCard)
 	m_vChuedCard.push_back(nChuCard);
 
 	//debugCardInfo();
+	m_vLouPenged.clear();
 	return true;
 }
 
@@ -1505,7 +1516,7 @@ uint8_t MJPlayerCard::getMiniQueCnt( VEC_CARD vCards[eCT_Max] )
 		uint8_t nTemp;
 		nQueCnt += getLestQue(vRefNotShun, false, m_nDanDiao == 0, nTemp, m_nDanDiao);
 	}
-	LOGFMTI(" fand dan diao mode que cnt = %u value = %u", nQueCnt, m_nDanDiao);
+	//LOGFMTI(" fand dan diao mode que cnt = %u value = %u", nQueCnt, m_nDanDiao);
 	if (m_nDanDiao)
 	{
 		return nQueCnt;
@@ -1522,14 +1533,14 @@ uint8_t MJPlayerCard::getMiniQueCnt( VEC_CARD vCards[eCT_Max] )
 			nQueCnt += getLestQue(vRefNotShun, m_nJIang == 0, false, m_nJIang, nTemp);
 		}
 
-		LOGFMTI(" fand jiang mode que cnt = %u value = %u", nQueCnt, m_nJIang);
+		//LOGFMTI(" fand jiang mode que cnt = %u value = %u", nQueCnt, m_nJIang);
 		if (m_nJIang)
 		{
 			return nQueCnt;
 		}
 	}
 
-	LOGFMTI(" no jiang , no dandiao cnt = %u ", nQueCnt);
+	//LOGFMTI(" no jiang , no dandiao cnt = %u ", nQueCnt);
 	// no jiang , no dandiao 
 	nQueCnt += 2;
 	return nQueCnt;
@@ -1677,6 +1688,11 @@ uint8_t MJPlayerCard::getLestQue(SET_NOT_SHUN& vNotShun, bool bFindJiang, bool b
 
 void MJPlayerCard::debugCardInfo()
 {
+#ifndef _DEBUG
+	return;
+#endif // !_DEBUG
+
+	
 	LOGFMTD("card info start !");
 	for (uint8_t eType = 0; eType < eCT_Max; ++eType)
 	{
@@ -1940,4 +1956,9 @@ uint8_t MJPlayerCard::tryBestFindLeastNotShun(VEC_CARD& vCard, SET_NOT_SHUN& vNo
 //	vNotShun.insert(vMyNotShun.begin(), vMyNotShun.end());
 //	return nMyLeastCnt;
 //}
+
+void MJPlayerCard::addLouPengedCard(uint8_t nLouPengedCard)
+{
+	m_vLouPenged.push_back(nLouPengedCard);
+}
 

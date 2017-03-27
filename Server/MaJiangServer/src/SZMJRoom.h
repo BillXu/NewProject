@@ -11,6 +11,7 @@ public:
 	void startGame()override;
 	void onGameDidEnd()override;
 	void onGameEnd()override;
+	void onPlayerMo(uint8_t nIdx)override;
 	IMJPlayer* doCreateMJPlayer()override;
 	IMJPoker* getMJPoker()override;
 	bool isGameOver()override;
@@ -27,6 +28,7 @@ protected:
 	void getSubRoomInfo(Json::Value& jsSubInfo)override;
 	void onPlayerZiMo(uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail);
 	void packStartGameMsg(Json::Value& jsMsg)override;
+	std::shared_ptr<IGameRoomRecorder> createRoomRecorder()override;
 protected:
 	bool m_isFanBei;
 	bool m_isWillFanBei;

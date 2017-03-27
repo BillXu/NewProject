@@ -54,7 +54,6 @@ bool SZMJPlayerCard::getCardInfo(Json::Value& jsPeerCards)
 bool SZMJPlayerCard::onDoHu(bool isZiMo, bool isHaiDiLoaYue,uint8_t nCard, std::vector<uint16_t>& vHuTypes, uint16_t& nHuHuaCnt, uint16_t& nHoldHuaCnt )
 {
 	nHuHuaCnt = 5;
-	nHoldHuaCnt = getHuaCntWithoutHuTypeHuaCnt();
 	vHuTypes.clear();
 	// if not zi mo , must add to fo check hu ;
 	if (!isZiMo)
@@ -67,6 +66,8 @@ bool SZMJPlayerCard::onDoHu(bool isZiMo, bool isHaiDiLoaYue,uint8_t nCard, std::
 		}
 		addCardToVecAsc(m_vCards[type], nCard);
 	}
+
+	nHoldHuaCnt = getHuaCntWithoutHuTypeHuaCnt();
 
 	auto funRemoveAddToCard = [this](uint8_t nCard)
 	{
@@ -444,7 +445,7 @@ uint8_t SZMJPlayerCard::getHuaCntWithoutHuTypeHuaCnt()
 	{
 		if (vFeng[nidx] == vFeng[nidx + 2])
 		{
-			nHuaCnt += 1;
+			nHuaCnt += 2;
 			nidx += 3;
 			continue;
 		}

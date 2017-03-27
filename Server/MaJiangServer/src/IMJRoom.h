@@ -1,6 +1,6 @@
 #pragma once
 #include "IGameRoom.h"
-#include "GameRecorderMgr.h"
+#include "IGameRecorder.h"
 class IMJPlayer;
 struct stEnterRoomData;
 class IMJPoker;
@@ -21,7 +21,7 @@ class IMJRoom
 public:
 	typedef std::map<uint16_t, IMJRoomState*>	MAP_ID_ROOM_STATE;
 public:
-	IMJRoom(){ setDelegate(nullptr); }
+	IMJRoom() { setDelegate(nullptr); m_ptrGameRecorder = nullptr; }
 	~IMJRoom();
 	bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue) override;
 	uint8_t checkPlayerCanEnter(stEnterRoomData* pEnterRoomPlayer)override;
@@ -87,7 +87,9 @@ public:
 	virtual IMJPlayer* doCreateMJPlayer() = 0;
 	virtual IMJPoker* getMJPoker() = 0;
 	virtual void onPlayerLouHu( uint8_t nIdx , uint8_t nInvokerIdx );
+	virtual void onPlayerLouPeng(uint8_t nIdx, uint32_t nLouCard );
 	virtual bool isHaveLouHu() { return true; };
+	virtual bool isHaveLouPeng() { return false; }
 	bool isOneCirleEnd()override{ return true; }
 	IGameRoomManager* getRoomMgr(){ return m_pRoomMgr; }
 	IMJRoomState* getCurRoomState(){ return m_pCurState; }
@@ -99,10 +101,11 @@ public:
 
 	void onCheckTrusteeForHuOtherPlayerCard(std::vector<uint8_t> vPlayerIdx, uint8_t nTargetCard );
 	void onPlayerTrusteedStateChange( uint8_t nPlayerIdx , bool isTrusteed );
-	std::shared_ptr<RoomRecorder> getRoomRecorder()override;
+	std::shared_ptr<IGameRoomRecorder> getRoomRecorder()override { return m_ptrGameRecorder;  }
 protected:
 	bool addRoomState(IMJRoomState* pState);
 	void setInitState(IMJRoomState* pState);
+	virtual std::shared_ptr<IGameRoomRecorder> createRoomRecorder() = 0 ;
 protected:
 	IMJPlayer* m_vMJPlayers[MAX_SEAT_CNT];
 	MAP_ID_ROOM_STATE m_vRoomStates;
@@ -115,5 +118,6 @@ protected:
 	IMJRoomDelegate* m_pDelegate;
 
 	CRobotDispatchStrategy* m_pRobotDispatchStrage;
-	std::shared_ptr<RoomRecorder> m_spRoomRecorder;
+
+	std::shared_ptr<IGameRoomRecorder> m_ptrGameRecorder;
 };

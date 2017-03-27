@@ -1,11 +1,11 @@
 #include "MySqlData.h"
 #include <algorithm>
-unsigned int stMysqlField::IntValue()
+ int stMysqlField::IntValue()
 { 
 	return strtol(pBuffer,(char**)NULL,10) ; 
 }
 
-unsigned __int64 stMysqlField::IntValue64()
+ __int64 stMysqlField::IntValue64()
 { 
 	return _atoi64(pBuffer); 
 }

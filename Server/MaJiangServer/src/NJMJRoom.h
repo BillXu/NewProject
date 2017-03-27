@@ -81,6 +81,10 @@ public:
 	bool isOneCirleEnd()override;
 	bool isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)override;
 	bool isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)override;
+	bool isJingYuanZi() { return m_isJingYuanZiMode; }
+	bool isEnableWaiBao() { if (isJingYuanZi() == false) return false; return m_isEnableWaiBao; }
+	bool isHaveLouPeng()override{ return true; }
+	bool isEnableSiLianFeng() { return m_isEnableSiLianFeng; }
 protected:
 	void getSubRoomInfo(Json::Value& jsSubInfo)override;
 	void addSettle(stSettle& tSettle );
@@ -90,16 +94,25 @@ protected:
 	bool isHuaZa(){ return m_isEnableHuaZa; }
 	bool isKuaiChong(){ return m_isKuaiChong; }
 	void doAddOneRoundEntery();
+	std::shared_ptr<IGameRoomRecorder> createRoomRecorder()override;
 protected:
 	stChuedCards m_tChuedCards;
 	std::vector<stSettle> m_vSettle;
 	bool m_isBiXiaHu;
 	bool m_isWillBiXiaHu;
 	bool m_isBankerHu;
+	bool m_isHuangZhuang;
 	bool m_isEnableBixiaHu;
 	bool m_isEnableHuaZa;
+	bool m_isJingYuanZiMode;
+	bool m_isEnableWaiBao;
+	bool m_isEnableSiLianFeng;
+
+	
+
 	CMJCard m_tPoker;
 
+	uint32_t m_nInitCoin;
 	bool m_isKuaiChong;
 	uint32_t m_nInitKuaiChongPool;
 	uint32_t m_nKuaiChongPool;

@@ -14,6 +14,8 @@
 #include "SZRoomStateBuHua.h"
 #include "NJRoomStateStartGame.h"
 #include "MJRoomStateAskForRobotGang.h"
+#include "SZMJPlayerRecorderInfo.h"
+#include <ctime>
 bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
@@ -21,7 +23,7 @@ bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_isWillFanBei = false;
 	m_isBankerHu = false;
 
-	m_tPoker.initAllCard(eMJ_NanJing);
+	m_tPoker.initAllCard(eMJ_SuZhou);
 	// create state and add state ;
 	IMJRoomState* vState[] = {
 		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new SZRoomStateWaitPlayerAct(), new NJRoomStateStartGame(), new SZRoomStateBuHua()
@@ -42,6 +44,7 @@ bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 void SZMJRoom::willStartGame()
 {
 	IMJRoom::willStartGame();
+	m_isFanBei = false;
 	if ( m_isWillFanBei )
 	{
 		m_isFanBei = true;
@@ -100,6 +103,10 @@ void SZMJRoom::onGameEnd()
 	Json::Value jsMsg;
 	Json::Value jsDetial;
 
+	auto ptrSingleRecorder = getRoomRecorder()->createSingleRoundRecorder();
+	ptrSingleRecorder->init(getRoomRecorder()->getRoundRecorderCnt(), (uint32_t)time(nullptr), 0);
+	getRoomRecorder()->addSingleRoundRecorder(ptrSingleRecorder);
+
 	bool isAnyOneHu = false;
 	for (auto& ref : m_vMJPlayers)
 	{
@@ -110,6 +117,10 @@ void SZMJRoom::onGameEnd()
 			js["offset"] = ref->getOffsetCoin();
 			js["final"] = ref->getCoin();
 			jsDetial[jsDetial.size()] = js;
+
+			auto pPlayerRecorderInfo = std::make_shared<SZMJPlayerRecorderInfo>();
+			pPlayerRecorderInfo->init(ref->getUID(), ref->getOffsetCoin());
+			ptrSingleRecorder->addPlayerRecorderInfo(pPlayerRecorderInfo);
 		}
 
 		if (ref && ref->haveState(eRoomPeer_AlreadyHu))
@@ -130,9 +141,16 @@ void SZMJRoom::onGameEnd()
 	jsMsg["isNextFanBei"] = m_isWillFanBei ? 1 : 0;
 	jsMsg["nNextBankIdx"] = m_isBankerHu ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT);
 
-	sendRoomMsg(jsMsg, MSG_ROOM_NJ_GAME_OVER);
+	sendRoomMsg(jsMsg, MSG_ROOM_SZ_GAME_OVER);
 	// send msg to player ;
 	IMJRoom::onGameEnd();
+}
+
+void SZMJRoom::onPlayerMo(uint8_t nIdx)
+{
+	IMJRoom::onPlayerMo(nIdx);
+	auto player = (SZMJPlayer*)getMJPlayerByIdx(nIdx);
+	player->clearBuHuaFlag();
 }
 
 IMJPlayer* SZMJRoom::doCreateMJPlayer()
@@ -168,6 +186,7 @@ void SZMJRoom::onPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
 	auto pActCard = (SZMJPlayerCard*)player->getPlayerCard();
 	auto nNewCard = getMJPoker()->distributeOneCard();
 	pActCard->onBuHua(nHuaCard, nNewCard);
+	player->signBuHuaFlag();
 	// send msg ;
 	Json::Value msg;
 	msg["idx"] = nIdx;
@@ -200,7 +219,7 @@ void SZMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 	{
 		onPlayerZiMo(nInvokeIdx, nCard, jsDetail);
 		jsMsg["detail"] = jsDetail;
-		sendRoomMsg(jsMsg, MSG_ROOM_NJ_PLAYER_HU);
+		sendRoomMsg(jsMsg, MSG_ROOM_SZ_PLAYER_HU );
 		return;
 	}
 
@@ -302,13 +321,13 @@ void SZMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 	jsDetail["nLose"] = nTotalLose;
 	jsDetail["huPlayers"] = jsHuPlayers;
 	jsMsg["detail"] = jsDetail;
-	sendRoomMsg(jsMsg, MSG_ROOM_NJ_PLAYER_HU);
+	sendRoomMsg(jsMsg, MSG_ROOM_SZ_PLAYER_HU);
 	LOGFMTD("room id = %u hu end ", getRoomID());
 }
 
 void SZMJRoom::onPlayerZiMo(uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail)
 {
-	auto pZiMoPlayer = getMJPlayerByIdx(nIdx);
+	auto pZiMoPlayer = (SZMJPlayer*)getMJPlayerByIdx(nIdx);
 	if (pZiMoPlayer == nullptr)
 	{
 		LOGFMTE("room id = %u zi mo player is nullptr idx = %u ", getRoomID(), nIdx);
@@ -333,7 +352,7 @@ void SZMJRoom::onPlayerZiMo(uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail)
 	jsDetail["vhuTypes"] = jsHuTyps;
 	jsDetail["isGangKai"] = 0;
 	// xiao gang kai hua 
-	if ( pZiMoPlayer->haveGangFalg())
+	if ( pZiMoPlayer->haveGangFalg() || pZiMoPlayer->haveBuHuaFlag() )
 	{
 		nHuHuaCnt += 5;
 		jsDetail["isGangKai"] = 1;
@@ -489,4 +508,9 @@ void SZMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	auto pActPlayer = getMJPlayerByIdx(nIdx);
 	auto pActCard = (SZMJPlayerCard*)pActPlayer->getPlayerCard();
 	pActCard->setSongGangIdx(-1); // reset song gang ;
+}
+
+std::shared_ptr<IGameRoomRecorder> SZMJRoom::createRoomRecorder()
+{
+	return std::make_shared<SZMJRoomRecorder>();
 }

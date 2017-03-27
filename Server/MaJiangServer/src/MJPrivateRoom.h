@@ -19,6 +19,7 @@ public:
 		uint8_t nZiMoCnt;
 		uint8_t nAnGangCnt;
 		uint8_t nMingGangCnt;
+		int32_t nWaiBaoCoin;
 	};
 	typedef std::map<uint32_t, stVipPlayer> MAP_UID_VIP_PLAYERS;
 public:
@@ -50,7 +51,7 @@ public:
 	bool isInternalShouldClosedAll(void)override{ return m_pRoom->isInternalShouldClosedAll(); }
 	bool isOneCirleEnd()override{ return m_pRoom->isOneCirleEnd(); }
 	bool isCurrentFree(){ return m_isForFree; }
-	std::shared_ptr<RoomRecorder> getRoomRecorder()override;
+	std::shared_ptr<IGameRoomRecorder> getRoomRecorder()override;
 protected:
 	IGameRoomManager* m_pRoomMgr;
 	uint32_t m_nOwnerUID;

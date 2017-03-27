@@ -15,6 +15,7 @@
 #include "NJMJRoom.h"
 #include "SZMJRoom.h"
 #include "MJServer.h"
+#include "NJMJPlayer.h"
 #define TIME_WAIT_REPLY_DISMISS 90
 MJPrivateRoom::~MJPrivateRoom()
 {
@@ -446,7 +447,7 @@ void MJPrivateRoom::onCheckDismissReply(bool bTimerOut)
 		auto iter = m_mapRecievedReply.find(m_nOwnerUID);
 		if (iter != m_mapRecievedReply.end())
 		{
-			if (iter->second == 0)
+			if (iter->second == 1 )
 			{
 				onRoomGameOver(true);
 				m_mapRecievedReply.clear();
@@ -602,6 +603,12 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 	}
 	// all player leave and update coin 
 	auto pRoom = (IMJRoom*)m_pRoom;
+	bool bCanncelBill = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady);
+	if ( m_bDoDismissRoom && (!bCanncelBill) )
+	{
+		pRoom->onGameEnd();
+	}
+
 	for (uint8_t nIdx = 0; nIdx < pRoom->getSeatCnt(); ++nIdx)
 	{
 		auto pp = (IMJPlayer*)pRoom->getMJPlayerByIdx(nIdx);
@@ -622,6 +629,11 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		iter->second.nAnGangCnt = pp->getAnGangCnt();
 		iter->second.nDianPaoCnt = pp->getDianPaoCnt();
 		iter->second.nHuCnt = pp->getHuCnt();
+		iter->second.nWaiBaoCoin = 0;
+		if (eRoom_MJ_NanJing == pRoom->getRoomType())
+		{
+			iter->second.nWaiBaoCoin = ((NJMJPlayer*)pp)->getWaiBaoCoin();
+		}
 		iter->second.nMingGangCnt = pp->getMingGangCnt();
 		iter->second.nZiMoCnt = pp->getZiMoCnt();
 
@@ -634,7 +646,7 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		m_pRoomMgr->sendMsg(&msgdoLeave, sizeof(msgdoLeave), pp->getUID());
 	}
 
-	bool bCanncelBill = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady );
+	
 	
 	// send room bills ;
 	if ( !bCanncelBill )
@@ -667,6 +679,7 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 			jsPlayer["dianPaoCnt"] = ref.second.nDianPaoCnt;
 			jsPlayer["mingGangCnt"] = ref.second.nMingGangCnt;
 			jsPlayer["AnGangCnt"] = ref.second.nAnGangCnt;
+			jsPlayer["waiBaoCoin"] = ref.second.nWaiBaoCoin;
 
 			jsVBills[jsVBills.size()] = jsPlayer;
 
@@ -679,9 +692,6 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 			msgResult.nBuyIn = m_nInitCoin;
 			msgResult.nBaseBet = 1;
 			m_pRoomMgr->sendMsg(&msgResult, sizeof(msgResult), 0);
-
-			// add to recorder ;
-			pRoomRecorder->addPlayerOffset(msgResult.nTargetPlayerUID,msgResult.nOffset);
 		}
 		jsMsg["bills"] = jsVBills;
 		// add room recorder to game recorder mg ;
@@ -741,16 +751,16 @@ IGameRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
 {
 	switch (eMJType )
 	{
-	case eRoom_MJ_Blood_River:
-	{
-		return new XLMJRoom();
-	}
-	break;
-	case eRoom_MJ_Blood_End:
-	{
-		return new XZMJRoom();
-	}
-	break;
+	//case eRoom_MJ_Blood_River:
+	//{
+	//	return new XLMJRoom();
+	//}
+	//break;
+	//case eRoom_MJ_Blood_End:
+	//{
+	//	return new XZMJRoom();
+	//}
+	//break;
 	case eRoom_MJ_NanJing:
 	{
 		return new NJMJRoom();
@@ -773,7 +783,7 @@ uint32_t MJPrivateRoom::getSeiralNum()
 	return m_pRoom->getSeiralNum();
 }
 
-std::shared_ptr<RoomRecorder> MJPrivateRoom::getRoomRecorder()
+std::shared_ptr<IGameRoomRecorder> MJPrivateRoom::getRoomRecorder()
 {
 	return m_pRoom->getRoomRecorder();
 }

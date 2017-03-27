@@ -112,6 +112,7 @@
     <ClInclude Include="src\MJServer.h" />
     <ClInclude Include="src\NJMJPlayer.h" />
     <ClInclude Include="src\NJMJPlayerCard.h" />
+    <ClInclude Include="src\NJMJPlayerRecorderInfo.h" />
     <ClInclude Include="src\NJMJRoom.h" />
     <ClInclude Include="src\NJRoomStateBuHua.h" />
     <ClInclude Include="src\NJRoomStateDoPlayerAct.h" />
@@ -119,6 +120,7 @@
     <ClInclude Include="src\NJRoomStateWaitPlayerAct.h" />
     <ClInclude Include="src\SZMJPlayer.h" />
     <ClInclude Include="src\SZMJPlayerCard.h" />
+    <ClInclude Include="src\SZMJPlayerRecorderInfo.h" />
     <ClInclude Include="src\SZMJRoom.h" />
     <ClInclude Include="src\SZRoomStateBuHua.h" />
     <ClInclude Include="src\SZRoomStateDoPlayerAct.h" />
@@ -137,6 +139,7 @@
   <ItemGroup>
     <ClCompile Include="src\GameRecorderMgr.cpp" />
     <ClCompile Include="src\GameReplayMgr.cpp" />
+    <ClCompile Include="src\IGameRecorder.cpp" />
     <ClCompile Include="src\IMJRoom.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MJCard.cpp" />

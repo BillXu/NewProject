@@ -74,7 +74,7 @@ void CMJCard::initAllCard( eMJGameType eType )
 			}
 		}
 
-		if (eMJ_COMMON == m_eMJGameType || eMJ_NanJing == m_eMJGameType)
+		if (eMJ_COMMON == m_eMJGameType || eMJ_NanJing == m_eMJGameType || eMJ_SuZhou == m_eMJGameType )
 		{
 			// add feng , add ke
 			for ( uint8_t nValue = 1 ; nValue <= 4 ; ++nValue )
@@ -92,6 +92,13 @@ void CMJCard::initAllCard( eMJGameType eType )
 	if (eMJ_NanJing == m_eMJGameType)
 	{
 		for (uint8_t nValue = 1; nValue <= 8; ++nValue)
+		{
+			m_vAllCards.push_back(makeCardNumber(eCT_Hua, nValue));
+		}
+	}
+	else if ( eMJ_SuZhou == m_eMJGameType )
+	{
+		for (uint8_t nValue = 1; nValue <= 10; ++nValue)
 		{
 			m_vAllCards.push_back(makeCardNumber(eCT_Hua, nValue));
 		}
@@ -251,7 +258,7 @@ uint8_t CMJCard::makeCardNumber(eMJCardType eType,uint8_t nValue )
 	}
 
 	Assert(eType < eCT_Max && eType > eCT_None, "invalid card type");
-	Assert(nValue <= 9 && nValue >= 1 , "invalid card value");
+	Assert(nValue <= 10 && nValue >= 1 , "invalid card value");
 	uint8_t nType = eType ;
 	nType = nType << 4 ;
 	uint8_t nNum = nType | nValue ;

@@ -135,9 +135,6 @@
     <ClInclude Include="src\MJPrivateRoom.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\IGameRecorder.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\NJMJPlayer.h">
       <Filter>src\MJNJ</Filter>
     </ClInclude>
@@ -182,6 +179,15 @@
     </ClInclude>
     <ClInclude Include="src\GameReplayMgr.h">
       <Filter>src\Recorder</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NJMJPlayerRecorderInfo.h">
+      <Filter>src\MJNJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IGameRecorder.h">
+      <Filter>src\Recorder</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SZMJPlayerRecorderInfo.h">
+      <Filter>src\MJSZ</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -243,6 +249,9 @@
       <Filter>src\Recorder</Filter>
     </ClCompile>
     <ClCompile Include="src\GameReplayMgr.cpp">
+      <Filter>src\Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IGameRecorder.cpp">
       <Filter>src\Recorder</Filter>
     </ClCompile>
   </ItemGroup>

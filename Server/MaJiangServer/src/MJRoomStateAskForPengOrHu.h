@@ -270,6 +270,12 @@ public:
 		if (iterPeng != m_vWaitPengGangIdx.end())
 		{
 			m_vWaitPengGangIdx.erase(iterPeng);
+
+			// inform lou peng 
+			if (eMJAct_Pass == actType)
+			{
+				getRoom()->onPlayerLouPeng(pPlayer->getIdx(), m_nCard);
+			}
 		}
 		
 		if (m_vWaitHuIdx.empty() == false)  // wait hu ;

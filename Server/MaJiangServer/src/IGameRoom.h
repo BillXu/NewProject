@@ -7,7 +7,7 @@ class IGameRoomManager;
 struct stBaseRoomConfig;
 struct stMsg;
 struct stEnterRoomData;
-class RoomRecorder;
+class IGameRoomRecorder;
 class IGameRoom
 {
 public:
@@ -32,5 +32,5 @@ public:
 	virtual uint32_t getCoinNeedToSitDown() = 0;
 	virtual bool isInternalShouldClosedAll() = 0;
 	virtual bool isOneCirleEnd() = 0;
-	virtual std::shared_ptr<RoomRecorder> getRoomRecorder() = 0;
+	virtual std::shared_ptr<IGameRoomRecorder> getRoomRecorder() = 0;
 };

@@ -11,8 +11,13 @@ void NJMJPlayerCard::reset()
 	m_pCurRoom = nullptr;
 	setSongGangIdx(-1);
 	m_vAllActCardSign.clear();
+	m_vFirse4Card.clear();
 	m_isHaveAnGangFlag = false;
 	m_isHaveZhiGangFlag = false;
+
+	m_nDanDiaoKuaiZhaoState = eDanDiao_Not_Set;  // 0 not seted , 1 seted , 2 gived up ;
+	m_nDanDiaoHoldCard = 0 ;
+	m_nDanDiaoChuedCard = 0 ;
 }
 
 bool NJMJPlayerCard::canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB)
@@ -41,7 +46,7 @@ bool NJMJPlayerCard::isChued4Card(uint8_t nCard)
 
 bool NJMJPlayerCard::isChued4Feng()
 {
-	if ( m_vChuedCard.size() != 4 )
+	if (m_vFirse4Card.size() != 4 )
 	{
 		return false;
 	}
@@ -50,8 +55,8 @@ bool NJMJPlayerCard::isChued4Feng()
 	uint8_t nCnt = 4;
 	while (nCnt--)
 	{
-		auto iter = std::find(m_vChuedCard.begin(),m_vChuedCard.end(),nFeng);
-		if (iter == m_vChuedCard.end())
+		auto iter = std::find(m_vFirse4Card.begin(), m_vFirse4Card.end(),nFeng);
+		if (iter == m_vFirse4Card.end())
 		{
 			return false;
 		}
@@ -122,7 +127,7 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 			LOGFMTE("invalid card type for card = %u", nCard);
 			return false;
 		}
-		bisSpecailHu = getIsSpecailHu(nCard);
+		bisSpecailHu = getIsSpecailHu(nCard) || getIsDanDiaoHu(nCard);
 		addCardToVecAsc(m_vCards[type], nCard);
 	}
 	else
@@ -206,7 +211,7 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 		return false;
 	}
 
-	if (getIsSpecailHu(nCard)) // specail hu must be da hu ;
+	if (getIsSpecailHu(nCard) || getIsDanDiaoHu(nCard) ) // specail hu must be da hu ;
 	{
 		return true;
 	}
@@ -243,10 +248,25 @@ bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 		return false;
 	}
 
-	if (!canPengWithCard(nTargetCard))
+	//if (!canPengWithCard(nTargetCard))
+	//{
+	//	return false;
+	//}
 	{
-		return false;
+		auto eType = card_Type(nTargetCard);
+		if (eType >= eCT_Max)
+		{
+			LOGFMTE("canMingGangWithCard parse card type error so do not have this card = %u", nTargetCard );
+			return false;
+		}
+		auto& vCard = m_vCards[eType];
+		auto nCnt = std::count(vCard.begin(), vCard.end(), nTargetCard);
+		if ( nCnt < 2 )
+		{
+			return false;
+		}
 	}
+
 
 	// dui tong yi ren san zui 
 	auto nBaoPaiidx = getSpecailHuBaoPaiKuaiZhaoIdx();
@@ -287,21 +307,68 @@ bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 	return true;
 }
 
+bool NJMJPlayerCard::getIsDanDiaoHu(uint8_t nTargetCard)
+{
+	if (m_nDanDiaoKuaiZhaoState != eDanDiao_Do_Set)
+	{
+		return false;
+	}
+
+	if ( m_pCurRoom == nullptr || m_pCurRoom->isEnableWaiBao() == false )
+	{
+		return false;
+	}
+
+	// check feng 
+	if ( card_Type(m_nDanDiaoChuedCard) == eCT_Feng && card_Type( nTargetCard ) == eCT_Feng )
+	{
+		return true;
+	}
+	
+	uint8_t nLeft = 1;
+	uint8_t nRight = m_nDanDiaoChuedCard + 2;
+	if ( m_nDanDiaoChuedCard > 2 )
+	{
+		nLeft = m_nDanDiaoChuedCard - 2;
+	}
+
+	if (nLeft <= nTargetCard && nTargetCard <= nRight)
+	{
+		return true;
+	}
+	return false;
+}
+
 bool NJMJPlayerCard::getIsZiMoSpecailHu()
 {
 	VEC_CARD vHoldCard;
 	getHoldCard(vHoldCard);
-	if (vHoldCard.size() != 2 )
+	if (vHoldCard.size() != 5 )
 	{
 		return false;
 	}
 
-	// have gang flag ;
-	if ( ( false == m_isHaveAnGangFlag ) && ( false == m_isHaveZhiGangFlag ) )
+	//// have gang flag ;
+	//if ( ( false == m_isHaveAnGangFlag ) && ( false == m_isHaveZhiGangFlag ) )
+	//{
+	//	return false;
+	//}
+
+	bool bHaveLest4 = false;
+	std::sort(vHoldCard.begin(), vHoldCard.end());
+	for (uint8_t nIdx = 0; (nIdx + 3) < vHoldCard.size(); ++nIdx)
+	{
+		if (vHoldCard[nIdx] == vHoldCard[nIdx + 3])
+		{
+			bHaveLest4 = true;
+			break;
+		}
+	}
+
+	if ( bHaveLest4 == false )
 	{
 		return false;
 	}
-
 	// dui tong yi ren san zui 
 	auto nBaoPaiidx = getSpecailHuBaoPaiKuaiZhaoIdx();
 	if (nBaoPaiidx != (uint8_t)-1)
@@ -345,7 +412,55 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 {
 	m_isHaveAnGangFlag = false;
 	m_isHaveZhiGangFlag = false;
-	return MJPlayerCard::onChuCard(nChuCard);
+	if (m_vFirse4Card.size() < 4)
+	{
+		m_vFirse4Card.push_back(nChuCard);
+	}
+
+	auto nRet = MJPlayerCard::onChuCard(nChuCard);
+	if ( !nRet )
+	{
+		return false;
+	}
+
+	if ( m_nDanDiaoKuaiZhaoState == eDanDiao_Not_Set )
+	{
+		if (m_vCards[eCT_Wan].size() > 1 || m_vCards[eCT_Tong].size() > 1 || m_vCards[eCT_Tiao].size() > 1 || m_vCards[eCT_Feng].size() > 1 )
+		{
+			return true;
+		}
+		VEC_CARD vHold;
+		getHoldCard(vHold);
+		if ( 1 == vHold.size() )
+		{
+			m_nDanDiaoKuaiZhaoState = eDanDiao_Do_Set;
+			m_nDanDiaoHoldCard = vHold.front();
+			m_nDanDiaoChuedCard = nChuCard;
+
+			Json::Value jsMsg;
+			jsMsg["idx"] = m_nThisPlayerIdx;
+			jsMsg["card"] = nChuCard;
+			m_pCurRoom->sendRoomMsg(jsMsg, MSG_CHANGE_BAOPAI_CARD);
+			LOGFMTD("room id = %u idx = %u get chu kuai zhao %u", m_pCurRoom->getRoomID(), m_nThisPlayerIdx,nChuCard);
+		}
+	}
+	else if ( m_nDanDiaoKuaiZhaoState == eDanDiao_Do_Set )
+	{
+		VEC_CARD vHold;
+		getHoldCard(vHold);
+		if (vHold.front() != m_nDanDiaoHoldCard)
+		{
+			m_nDanDiaoKuaiZhaoState = eDanDiao_GiveUp;
+
+			Json::Value jsMsg;
+			jsMsg["idx"] = m_nThisPlayerIdx;
+			jsMsg["card"] = 0;
+			m_pCurRoom->sendRoomMsg(jsMsg, MSG_CHANGE_BAOPAI_CARD);
+			LOGFMTD("room id = %u idx = %u give up chu kuai zhao ",m_pCurRoom->getRoomID(),m_nThisPlayerIdx);
+		}
+	}
+
+	return true;
 }
 
 bool NJMJPlayerCard::onMingGang(uint8_t nCard, uint8_t nGangGetCard)
@@ -525,9 +640,10 @@ bool NJMJPlayerCard::canHuWitCardLocal(uint8_t nCard)
 	return bSelfHu;
 }
 
-void NJMJPlayerCard::bindRoom(NJMJRoom* pRoom)
+void NJMJPlayerCard::bindRoom(NJMJRoom* pRoom, uint8_t nThisPlayerIdx )
 {
 	m_pCurRoom = pRoom;
+	m_nThisPlayerIdx = nThisPlayerIdx;
 }
 
 uint8_t NJMJPlayerCard::getKuaiZhaoBaoPaiIdx()
@@ -660,7 +776,7 @@ bool NJMJPlayerCard::canCardHuaGang(uint8_t nCard)
 
 bool NJMJPlayerCard::getCardInfo(Json::Value& jsPeerCards)
 {
-	// svr: { idx : 2 , anPai : [2,3,4,34] , huaPai : [23,23,12] ,chuPai: [2,34,4] , anGangPai : [23,24],buGang : [23,45] ,pengGangInfo : [ { targetIdx : 23 , actType : 23 , card : 23 } , .... ]  }
+	// svr: { idx : 2 , nDanDiaoKuaiZhao : 23 ,anPai : [2,3,4,34] , huaPai : [23,23,12] ,chuPai: [2,34,4] , anGangPai : [23,24],buGang : [23,45] ,pengGangInfo : [ { targetIdx : 23 , actType : 23 , card : 23 } , .... ]  }
 	IMJPlayerCard::VEC_CARD vAnPai, vChuPai, vAnGangedCard , vBuGang;
 	Json::Value jsAnPai, jsChuPai,  jsAngangedPai, jsBuGang , jsHuaPai;
 
@@ -698,6 +814,11 @@ bool NJMJPlayerCard::getCardInfo(Json::Value& jsPeerCards)
 	}
 
 	jsPeerCards["pengGangInfo"] = jsPengGangInfo;
+
+	if ( m_nDanDiaoKuaiZhaoState == eDanDiao_Do_Set )
+	{
+		jsPeerCards["nDanDiaoKuaiZhao"] = m_nDanDiaoChuedCard;
+	}
 	return true;
 }
 
@@ -802,13 +923,17 @@ bool NJMJPlayerCard::checkHunYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nHu
 
 bool NJMJPlayerCard::checkMenQing(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt)
 {
-	std::vector<stActCardSign>::iterator iter = m_vActCardSign.begin();
-	for (; iter != m_vActCardSign.end(); ++iter)
+	//std::vector<stActCardSign>::iterator iter = m_vActCardSign.begin();
+	//for (; iter != m_vActCardSign.end(); ++iter)
+	//{
+	//	if ( (*iter).eAct == eMJAct_Peng )
+	//	{
+	//		return false;
+	//	}
+	//}
+	if ( m_vPenged.empty() == false)
 	{
-		if ( (*iter).eAct == eMJAct_Peng )
-		{
-			return false;
-		}
+		return false;
 	}
 	vHuTypes.push_back(eFanxing_MengQing);
 	nHuaCnt += 10;
@@ -959,6 +1084,16 @@ bool NJMJPlayerCard::checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vH
 {
 	if (isSpecailHu)
 	{
+		if (!isZiMo)
+		{
+			if (getIsDanDiaoHu(nCard))
+			{
+				vHuTypes.push_back(eFanxing_QuanQiuDuDiao);
+				nHuaCnt += 40;
+				return true;
+			}
+		}
+
 		auto iter = std::find(vHuTypes.begin(),vHuTypes.end(),eFanxing_QingYiSe);
 		bool isQingYISe = iter != vHuTypes.end();
 		auto nSpecailZhaopIdx = getSpecailHuBaoPaiKuaiZhaoIdx();
@@ -1012,12 +1147,17 @@ bool NJMJPlayerCard::checkWuHuaGuo(std::vector<uint16_t>& vHuTypes, uint16_t& nH
 
 	if (vHuTypes.empty()) // means ping hu 
 	{
-		for (auto& ref : m_vActCardSign)
+		//for (auto& ref : m_vActCardSign)
+		//{
+		//	if ( ref.eAct == eMJAct_Peng)
+		//	{
+		//		return false;
+		//	}
+		//}
+
+		if (m_vPenged.empty() == false)
 		{
-			if ( ref.eAct == eMJAct_Peng)
-			{
-				return false;
-			}
+			return false;
 		}
 	}
 
@@ -1278,4 +1418,40 @@ uint8_t NJMJPlayerCard::getSpecailHuBaoPaiKuaiZhaoIdx()
 		}
 	}
 	return nBaoIdx;
+}
+
+bool NJMJPlayerCard::canMingGangWithCard(uint8_t nCard)
+{
+	auto bRet = MJPlayerCard::canMingGangWithCard(nCard);
+	if (bRet )
+	{
+		if (getIsSpecailHu(nCard))
+		{
+			return false;
+		}
+	}
+	return bRet;
+}
+
+bool NJMJPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
+{
+	if ( getIsZiMoSpecailHu() )
+	{
+		return false;
+	}
+
+	return MJPlayerCard::getHoldCardThatCanAnGang(vGangCards);
+}
+
+bool NJMJPlayerCard::canPengWithCard(uint8_t nCard)
+{
+	auto bRet = MJPlayerCard::canPengWithCard(nCard);
+	if (bRet)
+	{
+		if (getIsSpecailHu(nCard))
+		{
+			return false;
+		}
+	}
+	return bRet;
 }

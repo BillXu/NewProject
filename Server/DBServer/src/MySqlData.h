@@ -69,8 +69,8 @@ public:
 	static std::string Int64ArraryToString( int64_t vInt[] , uint16_t nCnt );
 public:
 	stMysqlField(const char* pName,int nLen):strFieldName(pName,nLen){ pBuffer = NULL ;}
-	unsigned int IntValue();
-	unsigned __int64 IntValue64();
+	int IntValue();
+	__int64 IntValue64();
 	float FloatValue();
 	double DoubleValue();
 	const char* BufferData();

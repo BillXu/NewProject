@@ -57,6 +57,8 @@ public:
 	uint32_t getNewestFetchedCard()final;
 	virtual bool canHoldCard7PairHu();
 	virtual bool getCanHuCards(std::set<uint8_t>& vCanHuCards);
+
+	void addLouPengedCard( uint8_t nLouPengedCard )final;
 protected:
 	void addCardToVecAsc(VEC_CARD& vec, uint8_t nCard );
 	bool getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMustKeZiShun );
@@ -80,4 +82,6 @@ protected:
 	uint8_t m_nNesetFetchedCard;
 	uint8_t m_nJIang;
 	uint8_t m_nDanDiao;
+
+	VEC_CARD m_vLouPenged;
 };

@@ -636,14 +636,6 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			},recvValue) ;
 		}
 		break;
-		case MSG_VIP_ROOM_CLOSED:
-		{
-			auto pgameCenter = CGameServerApp::SharedGameServerApp()->getGameRoomCenter();
-			pgameCenter->deleteRoomItem(recvValue["roomID"].asUInt());
-			//deleteOwnRoom((eRoomType)recvValue["eType"].asUInt(), recvValue["roomID"].asUInt());
-			LOGFMTD("uid = %u created vip room closed , room id = %u", GetPlayer()->GetUserUID(), recvValue["roomID"].asUInt());
-		}
-		break;
 	default:
 		return false ;
 	}

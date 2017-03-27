@@ -6,6 +6,11 @@ class SZMJPlayer
 {
 public:
 	IMJPlayerCard* getPlayerCard()override;
+	void onWillStartGame();
+	void signBuHuaFlag();
+	void clearBuHuaFlag();
+	bool haveBuHuaFlag() { return m_bHaveBuHuaFlag; }
 protected:
 	SZMJPlayerCard m_tPlayerCard;
+	bool m_bHaveBuHuaFlag;
 };

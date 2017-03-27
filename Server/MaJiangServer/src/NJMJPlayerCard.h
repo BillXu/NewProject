@@ -13,9 +13,18 @@ public:
 		uint8_t InvokerIdx;
 		eMJActType eAct;
 	};
+
+	enum eDanDiaoState
+	{
+		eDanDiao_Not_Set,
+		eDanDiao_Do_Set,
+		eDanDiao_GiveUp,
+		eDanDiao_Max,
+	};
+
 public:
 	void reset() override;
-	void bindRoom(NJMJRoom* pRoom);
+	void bindRoom(NJMJRoom* pRoom , uint8_t nThisPlayerIdx );
 	bool canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB) override;
 	void addActSign(uint8_t nCard, uint8_t nInvokerIdx, eMJActType eAct );
 	bool isChued4Card(uint8_t nCard );
@@ -36,11 +45,15 @@ public:
 	void setSongGangIdx(uint8_t nSongGangIdx );
 	uint8_t getSongGangIdx();
 	bool getIsSpecailHu( uint8_t nTargetCard );
+	bool getIsDanDiaoHu( uint8_t nTargetCard );
 	bool getIsZiMoSpecailHu();
 	bool onChuCard(uint8_t nChuCard)override;
 	bool onMingGang(uint8_t nCard, uint8_t nGangGetCard) override;
 	bool onAnGang(uint8_t nCard, uint8_t nGangGetCard) override;
 	uint8_t getSpecailHuBaoPaiKuaiZhaoIdx();
+	bool canMingGangWithCard(uint8_t nCard) override;
+	bool getHoldCardThatCanAnGang(VEC_CARD& vGangCards)override;
+	bool canPengWithCard(uint8_t nCard) override;
 protected:
 	bool canHuWitCardLocal(uint8_t nCard);
 	// check pai xing 
@@ -64,7 +77,15 @@ protected:
 	std::vector<stActCardSign> m_vActCardSign;
 	std::vector<stActCardSign> m_vAllActCardSign;
 	NJMJRoom* m_pCurRoom;
+	uint8_t m_nThisPlayerIdx;
+
 	uint8_t m_nSongGangIdx;
 	bool m_isHaveZhiGangFlag;
 	bool m_isHaveAnGangFlag;
+
+	VEC_CARD m_vFirse4Card;
+
+	uint8_t m_nDanDiaoKuaiZhaoState;  // 0 not seted , 1 seted , 2 gived up ;
+	uint8_t m_nDanDiaoHoldCard;
+	uint8_t m_nDanDiaoChuedCard;
 };

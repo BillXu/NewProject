@@ -321,10 +321,6 @@ bool CPlayerManager::onMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort
 	{
 		pTargetPlayer = GetPlayerByUserUID(recvValue["uid"].asUInt());
 	}
-	else if (MSG_VIP_ROOM_CLOSED == nmsgType)
-	{
-		pTargetPlayer = GetPlayerByUserUID(recvValue["uid"].asUInt());
-	}
 	else
 	{
 		pTargetPlayer = GetPlayerBySessionID(nSessionID, true);

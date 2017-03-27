@@ -39,4 +39,6 @@ public:
 	virtual bool getEatedCard(VEC_CARD& vEatedCard ) = 0 ;
 	virtual bool getAnGangedCard(VEC_CARD& vAnGanged) = 0;
 	virtual uint32_t getNewestFetchedCard() = 0 ;
+
+	virtual void addLouPengedCard(uint8_t nLouPengedCard) = 0;
 };
