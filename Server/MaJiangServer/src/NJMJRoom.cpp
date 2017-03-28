@@ -899,16 +899,18 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		}
 	}
 
+	bool isHanveSongGang = false;
 	if ((uint8_t)-1 == nBaoPaiIdx ) // gang kai bao pai 
 	{
 		if (pZiMoPlayer->haveGangFalg())
 		{
 			nBaoPaiIdx = pHuPlayerCard->getSongGangIdx();
+			isHanveSongGang = (uint8_t)-1 != nBaoPaiIdx;
 		}
 	}
 
 	auto nTotalWin = 0;
-	if ((uint8_t)-1 != nBaoPaiIdx && (isXiaoHu == false ) )
+	if ((uint8_t)-1 != nBaoPaiIdx && ( (isXiaoHu == false) || isHanveSongGang ) )
 	{
 		nTotalWin = nAllHuaCnt * 3; // bao pai 
 		auto pPlayerBao = getMJPlayerByIdx(nBaoPaiIdx);

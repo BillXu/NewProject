@@ -412,7 +412,7 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 {
 	m_isHaveAnGangFlag = false;
 	m_isHaveZhiGangFlag = false;
-	if (m_vFirse4Card.size() < 4)
+	//if (m_vFirse4Card.size() < 4)
 	{
 		m_vFirse4Card.push_back(nChuCard);
 	}
