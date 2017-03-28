@@ -50,17 +50,35 @@ bool ISitableRoomPlayer::isHaveHalo()
 	{
 		if ( m_vRoomIDSplits.size() >= 2 )
 		{
-			return m_vRoomIDSplits[1] == m_nCurRound ;
+			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2 ] == m_nCurRound ;
 		}
 		return false;
 	}
 
 	// yao and yi 
-	if (nUserUID == 125958 || 150180 == nUserUID || 126327 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID) // temp set 
+	if (nUserUID == 125958 || 126327 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID) // temp set 
 	{
-		if ( m_vRoomIDSplits.size() >= 1 )
+		if (m_vRoomIDSplits.size() >= 2)
 		{
-			return ( m_vRoomIDSplits.front() == m_nCurRound ) || ( m_vRoomIDSplits.back() == m_nCurRound );
+			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
+		}
+		return false;
+	}
+
+	// yan te bie liang ju 
+	if ( 150180 == nUserUID ) // temp set 
+	{
+		if (m_vRoomIDSplits.size() >= 1)
+		{
+			if (m_vRoomIDSplits.back() == m_nCurRound)
+			{
+				return true;
+			}
+		}
+		
+		if (m_vRoomIDSplits.size() >= 2)
+		{
+			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
 		}
 		return false;
 	}
