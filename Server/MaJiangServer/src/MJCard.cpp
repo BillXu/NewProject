@@ -87,22 +87,25 @@ void CMJCard::initAllCard( eMJGameType eType )
 				m_vAllCards.push_back(makeCardNumber(eCT_Jian,nValue)) ;
 			}
 		}
+
+		if (eMJ_SuZhou == m_eMJGameType)
+		{
+			for (uint8_t nValue = 9; nValue <= 10; ++nValue)
+			{
+				m_vAllCards.push_back(makeCardNumber(eCT_Hua, nValue));
+			}
+		}
+
 	}
 
-	if (eMJ_NanJing == m_eMJGameType)
+	if (eMJ_NanJing == m_eMJGameType || eMJ_SuZhou == m_eMJGameType )
 	{
 		for (uint8_t nValue = 1; nValue <= 8; ++nValue)
 		{
 			m_vAllCards.push_back(makeCardNumber(eCT_Hua, nValue));
 		}
 	}
-	else if ( eMJ_SuZhou == m_eMJGameType )
-	{
-		for (uint8_t nValue = 1; nValue <= 10; ++nValue)
-		{
-			m_vAllCards.push_back(makeCardNumber(eCT_Hua, nValue));
-		}
-	}
+	
 }
 
 void CMJCard::initTwoBirdCard()

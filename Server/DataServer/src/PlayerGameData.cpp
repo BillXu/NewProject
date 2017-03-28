@@ -440,14 +440,14 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				break;
 			}
 
-			uint8_t nDiamondNeed = 2;
-			if (2 == nCirle)
+			uint8_t nDiamondNeed = 6;
+			if (4 == nCirle)
+			{
+				nDiamondNeed = 2;
+			}
+			else if (8 == nCirle)
 			{
 				nDiamondNeed = 3;
-			}
-			else if (4 == nCirle)
-			{
-				nDiamondNeed = 6;
 			}
 
 			if ( ( isFree == false )  && nDiamondNeed > GetPlayer()->GetBaseData()->GetAllDiamoned())
