@@ -22,6 +22,21 @@ bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_isFanBei = false;
 	m_isWillFanBei = false;
 	m_isBankerHu = false;
+	m_nRuleMode = 1;
+	if (vJsValue["ruletype"].isNull() || vJsValue["ruletype"].isUInt() == false)
+	{
+		LOGFMTE("invlid rule type ");
+	}
+	else
+	{
+		m_nRuleMode = vJsValue["ruletype"].asUInt();
+	}
+
+	if (m_nRuleMode != 1 && 2 != m_nRuleMode)
+	{
+		LOGFMTE("invalid rule type value = %u",m_nRuleMode );
+		m_nRuleMode = 1;
+	}
 
 	m_tPoker.initAllCard(eMJ_SuZhou);
 	// create state and add state ;
@@ -77,6 +92,20 @@ void SZMJRoom::packStartGameMsg(Json::Value& jsMsg)
 void SZMJRoom::startGame()
 {
 	IMJRoom::startGame();
+
+	// bind room to player card 
+	// check di hu 
+	for (auto& pPlayer : m_vMJPlayers)
+	{
+		if (pPlayer == nullptr)
+		{
+			LOGFMTE("room id = %u , start game player is nullptr", getRoomID());
+			continue;
+		}
+		auto pPlayerCard = (SZMJPlayerCard*)pPlayer->getPlayerCard();
+		pPlayerCard->bindRoom(this);
+	}
+
 	Json::Value jsMsg;
 	packStartGameMsg(jsMsg);
 	sendRoomMsg(jsMsg, MSG_ROOM_START_GAME);
@@ -85,6 +114,7 @@ void SZMJRoom::startGame()
 void SZMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
 {
 	jsSubInfo["isFanBei"] = isFanBei() ? 1 : 0;
+	jsSubInfo["ruletype"] = m_nRuleMode;
 }
 
 void SZMJRoom::onGameDidEnd()
@@ -513,4 +543,30 @@ void SZMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 std::shared_ptr<IGameRoomRecorder> SZMJRoom::createRoomRecorder()
 {
 	return std::make_shared<SZMJRoomRecorder>();
+}
+
+uint8_t SZMJRoom::getZiMoHuaRequire()
+{
+	if (1 == m_nRuleMode)
+	{
+		return 2;
+	}
+	else if (2 == m_nRuleMode)
+	{
+		return 3;
+	}
+	return 3;
+}
+
+uint8_t SZMJRoom::getDianPaoHuHuaRequire()
+{
+	if (1 == m_nRuleMode)
+	{
+		return 3;
+	}
+	else if (2 == m_nRuleMode)
+	{
+		return 4;
+	}
+	return 4;
 }

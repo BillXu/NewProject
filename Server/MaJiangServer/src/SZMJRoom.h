@@ -23,6 +23,8 @@ public:
 	bool isOneCirleEnd()override;
 	void onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
 	void onPlayerChu(uint8_t nIdx, uint8_t nCard)override;
+	uint8_t getZiMoHuaRequire();
+	uint8_t getDianPaoHuHuaRequire();
 protected:
 	bool isFanBei() { return m_isFanBei; }
 	void getSubRoomInfo(Json::Value& jsSubInfo)override;
@@ -34,4 +36,5 @@ protected:
 	bool m_isWillFanBei;
 	bool m_isBankerHu;
 	CMJCard m_tPoker;
+	uint8_t m_nRuleMode; //1 代表两摸三冲 2 代表三摸四冲
 };

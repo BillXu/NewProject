@@ -1,6 +1,12 @@
 #include "SZMJPlayerCard.h"
 #include "log4z.h"
 #include "MJCard.h"
+#include "SZMJRoom.h"
+void SZMJPlayerCard::bindRoom(SZMJRoom* pRoom)
+{
+	m_pCurRoom = pRoom;
+}
+
 void SZMJPlayerCard::reset()
 {
 	MJPlayerCard::reset();
@@ -66,8 +72,7 @@ bool SZMJPlayerCard::onDoHu(bool isZiMo, bool isHaiDiLoaYue,uint8_t nCard, std::
 		}
 		addCardToVecAsc(m_vCards[type], nCard);
 	}
-
-	nHoldHuaCnt = getHuaCntWithoutHuTypeHuaCnt();
+	nHoldHuaCnt = getHuaCntWithoutHuTypeHuaCnt( (isZiMo ? 0 : nCard ) );
 
 	auto funRemoveAddToCard = [this](uint8_t nCard)
 	{
@@ -208,8 +213,8 @@ bool SZMJPlayerCard::canHuWitCard( uint8_t nCard )
 	bool bSelfHu = MJPlayerCard::isHoldCardCanHu();
 	if ( bSelfHu )
 	{
-		auto nHuaCnt = getHuaCntWithoutHuTypeHuaCnt();
-		if ( nHuaCnt >= 4 )
+		auto nHuaCnt = getHuaCntWithoutHuTypeHuaCnt( nCard );
+		if ( nHuaCnt >= m_pCurRoom->getDianPaoHuHuaRequire() )
 		{
 
 		}
@@ -224,6 +229,29 @@ bool SZMJPlayerCard::canHuWitCard( uint8_t nCard )
 	}
 	auto iter = std::find(m_vCards[eType].begin(), m_vCards[eType].end(), nCard);
 	m_vCards[eType].erase(iter);
+	//debugCardInfo();
+	return bSelfHu;
+}
+
+bool SZMJPlayerCard::isHoldCardCanHu()
+{
+	bool bSelfHu = MJPlayerCard::isHoldCardCanHu();
+	if (bSelfHu)
+	{
+		auto nHuaCnt = getHuaCntWithoutHuTypeHuaCnt();
+		if (nHuaCnt >= m_pCurRoom->getZiMoHuaRequire() )
+		{
+
+		}
+		else  // not enought hua cnt ;
+		{
+			auto isDaHu = checkDaMenQing() || checkXiaoMenQing() || checkHunYiSe() || checkQingYiSe() || checkDuiDuiHu() || checkQiDui() || checkDaDiaoChe();
+			if (isDaHu == false)  // not da hua , then xiao hu need hua cnt ; so can not hu this card ;
+			{
+				bSelfHu = false;
+			}
+		}
+	}
 	//debugCardInfo();
 	return bSelfHu;
 }
@@ -398,7 +426,7 @@ bool SZMJPlayerCard::checkDaDiaoChe()
 	return (v.size() == 2) && (v[0] == v[1]);
 }
 
-uint8_t SZMJPlayerCard::getHuaCntWithoutHuTypeHuaCnt()
+uint8_t SZMJPlayerCard::getHuaCntWithoutHuTypeHuaCnt( uint8_t nHuCard )
 {
 	VEC_CARD vCard;
 	uint8_t nHuaCnt = m_vBuHuaCard.size();
@@ -443,9 +471,17 @@ uint8_t SZMJPlayerCard::getHuaCntWithoutHuTypeHuaCnt()
 	auto& vFeng = m_vCards[eCT_Feng];
 	for (uint8_t nidx = 0; (nidx + 2) < vFeng.size(); )
 	{
-		if (vFeng[nidx] == vFeng[nidx + 2])
+		if ( vFeng[nidx] == vFeng[nidx + 2])
 		{
-			nHuaCnt += 2;
+			if (vFeng[nidx] == nHuCard)
+			{
+				nHuaCnt += 1;
+			}
+			else
+			{
+				nHuaCnt += 2;
+			}
+			
 			nidx += 3;
 			continue;
 		}

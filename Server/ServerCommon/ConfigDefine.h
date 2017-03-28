@@ -2,8 +2,9 @@
 //#define GAME_panda
 //#define GAME_paiYouQuan
 //#define GAME_365 
-#define GAME_MJ_NANJING
+//#define GAME_MJ_NANJING
 //#define GAME_IN_REVIEW 
+#define GAME_MJ_SUZHOU
 
 #if defined( GAME_panda)
 
@@ -55,6 +56,21 @@
 #define Wechat_appID "wxdaff45ff145c0350"
 #define Wechat_MchKey "NUN5DKS5MJW4UBVJIL1G2XUQ66LU2ENA"
 #define Game_DB_Name "niuniu365"
+#define Log_DB_Name "niuniulog"
+
+#elif defined(GAME_MJ_SUZHOU)
+
+#define Gotype_DevID "8276e6d3-5e96-44e2-9243-97a40f019bb3"
+#define Gotype_ProdID "4f466e4d-ece6-4139-986a-2ad79e3ab74f"
+//#define Wechat_notifyUrl "http://abc.paiyouquan.com:5016/vxpay.php"  // online editon 
+#define Wechat_notifyUrl "http://njmj.paiyouquan.com:9006/vxpay.php"  // mj test online edtion 
+//#define Wechat_MchID "1385365702"
+//#define Wechat_appID "wxae3a38cb9960bc84"
+//#define Wechat_MchKey "NUN5DKS5MJW4UBVJIL1G2XUQ66LU2ENU"
+#define Wechat_MchID "1401856702"
+#define Wechat_appID "wxdaff45ff145c0350"
+#define Wechat_MchKey "NUN5DKS5MJW4UBVJIL1G2XUQ66LU2ENA"
+#define Game_DB_Name "szmj"
 #define Log_DB_Name "niuniulog"
 #else
 

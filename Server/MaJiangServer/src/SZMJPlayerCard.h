@@ -1,10 +1,12 @@
 #pragma once
 #include "MJPlayerCard.h"
 #include "json/json.h"
+class SZMJRoom;
 class SZMJPlayerCard
 	:public MJPlayerCard
 {
 public:
+	void bindRoom(SZMJRoom* pRoom );
 	bool canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB) override { return false; }
 	void reset() override;
 	void onBuHua(uint8_t nHuaCard, uint8_t nCard);
@@ -14,8 +16,9 @@ public:
 	void setSongGangIdx( uint8_t nIdx );
 	uint8_t getHuaCardToBuHua(); // -1 means no target ;
 	bool canHuWitCard(uint8_t nCard)override;
+	bool isHoldCardCanHu() override;
 protected:
-	uint8_t getHuaCntWithoutHuTypeHuaCnt();
+	uint8_t getHuaCntWithoutHuTypeHuaCnt( uint8_t nHuCard = 0 );
 	bool checkDaMenQing();
 	bool checkXiaoMenQing();
 	bool checkHunYiSe();
@@ -27,4 +30,5 @@ protected:
 protected:
 	VEC_CARD m_vBuHuaCard;
 	uint8_t m_nSongZhiGangIdx;
+	SZMJRoom* m_pCurRoom;
 };
