@@ -30,7 +30,7 @@ public:
 					auto pPlayer = getRoom()->getMJPlayerByIdx(refIdx);
 					if (pPlayer == nullptr)
 					{
-						LOGFMTE("why you are nullptr ? idx = %",refIdx );
+						LOGFMTE("why you are nullptr ? idx = %u",refIdx );
 						continue;
 					}
 

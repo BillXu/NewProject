@@ -16,6 +16,7 @@
 #include "MJRoomStateAskForRobotGang.h"
 #include "SZMJPlayerRecorderInfo.h"
 #include <ctime>
+#include "SZMJPlayerRecorderInfo.h"
 bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
@@ -52,7 +53,8 @@ bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 
 	// init banker
 	m_nBankerIdx = -1;
-
+	auto pRoomRecorder = (SZMJRoomRecorder*)getRoomRecorder().get();
+	pRoomRecorder->setRoomOpts(m_nRuleMode);
 	return true;
 }
 

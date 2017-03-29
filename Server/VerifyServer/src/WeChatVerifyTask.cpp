@@ -125,12 +125,31 @@ void CWechatVerifyTask::onHttpCallBack(char* pResultData, size_t nDatalen , void
 				if ( strcmp(pRet->Value(),"SUCCESS") == 0 )
 				{
 					TiXmlElement* pState = (TiXmlElement*)pRoot->FirstChild("trade_state");
+					TiXmlElement* pFee = (TiXmlElement*)pRoot->FirstChild("total_fee");
+					TiXmlNode* pFeeValue = nullptr;
+					if (pFee)
+					{
+						pFeeValue = pFee->FirstChild();
+					}
+					else
+					{
+						LOGFMTE("fee is node is null ptr ;");
+					}
+
 					TiXmlNode* pStateRet = pState->FirstChild();
 					if ( strcmp(pStateRet->Value(),"SUCCESS") == 0 )
 					{
 						LOGFMTD("weChatVerfiy success ") ;
 						// success ;
 						pRequest->eResult = eVerify_Apple_Success ;
+						if (pFeeValue)
+						{
+							pRequest->nTotalFee = atoi(pFeeValue->Value() ) / 100;
+						}
+						else
+						{
+							LOGFMTE("pFee Value is nullptr");
+						}
 						return  ;
 					}
 				}

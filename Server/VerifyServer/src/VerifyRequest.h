@@ -23,6 +23,7 @@ struct stVerifyRequest
 	unsigned short nShopItemID ;  // for mutilp need to verify ;
 	uint32_t nSessionID ;
 	uint32_t nMiUserUID;
+	uint32_t nTotalFee; // wei xin verify money ;
 	void* pUserData ;
 };
 

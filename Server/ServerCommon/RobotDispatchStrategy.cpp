@@ -107,7 +107,6 @@ void CRobotDispatchStrategy::updateRobotDispatch( float fDelta )
 		{
 			if ( nSitDownCnt > 4 || bClosed )
 			{
-				LOGFMTD("robot session id = %u , time up shuld leave room" ) ;
 				stMsgTellRobotLeaveRoom msgLeave ;
 				m_pRoom->sendMsgToPlayer(&msgLeave,sizeof(msgLeave),pPlayer->nSessionID) ;
 				m_vMayDelayLeaveRobot[pPlayer->nSessionID] = 1 ;

@@ -10,6 +10,7 @@
 #include "DBVerifyTask.h"
 #include "ApnsTask.h"
 #include "AnyLoginTask.h"
+#include "AsyncRequestQuene.h"
 void CTaskPoolModule::init( IServerApp* svrApp )
 {
 	IGlobalModule::init(svrApp) ;
@@ -331,6 +332,14 @@ void CTaskPoolModule::sendVerifyResult(std::shared_ptr<stVerifyRequest> & pResul
 	msg.nBuyForPlayerUserUID = pResult->nBuyedForPlayerUserUID ;
 	getSvrApp()->sendMsg(pResult->nSessionID,(char*)&msg,sizeof(msg));
 	LOGFMTI( "finish verify transfaction shopid = %u ,uid = %d ret = %d",msg.nShopItemID,msg.nBuyerPlayerUserUID,msg.nRet ) ;
+	if (msg.nRet == 4) // purchase success
+	{
+		Json::Value jssql;
+		char pBuffer[512] = { 0 };
+		sprintf(pBuffer, "insert into wxrecharge ( userUID,fee,time ) values ('%u','%u',now());", msg.nBuyerPlayerUserUID, pResult->nTotalFee);
+		jssql["sql"] = pBuffer;
+		getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Add, jssql);
+	}
 }
 
 void CTaskPoolModule::doDBVerify(uint32_t nUserUID, uint16_t nShopID, uint8_t nChannel,std::string& strTransfcationID)

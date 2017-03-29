@@ -546,7 +546,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 		{
 			stMsgFromVerifyServer* pRet = (stMsgFromVerifyServer*)pMsg ;
 			stMsgPlayerBuyShopItemRet msgBack ;
-			msgBack.nBuyShopItemForUserUID = pRet->nBuyForPlayerUserUID ;
+			msgBack.nBuyShopItemForUserUID = pRet->nBuyerPlayerUserUID ;
 			msgBack.nDiamoned = 0 ;
 			msgBack.nSavedMoneyForVip = 0 ;
 			msgBack.nShopItemID = pRet->nShopItemID ;
