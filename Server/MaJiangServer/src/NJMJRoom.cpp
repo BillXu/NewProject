@@ -36,6 +36,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_isJingYuanZiMode = false;
 	m_isEnableWaiBao = false;
 	m_isEnableSiLianFeng = false;
+	m_isBaoPaiHappend = false;
 	m_vSettle.clear();
 	m_tChuedCards.clear();
 	if ( vJsValue["initCoin"].isNull() == false)
@@ -145,7 +146,7 @@ void NJMJRoom::willStartGame()
 	}
 	else
 	{
-		if ( (m_isBankerHu == false) && (m_isHuangZhuang == false) )
+		if ( (m_isBankerHu == false) && (m_isHuangZhuang == false) && ( false == m_isBaoPaiHappend ))
 		{
 			m_nBankerIdx = (m_nBankerIdx + 1) % MAX_SEAT_CNT;
 		}
@@ -154,6 +155,7 @@ void NJMJRoom::willStartGame()
 
 	m_isBankerHu = false;
 	m_isHuangZhuang = false;
+	m_isBaoPaiHappend = false;
 }
 
 void NJMJRoom::packStartGameMsg(Json::Value& jsMsg)
@@ -263,7 +265,7 @@ void NJMJRoom::onGameEnd()
 
 	bool isNextBiXiaWhu = m_isEnableBixiaHu && m_isWillBiXiaHu ;
 	jsMsg["isNextBiXiaHu"] = isNextBiXiaWhu ? 1 : 0;
-	jsMsg["nNextBankIdx"] = ( m_isBankerHu || m_isHuangZhuang ) ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT); 
+	jsMsg["nNextBankIdx"] = ( m_isBankerHu || m_isHuangZhuang || m_isBaoPaiHappend ) ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT);
 
 	sendRoomMsg(jsMsg, MSG_ROOM_NJ_GAME_OVER);
 	// send msg to player ;
@@ -714,6 +716,7 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		if ((uint8_t)-1 != nBaoPaiIdx && ( isXiaoHu == false ) )  // xiao hu bu bao pai ;
 		{
 			m_isWillBiXiaHu = true;
+			m_isBaoPaiHappend = true;
 			auto pPlayerBao = getMJPlayerByIdx(nBaoPaiIdx);
 
 			if (isKuaiChong())
@@ -778,6 +781,7 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 
 					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nAllHuaCnt);
 					jsHuPlayer["baoPaiIdx"] = pLosePlayer->getIdx();
+					m_isBaoPaiHappend = true;
 				}
 				else
 				{
@@ -913,6 +917,7 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	if ((uint8_t)-1 != nBaoPaiIdx && ( (isXiaoHu == false) || isHanveSongGang ) )
 	{
 		nTotalWin = nAllHuaCnt * 3; // bao pai 
+		m_isBaoPaiHappend = true;
 		auto pPlayerBao = getMJPlayerByIdx(nBaoPaiIdx);
 
 		if (isKuaiChong())
@@ -979,6 +984,7 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 						nTotalWin = nWaiCoinMost;
 					}
 					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nTotalWin);
+					m_isBaoPaiHappend = true;
 				}
 				else
 				{

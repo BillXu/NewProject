@@ -107,7 +107,7 @@ protected:
 	bool m_isJingYuanZiMode;
 	bool m_isEnableWaiBao;
 	bool m_isEnableSiLianFeng;
-
+	bool m_isBaoPaiHappend;
 	
 
 	CMJCard m_tPoker;
