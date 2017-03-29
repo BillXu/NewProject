@@ -336,13 +336,13 @@ void CTaskPoolModule::sendVerifyResult(std::shared_ptr<stVerifyRequest> & pResul
 	{
 		Json::Value jssql;
 		char pBuffer[512] = { 0 };
-		sprintf(pBuffer, "insert into wxrecharge ( userUID,fee,time ) values ('%u','%u',now());", msg.nBuyerPlayerUserUID, pResult->nTotalFee);
+		sprintf(pBuffer, "insert into wxrecharge ( userUID,fee,time,tradeOrder ) values ('%u','%u',now(),'%s');", msg.nBuyerPlayerUserUID, pResult->nTotalFee,pResult->pBufferVerifyID );
 		jssql["sql"] = pBuffer;
 		getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Add, jssql);
 	}
 }
 
-void CTaskPoolModule::doDBVerify(uint32_t nUserUID, uint16_t nShopID, uint8_t nChannel,std::string& strTransfcationID)
+void CTaskPoolModule::doDBVerify(uint32_t nUserUID, uint16_t nShopID, uint8_t nChannel,std::string& strTransfcationID, uint32_t nFee )
 {
 	IVerifyTask::VERIFY_REQUEST_ptr pRequest(new stVerifyRequest());
 	pRequest->nFromPlayerUserUID = nUserUID;
@@ -351,6 +351,7 @@ void CTaskPoolModule::doDBVerify(uint32_t nUserUID, uint16_t nShopID, uint8_t nC
 	pRequest->nChannel = nChannel; 
 	pRequest->nSessionID = 0;
 	pRequest->nMiUserUID = 0;
+	pRequest->nTotalFee = nFee / 100;
 
 	memset(pRequest->pBufferVerifyID,0,sizeof(pRequest->pBufferVerifyID));
 	memcpy_s(pRequest->pBufferVerifyID, sizeof(pRequest->pBufferVerifyID),strTransfcationID.data(),strTransfcationID.size());

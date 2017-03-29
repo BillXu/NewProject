@@ -28,7 +28,7 @@ public:
 	void testFunc();
 	ITask::ITaskPrt createTask( uint32_t nTaskID )override ;
 	CTaskPool& getPool(){ return m_tTaskPool ;}
-	void doDBVerify( uint32_t nUserUID , uint16_t nShopID , uint8_t nChannel, std::string& strTransfcationID );
+	void doDBVerify( uint32_t nUserUID , uint16_t nShopID , uint8_t nChannel, std::string& strTransfcationID, uint32_t nFee );
 	ITask::ITaskPrt getReuseTask(eTask nTask);
 	void postTask(ITask::ITaskPrt pTask );
 protected:

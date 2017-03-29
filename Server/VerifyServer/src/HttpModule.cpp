@@ -179,7 +179,7 @@ bool CHttpModule::onHandleVXPayResult(http::server::connection_ptr ptr)
 
 		// do DB verify ;
 		auto pVeirfyModule = ((CVerifyApp*)getSvrApp())->getTaskPoolModule();
-		pVeirfyModule->doDBVerify(atoi(userUID.c_str()), atoi(shopItem.c_str()), ePay_WeChat,strTradeNo);
+		pVeirfyModule->doDBVerify(atoi(userUID.c_str()), atoi(shopItem.c_str()), ePay_WeChat,strTradeNo,atoi(fee.c_str()));
 	} while (0);
 
 	std::string str = "";
