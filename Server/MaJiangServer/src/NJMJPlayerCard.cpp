@@ -277,11 +277,6 @@ bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 
 	// qing yi se qingkuang , dui yi zui ;
 	VEC_CARD vAllCard;
-	getHoldCard(vAllCard);
-	if (card_Type(nTargetCard) != card_Type(vAllCard.front()))
-	{
-		return false;
-	}
 
 	VEC_CARD vTemp;
 	getAnGangedCard(vTemp);
@@ -295,11 +290,10 @@ bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 	getPengedCard(vTemp);
 	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
 
-	auto nType = card_Type(vAllCard.front());
 	for (auto& ref : vAllCard)
 	{
 		auto tt = card_Type(ref);
-		if (nType != tt)
+		if (nTargetCard != tt)
 		{
 			return false;
 		}
