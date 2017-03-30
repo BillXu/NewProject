@@ -12,6 +12,7 @@ public:
 public:
 	CMJCard(){ m_vAllCards.clear() ; m_nCurCardIdx = 0 ;}
 	uint8_t getCard();
+	void pushCardToFron(uint8_t nCard)override;
 	uint8_t getLeftCardCount()override;
 	uint8_t distributeOneCard()override { return getCard(); }
 	void shuffle()override;

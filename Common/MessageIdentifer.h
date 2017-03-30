@@ -738,6 +738,9 @@ enum eMsgType
 	// svr: {idx : 0,card : 0}
 	//card : 0是取消，其它的是包牌的card
 
+	MSG_SET_NEXT_CARD, // send to mj server 
+	//client : {card : 0,dstRoomID : 123465}
+
 
 
 
