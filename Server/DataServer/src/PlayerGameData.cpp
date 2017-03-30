@@ -187,12 +187,12 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			if ( isNotInAnyRoom() )
 			{
 				GetPlayer()->GetBaseData()->setCoin( pRet->nCoin + GetPlayer()->GetBaseData()->getCoin() ) ;
-				LOGFMTD("player not enter other room just uid = %d add coin = %lld, final = %u,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getCoin()) ;
+				LOGFMTD("player not enter other room just uid = %u add coin = %lld, final = %u,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getCoin()) ;
 			}
 			else
 			{
 				GetPlayer()->GetBaseData()->setTempCoin(GetPlayer()->GetBaseData()->getTempCoin() + pRet->nCoin) ;
-				LOGFMTD("player enter other room so uid = %d add temp = %lld, final = %u,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin(),GetPlayer()->GetBaseData()->getCoin() ) ;
+				//LOGFMTD("player enter other room so uid = %u add temp = %u, final = %u,",GetPlayer()->GetUserUID(),pRet->nCoin,GetPlayer()->GetBaseData()->getTempCoin(),GetPlayer()->GetBaseData()->getCoin() ) ;
 			}
 
 			GetPlayer()->GetBaseData()->addTodayGameCoinOffset(pRet->nGameOffset);
@@ -370,7 +370,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 			else
 			{
 				GetPlayer()->GetBaseData()->setTempCoin(GetPlayer()->GetBaseData()->getTempCoin() + pRet->nFinalCoin) ;
-				LOGFMTD("sync private Room coin  player enter other room so uid = %d add temp = %u, final = %u, sieral = %u", GetPlayer()->GetUserUID(), pRet->nFinalCoin, GetPlayer()->GetBaseData()->getTempCoin(), GetPlayer()->GetBaseData()->getCoin(), pRet->nSiealNum);
+				//LOGFMTD("sync private Room coin  player enter other room so uid = %d add temp = %u, final = %u, sieral = %u", GetPlayer()->GetUserUID(), pRet->nFinalCoin, GetPlayer()->GetBaseData()->getTempCoin(), GetPlayer()->GetBaseData()->getCoin(), pRet->nSiealNum);
 			}
 		}
 		break ;
@@ -440,14 +440,14 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				break;
 			}
 
-			uint8_t nDiamondNeed = 2;
-			if (2 == nCirle)
+			uint8_t nDiamondNeed = 8;
+			if (1 == nCirle)
 			{
-				nDiamondNeed = 3;
+				nDiamondNeed = 2;
 			}
-			else if (4 == nCirle)
+			else if (2 == nCirle)
 			{
-				nDiamondNeed = 6;
+				nDiamondNeed = 4;
 			}
 
 			if ( ( isFree == false )  && nDiamondNeed > GetPlayer()->GetBaseData()->GetAllDiamoned())

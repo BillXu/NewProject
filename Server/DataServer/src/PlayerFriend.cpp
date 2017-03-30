@@ -136,7 +136,7 @@ bool CPlayerFriend::OnMessage(stMsg* pMsg, eMsgPort eSenderPort )
 			if ( pMsgRet->bAgree )
 			{
 				SendMsg(&msgBack,sizeof(msgBack)) ;
-				LOGFMTD("uid = %u msg type = stMsgPlayerBeAddedFriendReplyRet, typeid = %s",GetPlayer()->GetUserUID(),typeid(stMsgPlayerBeAddedFriendReplyRet)) ;
+				//LOGFMTD("uid = %u msg type = stMsgPlayerBeAddedFriendReplyRet, typeid = %s",GetPlayer()->GetUserUID(),typeid(stMsgPlayerBeAddedFriendReplyRet)) ;
 			}
 		}
 		break;

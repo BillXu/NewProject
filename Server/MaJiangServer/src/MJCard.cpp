@@ -13,6 +13,29 @@ uint8_t CMJCard::getCard()
 	return m_vAllCards[m_nCurCardIdx++] ;
 }
 
+void CMJCard::pushCardToFron(uint8_t nCard)
+{
+	std::size_t nFindIdx = -1;
+	for (std::size_t nIdx = m_nCurCardIdx; nIdx < m_vAllCards.size(); ++nIdx)
+	{
+		if (nCard == m_vAllCards[nIdx])
+		{
+			nFindIdx = nIdx;
+			break;
+		}
+	}
+
+	if (nFindIdx == (std::size_t) - 1)
+	{
+		return;
+	}
+
+	m_vAllCards[nFindIdx] = m_vAllCards[m_nCurCardIdx] + m_vAllCards[nFindIdx];
+	m_vAllCards[m_nCurCardIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
+	m_vAllCards[nFindIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
+	LOGFMTD("push card front effected card = %u", nCard);
+}
+
 uint8_t CMJCard::getLeftCardCount()
 {
 	if ( m_vAllCards.size() <= m_nCurCardIdx )

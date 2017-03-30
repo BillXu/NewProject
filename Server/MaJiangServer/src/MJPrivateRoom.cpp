@@ -561,11 +561,11 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 			}
 			else if (2 == m_nInitCircle)
 			{
-				nCardCnt = 3;
+				nCardCnt = 4;
 			}
 			else // 4 quan
 			{
-				nCardCnt = 6;
+				nCardCnt = 8;
 			}
 			LOGFMTD("send msg to consumed vip room card = %u", nCardCnt);
 			Json::Value jsConsumed;

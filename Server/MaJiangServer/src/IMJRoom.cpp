@@ -343,6 +343,16 @@ bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPo
 		LOGFMTI("返回玩家离开房间的消息， sesssioniID = %u", nSessionID);
 		return true;;
 	}
+	else if ( MSG_SET_NEXT_CARD == nMsgType)
+	{
+		if (prealMsg["card"].isNull() || prealMsg["card"].isUInt() == false)
+		{
+			LOGFMTE( "MSG_SET_NEXT_CARD key is null or invalid" );
+			return true;
+		}
+		getMJPoker()->pushCardToFron(prealMsg["card"].asUInt());
+		return true ;
+	}
 
 	//if (MSG_INTERAL_ROOM_SEND_UPDATE_COIN == nMsgType)
 	//{

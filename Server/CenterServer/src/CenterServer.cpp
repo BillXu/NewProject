@@ -333,7 +333,7 @@ void CCenterServerApp::OnGateDisconnected(CONNECT_ID& nNetworkID )
 	stGateInfo* pGate = GetGateInfoByNetworkID(nNetworkID);
 	if ( pGate == NULL )
 	{
-		LOGFMTE("this is not gate , info = NULL ip = %s",m_pNetwork->GetIPInfoByConnectID(nNetworkID)) ;
+		LOGFMTE("this is not gate , info = NULL ip = %s",m_pNetwork->GetIPInfoByConnectID(nNetworkID).c_str()) ;
 		return ;
 	}
 
@@ -386,7 +386,7 @@ void  CCenterServerApp::OnPeerDisconnected( CONNECT_ID nPeerDisconnected, Connec
 		}
 		else
 		{
-			LOGFMTE("a gate idx = %d ,disconnected , ip = %s",pinfo->nIdx,m_pNetwork->GetIPInfoByConnectID(nPeerDisconnected)) ;
+			LOGFMTE("a gate idx = %d ,disconnected , ip = %s",pinfo->nIdx,m_pNetwork->GetIPInfoByConnectID(nPeerDisconnected).c_str()) ;
 		}
 		OnGateDisconnected(nPeerDisconnected);
 		pinfo->Reset();

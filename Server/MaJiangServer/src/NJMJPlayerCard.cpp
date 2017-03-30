@@ -326,7 +326,15 @@ bool NJMJPlayerCard::getIsDanDiaoHu(uint8_t nTargetCard)
 		nLeft = m_nDanDiaoChuedCard - 2;
 	}
 
-	if (nLeft <= nTargetCard && nTargetCard <= nRight)
+	VEC_CARD vHold;
+	getHoldCard(vHold);
+	if (vHold.size() != 1)
+	{
+		return false;
+	}
+
+	auto nHoldCard = vHold.front();
+	if ( (nLeft <= nTargetCard && nTargetCard <= nRight) && (nLeft <= nHoldCard && nHoldCard <= nRight)  )
 	{
 		return true;
 	}
@@ -642,6 +650,7 @@ void NJMJPlayerCard::bindRoom(NJMJRoom* pRoom, uint8_t nThisPlayerIdx )
 
 uint8_t NJMJPlayerCard::getKuaiZhaoBaoPaiIdx()
 {
+	return -1;
 	// peng or gang 1 time , hanve 2 an gang
 	if (m_vAnGanged.size() == 2)
 	{
