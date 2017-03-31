@@ -1119,7 +1119,7 @@ bool NJMJRoom::isInternalShouldClosedAll()
 
 bool NJMJRoom::isOneCirleEnd()
 {
-	return ((3 == m_nBankerIdx) && (m_isBankerHu == false));
+	return ((3 == m_nBankerIdx) && (m_isBankerHu == false) && (m_isHuangZhuang == false) && (m_isBaoPaiHappend == false) );
 	return true;
 }
 
