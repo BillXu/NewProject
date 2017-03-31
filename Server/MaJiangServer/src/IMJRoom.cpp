@@ -295,34 +295,6 @@ bool IMJRoom::onMessage(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nSession
 
 bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)
 {
-	//if ( MSG_PLAYER_REQUEST_TRUSTEED == nMsgType)
-	//{
-	//	auto pPlayer = getMJPlayerBySessionID(nSessionID);
-	//	if (!pPlayer)
-	//	{
-	//		Json::Value jsMsg;
-	//		jsMsg["ret"] = 1;
-	//		sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
-	//		return true;
-	//	}
-
-	//	if (prealMsg["isTrusteed"].isNull() || prealMsg["isTrusteed"].isInt() == false)
-	//	{
-	//		LOGFMTE("player uid = %u set tuo guan  argument error ",pPlayer->getUID());
-	//		Json::Value jsMsg;
-	//		jsMsg["ret"] = 1;
-	//		sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
-	//		return true;
-	//	}
-
-	//	Json::Value jsMsg;
-	//	jsMsg["ret"] = 0;
-	//	sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
-
-	//	onPlayerTrusteedStateChange(pPlayer->getIdx(), prealMsg["isTrusteed"].asUInt() == 1);
-	//	return true;
-	//}
-
 	if ( MSG_PLAYER_LEAVE_ROOM == nMsgType )
 	{
 		//LOGFMTE("sub class must process this msg");
@@ -353,53 +325,6 @@ bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPo
 		getMJPoker()->pushCardToFron(prealMsg["card"].asUInt());
 		return true ;
 	}
-
-	//if (MSG_INTERAL_ROOM_SEND_UPDATE_COIN == nMsgType)
-	//{
-	//	uint32_t nSessionIDThis = prealMsg["sessionID"].asUInt();
-	//	uint32_t nUID = prealMsg["uid"].asUInt();
-	//	uint32_t nCoin = prealMsg["coin"].asUInt();
-	//	uint32_t nDiamond = prealMsg["diamond"].asUInt();
-	//	uint32_t nRoomID = prealMsg["roomID"].asUInt();
-	//	auto pSitp = getMJPlayerByUID(nUID);
-	//	if (pSitp)
-	//	{
-	//		LOGFMTD("uid = %u data svr coin = %u , room sit down coin = %u", pSitp->getUID(), nCoin, pSitp->getCoin());
-	//		nCoin = pSitp->getCoin();
-	//	}
-	//	else
-	//	{
-	//		LOGFMTE("update coin error ,you don't int ther room id = %u  , uid = %u", nRoomID, nUID);
-	//	}
-
-	//	if (getDelegate() == nullptr)
-	//	{
-	//		Json::Value jsmsgBack;
-	//		jsmsgBack["coin"] = nCoin;
-	//		jsmsgBack["diamond"] = nDiamond;
-	//		sendMsgToPlayer(jsmsgBack, MSG_REQ_UPDATE_COIN, nSessionIDThis);
-	//	}
-
-	//	return true;
-	//}
-
-	//if (MSG_PLAYER_CHAT_MSG == nMsgType)
-	//{
-	//	auto pRet = getMJPlayerBySessionID(nSessionID);
-	//	if (pRet)
-	//	{
-	//		prealMsg["idx"] = pRet->getIdx();
-	//		sendRoomMsg(prealMsg, MSG_ROOM_CHAT_MSG);
-	//	}
-	//	else
-	//	{
-	//		LOGFMTE("you do not sit down , can not say anything");
-	//	}
-	//	Json::Value jsRet;
-	//	jsRet["ret"] = pRet == nullptr ? 1 : 0;
-	//	sendMsgToPlayer(jsRet, nMsgType, nSessionID);
-	//	return true;
-	//}
 
 	if ( MSG_REQUEST_ROOM_INFO == nMsgType)
 	{
