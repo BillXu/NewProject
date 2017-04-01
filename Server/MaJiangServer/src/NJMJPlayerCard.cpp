@@ -166,11 +166,11 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 		checkQingYiSe(vHuTypes, nHuHuaCnt);
 	}
 	
+	checkMenQing(vHuTypes, nHuHuaCnt);
 	auto bQiDui = checkQiDui(nCard, vHuTypes, nHuHuaCnt);
 	if (!bQiDui)
 	{
 		checkDuiDuiHu(vHuTypes, nHuHuaCnt,bisSpecailHu );
-		checkMenQing(vHuTypes, nHuHuaCnt);
 	}
 	
 	checkQuanQiuDuDiao(nCard, vHuTypes, nHuHuaCnt, bisSpecailHu, nInvokerIdx,isZiMo);
@@ -918,7 +918,7 @@ bool NJMJPlayerCard::checkHunYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nHu
 	if (bFindFeng)
 	{
 		vHuTypes.push_back(eFanxing_HunYiSe);
-		nHuaCnt += 30;
+		nHuaCnt += 20;
 	}
 
 	return bFindFeng;
@@ -986,7 +986,7 @@ bool NJMJPlayerCard::checkQingYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nH
 	}
 
 	vHuTypes.push_back(eFanxing_QingYiSe);
-	nHuaCnt += 40;
+	nHuaCnt += 30;
 	return true;
 }
 
@@ -1072,12 +1072,12 @@ bool NJMJPlayerCard::checkQiDui(uint8_t nCard, std::vector<uint16_t>& vHuTypes, 
 	if (nCnt == 4)
 	{
 		vHuTypes.push_back(eFanxing_ShuangQiDui);
-		nHuaCnt += 100;
+		nHuaCnt += 80;
 	}
 	else
 	{
 		vHuTypes.push_back(eFanxing_QiDui);
-		nHuaCnt += 50;
+		nHuaCnt += 30;
 	}
 
 	return true;
@@ -1092,7 +1092,7 @@ bool NJMJPlayerCard::checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vH
 			if (getIsDanDiaoHu(nCard))
 			{
 				vHuTypes.push_back(eFanxing_QuanQiuDuDiao);
-				nHuaCnt += 40;
+				nHuaCnt += 30;
 				return true;
 			}
 		}
@@ -1103,7 +1103,7 @@ bool NJMJPlayerCard::checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vH
 		if ( (isZiMo && ( m_isHaveAnGangFlag || (m_isHaveZhiGangFlag && nSpecailZhaopIdx == getSongGangIdx() ) ) ) || isQingYISe || ( isZiMo == false && nSpecailZhaopIdx == nInvokerIdx && (uint8_t)-1 != nInvokerIdx ) )
 		{
 			vHuTypes.push_back(eFanxing_QuanQiuDuDiao);
-			nHuaCnt += 40;
+			nHuaCnt += 30;
 			return true;
 		}
 		return false;
@@ -1120,7 +1120,7 @@ bool NJMJPlayerCard::checkQuanQiuDuDiao(uint8_t nCard, std::vector<uint16_t>& vH
 	}
 
 	vHuTypes.push_back(eFanxing_QuanQiuDuDiao);
-	nHuaCnt += 40;
+	nHuaCnt += 30;
 	return true;
 }
 
@@ -1137,7 +1137,7 @@ bool NJMJPlayerCard::checkYaJue(uint8_t nCard, bool isBePenged, std::vector<uint
 	}
 
 	vHuTypes.push_back(eFanxing_YaJue);
-	nHuaCnt += 30;
+	nHuaCnt += 20;
 	return true;
 }
 
@@ -1165,7 +1165,7 @@ bool NJMJPlayerCard::checkWuHuaGuo(std::vector<uint16_t>& vHuTypes, uint16_t& nH
 	}
 
 	vHuTypes.push_back(eFanxing_WuHuaGuo);
-	nHuaCnt += 40;
+	nHuaCnt += 20;
 	return true;
 }
 

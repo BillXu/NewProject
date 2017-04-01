@@ -10,6 +10,12 @@ uint8_t CMJCard::getCard()
 		return 0 ;
 	}
 
+	if (m_vAllCards[m_nCurCardIdx] == 0)
+	{
+		++m_nCurCardIdx;
+		LOGFMTE("why have a zero value ? ");
+	}
+
 	return m_vAllCards[m_nCurCardIdx++] ;
 }
 
@@ -33,6 +39,8 @@ void CMJCard::pushCardToFron(uint8_t nCard)
 	m_vAllCards[nFindIdx] = m_vAllCards[m_nCurCardIdx] + m_vAllCards[nFindIdx];
 	m_vAllCards[m_nCurCardIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
 	m_vAllCards[nFindIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
+
+	Assert((m_vAllCards[nFindIdx] != 0 && m_vAllCards[m_nCurCardIdx] != 0), "should not = zero");
 	LOGFMTD("push card front effected card = %u", nCard);
 }
 
@@ -184,62 +192,6 @@ void CMJCard::debugPokerInfo()
 
 	 //temp code 
 	LOGFMTD("poker is : %s",strJs.c_str());
-	//std::string str = "  [51,53,49,51,17,38,20,18,57,23,34,41,39,22,49,55,36,20,23,55,21,19,25,21,50,36,24,53,21,56,53,24,18,57,20,17,22,57,39,35,34,40,22,41,22,40,52,56,33,40,40,37,24, \
-	//	33,\
-	//	33, \
-	//	21,\
-	//	19,\
-	//	37,\
-	//	36,\
-	//	18,\
-	//	34,\
-	//	35,\
-	//	19,\
-	//	37,\
-	//	38,\
-	//	33,\
-	//	20,\
-	//	41,\
-	//	39,\
-	//	56,\
-	//	39,\
-	//	51,\
-	//	50,\
-	//	52,\
-	//	57,\
-	//	41,\
-	//	25,\
-	//	36,\
-	//	38,\
-	//	38,\
-	//	50,\
-	//	34,\
-	//	25,\
-	//	54,\
-	//	19,\
-	//	23,\
-	//	23,\
-	//	17,\
-	//	56,\
-	//	25,\
-	//	17,\
-	//	18,\
-	//	54,\
-	//	49,\
-	//	49,\
-	//	51,\
-	//	37,\
-	//	55,\
-	//	35,\
-	//	54,\
-	//	24,\
-	//	55,\
-	//	52,\
-	//	35,\
-	//	52,\
-	//	53,\
-	//	50,\
-	//	54]" ;
 
 	//Json::Reader jsR;
 	//Json::Value jsRoot;
