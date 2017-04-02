@@ -51,6 +51,7 @@ public:
 	bool isInternalShouldClosedAll(void)override{ return m_pRoom->isInternalShouldClosedAll(); }
 	bool isOneCirleEnd()override{ return m_pRoom->isOneCirleEnd(); }
 	bool isCurrentFree(){ return m_isForFree; }
+	bool isLastCircle();
 	std::shared_ptr<IGameRoomRecorder> getRoomRecorder()override;
 protected:
 	IGameRoomManager* m_pRoomMgr;

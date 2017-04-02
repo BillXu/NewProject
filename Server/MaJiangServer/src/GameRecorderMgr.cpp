@@ -15,6 +15,9 @@ void GameRecorderMgr::addRoomRecorder(std::shared_ptr<IGameRoomRecorder> pRoomRe
 	}
 	m_vRoomRecorders[pRoomRecorder->getSieralNum()] = pRoomRecorder;
 	
+#ifdef _DEBUG
+	return;
+#endif
 	// if need to save to db 
 	if (!isSaveToDB )
 	{
@@ -68,6 +71,9 @@ bool GameRecorderMgr::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort e
 
 void GameRecorderMgr::onConnectedSvr()
 {
+#ifdef _DEBUG
+	return;
+#endif
 	if (m_vRoomRecorders.empty() == false)
 	{
 		return;

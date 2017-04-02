@@ -45,6 +45,7 @@ public:
 	void setSongGangIdx(uint8_t nSongGangIdx );
 	uint8_t getSongGangIdx();
 	bool getIsSpecailHu( uint8_t nTargetCard );
+	bool getIsQingYiSeKuaiZhaoHu( uint8_t nTargetCard );
 	bool getIsDanDiaoHu( uint8_t nTargetCard );
 	bool getIsZiMoSpecailHu();
 	bool onChuCard(uint8_t nChuCard)override;
@@ -54,8 +55,8 @@ public:
 	bool canMingGangWithCard(uint8_t nCard) override;
 	bool getHoldCardThatCanAnGang(VEC_CARD& vGangCards)override;
 	bool canPengWithCard(uint8_t nCard) override;
+	bool canHuWitCardLocal(uint8_t nCard);  // hu lue hua de xian zhi 
 protected:
-	bool canHuWitCardLocal(uint8_t nCard);
 	// check pai xing 
 	bool checkHunYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt );
 	bool checkMenQing(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);

@@ -239,6 +239,57 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 	return bRet;
 }
 
+bool NJMJPlayerCard::getIsQingYiSeKuaiZhaoHu(uint8_t nTargetCard)
+{
+	VEC_CARD vHoldCard;
+	getHoldCard(vHoldCard);
+	if (vHoldCard.size() != 4)
+	{
+		return false;
+	}
+
+	auto nType = card_Type(nTargetCard);
+	for (auto& ref : vHoldCard)
+	{
+		auto tt = card_Type(ref);
+		if (nType != tt)
+		{
+			return false;
+		}
+	}
+
+	if ( MJPlayerCard::canHuWitCard(nTargetCard) == false )
+	{
+		return false;
+	}
+	// qing yi se 
+	VEC_CARD vAllCard;
+
+	VEC_CARD vTemp;
+	getAnGangedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	vTemp.clear();
+	getMingGangedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	vTemp.clear();
+	getPengedCard(vTemp);
+	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
+
+	for (auto& ref : vAllCard)
+	{
+		auto tt = card_Type(ref);
+		if (nType != tt)
+		{
+			return false;
+		}
+	}
+
+	// check is kou 
+	return true;
+}
+
 bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 {
 	VEC_CARD vHoldCard;
@@ -290,10 +341,11 @@ bool NJMJPlayerCard::getIsSpecailHu(uint8_t nTargetCard)
 	getPengedCard(vTemp);
 	vAllCard.insert(vAllCard.end(), vTemp.begin(), vTemp.end());
 
+	auto nType = card_Type(nTargetCard);
 	for (auto& ref : vAllCard)
 	{
 		auto tt = card_Type(ref);
-		if (nTargetCard != tt)
+		if (nType != tt)
 		{
 			return false;
 		}
@@ -313,28 +365,8 @@ bool NJMJPlayerCard::getIsDanDiaoHu(uint8_t nTargetCard)
 		return false;
 	}
 
-	// check feng 
-	if ( card_Type(m_nDanDiaoChuedCard) == eCT_Feng && card_Type( nTargetCard ) == eCT_Feng )
-	{
-		return true;
-	}
-	
-	uint8_t nLeft = 1;
-	uint8_t nRight = m_nDanDiaoChuedCard + 2;
-	if ( m_nDanDiaoChuedCard > 2 )
-	{
-		nLeft = m_nDanDiaoChuedCard - 2;
-	}
-
-	VEC_CARD vHold;
-	getHoldCard(vHold);
-	if (vHold.size() != 1)
-	{
-		return false;
-	}
-
-	auto nHoldCard = vHold.front();
-	if ( (nLeft <= nTargetCard && nTargetCard <= nRight) && (nLeft <= nHoldCard && nHoldCard <= nRight)  )
+	// check hu 
+	if (  m_nDanDiaoHoldCard == nTargetCard )
 	{
 		return true;
 	}
@@ -438,6 +470,27 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 			m_nDanDiaoKuaiZhaoState = eDanDiao_Do_Set;
 			m_nDanDiaoHoldCard = vHold.front();
 			m_nDanDiaoChuedCard = nChuCard;
+
+			// check hold is in range 
+			{
+				uint8_t nLeft = 1;
+				uint8_t nRight = m_nDanDiaoChuedCard + 2;
+				if (m_nDanDiaoChuedCard > 2)
+				{
+					nLeft = m_nDanDiaoChuedCard - 2;
+				}
+
+				if ( ( nLeft <= m_nDanDiaoHoldCard && m_nDanDiaoHoldCard <= nRight ) || ( card_Type(m_nDanDiaoChuedCard) == card_Type( m_nDanDiaoHoldCard ) && card_Type(m_nDanDiaoHoldCard) == eCT_Feng ) )
+				{
+
+				}
+				else
+				{
+					m_nDanDiaoKuaiZhaoState = eDanDiao_GiveUp;
+					LOGFMTE("hold card contion not meet , can not set this type card");
+					return true;
+				}
+			}
 
 			Json::Value jsMsg;
 			jsMsg["idx"] = m_nThisPlayerIdx;

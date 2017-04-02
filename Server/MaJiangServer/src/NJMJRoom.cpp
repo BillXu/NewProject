@@ -17,6 +17,7 @@
 #include "MJRoomStateAskForRobotGang.h"
 #include "NJMJPlayerRecorderInfo.h"
 #include <ctime>
+#include "MJPrivateRoom.h"
 #define PUNISH_COIN_BASE 5 
 #define AN_GANG_COIN_BASE 5 
 #define MING_GANG_COIN_BASE 10
@@ -37,6 +38,8 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_isEnableWaiBao = false;
 	m_isEnableSiLianFeng = false;
 	m_isBaoPaiHappend = false;
+	m_isSiLianFengFaQian = false;
+	m_pPrivateRoom = nullptr;
 	m_vSettle.clear();
 	m_tChuedCards.clear();
 	if ( vJsValue["initCoin"].isNull() == false)
@@ -131,6 +134,19 @@ void NJMJRoom::willStartGame()
 	IMJRoom::willStartGame();
 	m_vSettle.clear();
 	m_tChuedCards.clear();
+
+	if ((uint8_t)-1 == m_nBankerIdx)
+	{
+		m_nBankerIdx = 0;
+	}
+	else
+	{
+		if ( false == isLianZhuang() )
+		{
+			m_nBankerIdx = (m_nBankerIdx + 1) % MAX_SEAT_CNT;
+		}
+	}
+
 	m_isBiXiaHu = false;
 
 	if (m_isWillBiXiaHu)
@@ -140,22 +156,10 @@ void NJMJRoom::willStartGame()
 
 	m_isWillBiXiaHu = false;
 
-	if ((uint8_t)-1 == m_nBankerIdx)
-	{
-		m_nBankerIdx = 0;
-	}
-	else
-	{
-		if ( (m_isBankerHu == false) && (m_isHuangZhuang == false) && ( false == m_isBaoPaiHappend ))
-		{
-			m_nBankerIdx = (m_nBankerIdx + 1) % MAX_SEAT_CNT;
-		}
-	}
-
-
 	m_isBankerHu = false;
 	m_isHuangZhuang = false;
 	m_isBaoPaiHappend = false;
+	m_isSiLianFengFaQian = false;
 }
 
 void NJMJRoom::packStartGameMsg(Json::Value& jsMsg)
@@ -265,7 +269,7 @@ void NJMJRoom::onGameEnd()
 
 	bool isNextBiXiaWhu = m_isEnableBixiaHu && m_isWillBiXiaHu ;
 	jsMsg["isNextBiXiaHu"] = isNextBiXiaWhu ? 1 : 0;
-	jsMsg["nNextBankIdx"] = ( m_isBankerHu || m_isHuangZhuang || m_isBaoPaiHappend ) ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT);
+	jsMsg["nNextBankIdx"] = isLianZhuang() ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT);
 
 	sendRoomMsg(jsMsg, MSG_ROOM_NJ_GAME_OVER);
 	// send msg to player ;
@@ -653,6 +657,10 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		bool isSpecailHu = false;
 		bool isXiaoHu = false;
 		pHuPlayerCard->onDoHu(false, nCard,isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua, isSpecailHu,nInvokeIdx);
+		if (!isSpecailHu)
+		{
+			isSpecailHu = pHuPlayerCard->getIsQingYiSeKuaiZhaoHu(nCard);
+		}
 		// check da hu for will bi xia hu 
 		{
 			auto iterPing = std::find(vType.begin(), vType.end(), eFanxing_PingHu);
@@ -710,6 +718,11 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 			{
 				nBaoPaiIdx = pLosePlayer->getIdx();
 			}
+		}
+
+		if ( isSpecailHu && (uint8_t)-1 == nBaoPaiIdx)  // qing yi se kuai zhao 
+		{
+			nBaoPaiIdx = nInvokeIdx;
 		}
 
 		LOGFMTD("room id = %u winner = %u all huaCnt = %u lose uid =%u",getRoomID(),pHuPlayer->getUID(),nAllHuaCnt, pLosePlayer->getUID());
@@ -870,6 +883,7 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	{
 		nHuHuaCnt += 10;
 		jsDetail["gangKaiCoin"] = 10;
+		m_isWillBiXiaHu = true;
 	}
 	else if (pZiMoPlayer->haveHuaGangFlag() || pZiMoPlayer->haveGangFalg())
 	{
@@ -1119,49 +1133,24 @@ bool NJMJRoom::isInternalShouldClosedAll()
 
 bool NJMJRoom::isOneCirleEnd()
 {
-	return ((3 == m_nBankerIdx) && (m_isBankerHu == false) && (m_isHuangZhuang == false) && (m_isBaoPaiHappend == false) );
-	return true;
+	return ((3 == m_nBankerIdx) && (false == isLianZhuang()));
+}
+
+bool NJMJRoom::isLianZhuang()
+{
+	if ( isLastRoundLastBankLianZhuang() )
+	{
+		return true;
+	}
+
+	return ( m_isBankerHu || m_isHuangZhuang || m_isBaoPaiHappend );
 }
 
 bool NJMJRoom::isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)
 {
-	auto pInvoker = getMJPlayerByIdx( nInvokeIdx );
-	if (pInvoker == nullptr || pInvoker->getCoin() > 0 )
-	{
-		return IMJRoom::isAnyPlayerRobotGang(nInvokeIdx,nCard);
-	}
-
-	// invoker already jin yuan zi ;
-	for (auto& ref : m_vMJPlayers)
-	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx())
-		{
-			continue;
-		}
-
-		auto pMJCard = ref->getPlayerCard();
-		if ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard))
-		{
-			ref->signLouHuFlag();
-		}
-	}
-
-	return false;
-}
-
-bool NJMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
-{
-	auto pInvoker = getMJPlayerByIdx(nInvokeIdx) ;  
-	if (pInvoker == nullptr || pInvoker->getCoin() > 0 )
-	{
-		return IMJRoom::isAnyPlayerPengOrHuThisCard(nInvokeIdx, nCard);
-	}
-
-	bool bIsHaveOneNeedThisCard = false;
-	// invoker already jing yuan zi , so find can hu player and sign louhu flag , 
-	// in this situation other player can only peng this card , if any one peng this card ;
-
-	// if enable wai bao , then jing yuan zai still can be hu if the huplayer is kuai zhao , and can not sign louhu 
+	// check lou hu state
+	checkLouHuState(nInvokeIdx, nCard);
+	// do check is any one need the card 
 	for (auto& ref : m_vMJPlayers)
 	{
 		if (ref == nullptr || nInvokeIdx == ref->getIdx())
@@ -1170,41 +1159,98 @@ bool NJMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 		}
 
 		auto pMJCard = (NJMJPlayerCard*)ref->getPlayerCard();
-		if ( ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard)) )
+		if (((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard)))
 		{
-			if ( isEnableWaiBao() )
-			{
-				if ( pMJCard->getIsDanDiaoHu(nCard) || pMJCard->getIsSpecailHu(nCard) )
-				{
-					// kuai zhao ke yi hu pai 
-					bIsHaveOneNeedThisCard = true;
-					LOGFMTD("kuai zhao player can hu pai of jing yuanzi de ren ");
-				}
-				else
-				{
-					ref->signLouHuFlag();
-				}
-			}
-			else
-			{
-				ref->signLouHuFlag();
-			}
-			
-			continue;
+			return true;
 		}
 
-		if (bIsHaveOneNeedThisCard)  // already now some one can peng this card , son need not check 
-		{
-			continue;
-		}
-
-		if ( pMJCard->canPengWithCard(nCard) )
-		{
-			bIsHaveOneNeedThisCard = true;
-		}
 	}
 
-	return bIsHaveOneNeedThisCard;
+	return false;
+}
+
+bool NJMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
+{
+	// check lou hu state
+	checkLouHuState(nInvokeIdx,nCard);
+	// do check is any one need the card 
+	for (auto& ref : m_vMJPlayers)
+	{
+		if (ref == nullptr || nInvokeIdx == ref->getIdx())
+		{
+			continue;
+		}
+
+		auto pMJCard = (NJMJPlayerCard*)ref->getPlayerCard();
+		if (pMJCard->canPengWithCard(nCard))
+		{
+			return true;
+		}
+
+		if ( ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard)) )
+		{
+			return true;
+		}
+
+	}
+
+	return false;
+}
+
+void NJMJRoom::checkLouHuState(uint8_t nInvokeIdx, uint8_t nCard)
+{
+	auto pInvoker = getMJPlayerByIdx(nInvokeIdx);
+	bool bDianPaoJinYuanZi = pInvoker->getCoin() <= 0;
+
+	// check lou hu
+	for (auto& ref : m_vMJPlayers)
+	{
+		if (ref == nullptr || nInvokeIdx == ref->getIdx())
+		{
+			continue;
+		}
+
+		if (ref->isHaveLouHuFlag())
+		{
+			continue;
+		}
+
+		auto pMJCard = (NJMJPlayerCard*)ref->getPlayerCard();
+		// hua bu gou , lou hu 
+		auto bNormalHu = pMJCard->canHuWitCard(nCard);
+		auto bIgnoreHua = pMJCard->canHuWitCardLocal(nCard);
+		if (bNormalHu == false && bIgnoreHua)
+		{
+			ref->signLouHuFlag();
+			continue;
+		}
+
+		// jing yuan zi 
+		if (bDianPaoJinYuanZi && bNormalHu)
+		{
+			if (isEnableWaiBao() == false)
+			{
+				ref->signLouHuFlag();
+				continue;
+			}
+
+			bool isKuaiZahoHu = (pMJCard->getIsDanDiaoHu(nCard) || pMJCard->getIsSpecailHu(nCard) || pMJCard->getIsQingYiSeKuaiZhaoHu(nCard));
+			if (!isKuaiZahoHu)
+			{
+				ref->signLouHuFlag();
+				continue;
+			}
+		}
+	}
+}
+
+bool NJMJRoom::isLastRoundLastBankLianZhuang() // zui hou yi quan ,zuihou yi zhuang , te shu lian zhuang ;
+{
+	if ( m_pPrivateRoom == nullptr)
+	{
+		return false;
+	}
+	return  (m_pPrivateRoom->isLastCircle()) && (m_isWillBiXiaHu || m_isSiLianFengFaQian) && (3 == m_nBankerIdx);
 }
 
 void NJMJRoom::addSettle(stSettle& tSettle)
@@ -1290,6 +1336,7 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 			pPlayerWin->addOffsetCoin(nWin);
 			st.addWin(nIdx, nWin);
 			addSettle(st);
+			m_isSiLianFengFaQian = true;
 			//return;
 		}
 

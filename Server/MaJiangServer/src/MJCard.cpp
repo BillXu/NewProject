@@ -31,7 +31,7 @@ void CMJCard::pushCardToFron(uint8_t nCard)
 		}
 	}
 
-	if (nFindIdx == (std::size_t) - 1)
+	if (nFindIdx == (std::size_t) - 1 || nFindIdx == m_nCurCardIdx )
 	{
 		return;
 	}
@@ -40,7 +40,6 @@ void CMJCard::pushCardToFron(uint8_t nCard)
 	m_vAllCards[m_nCurCardIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
 	m_vAllCards[nFindIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
 
-	Assert((m_vAllCards[nFindIdx] != 0 && m_vAllCards[m_nCurCardIdx] != 0), "should not = zero");
 	LOGFMTD("push card front effected card = %u", nCard);
 }
 

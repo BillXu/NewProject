@@ -2,6 +2,7 @@
 #include "IMJRoom.h"
 #include "CommonDefine.h"
 #include "MJCard.h"
+class MJPrivateRoom;
 class NJMJRoom
 	:public IMJRoom
 {
@@ -59,6 +60,7 @@ public:
 	void startGame()override;
 	void onGameDidEnd()override;
 	void onGameEnd()override;
+	void bindPrivateRoom(MJPrivateRoom* pPrivateRoom) { m_pPrivateRoom = pPrivateRoom; };
 	IMJPlayer* doCreateMJPlayer()override;
 	IMJPoker* getMJPoker()override;
 	bool isGameOver()override;
@@ -85,7 +87,10 @@ public:
 	bool isEnableWaiBao() { if (isJingYuanZi() == false) return false; return m_isEnableWaiBao; }
 	bool isHaveLouPeng()override{ return true; }
 	bool isEnableSiLianFeng() { return m_isEnableSiLianFeng; }
+	bool isLastRoundLastBankLianZhuang();
 protected:
+	void checkLouHuState(uint8_t nInvokeIdx, uint8_t nCard);
+	bool isLianZhuang();
 	void getSubRoomInfo(Json::Value& jsSubInfo)override;
 	void addSettle(stSettle& tSettle );
 	void onPlayerZiMo(uint8_t nIdx , uint8_t nCard , Json::Value& jsDetail );
@@ -96,10 +101,12 @@ protected:
 	void doAddOneRoundEntery();
 	std::shared_ptr<IGameRoomRecorder> createRoomRecorder()override;
 protected:
+	MJPrivateRoom* m_pPrivateRoom;
 	stChuedCards m_tChuedCards;
 	std::vector<stSettle> m_vSettle;
 	bool m_isBiXiaHu;
 	bool m_isWillBiXiaHu;
+	bool m_isSiLianFengFaQian;
 	bool m_isBankerHu;
 	bool m_isHuangZhuang;
 	bool m_isEnableBixiaHu;

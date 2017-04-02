@@ -81,7 +81,12 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	}
 	LOGFMTD("create 1 private room");
 	((IMJRoom*)m_pRoom)->setDelegate(this);
-	return m_pRoom->init(pRoomMgr, &m_stConfig, nSeialNum, nRoomID, vJsValue);
+	auto bRet = m_pRoom->init(pRoomMgr, &m_stConfig, nSeialNum, nRoomID, vJsValue);
+	if ( eRoom_MJ_NanJing == m_pRoom->getRoomType() )
+	{
+		((NJMJRoom*)m_pRoom)->bindPrivateRoom(this);
+	}
+	return bRet;
 }
 
 bool MJPrivateRoom::onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)
@@ -591,6 +596,11 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 	LOGFMTD("vip room over room id = %u ", getRoomID());
 	// on game over ;
 	onRoomGameOver(false);
+}
+
+bool MJPrivateRoom::isLastCircle()
+{
+	return m_nLeftCircle == 1;
 }
 
 void MJPrivateRoom::onRoomGameOver(bool isDismissed)
