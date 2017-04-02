@@ -1263,6 +1263,23 @@ uint16_t NJMJPlayerCard::getAllHuaCnt(uint8_t nHuCard)
 		}
 	}
 
+	// check an Gang , 
+	for ( auto& ref : m_vAnGanged )
+	{
+		if (card_Type(ref) != eCT_Feng)
+		{
+			nHuaCnt += 2;
+		}
+	}
+	// check ming gang ,
+	for (auto& ref : m_vGanged)
+	{
+		if (card_Type(ref) != eCT_Feng )
+		{
+			nHuaCnt += 1;
+		}
+	}
+
 	// check YaDang 
 	if (checkYaDang(nHuCard))
 	{
