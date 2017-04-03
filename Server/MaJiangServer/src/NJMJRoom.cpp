@@ -41,6 +41,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_isSiLianFengFaQian = false;
 	m_pPrivateRoom = nullptr;
 	m_vSettle.clear();
+	m_isLianZhuang = false;
 	m_tChuedCards.clear();
 	if ( vJsValue["initCoin"].isNull() == false)
 	{
@@ -135,13 +136,13 @@ void NJMJRoom::willStartGame()
 	m_vSettle.clear();
 	m_tChuedCards.clear();
 
-	if ((uint8_t)-1 == m_nBankerIdx)
+	if ((uint8_t)-1 == m_nBankerIdx )
 	{
 		m_nBankerIdx = 0;
 	}
 	else
 	{
-		if ( false == isLianZhuang() )
+		if ( !m_isLianZhuang )
 		{
 			m_nBankerIdx = (m_nBankerIdx + 1) % MAX_SEAT_CNT;
 		}
@@ -160,6 +161,7 @@ void NJMJRoom::willStartGame()
 	m_isHuangZhuang = false;
 	m_isBaoPaiHappend = false;
 	m_isSiLianFengFaQian = false;
+	m_isLianZhuang = false;
 }
 
 void NJMJRoom::packStartGameMsg(Json::Value& jsMsg)
@@ -269,7 +271,8 @@ void NJMJRoom::onGameEnd()
 
 	bool isNextBiXiaWhu = m_isEnableBixiaHu && m_isWillBiXiaHu ;
 	jsMsg["isNextBiXiaHu"] = isNextBiXiaWhu ? 1 : 0;
-	jsMsg["nNextBankIdx"] = isLianZhuang() ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT);
+	m_isLianZhuang = isLianZhuang();
+	jsMsg["nNextBankIdx"] = m_isLianZhuang ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT);
 
 	sendRoomMsg(jsMsg, MSG_ROOM_NJ_GAME_OVER);
 	// send msg to player ;
@@ -995,9 +998,9 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 					uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
 					//if (nTotalWin > nWaiCoinMost )
 					{
-						nTotalWin = nWaiCoinMost;
+						nKouHua = nWaiCoinMost;
 					}
-					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nTotalWin);
+					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nKouHua);
 					m_isBaoPaiHappend = true;
 				}
 				else
