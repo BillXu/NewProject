@@ -99,6 +99,7 @@
     <ClInclude Include="..\..\Common\CardPoker.h" />
     <ClInclude Include="..\..\Common\IPeerCard.h" />
     <ClInclude Include="..\..\Common\RoomConfig.h" />
+    <ClInclude Include="..\ServerCommon\IGameReplay.h" />
     <ClInclude Include="..\ServerCommon\IRoom.h" />
     <ClInclude Include="..\ServerCommon\IRoomDelegate.h" />
     <ClInclude Include="..\ServerCommon\IRoomInterface.h" />
