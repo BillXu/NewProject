@@ -14,7 +14,7 @@ public:
 class IReplayGame
 {
 public:
-	virtual void setReplayRoomInfo( Json::Value& jsInfo ) = 0;
+	virtual void setReplayRoomInfo( Json::Value& jsInfo, uint32_t nReplayID ) = 0;
 	virtual uint32_t getReplayID() = 0;
 	virtual void addFrame( std::shared_ptr<IReplayFrame> ptrFrame ) = 0;
 	virtual void restore( Json::Value& jsReplay ) = 0;
