@@ -56,6 +56,8 @@ public:
 	bool getHoldCardThatCanAnGang(VEC_CARD& vGangCards)override;
 	bool canPengWithCard(uint8_t nCard) override;
 	bool canHuWitCardLocal(uint8_t nCard);  // hu lue hua de xian zhi 
+	bool getDui3ZuiSpecailHu(bool isZiMo, uint8_t nCard);
+	bool getNotDui3ZuiSpecailHu(bool isZiMo, uint8_t nCard);
 protected:
 	// check pai xing 
 	bool checkHunYiSe(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt );

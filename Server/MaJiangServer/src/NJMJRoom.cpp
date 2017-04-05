@@ -746,14 +746,17 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 			}
 			else
 			{
-				if ( isEnableWaiBao() && isSpecailHu )
+				if ( isSpecailHu && isJingYuanZi() )
 				{
 					uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
 					//if (nAllHuaCnt > nWaiCoinMost)
 					{
 						nAllHuaCnt = nWaiCoinMost;
 					}
-
+				}
+ 
+				if (isSpecailHu && isEnableWaiBao())
+				{
 					((NJMJPlayer*)pPlayerBao)->addWaiBaoOffset(-1 * (int32_t)nAllHuaCnt);
 				}
 				else
@@ -787,7 +790,7 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 			}
 			else
 			{
-				if (isEnableWaiBao() && isSpecailHu)
+				if ( isJingYuanZi() && isSpecailHu)
 				{
 					uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
 					//if (nAllHuaCnt > nWaiCoinMost)
@@ -795,9 +798,13 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 						nAllHuaCnt = nWaiCoinMost;
 					}
 
-					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nAllHuaCnt);
 					jsHuPlayer["baoPaiIdx"] = pLosePlayer->getIdx();
 					m_isBaoPaiHappend = true;
+				}
+
+				if (isSpecailHu && isEnableWaiBao())
+				{
+					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nAllHuaCnt);
 				}
 				else
 				{
@@ -947,13 +954,17 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		}
 		else
 		{
-			if (bIsSpecailHu && isEnableWaiBao() )
+			if ( bIsSpecailHu && isJingYuanZi() )
 			{
 				uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
 				//if (nTotalWin > nWaiCoinMost )
 				{
 					nTotalWin = nWaiCoinMost;
 				}
+			}
+
+			if (isEnableWaiBao() && bIsSpecailHu )
+			{
 				((NJMJPlayer*)pPlayerBao)->addWaiBaoOffset(-1 * (int32_t)nTotalWin);
 			}
 			else
@@ -964,7 +975,6 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 				}
 				pPlayerBao->addOffsetCoin(-1 * (int32_t)nTotalWin);
 			}
-
 		}
 
 		LOGFMTD("room id = %u uid = %u bao pai winer", getRoomID(), pPlayerBao->getUID());
@@ -993,15 +1003,19 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 			}
 			else
 			{
-				if (bIsSpecailHu && isEnableWaiBao())
+				if (bIsSpecailHu && isJingYuanZi() )
 				{
 					uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
 					//if (nTotalWin > nWaiCoinMost )
 					{
 						nKouHua = nWaiCoinMost;
 					}
-					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nKouHua);
 					m_isBaoPaiHappend = true;
+				}
+
+				if (isEnableWaiBao() && bIsSpecailHu)
+				{
+					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nKouHua);
 				}
 				else
 				{
@@ -1024,7 +1038,7 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		jsDetail["LoseIdxs"] = jsVLoses;
 	}
 
-	if ( bIsSpecailHu && isEnableWaiBao() )
+	if (  isEnableWaiBao() && bIsSpecailHu )
 	{
 		((NJMJPlayer*)pZiMoPlayer)->addWaiBaoOffset(nTotalWin);
 	}
