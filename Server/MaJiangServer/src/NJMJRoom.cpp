@@ -748,7 +748,8 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 			{
 				if ( isSpecailHu && isJingYuanZi() )
 				{
-					uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
+					auto nBaseCoin = max(100,m_nInitCoin);
+					uint32_t nWaiCoinMost = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
 					//if (nAllHuaCnt > nWaiCoinMost)
 					{
 						nAllHuaCnt = nWaiCoinMost;
@@ -792,7 +793,8 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 			{
 				if ( isJingYuanZi() && isSpecailHu)
 				{
-					uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
+					auto nBaseCoin = max(100, m_nInitCoin);
+					uint32_t nWaiCoinMost = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
 					//if (nAllHuaCnt > nWaiCoinMost)
 					{
 						nAllHuaCnt = nWaiCoinMost;
@@ -956,7 +958,8 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		{
 			if ( bIsSpecailHu && isJingYuanZi() )
 			{
-				uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
+				auto nBaseCoin = max(100, m_nInitCoin);
+				uint32_t nWaiCoinMost = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
 				//if (nTotalWin > nWaiCoinMost )
 				{
 					nTotalWin = nWaiCoinMost;
@@ -1005,7 +1008,8 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 			{
 				if (bIsSpecailHu && isJingYuanZi() )
 				{
-					uint32_t nWaiCoinMost = isBiXiaHu() ? m_nInitCoin : (m_nInitCoin * 0.5);
+					auto nBaseCoin = max(100, m_nInitCoin);
+					uint32_t nWaiCoinMost = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
 					//if (nTotalWin > nWaiCoinMost )
 					{
 						nKouHua = nWaiCoinMost;
