@@ -55,10 +55,14 @@ public:
 		m_vAllFrames.clear();
 	}
 
-	void setReplayRoomInfo(Json::Value& jsInfo, uint32_t nReplayID)override 
+	void setReplayID(uint32_t nReplayID)
+	{
+		m_nReplayID = nReplayID;
+	}
+
+	void setReplayRoomInfo( Json::Value& jsInfo )override 
 	{
 		m_jsGameInfo = jsInfo;
-		m_nReplayID = nReplayID;
 	}
 
 	uint32_t getReplayID()override 
@@ -106,7 +110,8 @@ public:
 	std::shared_ptr<IReplayGame> clone()
 	{
 		auto ptr = std::make_shared<MJReplayGame>();
-		ptr->setReplayRoomInfo(m_jsGameInfo,m_nReplayID);
+		ptr->setReplayRoomInfo(m_jsGameInfo);
+		ptr->setReplayID( m_nReplayID );
 		for (auto& ref : m_vAllFrames)
 		{
 			auto ptf = ref->clone();
@@ -114,6 +119,8 @@ public:
 		}
 		return ptr;
 	}
+
+	void sendToClient(IServerApp* pApp, uint32_t nSessionID)override;
 protected:
 	Json::Value m_jsGameInfo;
 	uint32_t m_nReplayID;

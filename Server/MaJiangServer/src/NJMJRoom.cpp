@@ -18,6 +18,7 @@
 #include "NJMJPlayerRecorderInfo.h"
 #include <ctime>
 #include "MJPrivateRoom.h"
+#include "MJReplayFrameType.h"
 #define PUNISH_COIN_BASE 5 
 #define AN_GANG_COIN_BASE 5 
 #define MING_GANG_COIN_BASE 10
@@ -195,6 +196,19 @@ void NJMJRoom::startGame()
 	Json::Value jsMsg;
 	packStartGameMsg(jsMsg);
 	sendRoomMsg(jsMsg, MSG_ROOM_START_GAME);
+
+	// replay arg 
+	Json::Value jsReplayInfo;
+	jsReplayInfo["roomID"] = getRoomID();
+	jsReplayInfo["time"] = (uint32_t)time(nullptr);
+	jsReplayInfo["isKuaiChong"] = m_isKuaiChong ? 1 : 0 ;
+	jsReplayInfo["kuaiChongPool"] = m_isKuaiChong ? m_nKuaiChongPool : 0;
+	jsReplayInfo["yuanZiCoin"] = m_nInitCoin;
+	jsReplayInfo["isHuaZa"] = m_isEnableHuaZa ? 1 : 0;
+	jsReplayInfo["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
+	jsReplayInfo["isWaiBao"] = isEnableWaiBao() ? 1 : 0;
+	jsReplayInfo["isSiLianFeng"] = isEnableSiLianFeng() ? 1 : 0;
+	getGameReplay()->setReplayRoomInfo(jsReplayInfo);
 }
 
 void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
@@ -229,7 +243,7 @@ void NJMJRoom::onGameEnd()
 	Json::Value jsDetial;
 
 	auto ptrSingleRecorder = getRoomRecorder()->createSingleRoundRecorder();
-	ptrSingleRecorder->init( getRoomRecorder()->getRoundRecorderCnt(), (uint32_t)time(nullptr), 0);
+	ptrSingleRecorder->init( getRoomRecorder()->getRoundRecorderCnt(), (uint32_t)time(nullptr), getGameReplay()->getReplayID() );
 	getRoomRecorder()->addSingleRoundRecorder(ptrSingleRecorder);
 
 	bool isAnyOneHu = false;

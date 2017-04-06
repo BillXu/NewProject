@@ -741,7 +741,17 @@ enum eMsgType
 	MSG_SET_NEXT_CARD, // send to mj server 
 	//client : {card : 0,dstRoomID : 123465}
 
+	MSG_REQ_GAME_REPLAY,
+	// client : { replayID : 2345 }
+	// svr : { replayID : 2345 , ret : 0  , roomInfo : {} }
+	// replayID : 回放ID，
+	// ret: 0 表示成功，1 表示没有回放数据，id 错误或者超过保存期限
+	// roomInfo :  回放的时候，房间信息，每个游戏 都不一样
 
+	MSG_REPLAY_FRAME,
+	// svr: { isEnd : 0 , replayID : 234 , data : { type : 23, time : 34 , arg : { ...}  } }
+	// type : 当前帧的事件类型，time 当前帧的时间，arg ： json 对象，不同的事件 参数不一样，用于表示当前帧的详情
+	// isEnd : 是否是最后一帧。
 
 
 
