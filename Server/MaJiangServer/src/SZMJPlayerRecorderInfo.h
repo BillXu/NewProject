@@ -77,6 +77,16 @@ public:
 	{
 		m_nRuleMode = nRuleMode;
 	}
+
+	void buildZhanJiMsg(Json::Value& jsMsg)override
+	{
+		IGameRoomRecorder::buildZhanJiMsg(jsMsg);
+
+		Json::Value jsRoomOpts;
+		jsRoomOpts["ruletype"] = m_nRuleMode;
+		jsMsg["roomOpts"] = jsRoomOpts;
+	}
+
 protected:
 	void getRoomInfoOptsForSave(Json::Value& jsRoomOpts) override
 	{
