@@ -101,6 +101,7 @@
     <ClInclude Include="src\MJPlayer.h" />
     <ClInclude Include="src\MJPlayerCard.h" />
     <ClInclude Include="src\MJPrivateRoom.h" />
+    <ClInclude Include="src\MJReplayFrameType.h" />
     <ClInclude Include="src\MJRoomManager.h" />
     <ClInclude Include="src\MJRoomStateAskForPengOrHu.h" />
     <ClInclude Include="src\MJRoomStateAskForRobotGang.h" />
