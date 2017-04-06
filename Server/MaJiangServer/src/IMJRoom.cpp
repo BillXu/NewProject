@@ -10,6 +10,7 @@
 #include "IGameRoomManager.h"
 #include "RobotDispatchStrategy.h"
 #include "MJCard.h"
+#include "MJReplayFrameType.h"
 IMJRoom::~IMJRoom()
 {
 	for (auto& ref : m_vMJPlayers)
@@ -45,6 +46,8 @@ bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32
 	setBankIdx(-1);
 	m_ptrGameRecorder = createRoomRecorder();
 	m_ptrGameRecorder->init(nSeialNum, vJsValue["circle"].asUInt(),nRoomID, getRoomType(),vJsValue["createUID"].asUInt() );
+
+	m_ptrGameReplay = std::shared_ptr<MJReplayGame>();
 	return true;
 }
 
@@ -511,9 +514,11 @@ void IMJRoom::startGame()
 
 	// distribute card 
 	auto pPoker = getMJPoker();
-	LOGFMTD("room id = %u start game shuffle card ",getRoomID());
+	//LOGFMTD("room id = %u start game shuffle card ",getRoomID());
 	pPoker->shuffle();
-	LOGFMTD("room id = %u shuffle end", getRoomID());
+	//LOGFMTD("room id = %u shuffle end", getRoomID());
+	Json::Value jsFrameArg, jsPlayers;
+	jsFrameArg["bankIdx"] = getBankerIdx();
 	for (auto& pPlayer : m_vMJPlayers)
 	{
 		if (!pPlayer)
@@ -531,12 +536,15 @@ void IMJRoom::startGame()
 			pPlayer->setCoin(pPlayer->getCoin() - (int32_t)getRoomConfig()->nDeskFee);
 		}
 
-		LOGFMTD("distribute card for player idx = %u and decrease desk fee = %u",pPlayer->getIdx(),getRoomConfig()->nDeskFee );
-		
+		//LOGFMTD("distribute card for player idx = %u and decrease desk fee = %u",pPlayer->getIdx(),getRoomConfig()->nDeskFee );
+		Json::Value jsPlayer;
+		jsPlayer["idx"] = pPlayer->getIdx();
+		Json::Value jsHoldCard;
 		for (uint8_t nIdx = 0; nIdx < 13; ++nIdx)
 		{
 			auto nCard = pPoker->distributeOneCard();
 			pPlayer->getPlayerCard()->addDistributeCard(nCard);
+			jsHoldCard[jsHoldCard.size()] = nCard;
 			//LOGFMTD("card idx = %u card number = %u", nIdx,nCard);
 		}
 
@@ -544,8 +552,16 @@ void IMJRoom::startGame()
 		{
 			auto nCard = pPoker->distributeOneCard();
 			pPlayer->getPlayerCard()->onMoCard(nCard);
+			jsHoldCard[jsHoldCard.size()] = nCard;
 		}
+		jsPlayer["cards"] = jsHoldCard;
+		jsPlayers[jsPlayers.size()] = jsPlayer;
 	}
+	jsFrameArg["players"] = jsPlayers;
+
+	auto pFrame = getGameReplay()->createFrame(eMJFrame_StartGame, (uint32_t)time(0));
+	pFrame->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(pFrame);
 	LOGFMTI("room id = %u start game !",getRoomID());
 }
 
