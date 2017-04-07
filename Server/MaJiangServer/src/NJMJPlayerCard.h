@@ -45,9 +45,9 @@ public:
 	void setSongGangIdx(uint8_t nSongGangIdx );
 	uint8_t getSongGangIdx();
 	bool getIsSpecailHu( uint8_t nTargetCard );
+	bool getIsZiMoSpecailHu();
 	bool getIsQingYiSeKuaiZhaoHu( uint8_t nTargetCard );
 	bool getIsDanDiaoHu( uint8_t nTargetCard );
-	bool getIsZiMoSpecailHu();
 	bool onChuCard(uint8_t nChuCard)override;
 	bool onMingGang(uint8_t nCard, uint8_t nGangGetCard) override;
 	bool onAnGang(uint8_t nCard, uint8_t nGangGetCard) override;

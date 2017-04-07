@@ -229,7 +229,7 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 			break;
 		}
 
-		if ((vType.size() == 1 && vType.front() == eFanxing_PingHu) && m_vBuHuaCard.size() < 4 )
+		if ((vType.size() == 1 && ( vType.front() == eFanxing_PingHu || eFanxing_YaJue == vType.front() ) ) && m_vBuHuaCard.size() < 4 )
 		{
 			bRet = false;
 			break;
@@ -1088,7 +1088,7 @@ bool NJMJPlayerCard::isHoldCardCanHu()
 		return false;
 	}
 
-	if ((vType.size() == 1 && vType.front() == eFanxing_PingHu) && m_vBuHuaCard.size() < 4 )
+	if ((vType.size() == 1 && (vType.front() == eFanxing_PingHu || eFanxing_YaJue == vType.front() ) ) && m_vBuHuaCard.size() < 4 )
 	{
 		return false;
 	}
@@ -1493,7 +1493,7 @@ bool NJMJPlayerCard::checkYaJue(uint8_t nCard, bool isBePenged, std::vector<uint
 		return false;
 	}
 
-	if (!checkYaDang(nCard))
+	if (!checkYaDang(nCard) && !checkBianZhi(nCard) )
 	{
 		return false;
 	}

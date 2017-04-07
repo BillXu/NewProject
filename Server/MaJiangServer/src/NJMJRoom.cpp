@@ -367,6 +367,11 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 		}
 
 		auto pPlayer = getMJPlayerByIdx(nCheckIdx);
+		if ((uint8_t)-1 != pActCard->getSongGangIdx())
+		{
+			pPlayer = getMJPlayerByIdx( pActCard->getSongGangIdx() );
+		}
+
 		uint16_t nLose = nLosePerPlayer;
 		if (isKuaiChong())
 		{
@@ -408,7 +413,12 @@ void NJMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	IMJRoom::onPlayerMingGang(nIdx, nCard, nInvokeIdx);
 	auto pActPlayer = getMJPlayerByIdx(nIdx);
 	auto pActCard = (NJMJPlayerCard*)pActPlayer->getPlayerCard();
-	pActCard->setSongGangIdx(nInvokeIdx);  // set song gang idx ;
+
+	if (pActCard->getSongGangIdx() == (uint8_t)-1)
+	{
+		pActCard->setSongGangIdx(nInvokeIdx);
+	}
+
 	pActCard->addActSign(nCard, nInvokeIdx, eMJAct_MingGang);
 
 	auto pInvokerPlayer = getMJPlayerByIdx(nInvokeIdx);
@@ -447,6 +457,8 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 {
 	IMJRoom::onPlayerAnGang(nIdx, nCard);
 	
+	auto pPlayerWin = (NJMJPlayer*)getMJPlayerByIdx(nIdx);
+	auto pActCard = (NJMJPlayerCard*)pPlayerWin->getPlayerCard();
 	// do caculate ;
 	stSettle st;
 	st.eSettleReason = eMJAct_AnGang;
@@ -460,6 +472,11 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 		}
 
 		auto pPlayer = getMJPlayerByIdx(nCheckIdx);
+		if ((uint8_t)-1 != pActCard->getSongGangIdx())
+		{
+			pPlayer = getMJPlayerByIdx(pActCard->getSongGangIdx());
+		}
+
 		uint16_t nLose = nLosePerPlayer;
 
 		if (isKuaiChong())
@@ -484,12 +501,9 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 		nWin += nLose;
 	}
 	
-	auto pPlayerWin = getMJPlayerByIdx(nIdx);
 	pPlayerWin->addOffsetCoin(nWin);
 	st.addWin(nIdx, nWin);
 	addSettle(st);
-
-	auto pActCard = (NJMJPlayerCard*)pPlayerWin->getPlayerCard();
 	pActCard->addActSign(nCard, nIdx, eMJAct_AnGang );
 }
 
@@ -499,7 +513,12 @@ void NJMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 	auto pActPlayer = getMJPlayerByIdx(nIdx);
 	auto pActCard = (NJMJPlayerCard*)pActPlayer->getPlayerCard();
 
-	auto nInvokeIdx = pActCard->getInvokerPengIdx(nCard);
+	auto nInvokeIdx = pActCard->getSongGangIdx();
+	if ((uint8_t)-1 == nInvokeIdx)
+	{
+		nInvokeIdx = pActCard->getInvokerPengIdx(nCard);
+	}
+
 	if ((uint8_t)-1 == nInvokeIdx)
 	{
 		LOGFMTE("room id = %u, bu gang do not have idx = %u peng = %u",getRoomID(),nIdx,nCard);
@@ -537,6 +556,11 @@ void NJMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 	pActPlayer->addOffsetCoin(nLose);
 	st.addWin(nIdx, nLose);
 	addSettle(st);
+
+	if (pActCard->getSongGangIdx() == (uint8_t)-1)
+	{
+		pActCard->setSongGangIdx(nInvokeIdx);
+	}
 }
 
 void NJMJRoom::settleInfoToJson(Json::Value& jsRealTime)
@@ -891,17 +915,17 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	{
 
 	}
-	else if (pZiMoPlayer->haveBuHuaFlag())
-	{
-		nHuHuaCnt += 10;
-		jsDetail["gangKaiCoin"] = 10;
-		m_isWillBiXiaHu = true;
-	}
 	else if (pZiMoPlayer->haveHuaGangFlag() || pZiMoPlayer->haveGangFalg())
 	{
 		nHuHuaCnt += 20;
 		m_isWillBiXiaHu = true;
 		jsDetail["gangKaiCoin"] = 20;
+	}
+	else if (pZiMoPlayer->haveBuHuaFlag())
+	{
+		nHuHuaCnt += 10;
+		jsDetail["gangKaiCoin"] = 10;
+		m_isWillBiXiaHu = true;
 	}
 
 	// da gang kai hua 
@@ -1358,6 +1382,7 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 			st.addWin(nIdx, nWin);
 			addSettle(st);
 			m_isSiLianFengFaQian = true;
+			m_isWillBiXiaHu = true;
 			//return;
 		}
 
