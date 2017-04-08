@@ -100,6 +100,7 @@ protected:
 	bool isKuaiChong(){ return m_isKuaiChong; }
 	void doAddOneRoundEntery();
 	std::shared_ptr<IGameRoomRecorder> createRoomRecorder()override;
+	bool doAvoidPlayerTianHuOrDiHu( uint8_t nPlayerIdx, uint8_t& nNewCard, bool isMustChangeNewFetch); // reutn do switched card
 protected:
 	MJPrivateRoom* m_pPrivateRoom;
 	stChuedCards m_tChuedCards;

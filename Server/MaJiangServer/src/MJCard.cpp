@@ -53,6 +53,40 @@ uint8_t CMJCard::getLeftCardCount()
 	return m_vAllCards.size() - m_nCurCardIdx ;
 }
 
+uint8_t CMJCard::switchCardFromCardWall( uint8_t nCard )
+{
+	if ( nCard == 0 || card_Type(nCard ) >= eCT_Max )
+	{
+		LOGFMTE("can not change invalid card = %u",nCard );
+		return 0;
+	}
+
+	Assert(m_vAllCards.size() > m_nCurCardIdx, "can not do this act for current situation");
+	uint16_t nTryTimes = 0;
+	while ( nTryTimes <= 20 )
+	{
+		++nTryTimes;
+		uint8_t nTargetIdx = m_nCurCardIdx + rand() % (m_vAllCards.size() - m_nCurCardIdx);
+		if (nTargetIdx >= m_vAllCards.size())
+		{
+			continue;
+		}
+
+		if (m_vAllCards[nTargetIdx] == nCard)
+		{
+			continue;
+		}
+
+		auto nResultCard = m_vAllCards[nTargetIdx];
+		m_vAllCards[nTargetIdx] = nCard;
+		LOGFMTD("do changed card = %u %u",nCard,nResultCard);
+		return nResultCard;
+	}
+	
+	LOGFMTE("do change card error ");
+	return 0;
+}
+
 void CMJCard::shuffle()
 {
 	uint16_t n = 0 ;

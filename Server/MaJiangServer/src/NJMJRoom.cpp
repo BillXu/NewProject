@@ -186,15 +186,102 @@ void NJMJRoom::startGame()
 		auto pPlayerCard = (NJMJPlayerCard*)pPlayer->getPlayerCard();
 		pPlayerCard->bindRoom(this,pPlayer->getIdx());
 
-		if ( getBankerIdx() != pPlayer->getIdx() && pPlayerCard->isTingPai() )
+		if ( pPlayerCard->getHoldCardHuaCnt() > 0 ) //have hua can not di hu or tian hu ;
 		{
-			LOGFMTI("room id = %u player uid = %u tian ting , may di hu ", getRoomID(),pPlayer->getUID() );
+			continue;
 		}
+
+		// avoid di hu and tian hu 
+		uint8_t nNewCard = 0;
+		doAvoidPlayerTianHuOrDiHu(pPlayer->getIdx(), nNewCard,false );
 	}
 
 	Json::Value jsMsg;
 	packStartGameMsg(jsMsg);
 	sendRoomMsg(jsMsg, MSG_ROOM_START_GAME);
+}
+
+bool NJMJRoom::doAvoidPlayerTianHuOrDiHu( uint8_t nPlayerIdx, uint8_t& nNewCard , bool isMustChangeNewFetch )
+{
+	nNewCard = 0;
+	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
+	if (pPlayer == nullptr)
+	{
+		return false;
+	}
+
+	auto pPlayerCard = (NJMJPlayerCard*)pPlayer->getPlayerCard();
+	
+	if ( pPlayerCard->getHoldCardHuaCnt() > 0 ) // still have hua , then do nothing ;
+	{
+		return false;
+	}
+
+	auto plfChangeHoldCard = []( NJMJPlayerCard* pPlayerCard, CMJCard& pokerCard, bool isMustChangeNewFetch , uint8_t& nNewCardGet)->bool
+	{
+		auto nErae = pPlayerCard->eraseRandNotHuaCard( isMustChangeNewFetch );
+		if (nErae == 0)
+		{
+			LOGFMTE("can not avoid di hu ");
+			return false;
+		}
+
+		auto nNewCard = pokerCard.switchCardFromCardWall(nErae);
+		if (nNewCard == 0)
+		{
+			LOGFMTE("can not avoid di hu ");
+			pPlayerCard->addDistributeCard(nErae);  // add back card ;
+			return false;
+		}
+
+		if ( isMustChangeNewFetch )
+		{
+			pPlayerCard->onMoCard(nNewCard);  // replase new fetchest card ;
+		}
+		else
+		{
+			pPlayerCard->addDistributeCard(nNewCard);
+		}
+		
+		LOGFMTD("switch card avoid di hu ");
+		nNewCardGet = nNewCard;
+		return true;
+	};
+
+	if (getBankerIdx() != pPlayer->getIdx())
+	{
+		uint8_t nTryTimes = 0;
+		while (nTryTimes < 20 && pPlayerCard->isTingPai())
+		{
+			++nTryTimes;
+			nNewCard = 0;
+			auto nRet = plfChangeHoldCard(pPlayerCard, m_tPoker, isMustChangeNewFetch, nNewCard);
+			LOGFMTD("avoid tian di hu ret = %u , new card = %u", (uint8_t)nRet, nNewCard);
+			if (false == nRet)
+			{
+				nNewCard = 0;
+				break;
+			}
+		}
+	}
+	else
+	{
+		uint8_t nTryTimes = 0;
+		while (nTryTimes < 20 && pPlayerCard->isLocalCardCanHu())
+		{
+			++nTryTimes;
+			nNewCard = 0;
+			auto nRet = plfChangeHoldCard(pPlayerCard, m_tPoker, isMustChangeNewFetch, nNewCard);
+			LOGFMTD("avoid tian di hu ret = %u , new card = %u", (uint8_t)nRet, nNewCard);
+			if (false == nRet)
+			{
+				nNewCard = 0;
+				break;
+			}
+		}
+	}
+
+	return (0 != nNewCard);
 }
 
 void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
@@ -328,6 +415,19 @@ void NJMJRoom::onPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
 	auto pActCard = (NJMJPlayerCard*)player->getPlayerCard();
 	auto nNewCard = getMJPoker()->distributeOneCard();
 	pActCard->onBuHua(nHuaCard, nNewCard);
+
+	// check tian hu di hu 
+	if ( eRoomState_NJ_Auto_Buhua == m_pCurState->getStateID() )
+	{
+		uint8_t nChangedCard = 0;
+		if (pActCard->getHoldCardHuaCnt() == 0 && doAvoidPlayerTianHuOrDiHu(nIdx, nChangedCard, true) )
+		{
+			// check tian hu or di hu 
+			nNewCard = nChangedCard;
+			LOGFMTD("do change di hu or tian hu card = %u",nNewCard);
+		}
+	}
+
 	// send msg ;
 	Json::Value msg;
 	msg["idx"] = nIdx;
@@ -344,6 +444,19 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 	auto nNewCard = getMJPoker()->distributeOneCard();
 	pActCard->onHuaGang(nGangCard, nNewCard);
 	pPlayerWin->signHuaGangFlag();
+
+	// check tian hu di hu 
+	if (eRoomState_NJ_Auto_Buhua == m_pCurState->getStateID())
+	{
+		uint8_t nChangedCard = 0;
+		if (pActCard->getHoldCardHuaCnt() == 0 && doAvoidPlayerTianHuOrDiHu(nIdx, nChangedCard, true))
+		{
+			// check tian hu or di hu 
+			nNewCard = nChangedCard;
+			LOGFMTD("do change di hu or tian hu card = %u", nNewCard);
+		}
+	}
+
 	// send msg ;
 	Json::Value msg;
 	msg["idx"] = nIdx;
@@ -590,7 +703,7 @@ void NJMJRoom::settleInfoToJson(Json::Value& jsRealTime)
 	}
 }
 
-void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t nInvokeIdx)
+void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t nInvokeIdx )
 {
 	if (vHuIdx.empty())
 	{
@@ -624,13 +737,13 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 	}
 
 	// check dian piao ;
-	if (vHuIdx.size() > 1)  // yi pao duo xiang 
+	if ( vHuIdx.size() > 1 )  // yi pao duo xiang 
 	{
 		m_isWillBiXiaHu = true;
 	}
 
 	auto pLosePlayer = getMJPlayerByIdx(nInvokeIdx);
-	if ( !pLosePlayer)
+	if ( !pLosePlayer )
 	{
 		LOGFMTE( "room id = %u lose but player idx = %u is nullptr",getRoomID(),nInvokeIdx );
 		return;
@@ -682,19 +795,14 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		uint16_t nHuHuaCnt = 0;
 		uint16_t nHardSoftHua = 0;
 		bool isSpecailHu = false;
-		bool isXiaoHu = false;
-		pHuPlayerCard->onDoHu(false, nCard,isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua, isSpecailHu,nInvokeIdx);
-		if (!isSpecailHu)
-		{
-			isSpecailHu = pHuPlayerCard->getIsQingYiSeKuaiZhaoHu(nCard);
-		}
+		pHuPlayerCard->onDoHu(false, nCard,isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua, isSpecailHu,nInvokeIdx );
 		// check da hu for will bi xia hu 
 		{
 			auto iterPing = std::find(vType.begin(), vType.end(), eFanxing_PingHu);
 			auto iterMengQing = std::find(vType.begin(), vType.end(), eFanxing_MengQing);
 			if (vType.size() == 1 && (iterPing != vType.end() || iterMengQing != vType.end()))
 			{
-				isXiaoHu = true;
+
 			}
 			else
 			{
@@ -709,6 +817,53 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 			nAllHuaCnt *= 2;
 		}
 
+		if (pLosePlayer->haveDecareBuGangFalg()) // robot gang ;
+		{
+			nAllHuaCnt *= 3;  // robot gang means bao pai, and zi mo ; menas zi mo 
+		}
+
+		// you ren dui 3 zui , dan shi qing yi se  huo zhe dui dui hu de shi hou  ye suan kuai zhao 
+		uint8_t nBaoPaiIdx = pHuPlayerCard->getSpecailHuBaoPaiKuaiZhaoIdx();
+		if ( false == isSpecailHu && (uint8_t)-1 != nBaoPaiIdx )
+		{
+			auto iterQinYiSe = std::find(vType.begin(), vType.end(), eFanxing_QingYiSe);
+			auto iterDuiDuiHu = std::find(vType.begin(), vType.end(), eFanxing_DuiDuiHu);
+			if ( ( iterQinYiSe != vType.end() || iterDuiDuiHu != vType.end()))
+			{
+				isSpecailHu = true;   // dang suan wai bao ;
+			}
+			else
+			{
+				nBaoPaiIdx = -1;  // should not bao pai , xiao hu ;
+			}
+		}
+
+		// qing yi se ,peng 3 zui , dian pao Need bao pai 
+		if (isSpecailHu == false && (uint8_t)-1 == nBaoPaiIdx)
+		{
+			auto iterQinYiSe = std::find(vType.begin(), vType.end(), eFanxing_QingYiSe);
+			if ( iterQinYiSe != vType.end())
+			{
+				IMJPlayerCard::VEC_CARD vHoldCard;
+				pHuPlayerCard->getHoldCard(vHoldCard);
+				if (vHoldCard.size() <= 5)
+				{
+					isSpecailHu = true;
+					nBaoPaiIdx = nInvokeIdx;
+				}
+			}
+		}
+
+		if ( isSpecailHu && (uint8_t)-1 == nBaoPaiIdx)  // meiyou dui 3 zui , you dang qian di si zui de ren bao pai 
+		{
+			nBaoPaiIdx = nInvokeIdx;
+		}
+
+		if ( (uint8_t)-1 == nBaoPaiIdx && pLosePlayer->haveDecareBuGangFalg() )  // qiang gang bao pai 
+		{
+			nBaoPaiIdx = pLosePlayer->getIdx();
+		}
+
 		jsHuPlayer["huardSoftHua"] = nHardSoftHua;
 		jsHuPlayer["isKuaiZhaoHu"] = isSpecailHu ? 1 : 0;
 		Json::Value jsHuTyps;
@@ -717,136 +872,55 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 			jsHuTyps[jsHuTyps.size()] = refHu;
 		}
 		jsHuPlayer["vhuTypes"] = jsHuTyps;
-
-		// process bao pai qing kuang ;
-		uint8_t nBaoPaiIdx = pHuPlayerCard->getKuaiZhaoBaoPaiIdx();
-		if (nBaoPaiIdx == (uint8_t)-1)
+		if ( (uint8_t)-1 != nBaoPaiIdx ) // do cun zai bao pai 
 		{
-			// check 清一色、对对胡、全球独钓 last dui bao pai 
-			auto iterQing = std::find(vType.begin(), vType.end(), eFanxing_QingYiSe);
-			auto iterDuiDuiHu = std::find(vType.begin(), vType.end(), eFanxing_DuiDuiHu);
-			auto iterQuanQiuDuDiao = std::find(vType.begin(), vType.end(), eFanxing_QuanQiuDuDiao);
-			if (iterQing != vType.end() && iterDuiDuiHu != vType.end() && iterQuanQiuDuDiao != vType.end())
-			{
-				nBaoPaiIdx = pHuPlayerCard->getLastActSignIdx();
-			}
-		}
+			jsHuPlayer["baoPaiIdx"] = nBaoPaiIdx;
 
-		if ( nBaoPaiIdx == (uint8_t)-1)
-		{
-			nBaoPaiIdx = pHuPlayerCard->getSpecailHuBaoPaiKuaiZhaoIdx();
-		}
-
-		if ( pLosePlayer->haveDecareBuGangFalg() ) // robot gang ;
-		{
-			nAllHuaCnt *= 3;  // robot gang means bao pai, and zi mo ; menas zi mo 
-			LOGFMTD("room id = %u , ploseplayer = %u have gang dec ",getRoomID(),pLosePlayer->getUID());
-			if (nBaoPaiIdx == (uint8_t)-1)
-			{
-				nBaoPaiIdx = pLosePlayer->getIdx();
-			}
-		}
-
-		if ( isSpecailHu && (uint8_t)-1 == nBaoPaiIdx)  // qing yi se kuai zhao 
-		{
-			nBaoPaiIdx = nInvokeIdx;
+			m_isWillBiXiaHu = true;
+			m_isBaoPaiHappend = true;
 		}
 
 		LOGFMTD("room id = %u winner = %u all huaCnt = %u lose uid =%u",getRoomID(),pHuPlayer->getUID(),nAllHuaCnt, pLosePlayer->getUID());
-		if ((uint8_t)-1 != nBaoPaiIdx && ( isXiaoHu == false ) )  // xiao hu bu bao pai ;
+		auto pDoLosePlayer = getMJPlayerByIdx(nBaoPaiIdx);
+		if ( pDoLosePlayer == nullptr)
 		{
-			m_isWillBiXiaHu = true;
-			m_isBaoPaiHappend = true;
-			auto pPlayerBao = getMJPlayerByIdx(nBaoPaiIdx);
+			pDoLosePlayer = pLosePlayer;
+		}
 
-			if (isKuaiChong())
+		// do kou qian 
+		if (isKuaiChong())
+		{
+			if (nAllHuaCnt > m_nKuaiChongPool)
 			{
-				if (nAllHuaCnt > m_nKuaiChongPool)
-				{
-					nAllHuaCnt = m_nKuaiChongPool;
-				}
+				nAllHuaCnt = m_nKuaiChongPool;
+			}
+			m_nKuaiChongPool -= nAllHuaCnt;
+		}
+		else 
+		{
+			if ( isSpecailHu && isEnableWaiBao() )
+			{
+				auto nBaseCoin = max(100, m_nInitCoin);
+				nAllHuaCnt = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
 
-				m_nKuaiChongPool -= nAllHuaCnt;
+				((NJMJPlayer*)pDoLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nAllHuaCnt);
 			}
 			else
 			{
-				if ( isSpecailHu && isJingYuanZi() )
+				if (nAllHuaCnt > pDoLosePlayer->getCoin())
 				{
-					auto nBaseCoin = max(100,m_nInitCoin);
-					uint32_t nWaiCoinMost = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
-					//if (nAllHuaCnt > nWaiCoinMost)
-					{
-						nAllHuaCnt = nWaiCoinMost;
-					}
+					nAllHuaCnt = pDoLosePlayer->getCoin();
 				}
- 
-				if (isSpecailHu && isEnableWaiBao())
-				{
-					((NJMJPlayer*)pPlayerBao)->addWaiBaoOffset(-1 * (int32_t)nAllHuaCnt);
-				}
-				else
-				{
-					if (nAllHuaCnt > pPlayerBao->getCoin())
-					{
-						nAllHuaCnt = pPlayerBao->getCoin();
-					}
-					pPlayerBao->addOffsetCoin(-1 * (int32_t)nAllHuaCnt);
-				}
-				
-			}
+				pDoLosePlayer->addOffsetCoin(-1 * (int32_t)nAllHuaCnt);
 
-			if (nBaoPaiIdx == pLosePlayer->getIdx())
-			{
-				nTotalLose += nAllHuaCnt;
+				if (pDoLosePlayer->getIdx() == nInvokeIdx)
+				{
+					nTotalLose += nAllHuaCnt;
+				}
 			}
-			jsHuPlayer["baoPaiIdx"] = pPlayerBao->getIdx();
-			LOGFMTD("room id = %u uid = %u bao pai winer",getRoomID(),pPlayerBao->getUID());
 		}
-		else
-		{
-			if (isKuaiChong())
-			{
-				if (nAllHuaCnt > m_nKuaiChongPool)
-				{
-					nAllHuaCnt = m_nKuaiChongPool;
-				}
 
-				m_nKuaiChongPool -= nAllHuaCnt;
-			}
-			else
-			{
-				if ( isJingYuanZi() && isSpecailHu)
-				{
-					auto nBaseCoin = max(100, m_nInitCoin);
-					uint32_t nWaiCoinMost = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
-					//if (nAllHuaCnt > nWaiCoinMost)
-					{
-						nAllHuaCnt = nWaiCoinMost;
-					}
-
-					jsHuPlayer["baoPaiIdx"] = pLosePlayer->getIdx();
-					m_isBaoPaiHappend = true;
-				}
-
-				if (isSpecailHu && isEnableWaiBao())
-				{
-					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nAllHuaCnt);
-				}
-				else
-				{
-					if (nAllHuaCnt > pLosePlayer->getCoin())
-					{
-						nAllHuaCnt = pLosePlayer->getCoin();
-					}
-					pLosePlayer->addOffsetCoin(-1 * (int32_t)nAllHuaCnt);
-				}
-
-			}
-
-			nTotalLose += nAllHuaCnt;
-		}
-	
-		if ( isEnableWaiBao() && isSpecailHu)
+		if (isEnableWaiBao() && isSpecailHu)
 		{
 			((NJMJPlayer*)pHuPlayer)->addWaiBaoOffset(nAllHuaCnt);
 		}
@@ -856,9 +930,7 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		}
 
 		jsHuPlayer["win"] = nAllHuaCnt;
-
 		jsHuPlayers[jsHuPlayers.size()] = jsHuPlayer;
-		
 	}
 
 	jsDetail["nLose"] = nTotalLose;
@@ -886,7 +958,6 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	uint16_t nHuHuaCnt = 0;
 	uint16_t nHardSoftHua = 0;
 	bool bIsSpecailHu = false;
-	bool isXiaoHu = false;
 	pHuPlayerCard->onDoHu(true, nCard, isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua, bIsSpecailHu );
 
 	// check da hu for will bi xia hu 
@@ -894,7 +965,6 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 	auto iterMengQing = std::find(vType.begin(), vType.end(), eFanxing_MengQing);
 	if (vType.size() == 1 && (iterPing != vType.end() || iterMengQing != vType.end()))
 	{
-		isXiaoHu = true;
 	}
 	else
 	{
@@ -907,15 +977,10 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		jsHuTyps[jsHuTyps.size()] = refHu;
 	}
 	jsDetail["vhuTypes"] = jsHuTyps;
-	jsDetail["isKuaiZhaoHu"] = bIsSpecailHu ? 1 : 0;
 	jsDetail["huardSoftHua"] = nHardSoftHua;
 	jsDetail["gangKaiCoin"] = 0;
 	// xiao gang kai hua 
-	if ( bIsSpecailHu )
-	{
-
-	}
-	else if (pZiMoPlayer->haveHuaGangFlag() || pZiMoPlayer->haveGangFalg())
+	if (pZiMoPlayer->haveHuaGangFlag() || pZiMoPlayer->haveGangFalg())
 	{
 		nHuHuaCnt += 20;
 		m_isWillBiXiaHu = true;
@@ -935,41 +1000,35 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		nAllHuaCnt *= 2;
 	}
 
-	auto nBaoPaiIdx = pHuPlayerCard->getKuaiZhaoBaoPaiIdx();
-	if ((uint8_t)-1 == nBaoPaiIdx && bIsSpecailHu )
+	uint8_t nBaoPaiIdx = pHuPlayerCard->getSpecailHuBaoPaiKuaiZhaoIdx();
+	if (false == bIsSpecailHu && (uint8_t)-1 != nBaoPaiIdx )
 	{
-		nBaoPaiIdx = pHuPlayerCard->getSpecailHuBaoPaiKuaiZhaoIdx();
-	}
-
-	if (nBaoPaiIdx == (uint8_t)-1)
-	{
-		// check 清一色、对对胡、全球独钓 last dui bao pai 
-		auto iterQing = std::find(vType.begin(), vType.end(), eFanxing_QingYiSe);
+		auto iterQinYiSe = std::find(vType.begin(), vType.end(), eFanxing_QingYiSe);
 		auto iterDuiDuiHu = std::find(vType.begin(), vType.end(), eFanxing_DuiDuiHu);
-		auto iterQuanQiuDuDiao = std::find(vType.begin(), vType.end(), eFanxing_QuanQiuDuDiao);
-		if (iterQing != vType.end() && iterDuiDuiHu != vType.end() && iterQuanQiuDuDiao != vType.end())
+		if ((iterQinYiSe != vType.end() || iterDuiDuiHu != vType.end()))
 		{
-			nBaoPaiIdx = pHuPlayerCard->getLastActSignIdx();
+			bIsSpecailHu = true;   // dang suan wai bao ;
+		}
+		else
+		{
+			nBaoPaiIdx = -1;  // should not bao pai , xiao hu ;
 		}
 	}
 
-	bool isHanveSongGang = false;
-	if ((uint8_t)-1 == nBaoPaiIdx ) // gang kai bao pai 
+	if ((uint8_t)-1 == nBaoPaiIdx && (uint8_t)-1 != pHuPlayerCard->getSongGangIdx() ) // gang kai bao pai 
 	{
-		if (pZiMoPlayer->haveGangFalg())
-		{
-			nBaoPaiIdx = pHuPlayerCard->getSongGangIdx();
-			isHanveSongGang = (uint8_t)-1 != nBaoPaiIdx;
-		}
+		nBaoPaiIdx = pHuPlayerCard->getSongGangIdx();
 	}
+
+	jsDetail["isKuaiZhaoHu"] = bIsSpecailHu ? 1 : 0;
 
 	auto nTotalWin = 0;
-	if ((uint8_t)-1 != nBaoPaiIdx && ( (isXiaoHu == false) || isHanveSongGang ) )
+	if ( (uint8_t)-1 != nBaoPaiIdx  )
 	{
 		nTotalWin = nAllHuaCnt * 3; // bao pai 
 		m_isBaoPaiHappend = true;
+		m_isWillBiXiaHu = true;
 		auto pPlayerBao = getMJPlayerByIdx(nBaoPaiIdx);
-
 		if (isKuaiChong())
 		{
 			if (nTotalWin > m_nKuaiChongPool )
@@ -980,18 +1039,10 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		}
 		else
 		{
-			if ( bIsSpecailHu && isJingYuanZi() )
+			if ( bIsSpecailHu && isEnableWaiBao() )
 			{
 				auto nBaseCoin = max(100, m_nInitCoin);
-				uint32_t nWaiCoinMost = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
-				//if (nTotalWin > nWaiCoinMost )
-				{
-					nTotalWin = nWaiCoinMost;
-				}
-			}
-
-			if (isEnableWaiBao() && bIsSpecailHu )
-			{
+				nTotalWin = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
 				((NJMJPlayer*)pPlayerBao)->addWaiBaoOffset(-1 * (int32_t)nTotalWin);
 			}
 			else
@@ -1005,13 +1056,12 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		}
 
 		LOGFMTD("room id = %u uid = %u bao pai winer", getRoomID(), pPlayerBao->getUID());
-		m_isWillBiXiaHu = true;
 		jsDetail["baoPaiIdx"] = nBaoPaiIdx;
 	}
 	else
 	{
 		Json::Value jsVLoses;
-		for (auto& pLosePlayer : m_vMJPlayers)
+		for ( auto& pLosePlayer : m_vMJPlayers )
 		{
 			if (pLosePlayer == pZiMoPlayer)
 			{
@@ -1022,7 +1072,7 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 
 			if (isKuaiChong())
 			{
-				if (nKouHua > m_nKuaiChongPool)
+				if ( nKouHua > m_nKuaiChongPool )
 				{
 					nKouHua = m_nKuaiChongPool;
 				}
@@ -1030,30 +1080,11 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 			}
 			else
 			{
-				if (bIsSpecailHu && isJingYuanZi() )
+				if (nKouHua > pLosePlayer->getCoin())
 				{
-					auto nBaseCoin = max(100, m_nInitCoin);
-					uint32_t nWaiCoinMost = isBiXiaHu() ? nBaseCoin : (nBaseCoin * 0.5);
-					//if (nTotalWin > nWaiCoinMost )
-					{
-						nKouHua = nWaiCoinMost;
-					}
-					m_isBaoPaiHappend = true;
+					nKouHua = pLosePlayer->getCoin();
 				}
-
-				if (isEnableWaiBao() && bIsSpecailHu)
-				{
-					((NJMJPlayer*)pLosePlayer)->addWaiBaoOffset(-1 * (int32_t)nKouHua);
-				}
-				else
-				{
-					if (nKouHua > pLosePlayer->getCoin())
-					{
-						nKouHua = pLosePlayer->getCoin();
-					}
-					pLosePlayer->addOffsetCoin(-1 * (int32_t)nKouHua);
-				}
-
+				pLosePlayer->addOffsetCoin(-1 * (int32_t)nKouHua);
 			}
 
 
@@ -1248,7 +1279,7 @@ void NJMJRoom::checkLouHuState(uint8_t nInvokeIdx, uint8_t nCard)
 	bool bDianPaoJinYuanZi = pInvoker->getCoin() <= 0;
 
 	// check lou hu
-	for (auto& ref : m_vMJPlayers)
+	for (auto& ref : m_vMJPlayers )
 	{
 		if (ref == nullptr || nInvokeIdx == ref->getIdx())
 		{
@@ -1270,17 +1301,54 @@ void NJMJRoom::checkLouHuState(uint8_t nInvokeIdx, uint8_t nCard)
 			continue;
 		}
 
-		// jing yuan zi 
-		if (bDianPaoJinYuanZi && bNormalHu)
+		if (bNormalHu == false && bIgnoreHua == false)
 		{
-			if (isEnableWaiBao() == false)
+			continue;
+		}
+
+		if ( isKuaiChong() )
+		{
+			continue;
+		}
+		// find this hu Pay coin palyer idx 
+		std::vector<uint16_t> vType;
+		uint16_t nHuHuaCnt = 0;
+		uint16_t nHardSoftHua = 0;
+		bool isSpecailHu = false;
+		pMJCard->onDoHu(false, nCard, isCardByPenged(nCard), vType, nHuHuaCnt, nHardSoftHua, isSpecailHu, nInvokeIdx);
+		uint8_t nBaoPaiIdx = pMJCard->getSpecailHuBaoPaiKuaiZhaoIdx();
+		if (false == isSpecailHu && (uint8_t)-1 != nBaoPaiIdx)
+		{
+			auto iterQinYiSe = std::find(vType.begin(), vType.end(), eFanxing_QingYiSe);
+			auto iterDuiDuiHu = std::find(vType.begin(), vType.end(), eFanxing_DuiDuiHu);
+			if ((iterQinYiSe != vType.end() || iterDuiDuiHu != vType.end()))
+			{
+				isSpecailHu = true;   // dang suan wai bao ;
+			}
+			else
+			{
+				nBaoPaiIdx = -1;  // should not bao pai , xiao hu ;
+			}
+		}
+
+		if ((uint8_t)-1 == nBaoPaiIdx)  // qiang gang bao pai 
+		{
+			nBaoPaiIdx = nInvokeIdx;
+		}
+
+		auto pPayCoinPlayer = getMJPlayerByIdx(nBaoPaiIdx);
+		auto bIsPayCoinPlayerJingYuanZi = pPayCoinPlayer->getCoin() <= 0;
+
+		// jing yuan zi 
+		if ( bIsPayCoinPlayerJingYuanZi && bNormalHu)
+		{
+			if ( isEnableWaiBao() == false)
 			{
 				ref->signLouHuFlag();
 				continue;
 			}
 
-			bool isKuaiZahoHu = (pMJCard->getIsDanDiaoHu(nCard) || pMJCard->getIsSpecailHu(nCard) || pMJCard->getIsQingYiSeKuaiZhaoHu(nCard));
-			if (!isKuaiZahoHu)
+			if ( !isSpecailHu )
 			{
 				ref->signLouHuFlag();
 				continue;
