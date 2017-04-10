@@ -29,6 +29,8 @@ void MJPlayer::init(stEnterRoomData* pData)
 	m_nAnGangCnt = 0 ;
 	m_isOnline = true;
 
+	m_nFlag = 0;
+
 	clearDecareBuGangFlag();
 	clearGangFlag();
 	clearLouHuFlag();
@@ -46,6 +48,7 @@ void MJPlayer::onComeBackRoom(stEnterRoomData* pData)
 
 void MJPlayer::onWillStartGame()
 {
+	m_nFlag = 0; 
 	m_nOffset = 0;
 	clearGangFlag();
 	clearDecareBuGangFlag();
@@ -296,4 +299,19 @@ void MJPlayer::clearLouHuFlag()
 void MJPlayer::signLouHuFlag()
 {
 	m_isLouHu = true;
+}
+
+void MJPlayer::signFlag( uint32_t nFlag )
+{
+	m_nFlag = m_nFlag | nFlag;
+}
+
+bool MJPlayer::isHaveFlag( uint32_t nFlag )
+{
+	return (m_nFlag & nFlag);
+}
+
+void MJPlayer::clearFlag( uint32_t nFlag )
+{
+	 m_nFlag = (m_nFlag & (~nFlag));
 }

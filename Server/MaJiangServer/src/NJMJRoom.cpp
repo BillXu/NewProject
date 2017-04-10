@@ -192,8 +192,8 @@ void NJMJRoom::startGame()
 		}
 
 		// avoid di hu and tian hu 
-		uint8_t nNewCard = 0;
-		doAvoidPlayerTianHuOrDiHu(pPlayer->getIdx(), nNewCard,false );
+		//uint8_t nNewCard = 0;
+		//doAvoidPlayerTianHuOrDiHu(pPlayer->getIdx(), nNewCard,false );
 	}
 
 	Json::Value jsMsg;
@@ -203,6 +203,7 @@ void NJMJRoom::startGame()
 
 bool NJMJRoom::doAvoidPlayerTianHuOrDiHu( uint8_t nPlayerIdx, uint8_t& nNewCard , bool isMustChangeNewFetch )
 {
+	return false;
 	nNewCard = 0;
 	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
 	if (pPlayer == nullptr)
@@ -419,13 +420,13 @@ void NJMJRoom::onPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
 	// check tian hu di hu 
 	if ( eRoomState_NJ_Auto_Buhua == m_pCurState->getStateID() )
 	{
-		uint8_t nChangedCard = 0;
-		if (pActCard->getHoldCardHuaCnt() == 0 && doAvoidPlayerTianHuOrDiHu(nIdx, nChangedCard, true) )
-		{
-			// check tian hu or di hu 
-			nNewCard = nChangedCard;
-			LOGFMTD("do change di hu or tian hu card = %u",nNewCard);
-		}
+		//uint8_t nChangedCard = 0;
+		//if (pActCard->getHoldCardHuaCnt() == 0 && doAvoidPlayerTianHuOrDiHu(nIdx, nChangedCard, true) )
+		//{
+		//	// check tian hu or di hu 
+		//	nNewCard = nChangedCard;
+		//	LOGFMTD("do change di hu or tian hu card = %u",nNewCard);
+		//}
 	}
 
 	// send msg ;
@@ -448,13 +449,13 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 	// check tian hu di hu 
 	if (eRoomState_NJ_Auto_Buhua == m_pCurState->getStateID())
 	{
-		uint8_t nChangedCard = 0;
-		if (pActCard->getHoldCardHuaCnt() == 0 && doAvoidPlayerTianHuOrDiHu(nIdx, nChangedCard, true))
-		{
-			// check tian hu or di hu 
-			nNewCard = nChangedCard;
-			LOGFMTD("do change di hu or tian hu card = %u", nNewCard);
-		}
+		//uint8_t nChangedCard = 0;
+		//if (pActCard->getHoldCardHuaCnt() == 0 && doAvoidPlayerTianHuOrDiHu(nIdx, nChangedCard, true))
+		//{
+		//	// check tian hu or di hu 
+		//	nNewCard = nChangedCard;
+		//	LOGFMTD("do change di hu or tian hu card = %u", nNewCard);
+		//}
 	}
 
 	// send msg ;

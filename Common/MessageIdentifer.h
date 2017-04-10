@@ -39,6 +39,13 @@ enum eMsgPort
 	ID_MSG_TRANSFER
 };
 
+enum ePlayerFlag
+{
+	ePlayerFlag_TianHu,
+	ePlayerFlag_WaitCheckTianTing,
+	ePlayerFlag_TianTing,
+};
+
 enum eMsgType 
 {
 	MSG_NONE,
