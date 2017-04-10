@@ -309,19 +309,32 @@ bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPo
 			return true;
 		}
 
+		uint8_t nFrameType = -1;
 		if (eMJAct_Pass == actType)
 		{
-			// add frame
-			Json::Value jsFrameArg;
-			auto pFrame = getGameReplay()->createFrame(eMJFrame_Pass, (uint32_t)time(0));
-			jsFrameArg["idx"] = p->getIdx();
-			pFrame->setFrameArg(jsFrameArg);
-			getGameReplay()->addFrame(pFrame);
+			nFrameType = eMJFrame_Pass;
 		}
 		else if (eMJAct_Hu == actType)
 		{
+			nFrameType = eMJFrame_Hu;
+		}
+		else if (eMJAct_Peng == actType)
+		{
+			nFrameType = eMJFrame_Decl_Peng;
+		}
+		else if (eMJAct_MingGang == actType)
+		{
+			nFrameType = eMJFrame_Decl_MingGang;
+		}
+		else if (eMJAct_BuGang == actType || eMJAct_BuGang_Declare == actType || eMJAct_BuGang_Pre == actType)
+		{
+			nFrameType = eMJFrame_Decl_BuGang;
+		}
+			 
+		if ((uint8_t)-1 != nFrameType)
+		{
 			Json::Value jsFrameArg;
-			auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Hu, (uint32_t)time(nullptr));
+			auto ptrReplay = getGameReplay()->createFrame(nFrameType, (uint32_t)time(nullptr));
 			jsFrameArg["idx"] = p->getIdx();
 			ptrReplay->setFrameArg(jsFrameArg);
 			getGameReplay()->addFrame(ptrReplay);
@@ -348,7 +361,7 @@ bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPo
 		LOGFMTI("返回玩家离开房间的消息， sesssioniID = %u", nSessionID);
 		return true;;
 	}
-	else if ( MSG_SET_NEXT_CARD == nMsgType)
+	else if ( MSG_SET_NEXT_CARD == nMsgType )
 	{
 		if (prealMsg["card"].isNull() || prealMsg["card"].isUInt() == false)
 		{
@@ -849,6 +862,7 @@ void IMJRoom::onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Peng, (uint32_t)time(nullptr));
 	jsFrameArg["idx"] = nIdx;
 	jsFrameArg["card"] = nCard;
+	jsFrameArg["invokerIdx"] = nInvokeIdx;
 	ptrReplay->setFrameArg(jsFrameArg);
 	getGameReplay()->addFrame(ptrReplay);
 }
@@ -914,6 +928,7 @@ void IMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	jsFrameArg["idx"] = nIdx;
 	jsFrameArg["gang"] = nCard;
 	jsFrameArg["newCard"] = nGangGetCard;
+	jsFrameArg["invokerIdx"] = nInvokeIdx;
 	ptrReplay->setFrameArg(jsFrameArg);
 	getGameReplay()->addFrame(ptrReplay);
 }

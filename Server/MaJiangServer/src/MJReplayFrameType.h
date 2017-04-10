@@ -12,7 +12,10 @@ enum eMJFrameType
 	eMJFrame_Mo, // { idx : 2, card : 23 }
 	eMJFrame_WaitPlayerActAboutCard, //  [ { idx : 2 , acts: [eAct_peng, ...] }, ... ] 
 	eMJFrame_WaitRobotGang, // [2,3,1] 
-	eMJFrame_Peng,// { idx : 3, card : 23 }
-	eMJFrame_MingGang, // { idx : 2 , gang : 23 , newCard : 22 }
+	eMJFrame_Peng,// { invokerIdx : 0 ,idx : 3, card : 23 }
+	eMJFrame_MingGang, // { invokerIdx : 0 idx : 2 , gang : 23 , newCard : 22 }
+	eMJFrame_Decl_Peng, // { idx : 2 }
+	eMJFrame_Decl_MingGang, // { idx : 2 }
+	eMJFrame_Decl_BuGang,// { idx : 2 }
 
 };
