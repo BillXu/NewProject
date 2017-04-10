@@ -135,7 +135,7 @@ bool IServerApp::OnMessage( Packet* pMsg )
 		}
 		memset(pLog,0,sizeof(pLog)) ;
 		memcpy_s(pLog,sizeof(pLog),pBuffer,pRet->nJsLen);
-		LOGFMTD("session id = %u rec : %s",pData->nSessionID,pLog);
+		//LOGFMTD("session id = %u rec : %s",pData->nSessionID,pLog);
 		
 		//#endif // __DEBUG
 

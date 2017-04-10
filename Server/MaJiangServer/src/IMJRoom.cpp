@@ -441,7 +441,7 @@ void IMJRoom::goToState(IMJRoomState* pTargetState, Json::Value* jsValue )
 		LOGFMTE("go to the same state %d , room id = %d ? ", pTargetState->getStateID(), getRoomID());
 	}
 
-	LOGFMTI("roomID = %u 进入房间状态： %u", getRoomID(), pTargetState->getStateID());
+	//LOGFMTI("roomID = %u 进入房间状态： %u", getRoomID(), pTargetState->getStateID());
 
 	getCurRoomState()->leaveState();
 	m_pCurState = pTargetState;
@@ -450,7 +450,7 @@ void IMJRoom::goToState(IMJRoomState* pTargetState, Json::Value* jsValue )
 	//stMsgRoomEnterNewState msgNewState;
 	//msgNewState.m_fStateDuring = m_pCurState->getStateDuring();
 	//msgNewState.nNewState = m_pCurState->getStateID();
-	LOGFMTI("not tell client state changed");
+	//LOGFMTI("not tell client state changed");
 }
 
 void IMJRoom::goToState(uint16_t nStateID, Json::Value* jsValue )
