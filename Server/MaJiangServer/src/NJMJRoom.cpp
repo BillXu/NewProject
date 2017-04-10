@@ -494,7 +494,7 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 			}
 
 			m_nKuaiChongPool -= nLose;
-			st.addLose(nCheckIdx, 0);
+			st.addLose(pPlayer->getIdx(), 0);
 		}
 		else
 		{
@@ -503,7 +503,7 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 				nLose = pPlayer->getCoin();
 			}
 			pPlayer->addOffsetCoin(-1 * (int32_t)nLose);
-			st.addLose(nCheckIdx, nLose);
+			st.addLose(pPlayer->getIdx(), nLose);
 		}
 		nWin += nLose;
 	}
@@ -548,7 +548,7 @@ void NJMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 		}
 
 		m_nKuaiChongPool -= nLose;
-		st.addLose(nInvokeIdx, 0);
+		st.addLose(pInvokerPlayer->getIdx(), 0);
 	}
 	else
 	{
@@ -558,7 +558,7 @@ void NJMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 		}
 
 		pInvokerPlayer->addOffsetCoin(-1 * (int32_t)nLose);
-		st.addLose(nInvokeIdx, nLose);
+		st.addLose(pInvokerPlayer->getIdx(), nLose);
 	}
 
 	pActPlayer->addOffsetCoin(nLose);
@@ -600,7 +600,7 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 			}
 
 			m_nKuaiChongPool -= nLose;
-			st.addLose(nCheckIdx, 0);
+			st.addLose(pPlayer->getIdx(), 0);
 		}
 		else
 		{
@@ -609,7 +609,7 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 				nLose = pPlayer->getCoin();
 			}
 			pPlayer->addOffsetCoin(-1 * (int32_t)nLose);
-			st.addLose(nCheckIdx, nLose);
+			st.addLose(pPlayer->getIdx(), nLose);
 		}
 		nWin += nLose;
 	}
@@ -652,7 +652,7 @@ void NJMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 		}
 
 		m_nKuaiChongPool -= nLose;
-		st.addLose(nInvokeIdx, 0);
+		st.addLose(pInvokerPlayer->getIdx(), 0);
 	}
 	else
 	{
@@ -662,7 +662,7 @@ void NJMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 		}
 
 		pInvokerPlayer->addOffsetCoin(-1 * (int32_t)nLose);
-		st.addLose(nInvokeIdx, nLose);
+		st.addLose(pInvokerPlayer->getIdx(), nLose);
 	}
 
 
