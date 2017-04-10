@@ -77,8 +77,29 @@ uint8_t CMJCard::switchCardFromCardWall( uint8_t nCard )
 			continue;
 		}
 
+		// find orig card idx 
+		bool bFind = false;
+		uint8_t nOrgigIdx = 0;
+		for (uint8_t nIdx = 0; nIdx < m_nCurCardIdx; ++nIdx)
+		{
+			if ( nCard == m_vAllCards[nIdx] )
+			{
+				bFind = true;
+				nOrgigIdx = nIdx;
+				break;
+			}
+		}
+
+		if (false == bFind)
+		{
+			LOGFMTE("why can not find orig card");
+			return 0;
+		}
+
 		auto nResultCard = m_vAllCards[nTargetIdx];
+		// do switch the card 
 		m_vAllCards[nTargetIdx] = nCard;
+		m_vAllCards[nOrgigIdx] = nResultCard;
 		LOGFMTD("do changed card = %u %u",nCard,nResultCard);
 		return nResultCard;
 	}
