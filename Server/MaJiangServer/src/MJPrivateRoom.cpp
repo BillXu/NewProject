@@ -614,7 +614,7 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 	// all player leave and update coin 
 	auto pRoom = (IMJRoom*)m_pRoom;
 	bool bCanncelBill = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady);
-	if ( m_bDoDismissRoom && (!bCanncelBill) )
+	if ( m_bDoDismissRoom && ( pRoom->getCurRoomState()->getStateID() != eRoomSate_WaitReady ) )
 	{
 		pRoom->onGameEnd();
 	}
