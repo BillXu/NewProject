@@ -328,7 +328,7 @@ bool MJRoomManager::processEnterRoomMsg(stMsg* prealMsg, eMsgPort eSenderPort, u
 	msgBack.nRoomID = pRet->nRoomID;
 	msgBack.nSubIdx = 0;
 
-	LOGFMTD("session id = %u enter room type = %u , roomID = %u", nSessionID, pRet->nSubIdx, pRet->nRoomID);
+	//LOGFMTD("session id = %u enter room type = %u , roomID = %u", nSessionID, pRet->nSubIdx, pRet->nRoomID);
 
 	// find a room to enter 
 	IGameRoom* pRoomEnter = nullptr;

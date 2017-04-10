@@ -349,6 +349,14 @@ void NJMJRoom::onPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
 	msg["card"] = nHuaCard;
 	msg["gangCard"] = nNewCard;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_BuHua, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["hua"] = nHuaCard;
+	jsFrameArg["newCard"] = nNewCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
@@ -407,6 +415,14 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 	pPlayerWin->addOffsetCoin(nWin);
 	st.addWin(nIdx, nWin);
 	addSettle(st);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_HuaGang, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["hua"] = nGangCard;
+	jsFrameArg["newCard"] = nNewCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void NJMJRoom::onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)

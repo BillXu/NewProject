@@ -17,5 +17,5 @@ enum eMJFrameType
 	eMJFrame_Decl_Peng, // { idx : 2 }
 	eMJFrame_Decl_MingGang, // { idx : 2 }
 	eMJFrame_Decl_BuGang,// { idx : 2 }
-
+	eMJFrame_HuaGang, // { idx: 2 , hua : 2 , newCard : 23 }
 };

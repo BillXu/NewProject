@@ -48,7 +48,7 @@ bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32
 	m_ptrGameRecorder = createRoomRecorder();
 	m_ptrGameRecorder->init(nSeialNum, vJsValue["circle"].asUInt(),nRoomID, getRoomType(),vJsValue["createUID"].asUInt() );
 
-	m_ptrGameReplay = std::shared_ptr<MJReplayGame>();
+	m_ptrGameReplay = std::make_shared<MJReplayGame>();
 	return true;
 }
 
@@ -299,7 +299,7 @@ bool IMJRoom::onMessage(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nSession
 
 bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)
 {
-	if (MSG_PLAYER_ACT != nMsgType && MSG_REQ_ACT_LIST != nMsgType)
+	if ( MSG_PLAYER_ACT == nMsgType )
 	{
 		auto actType = prealMsg["actType"].asUInt();
 		auto p = getMJPlayerBySessionID(nSessionID);
@@ -762,12 +762,15 @@ void IMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
 	jsMsg["acts"] = jsArrayActs;
 	sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_AFTER_RECEIVED_CARD, pPlayer->getSessionID());
 	
-	Json::Value jsFrameArg;
-	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_WaitPlayerAct,(uint32_t)time(nullptr) );
-	jsFrameArg["idx"] = nIdx;
-	jsFrameArg["act"] = jsFrameActs;
-	ptrReplay->setFrameArg(jsFrameArg);
-	getGameReplay()->addFrame(ptrReplay);
+	if ( isCanPass )  // player do have option do select or need not give frame ;
+	{
+		Json::Value jsFrameArg;
+		auto ptrReplay = getGameReplay()->createFrame(eMJFrame_WaitPlayerAct, (uint32_t)time(nullptr));
+		jsFrameArg["idx"] = nIdx;
+		jsFrameArg["act"] = jsFrameActs;
+		ptrReplay->setFrameArg(jsFrameArg);
+		getGameReplay()->addFrame(ptrReplay);
+	}
 
 	LOGFMTD("tell player idx = %u do act size = %u",nIdx,jsArrayActs.size());
 }
@@ -828,7 +831,7 @@ void IMJRoom::onPlayerMo(uint8_t nIdx)
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 
 	Json::Value jsFrameArg;
-	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Chu, (uint32_t)time(nullptr));
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Mo, (uint32_t)time(nullptr));
 	jsFrameArg["idx"] = nIdx;
 	jsFrameArg["card"] = nNewCard;
 	ptrReplay->setFrameArg(jsFrameArg);
