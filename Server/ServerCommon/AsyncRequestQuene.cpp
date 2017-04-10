@@ -69,7 +69,7 @@ bool CAsyncRequestQuene::onMsg(stMsg* prealMsg , eMsgPort eSenderPort , uint32_t
 		}
 		else
 		{
-			LOGFMTD("type = %u , serial num = %u , request func is null" , pReq->nReqType,pReq->nReqSerialNum) ;
+			//LOGFMTD("type = %u , serial num = %u , request func is null" , pReq->nReqType,pReq->nReqSerialNum) ;
 		}
 	}
 	else

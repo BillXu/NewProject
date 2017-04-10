@@ -687,7 +687,7 @@ void IMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
 	jsMsg["acts"] = jsArrayActs;
 	sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_AFTER_RECEIVED_CARD, pPlayer->getSessionID());
 	
-	LOGFMTD("tell player idx = %u do act size = %u",nIdx,jsArrayActs.size());
+	//LOGFMTD("tell player idx = %u do act size = %u",nIdx,jsArrayActs.size());
 }
 
 uint8_t IMJRoom::getAutoChuCardWhenWaitActTimeout(uint8_t nIdx)
@@ -1001,7 +1001,7 @@ void IMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::v
 		}
 		jsMsg["acts"] = jsActs;
 		sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_ABOUT_OTHER_CARD, ref->getSessionID());
-		LOGFMTD("inform uid = %u act about other card room id = %u card = %u", ref->getUID(), getRoomID(),nCard );
+		//LOGFMTD("inform uid = %u act about other card room id = %u card = %u", ref->getUID(), getRoomID(),nCard );
 	}
 }
 
@@ -1062,7 +1062,7 @@ void IMJRoom::onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<u
 
 		jsMsg["acts"] = jsActs;
 		sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_ABOUT_OTHER_CARD, ref->getSessionID());
-		LOGFMTD("inform uid = %u robot gang card = %u room id = %u ", ref->getUID(),nCard, getRoomID());
+		//LOGFMTD("inform uid = %u robot gang card = %u room id = %u ", ref->getUID(),nCard, getRoomID());
 	}
 }
 
@@ -1119,7 +1119,7 @@ bool IMJRoom::addRoomState(IMJRoomState* pState)
 		m_vRoomStates[pState->getStateID()] = pState;
 		return true;
 	}
-	LOGFMTE("already add this state id =%u , be remember delete failed add obj",pState->getStateID());
+	//LOGFMTE("already add this state id =%u , be remember delete failed add obj",pState->getStateID());
 	return false;
 }
 
@@ -1176,7 +1176,7 @@ void IMJRoom::onCheckTrusteeForWaitPlayerAct(uint8_t nIdx, bool isMayBeHu)
 			jsmsg["actType"] = eMJAct_Chu;
 			jsmsg["card"] = getAutoChuCardWhenWaitActTimeout(nIdx);;
 		}
-		LOGFMTD("%u player tuo guan do act = %u", pPlayer->getUID(), jsmsg["actType"].asUInt());
+		//LOGFMTD("%u player tuo guan do act = %u", pPlayer->getUID(), jsmsg["actType"].asUInt());
 		onMsg(jsmsg, MSG_PLAYER_ACT, ID_MSG_PORT_CLIENT, pPlayer->getSessionID());
 	}
 	);
