@@ -19,6 +19,12 @@ public:
 
 		void addLose(uint8_t nIdx, uint16_t nLoseCoin)
 		{
+			auto iter = vLoseIdx.find(nIdx);
+			if (iter != vLoseIdx.end())
+			{
+				iter->second += nLoseCoin;
+				return;
+			}
 			vLoseIdx[nIdx] = nLoseCoin;
 		}
 	};
