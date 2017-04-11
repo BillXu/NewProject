@@ -133,6 +133,21 @@ public:
 				}
 				return true;
 			}
+			else if (eMJAct_Chu == actType)
+			{
+				auto pPlayer = getRoom()->getMJPlayerBySessionID(nSessionID);
+				auto pPeerCard = (NJMJPlayerCard*)pPlayer->getPlayerCard();
+				if ( pPeerCard->isHaveFlag(ePlayerFlag_TianTing) )
+				{
+					auto nCard = prealMsg["card"].asUInt();
+					if (nCard != pPeerCard->getNewestFetchedCard())
+					{
+						LOGFMTE("tian ting , must chu just mo card");
+						return true;
+					}
+				}
+
+			}
 		}
 
 

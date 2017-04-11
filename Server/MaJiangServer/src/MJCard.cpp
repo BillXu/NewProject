@@ -119,6 +119,29 @@ void CMJCard::shuffle()
 		m_vAllCards[i] = m_vAllCards[i] - m_vAllCards[n] ;
 	}
 	m_nCurCardIdx = 0 ;
+	// set new card 
+#ifdef _DEBUG
+	VEC_UINT8 vHoldCard;
+	vHoldCard.push_back(make_Card_Num(eCT_Wan,1));
+	vHoldCard.push_back(make_Card_Num(eCT_Wan, 1));
+	vHoldCard.push_back(make_Card_Num(eCT_Wan, 9));
+	vHoldCard.push_back(make_Card_Num(eCT_Wan, 9));
+
+	for ( uint8_t nIdx = 1; nIdx <= 9; ++nIdx )
+	{
+		vHoldCard.push_back(make_Card_Num(eCT_Wan, nIdx ) );
+	}
+
+	// set new card erase old
+	for ( auto& ref : vHoldCard )
+	{
+		auto iter = std::find(m_vAllCards.begin(),m_vAllCards.end(),ref);
+		m_vAllCards.erase(iter);
+	}
+	vHoldCard.insert(vHoldCard.end(),m_vAllCards.begin(),m_vAllCards.end());
+	m_vAllCards.swap(vHoldCard);
+#endif
+	// send new 
 	debugPokerInfo();
 }
 

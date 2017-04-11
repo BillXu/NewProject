@@ -1683,11 +1683,35 @@ bool NJMJPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
 		return false;
 	}
 
+	if ( isHaveFlag(ePlayerFlag_TianTing) )
+	{
+		MJPlayerCard::getHoldCardThatCanAnGang(vGangCards);
+		if ( vGangCards.empty())
+		{
+			return false;
+		}
+
+		auto iter = std::find( vGangCards.begin(), vGangCards.end(), getNewestFetchedCard());
+		if ( iter == vGangCards.end() )
+		{
+			return false;
+		}
+
+		auto nGang = *iter;
+		vGangCards.clear();
+		vGangCards.push_back(nGang);
+		return true;
+	}
 	return MJPlayerCard::getHoldCardThatCanAnGang(vGangCards);
 }
 
 bool NJMJPlayerCard::canPengWithCard(uint8_t nCard)
 {
+	if ( isHaveFlag(ePlayerFlag_TianTing) )
+	{
+		return false;
+	}
+
 	auto bRet = MJPlayerCard::canPengWithCard(nCard);
 	if (bRet)
 	{
