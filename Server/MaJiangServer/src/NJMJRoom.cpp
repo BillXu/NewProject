@@ -201,90 +201,6 @@ void NJMJRoom::startGame()
 	sendRoomMsg(jsMsg, MSG_ROOM_START_GAME);
 }
 
-bool NJMJRoom::doAvoidPlayerTianHuOrDiHu( uint8_t nPlayerIdx, uint8_t& nNewCard , bool isMustChangeNewFetch )
-{
-	return false;
-	nNewCard = 0;
-	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
-	if (pPlayer == nullptr)
-	{
-		return false;
-	}
-
-	auto pPlayerCard = (NJMJPlayerCard*)pPlayer->getPlayerCard();
-	
-	if ( pPlayerCard->getHoldCardHuaCnt() > 0 ) // still have hua , then do nothing ;
-	{
-		return false;
-	}
-
-	auto plfChangeHoldCard = []( NJMJPlayerCard* pPlayerCard, CMJCard& pokerCard, bool isMustChangeNewFetch , uint8_t& nNewCardGet)->bool
-	{
-		auto nErae = pPlayerCard->eraseRandNotHuaCard( isMustChangeNewFetch );
-		if (nErae == 0)
-		{
-			LOGFMTE("can not avoid di hu ");
-			return false;
-		}
-
-		auto nNewCard = pokerCard.switchCardFromCardWall(nErae);
-		if (nNewCard == 0)
-		{
-			LOGFMTE("can not avoid di hu ");
-			pPlayerCard->addDistributeCard(nErae);  // add back card ;
-			return false;
-		}
-
-		if ( isMustChangeNewFetch )
-		{
-			pPlayerCard->onMoCard(nNewCard);  // replase new fetchest card ;
-		}
-		else
-		{
-			pPlayerCard->addDistributeCard(nNewCard);
-		}
-		
-		LOGFMTD("switch card avoid di hu ");
-		nNewCardGet = nNewCard;
-		return true;
-	};
-
-	if (getBankerIdx() != pPlayer->getIdx())
-	{
-		uint8_t nTryTimes = 0;
-		while (nTryTimes < 20 && pPlayerCard->isTingPai())
-		{
-			++nTryTimes;
-			nNewCard = 0;
-			auto nRet = plfChangeHoldCard(pPlayerCard, m_tPoker, isMustChangeNewFetch, nNewCard);
-			LOGFMTD("avoid tian di hu ret = %u , new card = %u", (uint8_t)nRet, nNewCard);
-			if (false == nRet)
-			{
-				nNewCard = 0;
-				break;
-			}
-		}
-	}
-	else
-	{
-		uint8_t nTryTimes = 0;
-		while (nTryTimes < 20 && pPlayerCard->isLocalCardCanHu())
-		{
-			++nTryTimes;
-			nNewCard = 0;
-			auto nRet = plfChangeHoldCard(pPlayerCard, m_tPoker, isMustChangeNewFetch, nNewCard);
-			LOGFMTD("avoid tian di hu ret = %u , new card = %u", (uint8_t)nRet, nNewCard);
-			if (false == nRet)
-			{
-				nNewCard = 0;
-				break;
-			}
-		}
-	}
-
-	return (0 != nNewCard);
-}
-
 void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
 {
 	jsSubInfo["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
@@ -1252,27 +1168,33 @@ bool NJMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 	// check lou hu state
 	checkLouHuState(nInvokeIdx,nCard);
 	// do check is any one need the card 
-	for (auto& ref : m_vMJPlayers)
-	{
-		if (ref == nullptr || nInvokeIdx == ref->getIdx())
-		{
-			continue;
-		}
+	return IMJRoom::isAnyPlayerPengOrHuThisCard(nInvokeIdx,nCard);
+	//for (auto& ref : m_vMJPlayers)
+	//{
+	//	if (ref == nullptr || nInvokeIdx == ref->getIdx())
+	//	{
+	//		continue;
+	//	}
 
-		auto pMJCard = (NJMJPlayerCard*)ref->getPlayerCard();
-		if (pMJCard->canPengWithCard(nCard))
-		{
-			return true;
-		}
+	//	auto pMJCard = (NJMJPlayerCard*)ref->getPlayerCard();
+	//	if ( pMJCard->canPengWithCard(nCard) )
+	//	{
+	//		return true;
+	//	}
 
-		if ( ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard)) )
-		{
-			return true;
-		}
+	//	if ( isCanGoOnMoPai() && pMJCard->canMingGangWithCard(nCard) )
+	//	{
+	//		return true;
+	//	}
 
-	}
+	//	if ( ((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard)) )
+	//	{
+	//		return true;
+	//	}
 
-	return false;
+	//}
+
+	//return false;
 }
 
 void NJMJRoom::checkLouHuState(uint8_t nInvokeIdx, uint8_t nCard)

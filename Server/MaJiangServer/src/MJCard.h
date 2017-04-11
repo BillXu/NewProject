@@ -15,7 +15,6 @@ public:
 	void pushCardToFron(uint8_t nCard)override;
 	uint8_t getLeftCardCount()override;
 	uint8_t distributeOneCard()override { return getCard(); }
-	uint8_t switchCardFromCardWall(uint8_t nCard);
 	void shuffle()override;
 	void debugCardInfo();
 	void initAllCard( eMJGameType eType );

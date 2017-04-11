@@ -53,61 +53,6 @@ uint8_t CMJCard::getLeftCardCount()
 	return m_vAllCards.size() - m_nCurCardIdx ;
 }
 
-uint8_t CMJCard::switchCardFromCardWall( uint8_t nCard )
-{
-	if ( nCard == 0 || card_Type(nCard ) >= eCT_Max )
-	{
-		LOGFMTE("can not change invalid card = %u",nCard );
-		return 0;
-	}
-
-	Assert(m_vAllCards.size() > m_nCurCardIdx, "can not do this act for current situation");
-	uint16_t nTryTimes = 0;
-	while ( nTryTimes <= 20 )
-	{
-		++nTryTimes;
-		uint8_t nTargetIdx = m_nCurCardIdx + rand() % (m_vAllCards.size() - m_nCurCardIdx);
-		if (nTargetIdx >= m_vAllCards.size())
-		{
-			continue;
-		}
-
-		if (m_vAllCards[nTargetIdx] == nCard)
-		{
-			continue;
-		}
-
-		// find orig card idx 
-		bool bFind = false;
-		uint8_t nOrgigIdx = 0;
-		for (uint8_t nIdx = 0; nIdx < m_nCurCardIdx; ++nIdx)
-		{
-			if ( nCard == m_vAllCards[nIdx] )
-			{
-				bFind = true;
-				nOrgigIdx = nIdx;
-				break;
-			}
-		}
-
-		if (false == bFind)
-		{
-			LOGFMTE("why can not find orig card");
-			return 0;
-		}
-
-		auto nResultCard = m_vAllCards[nTargetIdx];
-		// do switch the card 
-		m_vAllCards[nTargetIdx] = nCard;
-		m_vAllCards[nOrgigIdx] = nResultCard;
-		LOGFMTD("do changed card = %u %u",nCard,nResultCard);
-		return nResultCard;
-	}
-	
-	LOGFMTE("do change card error ");
-	return 0;
-}
-
 void CMJCard::shuffle()
 {
 	uint16_t n = 0 ;
@@ -121,28 +66,28 @@ void CMJCard::shuffle()
 	m_nCurCardIdx = 0 ;
 	// set new card 
 #ifdef _DEBUG
-	VEC_UINT8 vHoldCard;
-	vHoldCard.push_back(make_Card_Num(eCT_Wan,1));
-	vHoldCard.push_back(make_Card_Num(eCT_Wan, 1));
-	vHoldCard.push_back(make_Card_Num(eCT_Wan, 9));
-	vHoldCard.push_back(make_Card_Num(eCT_Wan, 9));
+	//VEC_UINT8 vHoldCard;
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan,1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 9));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 9));
 
-	for ( uint8_t nIdx = 1; nIdx <= 9; ++nIdx )
-	{
-		vHoldCard.push_back(make_Card_Num(eCT_Wan, nIdx ) );
-	}
+	//for ( uint8_t nIdx = 1; nIdx <= 9; ++nIdx )
+	//{
+	//	vHoldCard.push_back(make_Card_Num(eCT_Wan, nIdx ) );
+	//}
 
-	// set new card erase old
-	for ( auto& ref : vHoldCard )
-	{
-		auto iter = std::find(m_vAllCards.begin(),m_vAllCards.end(),ref);
-		m_vAllCards.erase(iter);
-	}
-	vHoldCard.insert(vHoldCard.end(),m_vAllCards.begin(),m_vAllCards.end());
-	m_vAllCards.swap(vHoldCard);
+	//// set new card erase old
+	//for ( auto& ref : vHoldCard )
+	//{
+	//	auto iter = std::find(m_vAllCards.begin(),m_vAllCards.end(),ref);
+	//	m_vAllCards.erase(iter);
+	//}
+	//vHoldCard.insert(vHoldCard.end(),m_vAllCards.begin(),m_vAllCards.end());
+	//m_vAllCards.swap(vHoldCard);
 #endif
 	// send new 
-	debugPokerInfo();
+	//debugPokerInfo();
 }
 
 void CMJCard::debugCardInfo()

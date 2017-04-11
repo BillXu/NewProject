@@ -924,15 +924,20 @@ bool IMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 		}
 
 		auto pMJCard = ref->getPlayerCard();
-		if (pMJCard->canPengWithCard(nCard) || ( (ref->isHaveLouHuFlag() == false ) && pMJCard->canHuWitCard(nCard) ) )
+		if (pMJCard->canPengWithCard(nCard) )
 		{
 			return true;
 		}
 
-		//if (isCanGoOnMoPai() && pMJCard->canMingGangWithCard(nCard) ) // must can gang , will not run here , will return when check peng ;
-		//{
-		//	return true;
-		//}
+		if ( isCanGoOnMoPai() && pMJCard->canMingGangWithCard(nCard) ) // must can gang , will not run here , will return when check peng ;
+		{
+			return true;
+		}
+
+		if (((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard)))
+		{
+			return true;
+		}
 
 		if (ref->getIdx() == (nInvokeIdx + 1) % getSeatCnt())
 		{
@@ -975,6 +980,10 @@ void IMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::v
 		{
 			jsActs[jsActs.size()] = eMJAct_MingGang;
 			// already add in peng ;  vWaitPengGangIdx
+			if (vWaitPengGangIdx.empty())
+			{
+				vWaitPengGangIdx.push_back(ref->getIdx());
+			}
 		}
 
 		if (ref->getIdx() == (nInvokeIdx + 1) % getSeatCnt())
