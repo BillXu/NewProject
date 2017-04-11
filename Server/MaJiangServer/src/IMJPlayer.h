@@ -58,8 +58,4 @@ public:
 	virtual void addMingGangCnt() = 0;
 	virtual void setIsOnline(bool isOnline) = 0;
 	virtual bool isOnline() = 0;
-	
-	virtual void signFlag( uint32_t nFlag ) = 0 ;
-	virtual bool isHaveFlag( uint32_t nFlag ) = 0;
-	virtual void clearFlag( uint32_t nFlag ) = 0;
 };

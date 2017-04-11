@@ -1170,6 +1170,7 @@ void NJMJRoom::sendPlayersCardInfo(uint32_t nSessionID)
 		Json::Value jsCardInfo;
 		jsCardInfo["idx"] = pp->getIdx();
 		jsCardInfo["newMoCard"] = 0;
+		jsCardInfo["isBaoTing"] = pCard->isHaveFlag(ePlayerFlag_TianTing) ? 1 : 0 ;
 		if (getCurRoomState()->getStateID() == eRoomState_WaitPlayerAct && getCurRoomState()->getCurIdx() == pp->getIdx())
 		{
 			jsCardInfo["newMoCard"] = pp->getPlayerCard()->getNewestFetchedCard();

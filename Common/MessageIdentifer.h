@@ -41,9 +41,9 @@ enum eMsgPort
 
 enum ePlayerFlag
 {
-	ePlayerFlag_TianHu,
-	ePlayerFlag_WaitCheckTianTing,
-	ePlayerFlag_TianTing,
+	ePlayerFlag_CanTianHu = 1,
+	ePlayerFlag_WaitCheckTianTing = 1 << 1,
+	ePlayerFlag_TianTing = 1 << 2 ,
 };
 
 enum eMsgType 

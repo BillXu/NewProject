@@ -10,6 +10,7 @@ public:
 	{
 		IMJRoomState::enterState(pmjRoom, jsTranData);
 		m_isAutoBuHuaOrHuaGang = false;
+		m_isAutoChuPai = false;
 		m_nHuaCard = -1;
 		setStateDuringTime(pmjRoom->isWaitPlayerActForever() ? 100000000 : eTime_WaitPlayerAct);
 		if (jsTranData["idx"].isNull() == false && jsTranData["idx"].isUInt())
@@ -21,7 +22,8 @@ public:
 				LOGFMTE("room id = %u , player idx = %u  can not check hua bu ", getRoom()->getRoomID(),m_nIdx );
 			}
 
-			auto nNewCard = ((NJMJPlayerCard*)pPlayer->getPlayerCard())->getHuaCardToBuHua();
+			auto pPeerCard = (NJMJPlayerCard*)pPlayer->getPlayerCard();
+			auto nNewCard = pPeerCard->getHuaCardToBuHua();
 			if ( (uint8_t)-1 != nNewCard )
 			{
 				m_nHuaCard = nNewCard;
@@ -36,8 +38,12 @@ public:
 
 			getRoom()->onWaitPlayerAct(m_nIdx, m_isCanPass);
 
-			// check tuo guan 
-			getRoom()->onCheckTrusteeForWaitPlayerAct(m_nIdx, m_isCanPass);
+			// check auto chu pai 
+			if ( m_isCanPass == false && pPeerCard->isHaveFlag(ePlayerFlag_TianTing) )
+			{
+				m_isAutoChuPai = true;
+				setStateDuringTime(0.5); // a little delay 
+			}
 			return;
 		}
 		assert(0 && "invalid argument");
@@ -47,7 +53,18 @@ public:
 	{
 		if (!m_isAutoBuHuaOrHuaGang)
 		{
-			MJRoomStateWaitPlayerAct::onStateTimeUp();
+			if ( m_isAutoChuPai ) // do auto chu pai 
+			{
+				auto p = getRoom()->getMJPlayerByIdx(m_nIdx);
+				Json::Value jsAct;
+				jsAct["actType"] = eMJAct_Chu;
+				jsAct["card"] = p->getPlayerCard()->getNewestFetchedCard();
+				this->onMsg(jsAct, MSG_PLAYER_ACT, ID_MSG_PORT_CLIENT, p->getSessionID());
+			}
+			else
+			{
+				MJRoomStateWaitPlayerAct::onStateTimeUp();
+			}
 			return;
 		}
 
@@ -96,6 +113,26 @@ public:
 				LOGFMTD("doing bu hua or hua gang , can not do other things ");
 				return true;
 			}
+
+			if ( eMJAct_Pass == actType )
+			{
+				MJRoomStateWaitPlayerAct::onMsg(prealMsg, nMsgType, eSenderPort, nSessionID);
+				auto pPlayer = getRoom()->getMJPlayerBySessionID(nSessionID);
+				if (pPlayer == nullptr || pPlayer->getIdx() != m_nIdx)
+				{
+					LOGFMTE("you should not do act , so skip");
+					return false;
+				}
+
+				auto pPeerCard = (NJMJPlayerCard*)pPlayer->getPlayerCard();
+				// check auto chu pai 
+				if ( pPeerCard->isHaveFlag(ePlayerFlag_TianTing))
+				{
+					m_isAutoChuPai = true;
+					setStateDuringTime(0.5); // a little delay 
+				}
+				return true;
+			}
 		}
 
 
@@ -105,4 +142,5 @@ public:
 protected:
 	bool m_isAutoBuHuaOrHuaGang;
 	uint8_t m_nHuaCard;
+	bool m_isAutoChuPai;
 };

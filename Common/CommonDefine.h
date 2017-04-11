@@ -182,6 +182,7 @@ enum eMJActType
 	eMJAct_HuaGang, // 花杠
 	eMJAct_Followed, // 连续跟了4张牌，要罚钱了
 	eMJAct_4Feng, // 前4张出了4张不一样的风牌
+	eMJAct_Ting,
 	eMJAct_Max,
 };
 

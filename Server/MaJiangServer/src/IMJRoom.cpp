@@ -544,6 +544,11 @@ void IMJRoom::startGame()
 		{
 			auto nCard = pPoker->distributeOneCard();
 			pPlayer->getPlayerCard()->onMoCard(nCard);
+			pPlayer->getPlayerCard()->signFlag(ePlayerFlag_CanTianHu);
+		}
+		else
+		{
+			pPlayer->getPlayerCard()->signFlag(ePlayerFlag_WaitCheckTianTing);
 		}
 	}
 	LOGFMTI("room id = %u start game !",getRoomID());

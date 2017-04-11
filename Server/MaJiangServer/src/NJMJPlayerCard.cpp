@@ -169,6 +169,18 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 		return false;
 	}
 
+	if (isHaveFlag(ePlayerFlag_CanTianHu))
+	{
+		// do tian hu ;
+		vHuTypes.push_back( eFanxing_TianHu );
+		nHuHuaCnt += 500;
+	}
+	else if ( isHaveFlag(ePlayerFlag_TianTing) )
+	{
+		// di hu ;
+		vHuTypes.push_back( eFanxing_DiHu );
+		nHuHuaCnt += 20;
+	}
 	// check fanxing and bei shu 
 	auto bHunYise = checkHunYiSe(vHuTypes, nHuHuaCnt);
 	if (!bHunYise)
@@ -236,7 +248,7 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 	
 	do
 	{
-		if (bRet == false)
+		if ( bRet == false )
 		{
 			break;
 		}

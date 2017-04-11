@@ -58,10 +58,6 @@ public:
 	bool isHaveLouHuFlag()final;
 	void clearLouHuFlag() final;
 	void signLouHuFlag() final;
-
-	void signFlag(uint32_t nFlag)final;
-	bool isHaveFlag(uint32_t nFlag)final;
-	void clearFlag(uint32_t nFlag)final;
 private:
 	bool m_isLouHu;
 	bool m_isTempLeave;
@@ -85,5 +81,4 @@ private:
 	uint8_t m_nAnGangCnt;
 
 	bool m_isOnline;
-	uint32_t m_nFlag;
 };

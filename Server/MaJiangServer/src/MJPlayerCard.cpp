@@ -141,6 +141,7 @@ void MJPlayerCard::reset()
 	m_nJIang = 0;
 	m_nDanDiao = 0;
 	m_vLouPenged.clear();
+	m_nFlag = 0;
 }
 
 void MJPlayerCard::addDistributeCard(uint8_t nCardNum)
@@ -718,6 +719,8 @@ bool MJPlayerCard::onChuCard(uint8_t nChuCard)
 
 	//debugCardInfo();
 	m_vLouPenged.clear();
+	clearFlag(ePlayerFlag_CanTianHu);
+	clearFlag( ePlayerFlag_WaitCheckTianTing );
 	return true;
 }
 
@@ -1960,5 +1963,20 @@ uint8_t MJPlayerCard::tryBestFindLeastNotShun(VEC_CARD& vCard, SET_NOT_SHUN& vNo
 void MJPlayerCard::addLouPengedCard(uint8_t nLouPengedCard)
 {
 	m_vLouPenged.push_back(nLouPengedCard);
+}
+
+void MJPlayerCard::signFlag(uint32_t nFlag)
+{
+	m_nFlag = m_nFlag | nFlag;
+}
+
+bool MJPlayerCard::isHaveFlag(uint32_t nFlag)
+{
+	return (m_nFlag & nFlag);
+}
+
+void MJPlayerCard::clearFlag(uint32_t nFlag)
+{
+	m_nFlag = (m_nFlag & (~nFlag));
 }
 
