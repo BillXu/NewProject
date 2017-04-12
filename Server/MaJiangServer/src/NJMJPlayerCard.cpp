@@ -116,6 +116,7 @@ void NJMJPlayerCard::onBuHua(uint8_t nHuaCard, uint8_t nCard)
 
 bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::vector<uint16_t>& vHuTypes, uint16_t& nHuHuaCnt, uint16_t& nHardAndSoftHua, bool& isSpecailHuPai, uint8_t nInvokerIdx )
 {
+	nHardAndSoftHua = 0;
 	nHuHuaCnt = 0;
 	vHuTypes.clear();
 	bool bisSpecailHu = false;
@@ -129,23 +130,13 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 			return false;
 		}
 		bisSpecailHu = getIsSpecailHu(nCard, vHuTypes,nHuHuaCnt,nInvokerIdx ) || getIsDanDiaoHu(nCard, vHuTypes, nHuHuaCnt );
-		if (!bisSpecailHu)
-		{
-			addCardToVecAsc(m_vCards[type], nCard);
-		}
+		addCardToVecAsc(m_vCards[type], nCard);
 	}
 	else
 	{
 		bisSpecailHu = getIsZiMoSpecailHu(vHuTypes,nHuHuaCnt);
 	}
 	isSpecailHuPai = bisSpecailHu;
-	if ( isSpecailHuPai )
-	{
-		// default add 10 hua , pao 10 ; 
-		nHuHuaCnt += 10;
-		nHardAndSoftHua = getAllHuaCnt(nCard); // all soft and hard hua 
-		return true;
-	}
 
 	auto funRemoveAddToCard = [this](uint8_t nCard)
 	{
@@ -159,7 +150,19 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 		m_vCards[type].erase(iter);
 	};
 
-	if ( false == bisSpecailHu && MJPlayerCard::isHoldCardCanHu() == false )
+	if (isSpecailHuPai)
+	{
+		// default add 10 hua , pao 10 ; 
+		nHuHuaCnt += 10;
+		nHardAndSoftHua = getAllHuaCnt(nCard); // all soft and hard hua 
+		if (!isZiMo)
+		{
+			funRemoveAddToCard(nCard);
+		}
+		return true;
+	}
+
+	if (  MJPlayerCard::isHoldCardCanHu() == false )
 	{
 		debugCardInfo();
 		if (!isZiMo)
@@ -1492,7 +1495,7 @@ bool NJMJPlayerCard::checkYaDang(uint8_t nCard)
 
 bool NJMJPlayerCard::checkDuZhan(uint8_t nCard)
 {
-	if (nCard != m_nJIang)
+	if ( nCard != m_nJIang )
 	{
 		return false;
 	}
@@ -1502,37 +1505,38 @@ bool NJMJPlayerCard::checkDuZhan(uint8_t nCard)
 	auto iter = std::find(vCard.begin(), vCard.end(), nCard);
 	vCard.erase(iter);
 
-	SET_NOT_SHUN vNotShun[eCT_Max];
-	for (uint8_t nIdx = 0; nIdx < eCT_Max; ++nIdx )
-	{
-		getNotShuns(m_vCards[nIdx], vNotShun[nIdx], eCT_Feng == nIdx || eCT_Jian == nIdx);
-	}
-
+	//SET_NOT_SHUN vNotShun[eCT_Max];
+	//for (uint8_t nIdx = 0; nIdx < eCT_Max; ++nIdx )
+	//{
+	//	getNotShuns(m_vCards[nIdx], vNotShun[nIdx], eCT_Feng == nIdx || eCT_Jian == nIdx);
+	//}
+	std::set<uint8_t> vCanHus;
+	getCanHuCards(vCanHus);
 	addCardToVecAsc(vCard, nCard);
- 
-	for (uint8_t nsidx = 0; nsidx < eCT_Max; ++nsidx)
-	{
-		if ( vNotShun[nsidx].empty())
-		{
-			continue;
-		}
+	return vCanHus.size() == 1;
+	//for (uint8_t nsidx = 0; nsidx < eCT_Max; ++nsidx)
+	//{
+	//	if ( vNotShun[nsidx].empty())
+	//	{
+	//		continue;
+	//	}
 
-		if (vNotShun[nsidx].size() >= 2)
-		{
-			return false;
-		}
+	//	if (vNotShun[nsidx].size() >= 2)
+	//	{
+	//		return false;
+	//	}
 
-		if (vNotShun[nsidx].size() >= 1 && nsidx != nType)
-		{
-			return false;
-		}
+	//	if (vNotShun[nsidx].size() >= 1 && nsidx != nType)
+	//	{
+	//		return false;
+	//	}
 
-		auto iter = vNotShun[nsidx].begin();
-		if (iter->vCards.size() != 1)
-		{
-			return false;
-		}
-	}
+	//	auto iter = vNotShun[nsidx].begin();
+	//	if (iter->vCards.size() != 1)
+	//	{
+	//		return false;
+	//	}
+	//}
 	
 
 	return true ;
@@ -1574,22 +1578,35 @@ bool NJMJPlayerCard::checkBianZhi(uint8_t nCard)
 		return false;
 	}
 
-	// remove still can holse card hu 
-	auto& vCard = m_vCards[nType];
-	auto iter = std::find(vCard.begin(), vCard.end(), nPre);
-	vCard.erase(iter);
+	// only hu one card 
+	{
+		auto& vCard = m_vCards[nType];
+		auto iter = std::find(vCard.begin(), vCard.end(), nCard);
+		vCard.erase(iter);
 
-	iter = std::find(vCard.begin(), vCard.end(), nCard);
-	vCard.erase(iter);
+		std::set<uint8_t> vCanHus;
+		getCanHuCards(vCanHus);
+		addCardToVecAsc(vCard, nCard);
+		return vCanHus.size() == 1;
+	}
 
-	iter = std::find(vCard.begin(), vCard.end(), nNext);
-	vCard.erase(iter);
 
-	auto isOk = MJPlayerCard::isHoldCardCanHu();
-	addCardToVecAsc(vCard, nPre);
-	addCardToVecAsc(vCard, nCard);
-	addCardToVecAsc(vCard, nNext);
-	return isOk;
+	// left not used 
+	//auto& vCard = m_vCards[nType];
+	//auto iter = std::find(vCard.begin(), vCard.end(), nPre);
+	//vCard.erase(iter);
+
+	//iter = std::find(vCard.begin(), vCard.end(), nCard);
+	//vCard.erase(iter);
+
+	//iter = std::find(vCard.begin(), vCard.end(), nNext);
+	//vCard.erase(iter);
+
+	//auto isOk = MJPlayerCard::isHoldCardCanHu();
+	//addCardToVecAsc(vCard, nPre);
+	//addCardToVecAsc(vCard, nCard);
+	//addCardToVecAsc(vCard, nNext);
+	//return isOk;
 }
 
 bool NJMJPlayerCard::checkQueYi(uint8_t nCard)
