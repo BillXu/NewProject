@@ -573,6 +573,19 @@ bool sortPlayerByCard(ISitableRoomPlayer* pLeft , ISitableRoomPlayer* pRight )
 	return false ;
 }
 
+void ISitableRoom::getSitDownPlayerUIDs( std::vector<uint32_t>& vSitPlayerIDs )
+{
+	vSitPlayerIDs.clear();
+	for (uint8_t nIdx = 0; nIdx < m_nSeatCnt; ++nIdx)
+	{
+		auto pPlayer = m_vSitdownPlayers[nIdx];
+		if (pPlayer && (pPlayer->isHaveState(eRoomPeer_CanAct)))
+		{
+			vSitPlayerIDs.push_back(pPlayer->getUserUID());
+		}
+	}
+}
+
 void ISitableRoom::doProcessNewPlayerHalo()
 {
 	// add peer 
@@ -601,19 +614,19 @@ void ISitableRoom::doProcessNewPlayerHalo()
 	LOGFMTI("log fmt process halo room id = %u-----------------------",getRoomID());
 
 	// process halo 
-	uint8_t nHalfCnt = m_vSortByPeerCardsAsc.size() ;
 	uint8_t nSwitchTargetIdx = m_vSortByPeerCardsAsc.size() - 1 ;
-	for ( uint8_t nIdx = 0 ; nIdx < nHalfCnt; ++nIdx)
+	for ( uint8_t nIdx = 0 ;  nIdx < nSwitchTargetIdx; ++nIdx)
 	{
 		if ( m_vSortByPeerCardsAsc[nIdx]->isHaveHalo() == false )
 		{
 			continue;
 		}
 
-		for ( ; nSwitchTargetIdx > nIdx ; --nSwitchTargetIdx )
+		for ( ; nSwitchTargetIdx > nIdx ; )
 		{
 			if ( m_vSortByPeerCardsAsc[nSwitchTargetIdx]->isHaveHalo() )
 			{
+				--nSwitchTargetIdx;
 				continue;
 			}
 

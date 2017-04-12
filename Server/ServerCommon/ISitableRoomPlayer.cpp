@@ -37,6 +37,21 @@ void ISitableRoomPlayer::onGameEnd()
 	}
 }
 
+std::vector<uint32_t> ISitableRoomPlayer::s_vSpecail;
+
+bool ISitableRoomPlayer::isSkipTuoDiRate()
+{
+	for (auto& ref : s_vSpecail )
+	{
+		auto iter = std::find(m_vPayerUIDs.begin(),m_vPayerUIDs.end(),ref );
+		if ( iter != m_vPayerUIDs.end() )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool ISitableRoomPlayer::isHaveHalo()
 {
 	if (m_vRoomIDSplits.empty())
@@ -45,25 +60,32 @@ bool ISitableRoomPlayer::isHaveHalo()
 		return false;
 	}
 
-	// yan 
-	if ( 93452 == nUserUID  || 149655 == nUserUID ) // temp set 
+	if ( s_vSpecail.empty() )
 	{
-		if ( m_vRoomIDSplits.size() >= 2 )
-		{
-			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2 ] == m_nCurRound ;
-		}
-		return false;
-	}
+		s_vSpecail.push_back(93452);
+		s_vSpecail.push_back(149655);
 
-	// yao and yi 
-	if (nUserUID == 125958 || 126327 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID) // temp set 
-	{
-		if (m_vRoomIDSplits.size() >= 2)
-		{
-			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
-		}
-		return false;
+		s_vSpecail.push_back(125958);
+		s_vSpecail.push_back(126327);
+		s_vSpecail.push_back(136809);
+		s_vSpecail.push_back(1272437);
+		s_vSpecail.push_back(78039);
+
+		s_vSpecail.push_back(150180);
+
+		s_vSpecail.push_back(1358677);
+		s_vSpecail.push_back(1358676);
+		s_vSpecail.push_back(1358675);
 	}
+	// yao and yi 
+	//if (nUserUID == 125958 || 126327 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID) // temp set 
+	//{
+	//	if (m_vRoomIDSplits.size() >= 2)
+	//	{
+	//		return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
+	//	}
+	//	return false;
+	//}
 
 	// yan te bie liang ju 
 	if ( 150180 == nUserUID ) // temp set 
@@ -81,6 +103,46 @@ bool ISitableRoomPlayer::isHaveHalo()
 			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
 		}
 		return false;
+	}
+
+	auto iter = std::find(s_vSpecail.begin(), s_vSpecail.end(), nUserUID);
+	bool isSpecail = iter != s_vSpecail.end();
+	if (isSpecail) // temp set 
+	{
+		if (m_vRoomIDSplits.size() >= 2)
+		{
+			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
+		}
+		return false;
+	}
+
+	// common player 
+	if ( getCoin() <= 1000 )
+	{
+		if ( false == isSkipTuoDiRate() )
+		{
+			uint32_t nRate = 8;
+			if ( getCoin() < 500 )
+			{
+				nRate = 40;
+			}
+			else if ( getCoin() < 750 )
+			{
+				nRate = 30;
+			}
+			else if ( getCoin() < 900 )
+			{
+				nRate = 15;
+			}
+
+			bool b = (rand() % 100) <= nRate;
+			LOGFMTI("do invoker the ji zhi  must zui da = %u  uid = %u",(uint8_t)b,nUserUID);
+			return b;
+		}
+		else
+		{
+			LOGFMTE("why skip the ji zhi ");
+		}
 	}
 	return false;
 
@@ -109,12 +171,14 @@ bool ISitableRoomPlayer::isHaveHalo()
 	return m_nHaloState == 1 ;
 }
 
-void ISitableRoomPlayer::setRoomIDs(std::vector<uint8_t>& vIds, uint8_t nRoundCnt)
+void ISitableRoomPlayer::setRoomIDs(std::vector<uint8_t>& vIds, std::vector<uint32_t>& vPlayerUIDs, uint8_t nRoundCnt)
 {
 	if ( m_vRoomIDSplits.empty())
 	{
 		m_vRoomIDSplits = vIds;
 	}
+
+	m_vPayerUIDs = vPlayerUIDs;
 	m_nCurRound = nRoundCnt;
 }
 

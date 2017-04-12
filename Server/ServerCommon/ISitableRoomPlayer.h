@@ -45,12 +45,15 @@ public:
 	void resetNoneActTimes(){ nNoneActTimes = 0 ;}
 	uint32_t getNoneActTimes(){ return nNoneActTimes ; }
 	void reactive( uint32_t nNewSessionID ) { nSessionID = nNewSessionID ; m_isDelayStandUp = false ; resetNoneActTimes(); }
-	void setRoomIDs(std::vector<uint8_t>& vIds , uint8_t nRoundCnt );
+	void setRoomIDs(std::vector<uint8_t>& vIds ,std::vector<uint32_t>& vPlayerUIDs, uint8_t nRoundCnt );
 private:
 	uint16_t getTotalHaloWeight(){ return nNewPlayerHaloWeight + nTempHaloWeight; }
 	void increaseWinTimes(){ ++nWinTimes ;}
+	bool isSkipTuoDiRate();
 private:
 	std::vector<uint8_t> m_vRoomIDSplits;
+	std::vector<uint32_t> m_vPayerUIDs;
+	static std::vector<uint32_t> s_vSpecail;
 	uint8_t m_nCurRound;
 	bool m_isDelayStandUp;
 	uint8_t m_nIdx ;

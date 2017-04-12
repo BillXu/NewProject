@@ -43,6 +43,7 @@ public:
 	void onGameDidEnd()override ;
 	void onGameWillBegin()override ;
 	void doProcessNewPlayerHalo()final;
+	void getSitDownPlayerUIDs(std::vector<uint32_t>& vSitPlayerIDs );
 	size_t getSortedPlayerCnt(){ return m_vSortByPeerCardsAsc.size() ; }
 	ISitableRoomPlayer* getSortedPlayerByIdx( uint8_t nIdx )
 	{

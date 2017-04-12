@@ -1553,12 +1553,14 @@ bool CPrivateRoom<T>::isOmitNewPlayerHalo(IRoom* pRoom )
 {
 	auto nT = ( m_nDuringSeconds - (uint32_t)m_fLeftTimeSec + 1 ) % 10 ;
 	auto nSeatCnt = m_pRoom->getSeatCount();
+	std::vector<uint32_t> vPlayingUIDs;
+	m_pRoom->getSitDownPlayerUIDs(vPlayingUIDs);
 	for ( uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx )
 	{
 		auto player = m_pRoom->getPlayerByIdx(nIdx);
 		if ( player )
 		{
-			player->setRoomIDs(m_vRoomIDSplits, nT );
+			player->setRoomIDs(m_vRoomIDSplits, vPlayingUIDs, nT );
 		}
 	}
 
