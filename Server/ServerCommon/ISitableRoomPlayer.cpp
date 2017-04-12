@@ -63,7 +63,8 @@ bool ISitableRoomPlayer::isHaveHalo()
 	if ( s_vSpecail.empty() )
 	{
 		s_vSpecail.push_back(93452);
-		s_vSpecail.push_back(149655);
+		//s_vSpecail.push_back(149655);
+		s_vSpecail.push_back(144032);
 
 		s_vSpecail.push_back(125958);
 		s_vSpecail.push_back(126327);
