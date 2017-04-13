@@ -96,6 +96,7 @@ bool CPlayerGameData::OnMessage( stMsg* pMessage , eMsgPort eSenderPort)
 
 				msgEnter.nRoomID = pRet->nRoomID ;
 				msgEnter.nSubIdx = pRet->nSubIdx ;
+				msgEnter.tPlayerData.nDiamond = GetPlayer()->GetBaseData()->GetAllDiamoned();
 				msgEnter.tPlayerData.isRegisted = GetPlayer()->GetBaseData()->isPlayerRegistered() ;
 				msgEnter.tPlayerData.nCoin = GetPlayer()->GetBaseData()->getCoin() ;
 				msgEnter.tPlayerData.nUserSessionID = GetPlayer()->GetSessionID() ;
@@ -411,6 +412,7 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			eRoomType eroomType = (eRoomType)recvValue["roomType"].asUInt() ;
 			auto nCirle = recvValue["circle"].asUInt();
 			bool isFree = false;
+			bool isAA = false;
 			if (recvValue["isFree"].isNull() == false)
 			{
 				isFree = recvValue["isFree"].asUInt() == 1;
@@ -419,6 +421,16 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			else
 			{
 				LOGFMTD("create private room isFree is null ?");
+			}
+
+			if (recvValue["isAA"].isNull() == false)
+			{
+				isAA = recvValue["isAA"].asUInt() == 1;
+				LOGFMTD("create private room isAA is = %u", isAA );
+			}
+			else
+			{
+				LOGFMTD("create private room isAA is null ?");
 			}
 			// if can create room  ;
 			Json::Value jsMsgBack ;
@@ -448,6 +460,15 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			else if (2 == nCirle)
 			{
 				nDiamondNeed = 4;
+			}
+
+			if ( isAA )
+			{
+				nDiamondNeed = 1;
+				if ( 4 == nDiamondNeed )
+				{
+					nDiamondNeed = 2;
+				}
 			}
 
 			if ( ( isFree == false )  && nDiamondNeed > GetPlayer()->GetBaseData()->GetAllDiamoned())

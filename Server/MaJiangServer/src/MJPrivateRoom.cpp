@@ -30,6 +30,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	m_nInitCoin = vJsValue["initCoin"].asUInt();
 	m_nChatID = vJsValue["chatRoomID"].asUInt();
 	m_isForFree = false;
+	m_isAA = false;
 	memset(&m_stConfig, 0, sizeof(m_stConfig));
 	m_stConfig.nConfigID = 0;
 	m_stConfig.nBaseBet = 1;//;vJsValue["baseBet"].asUInt();
@@ -70,6 +71,16 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	else
 	{
 		LOGFMTD("create private room isFree is null ?");
+	}
+
+	if (vJsValue["isAA"].isNull() == false)
+	{
+		m_isAA = vJsValue["isAA"].asUInt() == 1;
+		LOGFMTD("create private room m_isAA is = %u", m_isAA);
+	}
+	else
+	{
+		LOGFMTD("create private room m_isAA is null ?");
 	}
 
 	m_pRoom = doCreateMJRoom((eRoomType)m_stConfig.nGameType);
@@ -121,7 +132,16 @@ bool MJPrivateRoom::onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)
 
 uint8_t MJPrivateRoom::checkPlayerCanEnter(stEnterRoomData* pEnterRoomPlayer)
 {
-	if (m_pRoom )
+	if ( m_isAA )
+	{
+		if (pEnterRoomPlayer->nDiamond < getDiamondNeed())
+		{
+			// diamond is not enough 
+			return 3;
+		}
+	}
+
+	if ( m_pRoom )
 	{
 		return m_pRoom->checkPlayerCanEnter(pEnterRoomPlayer);
 	}
@@ -405,6 +425,7 @@ void MJPrivateRoom::sendRoomInfo(uint32_t nSessionID)
 	jsMsg["initCircle"] = m_nInitCircle;
 	jsMsg["roomType"] = m_pRoom->getRoomType();
 	jsMsg["chatID"] = m_nChatID;
+	jsMsg["isAA"] = m_isAA ? 1 : 0;
 	// is waiting vote dismiss room ;
 	jsMsg["isWaitingDismiss"] = m_bWaitDismissReply ? 1 : 0;
 	int32_t nLeftSec = 0;
@@ -557,26 +578,38 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 	{
 		m_bComsumedRoomCards = true;
 		// comsum room card ;
-		if (false == isCurrentFree())
+		auto nCardCnt = getDiamondNeed();
+		if ( nCardCnt > 0 )
 		{
-			uint16_t nCardCnt = 2;//m_nInitCircle * ROOM_CARD_CNT_PER_CIRLE_NJMJ; // { 2, 3, 6}
-			if (1 == m_nInitCircle)
-			{
-				nCardCnt = 2;
-			}
-			else if (2 == m_nInitCircle)
-			{
-				nCardCnt = 4;
-			}
-			else // 4 quan
-			{
-				nCardCnt = 8;
-			}
 			LOGFMTD("send msg to consumed vip room card = %u", nCardCnt);
 			Json::Value jsConsumed;
 			jsConsumed["cardCnt"] = nCardCnt;
 			jsConsumed["uid"] = m_nOwnerUID;
 			m_pRoomMgr->sendMsg(jsConsumed, MSG_CONSUM_VIP_ROOM_CARDS, 0, ID_MSG_PORT_DATA);
+
+			// if aa kou ka  , kou every one
+			if ( m_isAA )
+			{
+				for (uint8_t nSeatIdx = 0; nSeatIdx < m_pRoom->getSeatCnt(); ++nSeatIdx)
+				{
+					auto pPlayer = m_pRoom->getMJPlayerByIdx(nSeatIdx);
+					if (pPlayer == nullptr)
+					{
+						LOGFMTE( "player idx = %u is null in room id = %u , comsume diamond error",nSeatIdx,m_pRoom->getRoomID() );
+						continue;
+					}
+
+					if (m_nOwnerUID == pPlayer->getUID())
+					{
+						continue;
+					}
+
+					Json::Value jsConsumed;
+					jsConsumed["cardCnt"] = nCardCnt;
+					jsConsumed["uid"] = pPlayer->getUID();
+					m_pRoomMgr->sendMsg(jsConsumed, MSG_CONSUM_VIP_ROOM_CARDS, 0, ID_MSG_PORT_DATA);
+				}
+			}
 		}
 	}
 
@@ -601,6 +634,38 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 bool MJPrivateRoom::isLastCircle()
 {
 	return m_nLeftCircle == 1;
+}
+
+uint8_t MJPrivateRoom::getDiamondNeed()
+{
+	if ( m_isForFree)
+	{
+		return 0;
+	}
+
+	uint16_t nCardCnt = 2;//m_nInitCircle * ROOM_CARD_CNT_PER_CIRLE_NJMJ; // { 2, 3, 6}
+	if (1 == m_nInitCircle)
+	{
+		nCardCnt = 2;
+	}
+	else if (2 == m_nInitCircle)
+	{
+		nCardCnt = 4;
+	}
+	else // 4 quan
+	{
+		nCardCnt = 8;
+	}
+
+	if ( m_isAA )
+	{
+		nCardCnt = 1;
+		if ( 4 == m_nInitCircle )
+		{
+			nCardCnt = 2;
+		}
+	}
+	return nCardCnt;
 }
 
 void MJPrivateRoom::onRoomGameOver(bool isDismissed)
@@ -757,7 +822,7 @@ uint32_t MJPrivateRoom::getCoinNeedToSitDown()
 	return m_pRoom->getCoinNeedToSitDown();
 }
 
-IGameRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
+IMJRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
 {
 	switch (eMJType )
 	{
