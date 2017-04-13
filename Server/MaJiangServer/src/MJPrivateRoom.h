@@ -38,7 +38,7 @@ public:
 	stBaseRoomConfig* getRoomConfig()override;
 	void sendRoomInfo(uint32_t nSessionID)override;
 	uint32_t getCoinNeedToSitDown()override;
-	IGameRoom* doCreateMJRoom( eRoomType eMJType );
+	IMJRoom* doCreateMJRoom( eRoomType eMJType );
 
 	void sendRoomMsg(Json::Value& prealMsg, uint16_t nMsgType)final;
 	void sendMsgToPlayer(Json::Value& prealMsg, uint16_t nMsgType, uint32_t nSessionID)final;
@@ -53,11 +53,13 @@ public:
 	bool isCurrentFree(){ return m_isForFree; }
 	bool isLastCircle();
 	std::shared_ptr<IGameRoomRecorder> getRoomRecorder()override;
+	uint8_t getDiamondNeed();
 protected:
 	IGameRoomManager* m_pRoomMgr;
 	uint32_t m_nOwnerUID;
 	uint32_t m_nChatID;
 	bool m_isForFree;
+	bool m_isAA;
 
 	uint8_t m_nLeftCircle;
 	uint8_t m_nInitCircle;
@@ -73,7 +75,7 @@ protected:
 	bool m_bDoDismissRoom;
 
 	eRoomState m_eState;
-	IGameRoom* m_pRoom;
+	IMJRoom* m_pRoom;
 
 	stNiuNiuRoomConfig m_stConfig;
 

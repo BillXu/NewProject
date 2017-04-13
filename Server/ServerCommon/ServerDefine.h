@@ -18,6 +18,7 @@ struct stEnterRoomData
 	uint8_t nPlayerType ; // ePlayerType 
 	bool isRegisted ;
 	uint32_t nCoin ;
+	uint32_t nDiamond;
 };
 
 
