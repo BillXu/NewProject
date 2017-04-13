@@ -390,3 +390,5 @@ PaiYouQuan/
 Server/VerifyServer/src/testTask.h
 Server/VerifyServer/src/httpServer/main.cpp
 Server/ServerCommon/boost/
+Server/ServerSP.VC.VC.opendb
+*.db
