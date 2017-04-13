@@ -136,6 +136,12 @@ public:
 			else if (eMJAct_Chu == actType)
 			{
 				auto pPlayer = getRoom()->getMJPlayerBySessionID(nSessionID);
+				if ( pPlayer == nullptr || pPlayer->getIdx() != m_nIdx )
+				{
+					LOGFMTE("you are not in this room , or not your turn to chu room id= %u",getRoom()->getRoomID());
+					return false;
+				}
+
 				auto pPeerCard = (NJMJPlayerCard*)pPlayer->getPlayerCard();
 				if ( pPeerCard->isHaveFlag(ePlayerFlag_TianTing) )
 				{
