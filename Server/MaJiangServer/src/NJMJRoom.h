@@ -94,6 +94,7 @@ public:
 	bool isHaveLouPeng()override{ return true; }
 	bool isEnableSiLianFeng() { return m_isEnableSiLianFeng; }
 	bool isLastRoundLastBankLianZhuang();
+	void doProcessChuPaiFanQian();
 protected:
 	void checkLouHuState(uint8_t nInvokeIdx, uint8_t nCard);
 	bool isLianZhuang();
@@ -129,4 +130,8 @@ protected:
 	bool m_isKuaiChong;
 	uint32_t m_nInitKuaiChongPool;
 	uint32_t m_nKuaiChongPool;
+
+	bool m_isWillProcessChuPaiFaQian;
+	uint8_t m_nChuPaiPlayerIdx;  // used for check chu pai fa qian 
+	uint8_t m_nChuedCard; // used for check chu pai fa qian 
 };

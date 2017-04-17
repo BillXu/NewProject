@@ -134,7 +134,7 @@ uint8_t MJPrivateRoom::checkPlayerCanEnter(stEnterRoomData* pEnterRoomPlayer)
 {
 	if ( m_isAA )
 	{
-		if (pEnterRoomPlayer->nDiamond < getDiamondNeed())
+		if ( m_bComsumedRoomCards == false && pEnterRoomPlayer->nDiamond < getDiamondNeed() )
 		{
 			// diamond is not enough 
 			return 3;
@@ -700,6 +700,7 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 			continue;
 		}
 
+		// kou chu room fee , if is jing yuan zi 95
 		iter->second.nRoomCoin = pp->getCoin();
 		iter->second.nAnGangCnt = pp->getAnGangCnt();
 		iter->second.nDianPaoCnt = pp->getDianPaoCnt();
@@ -708,6 +709,11 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		if (eRoom_MJ_NanJing == pRoom->getRoomType())
 		{
 			iter->second.nWaiBaoCoin = ((NJMJPlayer*)pp)->getWaiBaoCoin();
+
+			if ( m_nInitCoin == 95 )
+			{
+				iter->second.nRoomCoin -= 5;
+			}
 		}
 		iter->second.nMingGangCnt = pp->getMingGangCnt();
 		iter->second.nZiMoCnt = pp->getZiMoCnt();

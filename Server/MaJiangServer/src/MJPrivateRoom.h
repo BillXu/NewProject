@@ -12,7 +12,7 @@ public:
 		uint32_t nSessionID;
 		uint32_t nUID;
 		uint32_t nRealCoin;
-		uint32_t nRoomCoin;
+		int32_t nRoomCoin;
 
 		uint8_t nDianPaoCnt;
 		uint8_t nHuCnt;

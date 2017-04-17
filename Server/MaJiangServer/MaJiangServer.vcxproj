@@ -88,7 +88,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\GameRecorderMgr.h" />
-    <ClInclude Include="src\GameReplayMgr.h" />
     <ClInclude Include="src\IGameRecorder.h" />
     <ClInclude Include="src\IGameRoom.h" />
     <ClInclude Include="src\IMJPlayer.h" />
@@ -97,9 +96,11 @@
     <ClInclude Include="src\IMJRoomState.h" />
     <ClInclude Include="src\MJCard.h" />
     <ClInclude Include="src\MJDefine.h" />
+    <ClInclude Include="src\MJGameReplayManager.h" />
     <ClInclude Include="src\MJPlayer.h" />
     <ClInclude Include="src\MJPlayerCard.h" />
     <ClInclude Include="src\MJPrivateRoom.h" />
+    <ClInclude Include="src\MJReplayFrameType.h" />
     <ClInclude Include="src\MJRoomManager.h" />
     <ClInclude Include="src\MJRoomStateAskForPengOrHu.h" />
     <ClInclude Include="src\MJRoomStateAskForRobotGang.h" />
@@ -138,11 +139,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GameRecorderMgr.cpp" />
-    <ClCompile Include="src\GameReplayMgr.cpp" />
     <ClCompile Include="src\IGameRecorder.cpp" />
     <ClCompile Include="src\IMJRoom.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MJCard.cpp" />
+    <ClCompile Include="src\MJGameReplayManager.cpp" />
     <ClCompile Include="src\MJPlayer.cpp" />
     <ClCompile Include="src\MJPlayerCard.cpp" />
     <ClCompile Include="src\MJPrivateRoom.cpp" />

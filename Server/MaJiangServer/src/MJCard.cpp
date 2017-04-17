@@ -92,6 +92,7 @@ void CMJCard::shuffle()
 
 void CMJCard::debugCardInfo()
 {
+	return;
 	printf("card Info: \n");
 	for ( uint8_t nCard : m_vAllCards )
 	{

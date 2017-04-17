@@ -4,6 +4,7 @@
 #include "NJMJRoom.h"
 #include "NJMJPlayerCard.h"
 #include "IMJPlayer.h"
+#include "MJReplayFrameType.h"
 class NJRoomStateBuHua
 	:public IMJRoomState
 {
@@ -172,6 +173,15 @@ public:
 				Json::Value jsMsg;
 				jsMsg["acts"] = jsArrayActs;
 				getRoom()->sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_AFTER_RECEIVED_CARD, pPlayer->getSessionID());
+
+				// add wait frame 
+				Json::Value jsFrameArg, jsFrameActs;
+				jsFrameActs[jsFrameActs.size()] = eMJAct_Ting;
+				auto ptrReplay = getRoom()->getGameReplay()->createFrame(eMJFrame_WaitPlayerAct, 0);
+				jsFrameArg["idx"] = nIdx;
+				jsFrameArg["act"] = jsFrameActs;
+				ptrReplay->setFrameArg(jsFrameArg);
+				getRoom()->getGameReplay()->addFrame(ptrReplay);
 			}
 		}
 		return m_vWaitBaoTingIdx.empty() == false;

@@ -18,6 +18,7 @@
 #include "NJMJPlayerRecorderInfo.h"
 #include <ctime>
 #include "MJPrivateRoom.h"
+#include "MJReplayFrameType.h"
 #define PUNISH_COIN_BASE 5 
 #define AN_GANG_COIN_BASE 5 
 #define MING_GANG_COIN_BASE 10
@@ -135,6 +136,9 @@ void NJMJRoom::willStartGame()
 	IMJRoom::willStartGame();
 	m_vSettle.clear();
 	m_tChuedCards.clear();
+	m_isWillProcessChuPaiFaQian = false;
+	m_nChuedCard = 0;
+	m_nChuPaiPlayerIdx = -1;
 
 	if ((uint8_t)-1 == m_nBankerIdx )
 	{
@@ -199,6 +203,19 @@ void NJMJRoom::startGame()
 	Json::Value jsMsg;
 	packStartGameMsg(jsMsg);
 	sendRoomMsg(jsMsg, MSG_ROOM_START_GAME);
+
+	// replay arg 
+	Json::Value jsReplayInfo;
+	jsReplayInfo["roomID"] = getRoomID();
+	jsReplayInfo["time"] = (uint32_t)time(nullptr);
+	jsReplayInfo["isKuaiChong"] = m_isKuaiChong ? 1 : 0 ;
+	jsReplayInfo["kuaiChongPool"] = m_isKuaiChong ? m_nKuaiChongPool : 0;
+	jsReplayInfo["yuanZiCoin"] = m_nInitCoin;
+	jsReplayInfo["isHuaZa"] = m_isEnableHuaZa ? 1 : 0;
+	jsReplayInfo["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
+	jsReplayInfo["isWaiBao"] = isEnableWaiBao() ? 1 : 0;
+	jsReplayInfo["isSiLianFeng"] = isEnableSiLianFeng() ? 1 : 0;
+	getGameReplay()->setReplayRoomInfo(jsReplayInfo);
 }
 
 void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
@@ -233,7 +250,7 @@ void NJMJRoom::onGameEnd()
 	Json::Value jsDetial;
 
 	auto ptrSingleRecorder = getRoomRecorder()->createSingleRoundRecorder();
-	ptrSingleRecorder->init( getRoomRecorder()->getRoundRecorderCnt(), (uint32_t)time(nullptr), 0);
+	ptrSingleRecorder->init( getRoomRecorder()->getRoundRecorderCnt(), (uint32_t)time(nullptr), getGameReplay()->getReplayID() );
 	getRoomRecorder()->addSingleRoundRecorder(ptrSingleRecorder);
 
 	bool isAnyOneHu = false;
@@ -352,6 +369,14 @@ void NJMJRoom::onPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
 	msg["card"] = nHuaCard;
 	msg["gangCard"] = nNewCard;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_BuHua, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["hua"] = nHuaCard;
+	jsFrameArg["newCard"] = nNewCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
@@ -428,6 +453,14 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 	pPlayerWin->addOffsetCoin(nWin);
 	st.addWin(nIdx, nWin);
 	addSettle(st);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_HuaGang, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["hua"] = nGangCard;
+	jsFrameArg["newCard"] = nNewCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void NJMJRoom::onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
@@ -1325,12 +1358,31 @@ void NJMJRoom::addSettle(stSettle& tSettle)
 void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 {
 	IMJRoom::onPlayerChu(nIdx,nCard);
+	m_tChuedCards.addChuedCard(nCard, nIdx);
+	m_isWillProcessChuPaiFaQian = true;
+	m_nChuPaiPlayerIdx = nIdx;  // used for check chu pai fa qian 
+	m_nChuedCard = nCard; // used for check chu pai fa qian 
+	if ( false == isAnyPlayerRobotGang( nIdx,nCard ) )  // is any one can hu this card ?
+	{
+		doProcessChuPaiFanQian();
+	}
+}
 
+void NJMJRoom::doProcessChuPaiFanQian()
+{
+	if ( false == m_isWillProcessChuPaiFaQian )
+	{
+		return;
+	}
+	m_isWillProcessChuPaiFaQian = false;
+
+	auto nIdx = m_nChuPaiPlayerIdx;
+	auto nCard = m_nChuedCard;
 	// check chu 4 feng 
 	{
 		auto pChuPaiPlayer = getMJPlayerByIdx(nIdx);
 		auto pcard = (NJMJPlayerCard*)pChuPaiPlayer->getPlayerCard();
-		if ( isEnableSiLianFeng() && pcard->isChued4Feng() )
+		if (isEnableSiLianFeng() && pcard->isChued4Feng())
 		{
 			// do caculate ;
 			stSettle st;
@@ -1380,7 +1432,6 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 
 	}
 
-	m_tChuedCards.addChuedCard(nCard,nIdx);
 	uint8_t nFanQianTarget = -1;
 	uint8_t nSettleType = 0;
 	// reset songGang idx 
@@ -1388,10 +1439,10 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	auto pcard = (NJMJPlayerCard*)pActPlayer->getPlayerCard();
 	pcard->setSongGangIdx(-1);
 
-	if ( m_tChuedCards.isInvokerFanQian(nFanQianTarget) )
+	if (m_tChuedCards.isInvokerFanQian(nFanQianTarget))
 	{
 		nSettleType = eMJAct_Followed;
-		LOGFMTD("room id = %u gen feng fa qian , card = %u , idx = %u",getRoomID(),nCard,nIdx );
+		LOGFMTD("room id = %u gen feng fa qian , card = %u , idx = %u", getRoomID(), nCard, nIdx);
 	}
 	else
 	{
@@ -1412,16 +1463,16 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	{
 		return;
 	}
-	
+
 	m_isWillBiXiaHu = true;
 	// do fanqian logic
 	auto pLosePlayer = getMJPlayerByIdx(nFanQianTarget);
-	uint8_t nNeedAllCoin = PUNISH_COIN_BASE * 3 * (isBiXiaHu() ? 2 : 1 );
-	uint8_t nPerPlayer = PUNISH_COIN_BASE * (isBiXiaHu() ? 2 : 1 );
+	uint8_t nPerPlayer = PUNISH_COIN_BASE * (isBiXiaHu() ? 2 : 1);
+	uint8_t nNeedAllCoin = nPerPlayer * 3;
 	uint8_t nLingTou = 0;
 	if (isKuaiChong())
 	{
-		if (nNeedAllCoin > m_nKuaiChongPool )
+		if (nNeedAllCoin > m_nKuaiChongPool)
 		{
 			nPerPlayer = m_nKuaiChongPool / 3;
 			nLingTou = m_nKuaiChongPool - nPerPlayer * 3;
@@ -1431,18 +1482,22 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	}
 	else
 	{
-		if (nNeedAllCoin > pLosePlayer->getCoin())
+		if (nNeedAllCoin > pLosePlayer->getCoin())  // if not enough all , then kong fa to all
 		{
-			nPerPlayer = pLosePlayer->getCoin() / 3;
-			nLingTou = pLosePlayer->getCoin() - nPerPlayer * 3;
-			nNeedAllCoin = pLosePlayer->getCoin();
+			//nPerPlayer = pLosePlayer->getCoin() / 3;
+			//nLingTou = pLosePlayer->getCoin() - nPerPlayer * 3;
+			//nNeedAllCoin = pLosePlayer->getCoin();
+
+			nPerPlayer = 0;
+			nLingTou = 0;
+			nNeedAllCoin = 0;
 		}
 		pLosePlayer->addOffsetCoin(-1 * (int32_t)nNeedAllCoin);
 	}
 
 	stSettle st;
 	st.eSettleReason = (eMJActType)nSettleType;
-	st.addLose(nFanQianTarget,nNeedAllCoin);
+	st.addLose(nFanQianTarget, nNeedAllCoin);
 	// give winner 
 	for (uint8_t nIdx = 0; nIdx < 4; ++nIdx)
 	{
@@ -1454,7 +1509,7 @@ void NJMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 
 		auto pWiner = getMJPlayerByIdx(nRIdx);
 		uint16_t nWin = nPerPlayer;
-		if ( nLingTou > 0 )
+		if (nLingTou > 0)
 		{
 			++nWin;
 			--nLingTou;

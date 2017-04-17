@@ -96,7 +96,7 @@ void MJPlayer::setCoin( int32_t nNewCoin)
 
 void MJPlayer::addOffsetCoin(int32_t nOffset)
 {
-	if (nOffset < 0 && (-1 * nOffset) >(int32_t)getCoin())
+	if (nOffset < 0 && (-1 * nOffset) > getCoin() )
 	{
 		LOGFMTE( "do not have so much money to offset = %d ,have = %u",nOffset,getCoin() );
 		m_nOffset -= m_nCoin;
@@ -104,7 +104,7 @@ void MJPlayer::addOffsetCoin(int32_t nOffset)
 		return;
 	}
 	m_nOffset += nOffset;
-	m_nCoin = (int32_t)m_nCoin + nOffset;
+	m_nCoin =  m_nCoin + nOffset;
 
 	//// sync coin to data svr ;
 	//Json::Value jsReq;

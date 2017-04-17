@@ -94,5 +94,8 @@
     <ClInclude Include="..\..\Common\IPeerCard.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\ServerCommon\IGameReplay.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

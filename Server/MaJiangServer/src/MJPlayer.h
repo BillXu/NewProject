@@ -67,7 +67,7 @@ private:
 	uint32_t m_nSessioID;
 	uint8_t m_nIdx;
 	int32_t m_nOffset;
-	uint32_t m_nCoin;
+	int32_t m_nCoin;
 	bool m_isHaveGang;
 	bool m_isDeclareBuGang;
 	bool m_isTrusteed; // is tuo guan ?

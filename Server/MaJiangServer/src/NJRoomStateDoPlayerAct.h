@@ -8,6 +8,16 @@ class NJRoomStateDoPlayerAct
 	:public MJRoomStateDoPlayerAct
 {
 public:
+	void enterState(IMJRoom* pmjRoom, Json::Value& jsTranData)override
+	{
+		MJRoomStateDoPlayerAct::enterState(pmjRoom, jsTranData);
+		if (eMJAct_Hu != m_eActType && eMJAct_Chu != m_eActType )
+		{
+			auto pRoom = (NJMJRoom*)getRoom();
+			pRoom->doProcessChuPaiFanQian();
+		}
+	}
+
 	void doAct()override
 	{
 		switch (m_eActType)
@@ -39,6 +49,7 @@ public:
 		case eMJAct_BuGang_Declare:
 		case eMJAct_AnGang:
 		case eMJAct_MingGang:
+		case eMJAct_Chu:
 		{
 			if (getRoom()->isGameOver())
 			{
@@ -65,7 +76,6 @@ public:
 			MJRoomStateDoPlayerAct::onStateTimeUp();
 			break;
 		}
-
 	}
 
 	float getActTime()override 

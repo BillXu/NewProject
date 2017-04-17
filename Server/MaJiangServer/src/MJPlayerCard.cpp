@@ -1691,10 +1691,7 @@ uint8_t MJPlayerCard::getLestQue(SET_NOT_SHUN& vNotShun, bool bFindJiang, bool b
 
 void MJPlayerCard::debugCardInfo()
 {
-#ifndef _DEBUG
 	return;
-#endif // !_DEBUG
-
 	
 	LOGFMTD("card info start !");
 	for (uint8_t eType = 0; eType < eCT_Max; ++eType)
