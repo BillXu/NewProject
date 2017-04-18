@@ -29,7 +29,7 @@ connection::connection(asio::ip::tcp::socket socket,
 
 void connection::start()
 {
-  std::cout << "new connect \n";
+  //std::cout << "new connect \n";
   do_read();
 }
 
