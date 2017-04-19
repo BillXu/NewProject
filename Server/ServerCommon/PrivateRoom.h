@@ -1184,7 +1184,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			m_pRoom->sendRoomMsg(jsresult,MSG_ROOM_GAME_STATE_CHANGED) ;
 			LOGFMTD("room id = %u , set state to %u",getRoomID(),getRoomState()) ;
 			m_bRoomInfoDiry = true ;
-
+		
 			// temp code 
 			serializationToDB() ;
 			// temp code 
@@ -1192,6 +1192,12 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 		break;
 	case MSG_APPLY_TAKE_IN:
 		{
+		// new add function 
+			if ( m_isControlTakeIn )
+			{
+				m_isControlTakeIn = eRoomState_Opening == m_eState;
+			}
+
 			uint32_t nTakeIn = prealMsg["takeIn"].asUInt() ;
 #ifdef GAME_365
 			if (!m_isControlTakeIn && ( nTakeIn == 1000u || nTakeIn == 5000u ) )

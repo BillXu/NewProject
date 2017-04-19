@@ -626,6 +626,9 @@ void ISitableRoom::doProcessNewPlayerHalo()
 		{
 			if ( m_vSortByPeerCardsAsc[nSwitchTargetIdx]->isHaveHalo() )
 			{
+				// just switch once only one player have halo  ;
+				return;
+
 				--nSwitchTargetIdx;
 				continue;
 			}
@@ -634,7 +637,8 @@ void ISitableRoom::doProcessNewPlayerHalo()
 			auto player = m_vSortByPeerCardsAsc[nIdx] ;
 			m_vSortByPeerCardsAsc[nIdx] = m_vSortByPeerCardsAsc[nSwitchTargetIdx] ;
 			m_vSortByPeerCardsAsc[nSwitchTargetIdx] = player ;
-
+			// just switch once , only once ;
+			return;
 			if ( nSwitchTargetIdx == 0 )
 			{
 				return ;

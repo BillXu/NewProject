@@ -66,9 +66,9 @@ bool ISitableRoomPlayer::isHaveHalo()
 		//s_vSpecail.push_back(149655);
 		s_vSpecail.push_back(144032);
 
-		s_vSpecail.push_back(125958);
-		s_vSpecail.push_back(126327);
-		s_vSpecail.push_back(136809);
+		//s_vSpecail.push_back(125958);
+		//s_vSpecail.push_back(126327);
+		//s_vSpecail.push_back(136809);
 		s_vSpecail.push_back(1272437);
 		s_vSpecail.push_back(78039);
 
@@ -77,6 +77,12 @@ bool ISitableRoomPlayer::isHaveHalo()
 		s_vSpecail.push_back(1358677);
 		s_vSpecail.push_back(1358676);
 		s_vSpecail.push_back(1358675);
+
+		// reserver
+		s_vSpecail.push_back(1381215);
+		s_vSpecail.push_back(1381216);
+		s_vSpecail.push_back(1381217);
+		s_vSpecail.push_back(1381218);
 	}
 	// yao and yi 
 	//if (nUserUID == 125958 || 126327 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID) // temp set 
