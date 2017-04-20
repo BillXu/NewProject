@@ -51,7 +51,7 @@ public:
 		case eMJAct_MingGang:
 		case eMJAct_Chu:
 		{
-			if (getRoom()->isGameOver())
+			if ( getRoom()->isInternalShouldClosedAll() )
 			{
 				getRoom()->goToState(eRoomState_GameEnd);
 				return;

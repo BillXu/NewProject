@@ -535,7 +535,7 @@ void CPlayerMailComponent::processSysOfflineEvent(stRecievedMail& pMail)
 
 void CPlayerMailComponent::onPlayerReconnected()
 {
-	LOGFMTD("player uid = %u reconnected ok process special event") ;
+	//LOGFMTD("player uid = %u reconnected ok process special event") ;
 	InformRecievedUnreadMails() ;
 	ProcessSpecailMail();
 }

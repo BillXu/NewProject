@@ -7,15 +7,17 @@
 CAppleVerifyTask::CAppleVerifyTask( uint32_t nTaskID ) 
 	:IVerifyTask(nTaskID)
 {
-#ifndef NDEBUG
+//#ifndef NDEBUG
+//	m_tHttpRequest.init("https://sandbox.itunes.apple.com/verifyReceipt");
+//#else
+//	m_tHttpRequest.init("https://buy.itunes.apple.com/verifyReceipt");
+//#endif
+//
+//#if defined(GAME_IN_REVIEW)
+//	m_tHttpRequest.init("https://sandbox.itunes.apple.com/verifyReceipt");
+//#endif 
+	LOGFMTI("apple verify sandbox ok");
 	m_tHttpRequest.init("https://sandbox.itunes.apple.com/verifyReceipt");
-#else
-	m_tHttpRequest.init("https://buy.itunes.apple.com/verifyReceipt");
-#endif
-
-#if defined(GAME_IN_REVIEW)
-	m_tHttpRequest.init("https://sandbox.itunes.apple.com/verifyReceipt");
-#endif 
 	m_tHttpRequest.setDelegate(this);
 }
 

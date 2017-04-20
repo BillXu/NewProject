@@ -294,7 +294,7 @@ void CDBManager::OnMessage(stMsg* pmsg , eMsgPort eSenderPort , uint32_t nSessio
 			stMsgSaveDeleteCircleTopic* pRet = (stMsgSaveDeleteCircleTopic*)pmsg ;
 			pRequest->eType = eRequestType_Update ;
 			pRequest->nSqlBufferLen = sprintf_s(pRequest->pSqlBuffer,sizeof(pRequest->pSqlBuffer),
-				"UPDATE circletopic SET isDelete = '1' WHERE topicID = '%d' and isDelete = '0' ",pRet->nTopicID) ;
+				"UPDATE circletopic SET isDelete = '1' WHERE topicID = '%I64d' and isDelete = '0' ",pRet->nTopicID) ;
 		}
 		break;
 	case MSG_CIRCLE_READ_TOPICS:
