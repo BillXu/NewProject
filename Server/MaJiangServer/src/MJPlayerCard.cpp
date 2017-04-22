@@ -1356,7 +1356,7 @@ bool MJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
 					vCanHuCards.insert(a);
 				}
 
-				if (card_Value(a) <= 9)
+				if (card_Value(b) <= 9)
 				{
 					vCanHuCards.insert(b);
 				}
