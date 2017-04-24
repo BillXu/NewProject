@@ -1231,7 +1231,7 @@ bool MJPlayerCard::pickNotShunZiOutIgnoreKeZi(VEC_CARD vCardIgnorKeZi, SET_NOT_S
 
 bool MJPlayerCard::is7PairTing()
 {
-	if (m_vPenged.empty() == false || false == m_vGanged.empty() || false == m_vEated.empty())
+	if (m_vPenged.empty() == false || m_vAnGanged.empty() == false || false == m_vGanged.empty() || false == m_vEated.empty())
 	{
 		return false;
 	}
@@ -1245,7 +1245,7 @@ bool MJPlayerCard::is7PairTing()
 
 bool MJPlayerCard::canHoldCard7PairHu()
 {
-	if (m_vPenged.empty() == false || false == m_vGanged.empty() || false == m_vEated.empty())
+	if (m_vPenged.empty() == false || m_vAnGanged.empty() == false || false == m_vGanged.empty() || false == m_vEated.empty())
 	{
 		return false;
 	}
