@@ -88,6 +88,7 @@ public:
 
 		m_isBiXiaHu = false;
 		m_isHuaZa = false;
+		m_isCircleType = true;
 	}
 
 	void setJingYuanZi(bool isJingYuanZi, uint32_t nYuanZiCoin, bool isWaiBao )
@@ -103,11 +104,12 @@ public:
 		m_nKuaiChongPool = nKuaiChongPool;
 	}
 
-	void setHuaZaBiXiaHu(bool isHuaZa, bool isBiXiaHu,bool isSiLianFeng )
+	void setHuaZaBiXiaHu(bool isHuaZa, bool isBiXiaHu,bool isSiLianFeng, bool isCircleType )
 	{
 		m_isBiXiaHu = isBiXiaHu;
 		m_isHuaZa = isHuaZa;
 		m_isSiLianFeng = isSiLianFeng;
+		m_isCircleType = isCircleType;
 	}
 
 	std::shared_ptr<ISingleRoundRecorder> createSingleRoundRecorder()override
@@ -133,6 +135,7 @@ public:
 		jsRoomOpts["isWaiBao"] = m_isWaiBao ? 1 : 0;
 
 		jsRoomOpts["isSiLianFeng"] = m_isSiLianFeng ? 1 : 0;
+		jsRoomOpts["isCircle"] = m_isCircleType ? 1 : 0;
 
 		jsMsg["roomOpts"] = jsRoomOpts;
 	}
@@ -148,6 +151,7 @@ protected:
 
 		jsRoomOpts["isHuaZa"] = m_isHuaZa;
 		jsRoomOpts["isBiXiaHu"] = m_isBiXiaHu;
+		jsRoomOpts["isCircle"] = m_isCircleType;
 
 		jsRoomOpts["isWaiBao"] = m_isWaiBao;
 
@@ -173,6 +177,12 @@ protected:
 
 		m_isWaiBao = jsRoomOpts["isWaiBao"].asBool();
 		m_isSiLianFeng = jsRoomOpts["isSiLianFeng"].asBool();
+
+		if ( jsRoomOpts["isCircle"].isNull() == false )
+		{
+			m_isCircleType = jsRoomOpts["isCircle"].asBool();
+		}
+
 	};
 protected:
 	bool m_isJinYuanZi;
@@ -185,4 +195,5 @@ protected:
 	bool m_isBiXiaHu;
 	bool m_isWaiBao;
 	bool m_isSiLianFeng;
+	bool m_isCircleType;
 };

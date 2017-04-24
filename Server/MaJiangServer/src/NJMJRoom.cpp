@@ -43,11 +43,25 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_pPrivateRoom = nullptr;
 	m_vSettle.clear();
 	m_isLianZhuang = false;
+	m_isJieZhuangBi = false;
+	m_isCirleType = true;
 	m_tChuedCards.clear();
 	if ( vJsValue["initCoin"].isNull() == false)
 	{
 		m_nInitCoin = vJsValue["initCoin"].asUInt();
 		m_isJingYuanZiMode = vJsValue["initCoin"].asUInt() < 500;
+	}
+
+	if (vJsValue["isCircle"].isNull() == false)
+	{
+		m_isCirleType = vJsValue["isCircle"].asUInt() == 1;
+		LOGFMTD("create private room isCircle is = %u", (uint8_t)m_isCirleType);
+	}
+
+	if ( vJsValue["isJieZhuangBi"].isNull() == false )
+	{
+		m_isJieZhuangBi = vJsValue["isJieZhuangBi"].asUInt() == 1;
+		LOGFMTD("create private room isJieZhuangBi is = %u", (uint8_t)m_isJieZhuangBi);
 	}
 
 	if (vJsValue["isHuaZa"].isNull() || vJsValue["isHuaZa"].isUInt() == false)
@@ -127,7 +141,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	auto pRoomRecorder = (NJMJRoomRecorder*)getRoomRecorder().get();
 	pRoomRecorder->setJingYuanZi(m_isJingYuanZiMode, m_nInitCoin, m_isEnableWaiBao );
 	pRoomRecorder->setKuaiChong( m_isKuaiChong,m_nInitKuaiChongPool);
-	pRoomRecorder->setHuaZaBiXiaHu(m_isEnableHuaZa,m_isEnableBixiaHu,m_isEnableSiLianFeng );
+	pRoomRecorder->setHuaZaBiXiaHu(m_isEnableHuaZa,m_isEnableBixiaHu,m_isEnableSiLianFeng,m_isCirleType );
 	return true;
 }
 
@@ -172,6 +186,7 @@ void NJMJRoom::packStartGameMsg(Json::Value& jsMsg)
 {
 	IMJRoom::packStartGameMsg(jsMsg);
 	jsMsg["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
+	jsMsg["isJieZhuangBi"] = m_isJieZhuangBi ? 1 : 0;
 }
 
 void NJMJRoom::startGame()
@@ -254,6 +269,7 @@ void NJMJRoom::onGameEnd()
 	getRoomRecorder()->addSingleRoundRecorder(ptrSingleRecorder);
 
 	bool isAnyOneHu = false;
+	uint8_t isBankerNextHu = false;
 	for (auto& ref : m_vMJPlayers)
 	{
 		Json::Value js;
@@ -273,6 +289,10 @@ void NJMJRoom::onGameEnd()
 		if (ref && ref->haveState(eRoomPeer_AlreadyHu))
 		{
 			isAnyOneHu = true;
+			if ( ref->getIdx() == (getBankerIdx() + 1) % getSeatCnt())
+			{
+				isBankerNextHu = true;
+			}
 			continue;
 		}
 	}
@@ -288,6 +308,11 @@ void NJMJRoom::onGameEnd()
 		Json::Value jsReal;
 		settleInfoToJson(jsReal);
 		jsMsg["realTimeCal"] = jsReal;
+	}
+
+	if (m_isJieZhuangBi && isBankerNextHu)  // jie zhuang bi 
+	{
+		m_isWillBiXiaHu = true;
 	}
 
 	bool isNextBiXiaWhu = m_isEnableBixiaHu && m_isWillBiXiaHu ;
@@ -1160,6 +1185,11 @@ bool NJMJRoom::isInternalShouldClosedAll()
 
 bool NJMJRoom::isOneCirleEnd()
 {
+	if (m_isCirleType == 0)
+	{
+		return true;
+	}
+
 	return ((3 == m_nBankerIdx) && (false == isLianZhuang()));
 }
 

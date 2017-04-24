@@ -67,6 +67,10 @@ void MJGameReplayManager::onConnectedSvr()
 
 		auto jsRow = jsData[(uint32_t)0];
 		m_nMaxReplayUID = jsRow["maxReplayID"].asUInt();
+#ifdef  _DEBUG
+		m_nMaxReplayUID = 0;
+#endif //  _DEBUG
+
 		LOGFMTD("maxReplayID id  = %u", m_nMaxReplayUID);
 	});
 }

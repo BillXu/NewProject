@@ -60,6 +60,7 @@ protected:
 	uint32_t m_nChatID;
 	bool m_isForFree;
 	bool m_isAA;
+	bool m_isCircleType;
 
 	uint8_t m_nLeftCircle;
 	uint8_t m_nInitCircle;

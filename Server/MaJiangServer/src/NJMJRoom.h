@@ -123,6 +123,8 @@ protected:
 	bool m_isEnableSiLianFeng;
 	bool m_isBaoPaiHappend;
 	bool m_isLianZhuang;
+	bool m_isJieZhuangBi;
+	bool m_isCirleType;
 
 	CMJCard m_tPoker;
 

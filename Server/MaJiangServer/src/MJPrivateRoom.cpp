@@ -26,11 +26,11 @@ MJPrivateRoom::~MJPrivateRoom()
 bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	m_nInitCircle = vJsValue["circle"].asUInt();
-	m_nLeftCircle = m_nInitCircle ;
 	m_nInitCoin = vJsValue["initCoin"].asUInt();
 	m_nChatID = vJsValue["chatRoomID"].asUInt();
 	m_isForFree = false;
 	m_isAA = false;
+	m_isCircleType = true;
 	memset(&m_stConfig, 0, sizeof(m_stConfig));
 	m_stConfig.nConfigID = 0;
 	m_stConfig.nBaseBet = 1;//;vJsValue["baseBet"].asUInt();
@@ -63,6 +63,18 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 		LOGFMTD("create private room ownerUID is null ?");
 	}
 
+	if (vJsValue["isCircle"].isNull() == false)
+	{
+		m_isCircleType = vJsValue["isCircle"].asUInt() == 1;
+		LOGFMTD("create private room isCircle is = %u", (uint8_t)m_isCircleType);
+	}
+
+	if ( !m_isCircleType )
+	{
+		m_nInitCircle *= 4;
+		vJsValue["circle"] = vJsValue["circle"].asUInt() * 4;
+	}
+
 	if (vJsValue["isFree"].isNull() == false)
 	{
 		m_isForFree = vJsValue["isFree"].asUInt() == 1 ;
@@ -90,6 +102,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 		LOGFMTE("create private room error , room type is null  type = %u",m_stConfig.nGameType);
 		return false;
 	}
+	m_nLeftCircle = m_nInitCircle;
 	LOGFMTD("create 1 private room");
 	((IMJRoom*)m_pRoom)->setDelegate(this);
 	auto bRet = m_pRoom->init(pRoomMgr, &m_stConfig, nSeialNum, nRoomID, vJsValue);
@@ -426,6 +439,7 @@ void MJPrivateRoom::sendRoomInfo(uint32_t nSessionID)
 	jsMsg["roomType"] = m_pRoom->getRoomType();
 	jsMsg["chatID"] = m_nChatID;
 	jsMsg["isAA"] = m_isAA ? 1 : 0;
+	jsMsg["isCircle"] = m_isCircleType ? 1 : 0;
 	// is waiting vote dismiss room ;
 	jsMsg["isWaitingDismiss"] = m_bWaitDismissReply ? 1 : 0;
 	int32_t nLeftSec = 0;
@@ -644,11 +658,11 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 	}
 
 	uint16_t nCardCnt = 2;//m_nInitCircle * ROOM_CARD_CNT_PER_CIRLE_NJMJ; // { 2, 3, 6}
-	if (1 == m_nInitCircle)
+	if (1 == m_nInitCircle || ( 4 == m_nInitCircle && !m_isCircleType ) )
 	{
 		nCardCnt = 2;
 	}
-	else if (2 == m_nInitCircle)
+	else if (2 == m_nInitCircle || (8 == m_nInitCircle && !m_isCircleType) )
 	{
 		nCardCnt = 4;
 	}
@@ -660,7 +674,7 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 	if ( m_isAA )
 	{
 		nCardCnt = 1;
-		if ( 4 == m_nInitCircle )
+		if ( 4 == m_nInitCircle || ( 16 == m_nInitCircle && !m_isCircleType))
 		{
 			nCardCnt = 2;
 		}

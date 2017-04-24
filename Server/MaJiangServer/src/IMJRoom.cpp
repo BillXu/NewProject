@@ -74,11 +74,11 @@ bool IMJRoom::onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)
 	}
 
 	uint8_t nEmptyIdx = -1;
-	for (uint8_t nIdx = 0; nIdx < getSeatCnt(); ++nIdx)
+	for (uint8_t nIdx = rand() % getSeatCnt(); nIdx < getSeatCnt() * 2; ++nIdx)
 	{
-		if (m_vMJPlayers[nIdx] == nullptr)
+		if (m_vMJPlayers[nIdx % getSeatCnt()] == nullptr)
 		{
-			nEmptyIdx = nIdx;
+			nEmptyIdx = nIdx % getSeatCnt();
 			break;
 		}
 	}
