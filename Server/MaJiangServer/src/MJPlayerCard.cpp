@@ -1228,7 +1228,7 @@ bool MJPlayerCard::pickNotShunZiOutIgnoreKeZi(VEC_CARD vCardIgnorKeZi, SET_NOT_S
 
 bool MJPlayerCard::is7PairTing()
 {
-	if (m_vPenged.empty() == false || false == m_vGanged.empty() || false == m_vEated.empty())
+	if (m_vPenged.empty() == false || false == m_vAnGanged.empty() || false == m_vGanged.empty() || false == m_vEated.empty())
 	{
 		return false;
 	}
@@ -1242,7 +1242,7 @@ bool MJPlayerCard::is7PairTing()
 
 bool MJPlayerCard::canHoldCard7PairHu()
 {
-	if (m_vPenged.empty() == false || false == m_vGanged.empty() || false == m_vEated.empty())
+	if (m_vPenged.empty() == false || false == m_vAnGanged.empty() || false == m_vGanged.empty() || false == m_vEated.empty())
 	{
 		return false;
 	}
@@ -1353,7 +1353,7 @@ bool MJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
 					vCanHuCards.insert(a);
 				}
 
-				if (card_Value(a) <= 9)
+				if (card_Value(b) <= 9)
 				{
 					vCanHuCards.insert(b);
 				}
