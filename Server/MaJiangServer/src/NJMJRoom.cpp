@@ -186,7 +186,6 @@ void NJMJRoom::packStartGameMsg(Json::Value& jsMsg)
 {
 	IMJRoom::packStartGameMsg(jsMsg);
 	jsMsg["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
-	jsMsg["isJieZhuangBi"] = m_isJieZhuangBi ? 1 : 0;
 }
 
 void NJMJRoom::startGame()
@@ -241,6 +240,7 @@ void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
 	jsSubInfo["isHuaZa"] = m_isEnableHuaZa ? 1 : 0;
 	jsSubInfo["isKuaiChong"] = isKuaiChong() ? 1 : 0;
 	jsSubInfo["isSiLianFeng"] = isEnableSiLianFeng() ? 1 : 0;
+	jsSubInfo["isJieZhuangBi"] = m_isJieZhuangBi ? 1 : 0;
 	if (isKuaiChong())
 	{
 		jsSubInfo["kuaiChongCoin"] = m_nInitKuaiChongPool;
