@@ -45,6 +45,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_isLianZhuang = false;
 	m_isJieZhuangBi = false;
 	m_isCirleType = true;
+	m_isJieZhuangInvoked = false;
 	m_tChuedCards.clear();
 	if ( vJsValue["initCoin"].isNull() == false)
 	{
@@ -141,7 +142,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	auto pRoomRecorder = (NJMJRoomRecorder*)getRoomRecorder().get();
 	pRoomRecorder->setJingYuanZi(m_isJingYuanZiMode, m_nInitCoin, m_isEnableWaiBao );
 	pRoomRecorder->setKuaiChong( m_isKuaiChong,m_nInitKuaiChongPool);
-	pRoomRecorder->setHuaZaBiXiaHu(m_isEnableHuaZa,m_isEnableBixiaHu,m_isEnableSiLianFeng,m_isCirleType );
+	pRoomRecorder->setHuaZaBiXiaHu(m_isEnableHuaZa,m_isEnableBixiaHu,m_isEnableSiLianFeng,m_isCirleType, m_isJieZhuangBi );
 	return true;
 }
 
@@ -151,6 +152,7 @@ void NJMJRoom::willStartGame()
 	m_vSettle.clear();
 	m_tChuedCards.clear();
 	m_isWillProcessChuPaiFaQian = false;
+	m_isJieZhuangInvoked = false;
 	m_nChuedCard = 0;
 	m_nChuPaiPlayerIdx = -1;
 
@@ -229,6 +231,7 @@ void NJMJRoom::startGame()
 	jsReplayInfo["isBiXiaHu"] = isBiXiaHu() ? 1 : 0;
 	jsReplayInfo["isWaiBao"] = isEnableWaiBao() ? 1 : 0;
 	jsReplayInfo["isSiLianFeng"] = isEnableSiLianFeng() ? 1 : 0;
+	jsReplayInfo["isJieZhuangBi"] = m_isJieZhuangBi ? 1 : 0;
 	getGameReplay()->setReplayRoomInfo(jsReplayInfo);
 }
 
@@ -310,9 +313,10 @@ void NJMJRoom::onGameEnd()
 		jsMsg["realTimeCal"] = jsReal;
 	}
 
-	if (m_isJieZhuangBi && isBankerNextHu)  // jie zhuang bi 
+	if ( false == m_isWillBiXiaHu && m_isJieZhuangBi && isBankerNextHu )  // jie zhuang bi 
 	{
 		m_isWillBiXiaHu = true;
+		m_isJieZhuangInvoked = true;
 	}
 
 	bool isNextBiXiaWhu = m_isEnableBixiaHu && m_isWillBiXiaHu ;
@@ -1350,7 +1354,17 @@ bool NJMJRoom::isLastRoundLastBankLianZhuang() // zui hou yi quan ,zuihou yi zhu
 	{
 		return false;
 	}
-	return  (m_pPrivateRoom->isLastCircle()) && (m_isWillBiXiaHu || m_isSiLianFengFaQian) && (3 == m_nBankerIdx);
+
+	if ( false == m_pPrivateRoom->isLastCircle())
+	{
+		return false;
+	}
+
+	if ( 3 != m_nBankerIdx )
+	{
+		return false;
+	}
+	return  ( m_isWillBiXiaHu || m_isSiLianFengFaQian ) && ( m_isJieZhuangInvoked == false );
 }
 
 void NJMJRoom::addSettle(stSettle& tSettle)

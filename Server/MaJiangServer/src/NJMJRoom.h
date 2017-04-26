@@ -125,6 +125,7 @@ protected:
 	bool m_isLianZhuang;
 	bool m_isJieZhuangBi;
 	bool m_isCirleType;
+	bool m_isJieZhuangInvoked;
 
 	CMJCard m_tPoker;
 
