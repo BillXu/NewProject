@@ -5,7 +5,7 @@ class IPeerCard ;
 class ISitableRoomPlayer
 {
 public:
-	ISitableRoomPlayer(){ nNoneActTimes = 0 ;}
+	ISitableRoomPlayer() { nNoneActTimes = 0; m_isNiuNiu = true; }
 	uint8_t getIdx(){return m_nIdx ;}
 	void setIdx( uint8_t nIdx){ m_nIdx = nIdx ;}
 	virtual void doSitdown(uint8_t nIdx ){ m_nIdx = nIdx ;}
@@ -45,7 +45,7 @@ public:
 	void resetNoneActTimes(){ nNoneActTimes = 0 ;}
 	uint32_t getNoneActTimes(){ return nNoneActTimes ; }
 	void reactive( uint32_t nNewSessionID ) { nSessionID = nNewSessionID ; m_isDelayStandUp = false ; resetNoneActTimes(); }
-	void setRoomIDs(std::vector<uint8_t>& vIds ,std::vector<uint32_t>& vPlayerUIDs, uint8_t nRoundCnt );
+	void setRoomIDs(std::vector<uint8_t>& vIds ,std::vector<uint32_t>& vPlayerUIDs, uint8_t nRoundCnt , bool isNiuNiu );
 private:
 	uint16_t getTotalHaloWeight(){ return nNewPlayerHaloWeight + nTempHaloWeight; }
 	void increaseWinTimes(){ ++nWinTimes ;}
@@ -54,6 +54,7 @@ private:
 	std::vector<uint8_t> m_vRoomIDSplits;
 	std::vector<uint32_t> m_vPayerUIDs;
 	static std::vector<uint32_t> s_vSpecail;
+	bool m_isNiuNiu;
 	uint8_t m_nCurRound;
 	bool m_isDelayStandUp;
 	uint8_t m_nIdx ;

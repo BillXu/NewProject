@@ -1566,7 +1566,7 @@ bool CPrivateRoom<T>::isOmitNewPlayerHalo(IRoom* pRoom )
 		auto player = m_pRoom->getPlayerByIdx(nIdx);
 		if ( player )
 		{
-			player->setRoomIDs(m_vRoomIDSplits, vPlayingUIDs, nT );
+			player->setRoomIDs(m_vRoomIDSplits, vPlayingUIDs, nT, getRoomType() == eRoom_NiuNiu );
 		}
 	}
 

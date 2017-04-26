@@ -77,46 +77,36 @@ bool ISitableRoomPlayer::isHaveHalo()
 		s_vSpecail.push_back(1358677);
 		s_vSpecail.push_back(1358676);
 		s_vSpecail.push_back(1358675);
+		s_vSpecail.push_back(1381216);
 
 		// reserver
 		s_vSpecail.push_back(1381215);
-		s_vSpecail.push_back(1381216);
 		s_vSpecail.push_back(1381217);
 		s_vSpecail.push_back(1381218);
-	}
-	// yao and yi 
-	//if (nUserUID == 125958 || 126327 == nUserUID || 136809 == nUserUID || 1272437 == nUserUID || 78039 == nUserUID) // temp set 
-	//{
-	//	if (m_vRoomIDSplits.size() >= 2)
-	//	{
-	//		return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
-	//	}
-	//	return false;
-	//}
+		s_vSpecail.push_back(1358678);
+		s_vSpecail.push_back(1358688);
 
-	// yan te bie liang ju 
-	if ( 150180 == nUserUID ) // temp set 
-	{
-		if (m_vRoomIDSplits.size() >= 1)
-		{
-			if (m_vRoomIDSplits.back() == m_nCurRound)
-			{
-				return true;
-			}
-		}
-		
-		if (m_vRoomIDSplits.size() >= 2)
-		{
-			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
-		}
-		return false;
+		// test
+		s_vSpecail.push_back(1399433);
+		s_vSpecail.push_back(1358675);
 	}
 
 	auto iter = std::find(s_vSpecail.begin(), s_vSpecail.end(), nUserUID);
 	bool isSpecail = iter != s_vSpecail.end();
 	if (isSpecail) // temp set 
 	{
-		if (m_vRoomIDSplits.size() >= 2)
+		if ( m_isNiuNiu == false ) // duo yi ju, jin hua
+		{
+			if (m_vRoomIDSplits.size() >= 1)
+			{
+				if (m_vRoomIDSplits.back() == m_nCurRound)
+				{
+					return true;
+				}
+			}
+		}
+
+		if ( m_vRoomIDSplits.size() >= 2 )
 		{
 			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
 		}
@@ -124,22 +114,27 @@ bool ISitableRoomPlayer::isHaveHalo()
 	}
 
 	// common player 
-	if ( getCoin() <= 1000 )
+	if ( getCoin() <= 1100 )
 	{
 		if ( false == isSkipTuoDiRate() )
 		{
-			uint32_t nRate = 8;
-			if ( getCoin() < 500 )
+			uint32_t nRate = 10;
+			if ( getCoin() < 600 )
 			{
 				nRate = 40;
 			}
-			else if ( getCoin() < 750 )
+			else if ( getCoin() < 850 )
 			{
 				nRate = 30;
 			}
-			else if ( getCoin() < 900 )
+			else if ( getCoin() < 1000 )
 			{
 				nRate = 15;
+			}
+
+			if ( m_isNiuNiu )
+			{
+				nRate += 5;
 			}
 
 			bool b = (rand() % 100) <= nRate;
@@ -178,7 +173,7 @@ bool ISitableRoomPlayer::isHaveHalo()
 	return m_nHaloState == 1 ;
 }
 
-void ISitableRoomPlayer::setRoomIDs(std::vector<uint8_t>& vIds, std::vector<uint32_t>& vPlayerUIDs, uint8_t nRoundCnt)
+void ISitableRoomPlayer::setRoomIDs(std::vector<uint8_t>& vIds, std::vector<uint32_t>& vPlayerUIDs, uint8_t nRoundCnt,bool isNiuNiu )
 {
 	if ( m_vRoomIDSplits.empty())
 	{
@@ -187,6 +182,7 @@ void ISitableRoomPlayer::setRoomIDs(std::vector<uint8_t>& vIds, std::vector<uint
 
 	m_vPayerUIDs = vPlayerUIDs;
 	m_nCurRound = nRoundCnt;
+	m_isNiuNiu = isNiuNiu;
 }
 
 void ISitableRoomPlayer::switchPeerCard(ISitableRoomPlayer* pPlayer )
