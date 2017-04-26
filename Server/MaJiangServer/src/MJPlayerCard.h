@@ -59,6 +59,11 @@ public:
 	virtual bool getCanHuCards(std::set<uint8_t>& vCanHuCards);
 
 	void addLouPengedCard( uint8_t nLouPengedCard )final;
+
+	void signFlag(uint32_t nFlag)final;
+	bool isHaveFlag(uint32_t nFlag)final;
+	void clearFlag(uint32_t nFlag)final;
+
 protected:
 	void addCardToVecAsc(VEC_CARD& vec, uint8_t nCard );
 	bool getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMustKeZiShun );
@@ -84,4 +89,6 @@ protected:
 	uint8_t m_nDanDiao;
 
 	VEC_CARD m_vLouPenged;
+
+	uint32_t m_nFlag;
 };

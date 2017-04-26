@@ -141,6 +141,7 @@ void MJPlayerCard::reset()
 	m_nJIang = 0;
 	m_nDanDiao = 0;
 	m_vLouPenged.clear();
+	m_nFlag = 0;
 }
 
 void MJPlayerCard::addDistributeCard(uint8_t nCardNum)
@@ -718,6 +719,8 @@ bool MJPlayerCard::onChuCard(uint8_t nChuCard)
 
 	//debugCardInfo();
 	m_vLouPenged.clear();
+	clearFlag(ePlayerFlag_CanTianHu);
+	clearFlag( ePlayerFlag_WaitCheckTianTing );
 	return true;
 }
 
@@ -1228,7 +1231,7 @@ bool MJPlayerCard::pickNotShunZiOutIgnoreKeZi(VEC_CARD vCardIgnorKeZi, SET_NOT_S
 
 bool MJPlayerCard::is7PairTing()
 {
-	if (m_vPenged.empty() == false || false == m_vAnGanged.empty() || false == m_vGanged.empty() || false == m_vEated.empty())
+	if (m_vPenged.empty() == false || m_vAnGanged.empty() == false || false == m_vGanged.empty() || false == m_vEated.empty())
 	{
 		return false;
 	}
@@ -1242,7 +1245,7 @@ bool MJPlayerCard::is7PairTing()
 
 bool MJPlayerCard::canHoldCard7PairHu()
 {
-	if (m_vPenged.empty() == false || false == m_vAnGanged.empty() || false == m_vGanged.empty() || false == m_vEated.empty())
+	if (m_vPenged.empty() == false || m_vAnGanged.empty() == false || false == m_vGanged.empty() || false == m_vEated.empty())
 	{
 		return false;
 	}
@@ -1688,10 +1691,7 @@ uint8_t MJPlayerCard::getLestQue(SET_NOT_SHUN& vNotShun, bool bFindJiang, bool b
 
 void MJPlayerCard::debugCardInfo()
 {
-#ifndef _DEBUG
 	return;
-#endif // !_DEBUG
-
 	
 	LOGFMTD("card info start !");
 	for (uint8_t eType = 0; eType < eCT_Max; ++eType)
@@ -1960,5 +1960,20 @@ uint8_t MJPlayerCard::tryBestFindLeastNotShun(VEC_CARD& vCard, SET_NOT_SHUN& vNo
 void MJPlayerCard::addLouPengedCard(uint8_t nLouPengedCard)
 {
 	m_vLouPenged.push_back(nLouPengedCard);
+}
+
+void MJPlayerCard::signFlag(uint32_t nFlag)
+{
+	m_nFlag = m_nFlag | nFlag;
+}
+
+bool MJPlayerCard::isHaveFlag(uint32_t nFlag)
+{
+	return (m_nFlag & nFlag);
+}
+
+void MJPlayerCard::clearFlag(uint32_t nFlag)
+{
+	m_nFlag = (m_nFlag & (~nFlag));
 }
 

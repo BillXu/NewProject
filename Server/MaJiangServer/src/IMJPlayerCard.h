@@ -41,4 +41,8 @@ public:
 	virtual uint32_t getNewestFetchedCard() = 0 ;
 
 	virtual void addLouPengedCard(uint8_t nLouPengedCard) = 0;
+
+	virtual void signFlag(uint32_t nFlag) = 0;
+	virtual bool isHaveFlag(uint32_t nFlag) = 0;
+	virtual void clearFlag(uint32_t nFlag) = 0;
 };

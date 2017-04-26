@@ -17,6 +17,7 @@
 #include "SZMJPlayerRecorderInfo.h"
 #include <ctime>
 #include "SZMJPlayerRecorderInfo.h"
+#include "MJReplayFrameType.h"
 bool SZMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
@@ -219,6 +220,15 @@ void SZMJRoom::onPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
 	auto nNewCard = getMJPoker()->distributeOneCard();
 	pActCard->onBuHua(nHuaCard, nNewCard);
 	player->signBuHuaFlag();
+
+	// add frame 
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_BuGang, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["hua"] = nHuaCard;
+	jsFrameArg["newCard"] = nNewCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 	// send msg ;
 	Json::Value msg;
 	msg["idx"] = nIdx;
