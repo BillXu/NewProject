@@ -9,7 +9,7 @@
 #define MAX_LEN_ROOM_INFORM 500  
 #define MAX_LEN_EMAIL 50
 #define MAX_LEN_SPEAK_WORDS 200  
-#define MAX_MSG_BUFFER_LEN 2048*3
+#define MAX_MSG_BUFFER_LEN 59640
 
 #define PEER_CARD_COUNT 3
 #define GOLDEN_PEER_CARD 3
@@ -182,6 +182,7 @@ enum eMJActType
 	eMJAct_HuaGang, // 花杠
 	eMJAct_Followed, // 连续跟了4张牌，要罚钱了
 	eMJAct_4Feng, // 前4张出了4张不一样的风牌
+	eMJAct_Ting,
 	eMJAct_Max,
 };
 

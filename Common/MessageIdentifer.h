@@ -741,8 +741,8 @@ enum eMsgType
 	MSG_SET_NEXT_CARD, // send to mj server 
 	//client : {card : 0,dstRoomID : 123465}
 
-
-
+	MSG_REQ_GAME_REPLAY,
+	MSG_REPLAY_FRAME,
 
 
 
