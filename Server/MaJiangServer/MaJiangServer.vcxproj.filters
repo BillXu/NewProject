@@ -189,6 +189,12 @@
     <ClInclude Include="src\SZMJPlayerRecorderInfo.h">
       <Filter>src\MJSZ</Filter>
     </ClInclude>
+    <ClInclude Include="src\MJGameReplayManager.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MJReplayFrameType.h">
+      <Filter>src\MJ</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MJCard.cpp">
@@ -253,6 +259,9 @@
     </ClCompile>
     <ClCompile Include="src\IGameRecorder.cpp">
       <Filter>src\Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MJGameReplayManager.cpp">
+      <Filter>src\MJ</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

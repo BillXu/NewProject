@@ -10,6 +10,8 @@
 #include "IGameRoomManager.h"
 #include "RobotDispatchStrategy.h"
 #include "MJCard.h"
+#include "MJReplayFrameType.h"
+#include "MJServer.h"
 IMJRoom::~IMJRoom()
 {
 	for (auto& ref : m_vMJPlayers)
@@ -45,6 +47,8 @@ bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32
 	setBankIdx(-1);
 	m_ptrGameRecorder = createRoomRecorder();
 	m_ptrGameRecorder->init(nSeialNum, vJsValue["circle"].asUInt(),nRoomID, getRoomType(),vJsValue["createUID"].asUInt() );
+
+	m_ptrGameReplay = std::make_shared<MJReplayGame>();
 	return true;
 }
 
@@ -70,11 +74,11 @@ bool IMJRoom::onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)
 	}
 
 	uint8_t nEmptyIdx = -1;
-	for (uint8_t nIdx = 0; nIdx < getSeatCnt(); ++nIdx)
+	for (uint8_t nIdx = rand() % getSeatCnt(); nIdx < getSeatCnt() * 2; ++nIdx)
 	{
-		if (m_vMJPlayers[nIdx] == nullptr)
+		if (m_vMJPlayers[nIdx % getSeatCnt()] == nullptr)
 		{
-			nEmptyIdx = nIdx;
+			nEmptyIdx = nIdx % getSeatCnt();
 			break;
 		}
 	}
@@ -295,33 +299,51 @@ bool IMJRoom::onMessage(stMsg* prealMsg, eMsgPort eSenderPort, uint32_t nSession
 
 bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)
 {
-	//if ( MSG_PLAYER_REQUEST_TRUSTEED == nMsgType)
-	//{
-	//	auto pPlayer = getMJPlayerBySessionID(nSessionID);
-	//	if (!pPlayer)
-	//	{
-	//		Json::Value jsMsg;
-	//		jsMsg["ret"] = 1;
-	//		sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
-	//		return true;
-	//	}
+	if ( MSG_PLAYER_ACT == nMsgType )
+	{
+		auto actType = prealMsg["actType"].asUInt();
+		auto p = getMJPlayerBySessionID(nSessionID);
+		if (p == nullptr)
+		{
+			LOGFMTE("room id = %u why do act player is null ptr",getRoomID() );
+			return true;
+		}
 
-	//	if (prealMsg["isTrusteed"].isNull() || prealMsg["isTrusteed"].isInt() == false)
-	//	{
-	//		LOGFMTE("player uid = %u set tuo guan  argument error ",pPlayer->getUID());
-	//		Json::Value jsMsg;
-	//		jsMsg["ret"] = 1;
-	//		sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
-	//		return true;
-	//	}
-
-	//	Json::Value jsMsg;
-	//	jsMsg["ret"] = 0;
-	//	sendMsgToPlayer(jsMsg, nMsgType, nSessionID);
-
-	//	onPlayerTrusteedStateChange(pPlayer->getIdx(), prealMsg["isTrusteed"].asUInt() == 1);
-	//	return true;
-	//}
+		uint8_t nFrameType = -1;
+		if (eMJAct_Pass == actType)
+		{
+			nFrameType = eMJFrame_Pass;
+		}
+		else if (eMJAct_Hu == actType)
+		{
+			nFrameType = eMJFrame_Hu;
+		}
+		else if (eMJAct_Peng == actType)
+		{
+			nFrameType = eMJFrame_Decl_Peng;
+		}
+		else if (eMJAct_MingGang == actType)
+		{
+			nFrameType = eMJFrame_Decl_MingGang;
+		}
+		else if (eMJAct_BuGang == actType || eMJAct_BuGang_Declare == actType || eMJAct_BuGang_Pre == actType)
+		{
+			nFrameType = eMJFrame_Decl_BuGang;
+		}
+		else if ( eMJAct_Ting == actType)
+		{
+			nFrameType = eMJFrame_Player_Ting;
+		}
+			 
+		if ((uint8_t)-1 != nFrameType)
+		{
+			Json::Value jsFrameArg;
+			auto ptrReplay = getGameReplay()->createFrame(nFrameType, (uint32_t)time(nullptr));
+			jsFrameArg["idx"] = p->getIdx();
+			ptrReplay->setFrameArg(jsFrameArg);
+			getGameReplay()->addFrame(ptrReplay);
+		}
+	}
 
 	if ( MSG_PLAYER_LEAVE_ROOM == nMsgType )
 	{
@@ -343,7 +365,7 @@ bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPo
 		LOGFMTI("返回玩家离开房间的消息， sesssioniID = %u", nSessionID);
 		return true;;
 	}
-	else if ( MSG_SET_NEXT_CARD == nMsgType)
+	else if ( MSG_SET_NEXT_CARD == nMsgType )
 	{
 		if (prealMsg["card"].isNull() || prealMsg["card"].isUInt() == false)
 		{
@@ -353,53 +375,6 @@ bool IMJRoom::onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPo
 		getMJPoker()->pushCardToFron(prealMsg["card"].asUInt());
 		return true ;
 	}
-
-	//if (MSG_INTERAL_ROOM_SEND_UPDATE_COIN == nMsgType)
-	//{
-	//	uint32_t nSessionIDThis = prealMsg["sessionID"].asUInt();
-	//	uint32_t nUID = prealMsg["uid"].asUInt();
-	//	uint32_t nCoin = prealMsg["coin"].asUInt();
-	//	uint32_t nDiamond = prealMsg["diamond"].asUInt();
-	//	uint32_t nRoomID = prealMsg["roomID"].asUInt();
-	//	auto pSitp = getMJPlayerByUID(nUID);
-	//	if (pSitp)
-	//	{
-	//		LOGFMTD("uid = %u data svr coin = %u , room sit down coin = %u", pSitp->getUID(), nCoin, pSitp->getCoin());
-	//		nCoin = pSitp->getCoin();
-	//	}
-	//	else
-	//	{
-	//		LOGFMTE("update coin error ,you don't int ther room id = %u  , uid = %u", nRoomID, nUID);
-	//	}
-
-	//	if (getDelegate() == nullptr)
-	//	{
-	//		Json::Value jsmsgBack;
-	//		jsmsgBack["coin"] = nCoin;
-	//		jsmsgBack["diamond"] = nDiamond;
-	//		sendMsgToPlayer(jsmsgBack, MSG_REQ_UPDATE_COIN, nSessionIDThis);
-	//	}
-
-	//	return true;
-	//}
-
-	//if (MSG_PLAYER_CHAT_MSG == nMsgType)
-	//{
-	//	auto pRet = getMJPlayerBySessionID(nSessionID);
-	//	if (pRet)
-	//	{
-	//		prealMsg["idx"] = pRet->getIdx();
-	//		sendRoomMsg(prealMsg, MSG_ROOM_CHAT_MSG);
-	//	}
-	//	else
-	//	{
-	//		LOGFMTE("you do not sit down , can not say anything");
-	//	}
-	//	Json::Value jsRet;
-	//	jsRet["ret"] = pRet == nullptr ? 1 : 0;
-	//	sendMsgToPlayer(jsRet, nMsgType, nSessionID);
-	//	return true;
-	//}
 
 	if ( MSG_REQUEST_ROOM_INFO == nMsgType)
 	{
@@ -516,7 +491,7 @@ void IMJRoom::goToState(IMJRoomState* pTargetState, Json::Value* jsValue )
 		LOGFMTE("go to the same state %d , room id = %d ? ", pTargetState->getStateID(), getRoomID());
 	}
 
-	LOGFMTI("roomID = %u 进入房间状态： %u", getRoomID(), pTargetState->getStateID());
+	//LOGFMTI("roomID = %u 进入房间状态： %u", getRoomID(), pTargetState->getStateID());
 
 	getCurRoomState()->leaveState();
 	m_pCurState = pTargetState;
@@ -525,7 +500,7 @@ void IMJRoom::goToState(IMJRoomState* pTargetState, Json::Value* jsValue )
 	//stMsgRoomEnterNewState msgNewState;
 	//msgNewState.m_fStateDuring = m_pCurState->getStateDuring();
 	//msgNewState.nNewState = m_pCurState->getStateID();
-	LOGFMTI("not tell client state changed");
+	//LOGFMTI("not tell client state changed");
 }
 
 void IMJRoom::goToState(uint16_t nStateID, Json::Value* jsValue )
@@ -586,9 +561,11 @@ void IMJRoom::startGame()
 
 	// distribute card 
 	auto pPoker = getMJPoker();
-	LOGFMTD("room id = %u start game shuffle card ",getRoomID());
+	//LOGFMTD("room id = %u start game shuffle card ",getRoomID());
 	pPoker->shuffle();
-	LOGFMTD("room id = %u shuffle end", getRoomID());
+	//LOGFMTD("room id = %u shuffle end", getRoomID());
+	Json::Value jsFrameArg, jsPlayers;
+	jsFrameArg["bankIdx"] = getBankerIdx();
 	for (auto& pPlayer : m_vMJPlayers)
 	{
 		if (!pPlayer)
@@ -606,12 +583,15 @@ void IMJRoom::startGame()
 			pPlayer->setCoin(pPlayer->getCoin() - (int32_t)getRoomConfig()->nDeskFee);
 		}
 
-		LOGFMTD("distribute card for player idx = %u and decrease desk fee = %u",pPlayer->getIdx(),getRoomConfig()->nDeskFee );
-		
+		//LOGFMTD("distribute card for player idx = %u and decrease desk fee = %u",pPlayer->getIdx(),getRoomConfig()->nDeskFee );
+		Json::Value jsPlayer;
+		jsPlayer["idx"] = pPlayer->getIdx();
+		Json::Value jsHoldCard;
 		for (uint8_t nIdx = 0; nIdx < 13; ++nIdx)
 		{
 			auto nCard = pPoker->distributeOneCard();
 			pPlayer->getPlayerCard()->addDistributeCard(nCard);
+			jsHoldCard[jsHoldCard.size()] = nCard;
 			//LOGFMTD("card idx = %u card number = %u", nIdx,nCard);
 		}
 
@@ -619,8 +599,23 @@ void IMJRoom::startGame()
 		{
 			auto nCard = pPoker->distributeOneCard();
 			pPlayer->getPlayerCard()->onMoCard(nCard);
+			jsHoldCard[jsHoldCard.size()] = nCard;
+			pPlayer->getPlayerCard()->signFlag(ePlayerFlag_CanTianHu);
 		}
+		else
+		{
+			pPlayer->getPlayerCard()->signFlag(ePlayerFlag_WaitCheckTianTing);
+		}
+		jsPlayer["cards"] = jsHoldCard;
+		jsPlayer["coin"] = pPlayer->getCoin();
+		jsPlayer["uid"] = pPlayer->getUID();
+		jsPlayers[jsPlayers.size()] = jsPlayer;
 	}
+	jsFrameArg["players"] = jsPlayers;
+
+	auto pFrame = getGameReplay()->createFrame(eMJFrame_StartGame, (uint32_t)time(0));
+	pFrame->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(pFrame);
 	LOGFMTI("room id = %u start game !",getRoomID());
 }
 
@@ -666,6 +661,11 @@ void IMJRoom::willStartGame()
 			pPlayer->onWillStartGame();
 		}
 	}
+
+	// add game replay
+	auto p = (MJGameReplayManager*)m_pRoomMgr->getSvrApp()->getModuleByType(CMJServerApp::eMod_ReplayMgr);
+	getGameReplay()->reset();
+	getGameReplay()->setReplayID(p->generateReplayID());
 }
 
 void IMJRoom::onGameEnd()
@@ -678,6 +678,11 @@ void IMJRoom::onGameEnd()
 			pPlayer->onGameEnd();
 		}
 	}
+
+	// add game replay
+	auto p = (MJGameReplayManager*)m_pRoomMgr->getSvrApp()->getModuleByType(CMJServerApp::eMod_ReplayMgr);
+	p->addGameReplay(getGameReplay());
+	getGameReplay()->reset();
 }
 
 void IMJRoom::onGameDidEnd()
@@ -716,7 +721,7 @@ void IMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
 	auto pMJCard = pPlayer->getPlayerCard();
 	// send msg to tell player do act 
 	Json::Value jsArrayActs;
-
+	Json::Value jsFrameActs;
 	if ( isCanGoOnMoPai() )
 	{
 		// check bu gang .
@@ -728,6 +733,7 @@ void IMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
 			jsAct["act"] = eMJAct_BuGang;
 			jsAct["cardNum"] = ref;
 			jsArrayActs[jsArrayActs.size()] = jsAct;
+			jsFrameActs[jsFrameActs.size()] = eMJAct_BuGang;
 		}
 		// check an gang .
 		vCards.clear();
@@ -738,6 +744,7 @@ void IMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
 			jsAct["act"] = eMJAct_AnGang;
 			jsAct["cardNum"] = ref;
 			jsArrayActs[jsArrayActs.size()] = jsAct;
+			jsFrameActs[jsFrameActs.size()] = eMJAct_AnGang;
 		}
 	}
 
@@ -748,9 +755,11 @@ void IMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
 		jsAct["act"] = eMJAct_Hu;
 		jsAct["cardNum"] = pMJCard->getNewestFetchedCard();
 		jsArrayActs[jsArrayActs.size()] = jsAct;
+		jsFrameActs[jsFrameActs.size()] = eMJAct_Hu;
 	}
 
 	isCanPass = jsArrayActs.empty() == false;
+	jsFrameActs[jsFrameActs.size()] = eMJAct_Chu;
 
 	// add default alwasy chu , infact need not add , becaust it alwasy in ,but compatable with current client ;
 	Json::Value jsAct;
@@ -762,7 +771,17 @@ void IMJRoom::onWaitPlayerAct(uint8_t nIdx, bool& isCanPass)
 	jsMsg["acts"] = jsArrayActs;
 	sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_AFTER_RECEIVED_CARD, pPlayer->getSessionID());
 	
-	LOGFMTD("tell player idx = %u do act size = %u",nIdx,jsArrayActs.size());
+	if ( isCanPass )  // player do have option do select or need not give frame ;
+	{
+		Json::Value jsFrameArg;
+		auto ptrReplay = getGameReplay()->createFrame(eMJFrame_WaitPlayerAct, (uint32_t)time(nullptr));
+		jsFrameArg["idx"] = nIdx;
+		jsFrameArg["act"] = jsFrameActs;
+		ptrReplay->setFrameArg(jsFrameArg);
+		getGameReplay()->addFrame(ptrReplay);
+	}
+
+	//LOGFMTD("tell player idx = %u do act size = %u",nIdx,jsArrayActs.size());
 }
 
 uint8_t IMJRoom::getAutoChuCardWhenWaitActTimeout(uint8_t nIdx)
@@ -819,6 +838,13 @@ void IMJRoom::onPlayerMo(uint8_t nIdx)
 	msg["actType"] = eMJAct_Mo;
 	msg["card"] = nNewCard;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Mo, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["card"] = nNewCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void IMJRoom::onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
@@ -843,6 +869,14 @@ void IMJRoom::onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	jsmsg["actType"] = eMJAct_Peng;
 	jsmsg["card"] = nCard;
 	sendRoomMsg(jsmsg, MSG_ROOM_ACT);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Peng, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["card"] = nCard;
+	jsFrameArg["invokerIdx"] = nInvokeIdx;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void IMJRoom::onPlayerEat(uint8_t nIdx, uint8_t nCard, uint8_t nWithA, uint8_t nWithB, uint8_t nInvokeIdx)
@@ -900,6 +934,15 @@ void IMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	msg["card"] = nCard;
 	msg["gangCard"] = nGangGetCard;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_MingGang, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["gang"] = nCard;
+	jsFrameArg["newCard"] = nGangGetCard;
+	jsFrameArg["invokerIdx"] = nInvokeIdx;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void IMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
@@ -925,6 +968,14 @@ void IMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 	msg["card"] = nCard;
 	msg["gangCard"] = nGangGetCard;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_AnGang, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["gang"] = nCard;
+	jsFrameArg["newCard"] = nGangGetCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void IMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
@@ -950,6 +1001,14 @@ void IMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 	msg["card"] = nCard;
 	msg["gangCard"] = nGangCard;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_BuGang, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["gang"] = nCard;
+	jsFrameArg["newCard"] = nGangCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void IMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t nInvokeIdx)
@@ -982,6 +1041,13 @@ void IMJRoom::onPlayerChu(uint8_t nIdx, uint8_t nCard)
 	{
 		LOGFMTE("chu card error idx = %u , card = %u",nIdx,nCard );
 	}
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Chu, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["card"] = nCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 bool IMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
@@ -994,15 +1060,20 @@ bool IMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 		}
 
 		auto pMJCard = ref->getPlayerCard();
-		if (pMJCard->canPengWithCard(nCard) || ( (ref->isHaveLouHuFlag() == false ) && pMJCard->canHuWitCard(nCard) ) )
+		if (pMJCard->canPengWithCard(nCard) )
 		{
 			return true;
 		}
 
-		//if (isCanGoOnMoPai() && pMJCard->canMingGangWithCard(nCard) ) // must can gang , will not run here , will return when check peng ;
-		//{
-		//	return true;
-		//}
+		if ( isCanGoOnMoPai() && pMJCard->canMingGangWithCard(nCard) ) // must can gang , will not run here , will return when check peng ;
+		{
+			return true;
+		}
+
+		if (((ref->isHaveLouHuFlag() == false) && pMJCard->canHuWitCard(nCard)))
+		{
+			return true;
+		}
 
 		if (ref->getIdx() == (nInvokeIdx + 1) % getSeatCnt())
 		{
@@ -1019,6 +1090,8 @@ bool IMJRoom::isAnyPlayerPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard)
 
 void IMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::vector<uint8_t>& vWaitHuIdx, std::vector<uint8_t>& vWaitPengGangIdx, bool& isNeedWaitEat)
 {
+	Json::Value jsFrameArg;
+
 	for (auto& ref : m_vMJPlayers)
 	{
 		if (ref == nullptr || nInvokeIdx == ref->getIdx())
@@ -1045,6 +1118,10 @@ void IMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::v
 		{
 			jsActs[jsActs.size()] = eMJAct_MingGang;
 			// already add in peng ;  vWaitPengGangIdx
+			if (vWaitPengGangIdx.empty())
+			{
+				vWaitPengGangIdx.push_back(ref->getIdx());
+			}
 		}
 
 		if (ref->getIdx() == (nInvokeIdx + 1) % getSeatCnt())
@@ -1076,8 +1153,20 @@ void IMJRoom::onAskForPengOrHuThisCard(uint8_t nInvokeIdx, uint8_t nCard, std::v
 		}
 		jsMsg["acts"] = jsActs;
 		sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_ABOUT_OTHER_CARD, ref->getSessionID());
-		LOGFMTD("inform uid = %u act about other card room id = %u card = %u", ref->getUID(), getRoomID(),nCard );
+
+		//LOGFMTD("inform uid = %u act about other card room id = %u card = %u", ref->getUID(), getRoomID(),nCard );
+
+		Json::Value jsFramePlayer;
+		jsFramePlayer["idx"] = ref->getIdx();
+		jsFramePlayer["acts"] = jsActs;
+
+		jsFrameArg[jsFrameArg.size()] = jsFramePlayer;
 	}
+
+	// add frame 
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_WaitPlayerActAboutCard, (uint32_t)time(nullptr));
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 bool IMJRoom::isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)
@@ -1110,6 +1199,7 @@ void IMJRoom::onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<u
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 
 	// inform target player do this things 
+	Json::Value jsFrameArg;
 	for (auto& ref : m_vMJPlayers)
 	{
 		if (ref == nullptr || nInvokeIdx == ref->getIdx())
@@ -1128,6 +1218,8 @@ void IMJRoom::onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<u
 		{
 			jsActs[jsActs.size()] = eMJAct_Hu;
 			vCandinates.push_back(ref->getIdx());
+
+			jsFrameArg[jsFrameArg.size()] = ref->getIdx();
 		}
 
 		if (jsActs.size() > 0)
@@ -1137,8 +1229,13 @@ void IMJRoom::onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<u
 
 		jsMsg["acts"] = jsActs;
 		sendMsgToPlayer(jsMsg, MSG_PLAYER_WAIT_ACT_ABOUT_OTHER_CARD, ref->getSessionID());
-		LOGFMTD("inform uid = %u robot gang card = %u room id = %u ", ref->getUID(),nCard, getRoomID());
+		//LOGFMTD("inform uid = %u robot gang card = %u room id = %u ", ref->getUID(),nCard, getRoomID());
 	}
+
+	// add frame 
+	auto ptrReplay = getGameReplay()->createFrame( eMJFrame_WaitRobotGang, (uint32_t)time(nullptr));
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 uint8_t IMJRoom::getNextActPlayerIdx(uint8_t nCurActIdx)
@@ -1194,7 +1291,7 @@ bool IMJRoom::addRoomState(IMJRoomState* pState)
 		m_vRoomStates[pState->getStateID()] = pState;
 		return true;
 	}
-	LOGFMTE("already add this state id =%u , be remember delete failed add obj",pState->getStateID());
+	//LOGFMTE("already add this state id =%u , be remember delete failed add obj",pState->getStateID());
 	return false;
 }
 
@@ -1251,7 +1348,7 @@ void IMJRoom::onCheckTrusteeForWaitPlayerAct(uint8_t nIdx, bool isMayBeHu)
 			jsmsg["actType"] = eMJAct_Chu;
 			jsmsg["card"] = getAutoChuCardWhenWaitActTimeout(nIdx);;
 		}
-		LOGFMTD("%u player tuo guan do act = %u", pPlayer->getUID(), jsmsg["actType"].asUInt());
+		//LOGFMTD("%u player tuo guan do act = %u", pPlayer->getUID(), jsmsg["actType"].asUInt());
 		onMsg(jsmsg, MSG_PLAYER_ACT, ID_MSG_PORT_CLIENT, pPlayer->getSessionID());
 	}
 	);

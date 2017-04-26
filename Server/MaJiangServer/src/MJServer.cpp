@@ -5,6 +5,7 @@
 #include "ServerStringTable.h"
 #include "RewardConfig.h"
 #include "MJRoomManager.h"
+#include "MJGameReplayManager.h"
 bool CMJServerApp::init()
 {
 	IServerApp::init();
@@ -26,6 +27,7 @@ bool CMJServerApp::init()
 	installModule(eMod_RoomMgr);
 	installModule(eMod_RoomMgrOld);
 	installModule(eMod_RecorderMgr);
+	installModule(eMod_ReplayMgr);
 	return true ;
 }
 
@@ -49,6 +51,10 @@ IGlobalModule* CMJServerApp::createModule(uint16_t eModuleType)
 	 else if (eMod_RecorderMgr == eModuleType )
 	 {
 		 p = new GameRecorderMgr();
+	 }
+	 else if ( eMod_ReplayMgr == eModuleType )
+	 {
+		 p = new MJGameReplayManager();
 	 }
 	return p;
 }

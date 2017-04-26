@@ -14,6 +14,7 @@ public:
 		eMod_RoomMgr = eMod_None,
 		eMod_RoomMgrOld,
 		eMod_RecorderMgr,
+		eMod_ReplayMgr,
 		eMod_Max,
 	};
 public:
