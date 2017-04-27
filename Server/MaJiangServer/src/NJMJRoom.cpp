@@ -221,7 +221,7 @@ void NJMJRoom::onGameEnd()
 	Json::Value jsDetial;
 
 	auto ptrSingleRecorder = getRoomRecorder()->createSingleRoundRecorder();
-	ptrSingleRecorder->init( getRoomRecorder()->getRoundRecorderCnt(), (uint32_t)time(nullptr), 0);
+	ptrSingleRecorder->init( getRoomRecorder()->getRoundRecorderCnt(), (uint32_t)time(nullptr), getGameReplay()->getReplayID());
 	getRoomRecorder()->addSingleRoundRecorder(ptrSingleRecorder);
 
 	bool isAnyOneHu = false;

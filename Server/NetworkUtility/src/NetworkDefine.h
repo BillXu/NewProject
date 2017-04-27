@@ -1,5 +1,5 @@
 #pragma once
-#define _MSG_BUF_LEN 4648
+#define _MSG_BUF_LEN (4648*20)
 typedef unsigned int CONNECT_ID ;
 #define INVALID_CONNECT_ID (unsigned int)-1
 
