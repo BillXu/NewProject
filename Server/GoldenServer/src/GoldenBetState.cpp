@@ -54,14 +54,14 @@ bool CGoldenBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 				break ;
 			}
 
-			auto pR = (CGoldenRoom*)m_pRoom;
-			if (pR->isReachedMenCnt() == false)
-			{
-				LOGFMTE("not rechec men cnt can not pk  room id = %u",m_pRoom->getRoomID());
-				msgBack.cRet = 7;
-				m_pRoom->sendMsgToPlayer(&msgBack, sizeof(msgBack), nPlayerSessionID);
-				break;
-			}
+			//auto pR = (CGoldenRoom*)m_pRoom;
+			//if (pR->isReachedMenCnt() == false)
+			//{
+			//	LOGFMTE("not rechec men cnt can not pk  room id = %u",m_pRoom->getRoomID());
+			//	msgBack.cRet = 7;
+			//	m_pRoom->sendMsgToPlayer(&msgBack, sizeof(msgBack), nPlayerSessionID);
+			//	break;
+			//}
 
 			pActPlayer->setPKFlag();
 			pTargetPlayer->setPKFlag();
