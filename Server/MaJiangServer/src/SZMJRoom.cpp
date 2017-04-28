@@ -112,6 +112,15 @@ void SZMJRoom::startGame()
 	Json::Value jsMsg;
 	packStartGameMsg(jsMsg);
 	sendRoomMsg(jsMsg, MSG_ROOM_START_GAME);
+
+	// replay arg 
+	Json::Value jsReplayInfo;
+	jsReplayInfo["roomID"] = getRoomID();
+	jsReplayInfo["time"] = (uint32_t)time(nullptr);
+	jsReplayInfo["isFanBei"] = isFanBei() ? 1 : 0;
+	jsReplayInfo["ruletype"] = m_nRuleMode;
+	jsReplayInfo["bankIdx"] = getBankerIdx();
+	getGameReplay()->setReplayRoomInfo(jsReplayInfo);
 }
 
 void SZMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
