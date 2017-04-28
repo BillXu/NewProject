@@ -41,6 +41,8 @@ public:
 	bool onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgPort eSenderPort , uint32_t nSessionID  )override ;
 	bool onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )override ;
 	bool canStartGame()override ;
+	void onDistributeCard(uint8_t nCnt);
+	bool isRobotBankerAfterLookedCard() { return 1 == m_nPlayType; }
 #if defined(GAME_365) || defined(GAME_panda)
 	uint32_t getMaxTakeIn(){ return 1000; };
 #endif 
@@ -53,6 +55,7 @@ protected:
 	uint32_t m_nBankerCoinLimitForBet ; // 
 	uint32_t m_nBaseBet ;
 	uint8_t m_nResignBankerCtrl ;  // // 0 no niu leave banker , 1 lose to all  leave banker , 2 manual leave banker , 3 everybody ones , lunliu zuo zhuang;
+	uint8_t m_nPlayType; // 0 means normal niuniu , 1  robot banker after  looked 4 card 
 	uint8_t m_nRateLevel;  
 	bool m_isWillManualLeaveBanker ;
 

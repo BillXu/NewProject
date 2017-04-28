@@ -10,7 +10,7 @@ public:
 		eStateID = eRoomState_NN_Disribute4Card ,
 	};
 public:
-	CNiuNiuRoomDistribute4CardState(){ m_nState = eRoomState_StartGame ;}
+	CNiuNiuRoomDistribute4CardState(){ m_nState = eRoomState_NN_Disribute4Card;}
 	void enterState(IRoom* pRoom);
 	void onStateDuringTimeUp() ;
 protected:
