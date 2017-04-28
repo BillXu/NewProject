@@ -223,7 +223,7 @@ void SZMJRoom::onPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
 
 	// add frame 
 	Json::Value jsFrameArg;
-	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_BuGang, (uint32_t)time(nullptr));
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_BuHua, (uint32_t)time(nullptr));
 	jsFrameArg["idx"] = nIdx;
 	jsFrameArg["hua"] = nHuaCard;
 	jsFrameArg["newCard"] = nNewCard;
