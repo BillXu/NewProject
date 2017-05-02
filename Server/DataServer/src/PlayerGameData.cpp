@@ -413,6 +413,24 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			auto nCirle = recvValue["circle"].asUInt();
 			bool isFree = false;
 			bool isAA = false;
+			bool isCircleType = true;
+			uint8_t nGrade = -1;  
+			if (recvValue["gradeType"].isNull() == false)
+			{
+				nGrade = recvValue["gradeType"].asUInt();
+				LOGFMTD("create private room isFree is = %u", nGrade);
+			}
+			else
+			{
+				LOGFMTD("create private room isFree is null ?");
+			}
+
+			if (recvValue["isCircle"].isNull() == false)
+			{
+				isCircleType = recvValue["isCircle"].asUInt() == 1;
+				LOGFMTD("create private room isCircle is = %u", (uint8_t)isCircleType);
+			}
+			
 			if (recvValue["isFree"].isNull() == false)
 			{
 				isFree = recvValue["isFree"].asUInt() == 1;
@@ -468,6 +486,36 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				if ( 4 == nDiamondNeed )
 				{
 					nDiamondNeed = 2;
+				}
+			}
+
+			if ((uint8_t)-1 != nGrade && nGrade < 3 )
+			{
+				if (isCircleType)
+				{
+					uint8_t vQun[] = { 2,4,8 };
+					uint8_t vQuanAA[] = { 1,1,2 };
+					if (isAA)
+					{
+						nDiamondNeed = vQuanAA[nGrade];
+					}
+					else
+					{
+						nDiamondNeed = vQun[nGrade];
+					}
+				}
+				else
+				{
+					uint8_t vJu[] = { 3,5,8 };
+					uint8_t vJuAA[] = { 1,2,2 };
+					if (isAA)
+					{
+						nDiamondNeed = vJuAA[nGrade];
+					}
+					else
+					{
+						nDiamondNeed = vJu[nGrade];
+					}
 				}
 			}
 

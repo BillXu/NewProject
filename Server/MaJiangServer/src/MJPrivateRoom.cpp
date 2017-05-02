@@ -28,6 +28,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	m_nInitCircle = vJsValue["circle"].asUInt();
 	m_nInitCoin = vJsValue["initCoin"].asUInt();
 	m_nChatID = vJsValue["chatRoomID"].asUInt();
+	m_nGrade = -1;
 	m_isForFree = false;
 	m_isAA = false;
 	m_isCircleType = true;
@@ -95,6 +96,17 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 		LOGFMTD("create private room m_isAA is null ?");
 	}
 
+	// grade 
+	if ( vJsValue["gradeType"].isNull() == false )
+	{
+		m_nGrade = vJsValue["gradeType"].asUInt() == 1;
+		LOGFMTD("create private room gradeType is = %u", m_nGrade );
+	}
+	else
+	{
+		LOGFMTD("create private room gradeType is null ?");
+	}
+
 	m_pRoom = doCreateMJRoom((eRoomType)m_stConfig.nGameType);
 
 	if ( !m_pRoom)
@@ -103,6 +115,20 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 		return false;
 	}
 	m_nLeftCircle = m_nInitCircle;
+	if ((uint8_t)-1 != m_nGrade && m_nGrade < 3 )
+	{
+		std::vector<uint8_t> v;
+		if (m_isCircleType)
+		{
+			v = { 1,2,4};
+		}
+		else
+		{
+			v = { 8,12,16 };
+		}
+		m_nLeftCircle = m_nInitCircle = v[m_nGrade];
+	}
+
 	LOGFMTD("create 1 private room");
 	((IMJRoom*)m_pRoom)->setDelegate(this);
 	auto bRet = m_pRoom->init(pRoomMgr, &m_stConfig, nSeialNum, nRoomID, vJsValue);
@@ -677,6 +703,37 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 		if ( 4 == m_nInitCircle || ( 16 == m_nInitCircle && !m_isCircleType))
 		{
 			nCardCnt = 2;
+		}
+	}
+
+	// if have grade type
+	if ((uint8_t)-1 != m_nGrade && m_nGrade < 3)
+	{
+		if (m_isCircleType)
+		{
+			uint8_t vQun[] = { 2,4,8 };
+			uint8_t vQuanAA[] = { 1,1,2 };
+			if (m_isAA)
+			{
+				nCardCnt = vQuanAA[m_nGrade];
+			}
+			else
+			{
+				nCardCnt = vQun[m_nGrade];
+			}
+		}
+		else
+		{
+			uint8_t vJu[] = { 3,5,8 };
+			uint8_t vJuAA[] = { 1,2,2 };
+			if (m_isAA)
+			{
+				nCardCnt = vJuAA[m_nGrade];
+			}
+			else
+			{
+				nCardCnt = vJu[m_nGrade];
+			}
 		}
 	}
 	return nCardCnt;

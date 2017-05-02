@@ -635,15 +635,17 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 				{
 					m_nDanDiaoKuaiZhaoState = eDanDiao_GiveUp;
 					LOGFMTE("hold card contion not meet , can not set this type card");
-					return true;
+					//return true;
 				}
 			}
 
+			// always blink the card ;
 			Json::Value jsMsg;
 			jsMsg["idx"] = m_nThisPlayerIdx;
 			jsMsg["card"] = nChuCard;
 			m_pCurRoom->sendRoomMsg(jsMsg, MSG_CHANGE_BAOPAI_CARD);
 			LOGFMTD("room id = %u idx = %u get chu kuai zhao %u", m_pCurRoom->getRoomID(), m_nThisPlayerIdx,nChuCard);
+			return true;
 		}
 	}
 	else if ( m_nDanDiaoKuaiZhaoState == eDanDiao_Do_Set )

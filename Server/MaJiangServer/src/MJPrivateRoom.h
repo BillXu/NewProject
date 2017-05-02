@@ -61,6 +61,7 @@ protected:
 	bool m_isForFree;
 	bool m_isAA;
 	bool m_isCircleType;
+	uint8_t m_nGrade;
 
 	uint8_t m_nLeftCircle;
 	uint8_t m_nInitCircle;
