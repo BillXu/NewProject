@@ -99,7 +99,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	// grade 
 	if ( vJsValue["gradeType"].isNull() == false )
 	{
-		m_nGrade = vJsValue["gradeType"].asUInt() == 1;
+		m_nGrade = vJsValue["gradeType"].asUInt();
 		LOGFMTD("create private room gradeType is = %u", m_nGrade );
 	}
 	else
