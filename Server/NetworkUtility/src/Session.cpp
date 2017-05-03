@@ -39,7 +39,11 @@ uint32_t CSession::getConnectID()
 
 std::string CSession::getIPString()
 {
-	return m_socket.remote_endpoint().address().to_string();
+	if (m_socket.is_open())
+	{
+		return m_socket.remote_endpoint().address().to_string();
+	}
+	return "ip closed";
 }
 
 void CSession::start()

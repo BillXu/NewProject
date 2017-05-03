@@ -55,7 +55,6 @@ void CServerNetworkImp::handleAccept(boost::shared_ptr<CSession> session,const b
 {
 	if (!error)  
 	{  
-		session->start();
 		{
 			WriteLock wLock(m_SessionMutex);
 			m_vActiveSessions[session->getConnectID()] = session;
@@ -72,6 +71,7 @@ void CServerNetworkImp::handleAccept(boost::shared_ptr<CSession> session,const b
 		memcpy_s(pack->_orgdata, sizeof(pack->_orgdata), str.c_str(), pack->_len);
 		addPacket(pack);
 
+		session->start();
 		session->startHeartbeatTimer();
 		session->startWaitFirstMsg();
 	}  
