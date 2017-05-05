@@ -27,7 +27,6 @@ CNiuNiuRoom::CNiuNiuRoom() :m_tGameResult(100)
 
 bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )
 {
-	ISitableRoom::onFirstBeCreated(pRoomMgr,nRoomID,vJsValue) ;
 	m_nBaseBet = vJsValue["baseBet"].asUInt();
 	auto jsopt = vJsValue["opts"];
 	m_nResignBankerCtrl = jsopt["unbankerType"].asUInt() ;
@@ -45,6 +44,7 @@ bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, cons
 		m_nRateLevel = jsopt["rateLevel"].asUInt();
 		LOGFMTD("create room rate level = %u , roomID = %u",m_nRateLevel,getRoomID() );
 	}
+	ISitableRoom::onFirstBeCreated(pRoomMgr, nRoomID, vJsValue);
 	return true ;
 }
 
@@ -54,7 +54,7 @@ void CNiuNiuRoom::prepareState()
 	// create room state ;
 	IRoomState* vState[] = {
 		new CNiuNiuWaitStartGame(),new CNiuNiuRoomGrabBanker(), new CNiuNiuRoomRandBankerState(),
-		new CNiuNiuRoomBetState(),new CNiuNiuRoomStatePlayerCaculateCardState(),new CNiuNiuRoomDistributeFinalCardState(),new CNiuNiuRoomStatePlayerCaculateCardState() ,new CNiuNiuRoomGameResultState()
+		new CNiuNiuRoomBetState(),new CNiuNiuRoomStatePlayerCaculateCardState(),new CNiuNiuRoomDistributeFinalCardState() ,new CNiuNiuRoomGameResultState()
 	};
 	for ( uint8_t nIdx = 0 ; nIdx < sizeof(vState) / sizeof(IRoomState*); ++nIdx )
 	{

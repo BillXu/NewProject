@@ -1245,9 +1245,9 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 			}
 
 #ifdef GAME_365
-			if (pPrivatePlayer->nToTalCoin < 20000)
+			if (pPrivatePlayer->nToTalCoin < 2000000)
 			{
-				pPrivatePlayer->nToTalCoin = 20000;
+				pPrivatePlayer->nToTalCoin = 2000000;
 			}
 #endif 
 			

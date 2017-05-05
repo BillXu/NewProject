@@ -44,7 +44,7 @@ public:
 	void onDistributeCard(uint8_t nCnt);
 	bool isRobotBankerAfterLookedCard() { return 1 == m_nPlayType; }
 #if defined(GAME_365) || defined(GAME_panda)
-	uint32_t getMaxTakeIn(){ return 1000; };
+	uint32_t getMaxTakeIn(){ return 100000; };
 #endif 
 	void sendResultToPlayerWhenDuringResultState(uint32_t nSessionID)override;
 protected:
