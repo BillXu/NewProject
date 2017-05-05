@@ -70,7 +70,7 @@ protected:
 	bool checkYaJue(uint8_t nCard, bool isBePenged, std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
 	bool checkWuHuaGuo(std::vector<uint16_t>& vHuTypes, uint16_t& nHuaCnt);
 
-	uint16_t getAllHuaCnt( uint8_t nHuCard );
+	uint16_t getAllHuaCnt( uint8_t nHuCard,bool isQiDui );
 	bool checkYaDang(uint8_t nCard);
 	bool checkDuZhan(uint8_t nCard);
 	bool checkBianZhi( uint8_t nCard );

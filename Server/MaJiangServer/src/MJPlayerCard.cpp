@@ -1252,6 +1252,10 @@ bool MJPlayerCard::canHoldCard7PairHu()
 
 	if (get7PairQueCnt(m_vCards) == 0 )
 	{
+		if ( m_nDanDiao && m_nJIang == 0 )
+		{
+			m_nJIang = m_nDanDiao;
+		}
 		return true;
 	}
 	//debugCardInfo();
@@ -1552,6 +1556,7 @@ uint8_t MJPlayerCard::getMiniQueCnt( VEC_CARD vCards[eCT_Max] )
 uint8_t MJPlayerCard::get7PairQueCnt( VEC_CARD vCards[eCT_Max])
 {
 	uint8_t nUnpairCnt = 0;
+	uint8_t nDanDiao = 0;
 	for (uint8_t nType = eCT_None; nType < eCT_Max; ++nType)
 	{
 		auto& vCard = vCards[nType];
@@ -1574,11 +1579,18 @@ uint8_t MJPlayerCard::get7PairQueCnt( VEC_CARD vCards[eCT_Max])
 			}
 			else
 			{
+				nDanDiao = vCard[nIdx];
 				++nUnpairCnt;
 				++nIdx;
 			}
 		}
 	}
+
+	if ( nUnpairCnt == 1 )
+	{
+		m_nDanDiao = nDanDiao;
+	}
+
 	return nUnpairCnt;
 }
 

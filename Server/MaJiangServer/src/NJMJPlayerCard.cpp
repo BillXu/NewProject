@@ -154,7 +154,7 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 	{
 		// default add 10 hua , pao 10 ; 
 		nHuHuaCnt += 10;
-		nHardAndSoftHua = getAllHuaCnt(nCard); // all soft and hard hua 
+		nHardAndSoftHua = getAllHuaCnt(nCard,false); // all soft and hard hua 
 		if (!isZiMo)
 		{
 			funRemoveAddToCard(nCard);
@@ -211,18 +211,14 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 	}
 	// default add 10 hua , pao 10 ; 
 	nHuHuaCnt += 10;
-	nHardAndSoftHua = getAllHuaCnt(nCard); // all soft and hard hua 
+
+	// check if have qi dui 
+	auto iterHaveQiDui = std::find_if(vHuTypes.begin(), vHuTypes.end(), [](uint16_t& eType) { return eType == eFanxing_QiDui || eFanxing_ShuangQiDui == eType; });
+	nHardAndSoftHua = getAllHuaCnt(nCard, iterHaveQiDui != vHuTypes.end() ); // all soft and hard hua 
 	
 	// if have ya jue , must erase one soft hua 
 	auto niterYaJue = std::find(vHuTypes.begin(),vHuTypes.end(),eFanxing_YaJue);
-	if (niterYaJue != vHuTypes.end())
-	{
-		--nHardAndSoftHua;
-	}
-
-	// if qi dui ,must erse du zhan 
-	auto iterDuZhan = std::find_if(vHuTypes.begin(), vHuTypes.end(), [](uint16_t& eType) { return eType == eFanxing_QiDui || eFanxing_ShuangQiDui == eType; });
-	if (iterDuZhan != vHuTypes.end())
+	if (niterYaJue != vHuTypes.end() && nHardAndSoftHua > 0 )
 	{
 		--nHardAndSoftHua;
 	}
@@ -1433,10 +1429,20 @@ bool NJMJPlayerCard::checkWuHuaGuo(std::vector<uint16_t>& vHuTypes, uint16_t& nH
 }
 
 // check fanxing helpe
-uint16_t NJMJPlayerCard::getAllHuaCnt(uint8_t nHuCard)
+uint16_t NJMJPlayerCard::getAllHuaCnt(uint8_t nHuCard,bool isQiDui )
 {
 	uint16_t nHuaCnt = m_vBuHuaCard.size();   // ying hua 
 
+	// check que yi
+	if (checkQueYi(nHuCard))
+	{
+		++nHuaCnt;
+	}
+
+	if ( isQiDui )  // qi dui do not have other soft hua cnt
+	{
+		return nHuaCnt;
+	}
 	// check feng peng 
 	for (uint8_t nValue = 1; nValue <= 4; ++nValue)
 	{
@@ -1508,11 +1514,6 @@ uint16_t NJMJPlayerCard::getAllHuaCnt(uint8_t nHuCard)
 		++nHuaCnt;
 	}
 
-	// check bian zhi 
-	if (checkQueYi(nHuCard))
-	{
-		++nHuaCnt;
-	}
 	return nHuaCnt;
 }
 
