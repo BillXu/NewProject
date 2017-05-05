@@ -220,6 +220,13 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 		--nHardAndSoftHua;
 	}
 
+	// if qi dui ,must erse du zhan 
+	auto iterDuZhan = std::find_if(vHuTypes.begin(), vHuTypes.end(), [](uint16_t& eType) { return eType == eFanxing_QiDui || eFanxing_ShuangQiDui == eType; });
+	if (iterDuZhan != vHuTypes.end())
+	{
+		--nHardAndSoftHua;
+	}
+
 	if (!isZiMo)
 	{
 		funRemoveAddToCard(nCard);

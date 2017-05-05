@@ -879,6 +879,44 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 		LOGFMTD("consumed vip room card = %u , uid = %u", nConsued, GetPlayer()->GetUserUID());
 	}
 	break;
+	case MSG_SET_JING_WEI:
+	{
+		m_stBaseData.dfLatidue = recvValue["W"].asDouble();
+		m_stBaseData.dfLongitude = recvValue["J"].asDouble();
+	}
+	break;
+	case MSG_GET_SHARE_PRIZE:
+	{
+		// check times limit state ;
+		time_t tNow = time(nullptr);
+		struct tm pTimeCur;
+		struct tm pTimeLast;
+		pTimeCur = *localtime(&tNow);
+		time_t nLastTakeTime = m_stBaseData.tLastTakeCharityCoinTime;
+		pTimeLast = *localtime(&nLastTakeTime);
+		if (pTimeCur.tm_year == pTimeLast.tm_year && pTimeCur.tm_yday == pTimeLast.tm_yday) // the same day ; do nothing
+		{
+
+		}
+		else
+		{
+			m_stBaseData.nTakeCharityTimes = 0; // new day reset times ;
+		}
+
+		if (m_stBaseData.nTakeCharityTimes >= 1)
+		{
+ 
+			break;
+		}
+
+		++m_stBaseData.nTakeCharityTimes;
+		m_stBaseData.tLastTakeCharityCoinTime = time(NULL);
+		uint32_t nGiveDiamond = 3;
+		AddMoney(nGiveDiamond, true);
+		recvValue["diamond"] = nGiveDiamond;
+		SendMsg(recvValue, nmsgType);
+	}
+	break;
 	default:
 		return false;
 	}

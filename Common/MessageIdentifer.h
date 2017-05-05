@@ -760,6 +760,14 @@ enum eMsgType
 	// type : 当前帧的事件类型，time 当前帧的时间，arg ： json 对象，不同的事件 参数不一样，用于表示当前帧的详情
 	// isEnd : 是否是最后一帧。
 
+	MSG_SET_JING_WEI,
+	// client : 设置经纬度
+	//{ J: 234, W : 234}
+
+	MSG_GET_SHARE_PRIZE,
+	// client : { null }
+	// svr : { diamond : 23 }
+
 
 
 

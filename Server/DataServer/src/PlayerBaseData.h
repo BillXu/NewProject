@@ -56,6 +56,8 @@ public:
 	uint16_t getMaxCanCreateClubCount();
 	uint16_t getMaxCanCreteRoomCount();
 	std::string getIp(){ return m_strCurIP; }
+	double getLongitude() { return m_stBaseData.dfLongitude; }
+	double getlatitude() { return m_stBaseData.dfLatidue; }
 protected:
 	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
 	void onBeInviteBy(uint32_t nInviteUID );

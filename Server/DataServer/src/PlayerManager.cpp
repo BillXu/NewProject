@@ -309,6 +309,8 @@ bool CPlayerManager::onMsg( Json::Value& recvValue , uint16_t nmsgType, eMsgPort
 			if (pPlayer)
 			{
 				strIp = pPlayer->GetBaseData()->getIp();
+				recvValue["J"] = pPlayer->GetBaseData()->getLongitude();
+				recvValue["W"] = pPlayer->GetBaseData()->getlatitude();
 			}
 		}
 		recvValue["ip"] = strIp;
