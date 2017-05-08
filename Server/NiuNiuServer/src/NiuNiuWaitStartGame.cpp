@@ -23,6 +23,12 @@ void CNiuNiuWaitStartGame::update(float fd)
 		m_pRoom->onGameWillBegin();
 		m_pRoom->prepareCards();
 		m_pRoom->doProcessNewPlayerHalo();
+		if ( m_pRoom->isRobotBankerAfterLookedCard() )
+		{
+			m_pRoom->goToState(eRoomState_NN_Disribute4Card);
+			return;
+		}
+ 
 		if ( m_pRoom->isHaveBanker() )
 		{
 			m_pRoom->goToState(eRoomState_NN_StartBet) ;

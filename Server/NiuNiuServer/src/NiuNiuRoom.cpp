@@ -21,15 +21,20 @@
 CNiuNiuRoom::CNiuNiuRoom() :m_tGameResult(100)
 {
 	m_nRateLevel = 1;
+	m_nPlayType = 0;
 	getPoker()->InitTaxasPoker() ;
 }
 
 bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, const Json::Value& vJsValue )
 {
-	ISitableRoom::onFirstBeCreated(pRoomMgr,nRoomID,vJsValue) ;
 	m_nBaseBet = vJsValue["baseBet"].asUInt();
 	auto jsopt = vJsValue["opts"];
 	m_nResignBankerCtrl = jsopt["unbankerType"].asUInt() ;
+	if ( false == jsopt["playType"].isNull())
+	{
+		m_nPlayType = jsopt["playType"].asUInt();
+	}
+
 	m_nBankerIdx = -1;
 	m_nBetBottomTimes = 1 ;
 	m_nBankerCoinLimitForBet = 0 ;
@@ -39,6 +44,7 @@ bool CNiuNiuRoom::onFirstBeCreated(IRoomManager* pRoomMgr,uint32_t nRoomID, cons
 		m_nRateLevel = jsopt["rateLevel"].asUInt();
 		LOGFMTD("create room rate level = %u , roomID = %u",m_nRateLevel,getRoomID() );
 	}
+	ISitableRoom::onFirstBeCreated(pRoomMgr, nRoomID, vJsValue);
 	return true ;
 }
 
@@ -48,11 +54,17 @@ void CNiuNiuRoom::prepareState()
 	// create room state ;
 	IRoomState* vState[] = {
 		new CNiuNiuWaitStartGame(),new CNiuNiuRoomGrabBanker(), new CNiuNiuRoomRandBankerState(),
-		new CNiuNiuRoomBetState(),new CNiuNiuRoomDistribute4CardState(),new CNiuNiuRoomDistributeFinalCardState(),new CNiuNiuRoomStatePlayerCaculateCardState() ,new CNiuNiuRoomGameResultState()
+		new CNiuNiuRoomBetState(),new CNiuNiuRoomStatePlayerCaculateCardState(),new CNiuNiuRoomDistributeFinalCardState() ,new CNiuNiuRoomGameResultState()
 	};
 	for ( uint8_t nIdx = 0 ; nIdx < sizeof(vState) / sizeof(IRoomState*); ++nIdx )
 	{
 		addRoomState(vState[nIdx]) ;
+	}
+
+	if (isRobotBankerAfterLookedCard())
+	{
+		auto p = new CNiuNiuRoomDistribute4CardState();
+		addRoomState(p);
 	}
 	setInitState(vState[0]);
 }
@@ -133,6 +145,7 @@ void CNiuNiuRoom::roomInfoVisitor(Json::Value& vOutJsValue)
 	vOutJsValue["baseBet"] = getBaseBet();
 	vOutJsValue["bankerTimes"] = m_nBetBottomTimes;
 	vOutJsValue["unbankerType"] = m_nResignBankerCtrl;
+	vOutJsValue["playType"] = m_nPlayType;
 	vOutJsValue["rateLevel"] = m_nRateLevel;
 }
 
@@ -185,9 +198,13 @@ uint8_t CNiuNiuRoom::getMaxRate()
 uint8_t CNiuNiuRoom::getDistributeCardCnt()
 {
 	uint32_t nState = getCurRoomState()->getStateID() ;
+	if (isRobotBankerAfterLookedCard() == false)
+	{
+		return 5;
+	}
+
 	switch (nState)
 	{
-	case eRoomState_NN_Disribute4Card:
 	case eRoomState_NN_FinalCard:
 	case eRoomState_NN_CaculateCard:
 	case eRoomState_NN_GameResult:
@@ -195,7 +212,7 @@ uint8_t CNiuNiuRoom::getDistributeCardCnt()
 	default:
 		break;
 	}
-	return 0 ;
+	return 4 ;
 }
 
 uint32_t CNiuNiuRoom::getBaseBet()
@@ -282,7 +299,7 @@ void CNiuNiuRoom::onGameWillBegin()
 		if (3 == m_nResignBankerCtrl )
 		{
 			stMsgNNProducedBanker msgInfom;
-			msgInfom.nBankerBetTimes = 1;
+			msgInfom.nBankerBetTimes = m_nBetBottomTimes;
 			msgInfom.nBankerIdx = getBankerIdx();
 			sendRoomMsg(&msgInfom, sizeof(msgInfom));
 			LOGFMTD("inform new round banker = %u , room id = %u",getBankerIdx(),getRoomID());
@@ -409,7 +426,7 @@ void CNiuNiuRoom::caculateGameResult()
 			break;
 		}
 
-		uint32_t nLoseCoin = min(5,pNNP->getBetTimes()) * getBaseBet() * m_nBetBottomTimes * getReateByNiNiuType(perr->getType(),perr->getPoint()) ;
+		uint32_t nLoseCoin = min(170,pNNP->getBetTimes()) * getBaseBet() * m_nBetBottomTimes * getReateByNiNiuType(perr->getType(),perr->getPoint()) ;
 		if ( nLoseCoin > pNNP->getCoin() )
 		{
 			nLoseCoin = pNNP->getCoin() ;
@@ -486,6 +503,12 @@ void CNiuNiuRoom::caculateGameResult()
 	sendRoomMsg((stMsg*)m_tGameResult.getBufferPtr(), m_tGameResult.getContentSize());
 
 	// check banker for coin 
+	if (isRobotBankerAfterLookedCard())  // kan pai qiang zhuang ;
+	{
+		m_nBankerIdx = -1;
+		return;
+	}
+
 	if ( pBanker->getCoin() < getLeastCoinNeedForBeBanker(1) )
 	{
 		m_nBankerIdx = -1 ;
@@ -696,4 +719,32 @@ bool CNiuNiuRoom::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t n
 		}
 	}
 	return ISitableRoom::onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
+}
+
+void CNiuNiuRoom::onDistributeCard( uint8_t nCnt )
+{
+	// distribute card ;
+	uint8_t nPlayerCnt = (uint8_t)getPlayerCntWithState(eRoomPeer_CanAct);
+	// send msg ;
+	stMsgNNDistriute4Card msgForCard;
+	msgForCard.nPlayerCnt = nPlayerCnt;
+	CAutoBuffer buffer(sizeof(msgForCard) + msgForCard.nPlayerCnt * sizeof(stDistriuet4CardItem));
+	buffer.addContent(&msgForCard, sizeof(msgForCard));
+	for (uint8_t nIdx = 0; nIdx < getSeatCount(); ++nIdx)
+	{
+		CNiuNiuRoomPlayer* pRoomPlayer = (CNiuNiuRoomPlayer*)getPlayerByIdx(nIdx);
+		if (pRoomPlayer && pRoomPlayer->isHaveState(eRoomPeer_CanAct))
+		{
+			stDistriuet4CardItem item;
+			memset(item.vCardCompsitNum, 0, sizeof(item.vCardCompsitNum));
+			item.nSeatIdx = pRoomPlayer->getIdx();
+			for (uint8_t nIdx = 0; nIdx < nCnt; ++nIdx)
+			{
+				item.vCardCompsitNum[nIdx] = pRoomPlayer->getCardByIdx(nIdx);
+			}
+			buffer.addContent(&item, sizeof(item));
+		}
+	}
+
+	sendRoomMsg((stMsg*)buffer.getBufferPtr(), buffer.getContentSize());
 }

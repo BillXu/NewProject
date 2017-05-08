@@ -16,6 +16,7 @@ public:
 	void onStateDuringTimeUp();
 protected:
 	CNiuNiuRoom* m_pRoom ;
+	uint8_t m_nMaxRobotBankerBetTimes;
 	std::vector<uint8_t> m_vWaitIdxs ;
 	std::vector<uint8_t> m_vGrabedIdx ;
 	std::vector<uint8_t> m_vRefusedGrabedIdx ;

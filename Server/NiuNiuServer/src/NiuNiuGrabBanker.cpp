@@ -7,6 +7,7 @@
 #include "log4z.h"
 void CNiuNiuRoomGrabBanker::enterState(IRoom* pRoom)
 {
+	m_nMaxRobotBankerBetTimes = 1;
 	m_vGrabedIdx.clear() ;
 	m_vWaitIdxs.clear() ;
 	m_vRefusedGrabedIdx.clear() ;
@@ -82,8 +83,13 @@ bool CNiuNiuRoomGrabBanker::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , 
 	LOGFMTD("try banker ok uid = %d ,times = %d" , pPlayer->getUserUID(), pTryBanker->nTryBankerBetTimes) ;
 
 	// if erveryone have bet , then end this state 
-	if ( pTryBanker->nTryBankerBetTimes  > 0 )
+	if ( pTryBanker->nTryBankerBetTimes  >= m_nMaxRobotBankerBetTimes )
 	{
+		if ( pTryBanker->nTryBankerBetTimes > m_nMaxRobotBankerBetTimes )
+		{
+			m_nMaxRobotBankerBetTimes = pTryBanker->nTryBankerBetTimes;
+			m_vGrabedIdx.clear();
+		}
 		m_vGrabedIdx.push_back(pPlayer->getIdx()) ;
 	}
 	else
@@ -130,7 +136,7 @@ void CNiuNiuRoomGrabBanker::onStateDuringTimeUp()
 		return ;
 	}
 
-	m_pRoom->setBetBottomTimes(1);
+	m_pRoom->setBetBottomTimes(m_nMaxRobotBankerBetTimes);
 	m_pRoom->setBankerIdx(nBankerIdx) ;
 
 	if ( nRandBankerCandidateCnt > 1 )
@@ -143,7 +149,7 @@ void CNiuNiuRoomGrabBanker::onStateDuringTimeUp()
 	}
 	// send msg tell banker idx ;
 	stMsgNNProducedBanker msgBanker ;
-	msgBanker.nBankerBetTimes = 1 ;
+	msgBanker.nBankerBetTimes = m_nMaxRobotBankerBetTimes;
 	msgBanker.nBankerIdx = m_pRoom->getBankerIdx();
 	m_pRoom->sendRoomMsg(&msgBanker,sizeof(msgBanker)) ;
 	m_pRoom->goToState(eRoomState_NN_StartBet);

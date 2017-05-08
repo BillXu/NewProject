@@ -26,7 +26,7 @@ void CNiuNiuRoomBetState::onStateDuringTimeUp()
 		}
 	}
 	vWaitBetPlayerIdxs.clear() ;
-	m_pRoom->goToState(eRoomState_NN_Disribute4Card);
+	m_pRoom->goToState(eRoomState_NN_FinalCard);
 }
 
 bool CNiuNiuRoomBetState::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32_t nPlayerSessionID )
