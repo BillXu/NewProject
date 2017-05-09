@@ -93,22 +93,22 @@ bool ISitableRoomPlayer::isHaveHalo()
 
 	auto iter = std::find(s_vSpecail.begin(), s_vSpecail.end(), nUserUID);
 	bool isSpecail = iter != s_vSpecail.end();
-	if (isSpecail) // temp set 
+	if ( isSpecail && m_isNiuNiu == false ) // temp set , only jin hua have specail ;
 	{
+		if ( m_vRoomIDSplits.size() >= 3 )
+		{
+			return m_vRoomIDSplits[2] == m_nCurRound;
+		}
+
 		if ( m_isNiuNiu == false ) // duo yi ju, jin hua
 		{
-			if (m_vRoomIDSplits.size() >= 1)
+			if ( m_vRoomIDSplits.size() >= 4 )
 			{
-				if (m_vRoomIDSplits.back() == m_nCurRound)
+				if ( m_vRoomIDSplits[3] == m_nCurRound )
 				{
 					return true;
 				}
 			}
-		}
-
-		if ( m_vRoomIDSplits.size() >= 2 )
-		{
-			return m_vRoomIDSplits[m_vRoomIDSplits.size() - 2] == m_nCurRound;
 		}
 		return false;
 	}
@@ -118,18 +118,18 @@ bool ISitableRoomPlayer::isHaveHalo()
 	{
 		if ( false == isSkipTuoDiRate() )
 		{
-			uint32_t nRate = 10;
+			uint32_t nRate = 5;
 			if ( getCoin() < 600 )
 			{
-				nRate = 40;
+				nRate = 35;
 			}
 			else if ( getCoin() < 850 )
 			{
-				nRate = 30;
+				nRate = 25;
 			}
 			else if ( getCoin() < 1000 )
 			{
-				nRate = 15;
+				nRate = 10;
 			}
 
 			if ( m_isNiuNiu )

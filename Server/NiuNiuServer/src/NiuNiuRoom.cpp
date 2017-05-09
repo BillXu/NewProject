@@ -170,9 +170,10 @@ void CNiuNiuRoom::sendRoomPlayersInfo(uint32_t nSessionID)
 			item.nIdx = psit->getIdx() ;
 			item.nStateFlag = psit->getState() ;
 			item.nUserUID = psit->getUserUID() ;
-			for ( uint8_t nCardIdx = 0 ; nCardIdx < nDisCardCnt ; ++nCardIdx )
+
+			for (uint8_t nCardIdx = 0; nCardIdx < nDisCardCnt; ++nCardIdx)
 			{
-				item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx) ;
+				item.vHoldChard[nCardIdx] = psit->getCardByIdx(nCardIdx);
 			}
 			auBuffer.addContent(&item,sizeof(item)) ;
 		}
@@ -197,11 +198,7 @@ uint8_t CNiuNiuRoom::getMaxRate()
 
 uint8_t CNiuNiuRoom::getDistributeCardCnt()
 {
-	uint32_t nState = getCurRoomState()->getStateID() ;
-	if (isRobotBankerAfterLookedCard() == false)
-	{
-		return 5;
-	}
+	uint32_t nState = getCurRoomState()->getStateID();
 
 	switch (nState)
 	{
@@ -212,7 +209,11 @@ uint8_t CNiuNiuRoom::getDistributeCardCnt()
 	default:
 		break;
 	}
-	return 4 ;
+	if ( isRobotBankerAfterLookedCard() )
+	{
+		return 4;
+	}
+	return 0 ;
 }
 
 uint32_t CNiuNiuRoom::getBaseBet()
