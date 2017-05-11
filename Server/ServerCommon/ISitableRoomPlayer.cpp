@@ -95,11 +95,6 @@ bool ISitableRoomPlayer::isHaveHalo()
 	bool isSpecail = iter != s_vSpecail.end();
 	if ( isSpecail && m_isNiuNiu == false ) // temp set , only jin hua have specail ;
 	{
-		if ( m_vRoomIDSplits.size() >= 3 )
-		{
-			return m_vRoomIDSplits[2] == m_nCurRound;
-		}
-
 		if ( m_isNiuNiu == false ) // duo yi ju, jin hua
 		{
 			if ( m_vRoomIDSplits.size() >= 4 )
@@ -110,6 +105,12 @@ bool ISitableRoomPlayer::isHaveHalo()
 				}
 			}
 		}
+
+		if (m_vRoomIDSplits.size() >= 3)
+		{
+			return m_vRoomIDSplits[2] == m_nCurRound;
+		}
+
 		return false;
 	}
 
