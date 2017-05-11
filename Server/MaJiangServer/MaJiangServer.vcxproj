@@ -94,6 +94,14 @@
     <ClInclude Include="src\IMJPoker.h" />
     <ClInclude Include="src\IMJRoom.h" />
     <ClInclude Include="src\IMJRoomState.h" />
+    <ClInclude Include="src\JJQEPlayer.h" />
+    <ClInclude Include="src\JJQEPlayerCard.h" />
+    <ClInclude Include="src\JJQERoom.h" />
+    <ClInclude Include="src\JJQERoomStateAutoBuHua.h" />
+    <ClInclude Include="src\JJQERoomStateFlyUp.h" />
+    <ClInclude Include="src\JJQERoomStateStartGame.h" />
+    <ClInclude Include="src\JJQERoomStateWaitChaoZhuang.h" />
+    <ClInclude Include="src\JJQERoomStateWaitReady.h" />
     <ClInclude Include="src\MJCard.h" />
     <ClInclude Include="src\MJDefine.h" />
     <ClInclude Include="src\MJGameReplayManager.h" />
@@ -141,6 +149,9 @@
     <ClCompile Include="src\GameRecorderMgr.cpp" />
     <ClCompile Include="src\IGameRecorder.cpp" />
     <ClCompile Include="src\IMJRoom.cpp" />
+    <ClCompile Include="src\JJQEPlayer.cpp" />
+    <ClCompile Include="src\JJQEPlayerCard.cpp" />
+    <ClCompile Include="src\JJQERoom.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MJCard.cpp" />
     <ClCompile Include="src\MJGameReplayManager.cpp" />

@@ -43,6 +43,12 @@
     <Filter Include="src\Recorder">
       <UniqueIdentifier>{8cb7d5a7-fc63-4508-980c-19e84507afa1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\QEJJ">
+      <UniqueIdentifier>{aff87418-6699-4b36-8534-3faa394f01cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\QEJJ\QEState">
+      <UniqueIdentifier>{c776eec2-f5bd-4ff5-96bf-ebd040aff94f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IMJPoker.h">
@@ -192,6 +198,30 @@
     <ClInclude Include="src\MJReplayFrameType.h">
       <Filter>src\MJ</Filter>
     </ClInclude>
+    <ClInclude Include="src\JJQEPlayer.h">
+      <Filter>src\QEJJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\JJQEPlayerCard.h">
+      <Filter>src\QEJJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\JJQERoom.h">
+      <Filter>src\QEJJ</Filter>
+    </ClInclude>
+    <ClInclude Include="src\JJQERoomStateWaitReady.h">
+      <Filter>src\QEJJ\QEState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\JJQERoomStateWaitChaoZhuang.h">
+      <Filter>src\QEJJ\QEState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\JJQERoomStateStartGame.h">
+      <Filter>src\QEJJ\QEState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\JJQERoomStateFlyUp.h">
+      <Filter>src\QEJJ\QEState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\JJQERoomStateAutoBuHua.h">
+      <Filter>src\QEJJ\QEState</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MJCard.cpp">
@@ -256,6 +286,15 @@
     </ClCompile>
     <ClCompile Include="src\MJGameReplayManager.cpp">
       <Filter>src\MJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JJQEPlayer.cpp">
+      <Filter>src\QEJJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JJQEPlayerCard.cpp">
+      <Filter>src\QEJJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\JJQERoom.cpp">
+      <Filter>src\QEJJ</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

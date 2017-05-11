@@ -16,6 +16,8 @@ public:
 	uint8_t getLeftCardCount()override;
 	uint8_t distributeOneCard()override { return getCard(); }
 	void shuffle()override;
+	uint8_t getLastCard()override;
+	uint8_t distributeOneCardFromBackEnd()override;
 	void debugCardInfo();
 	void initAllCard( eMJGameType eType );
 	eMJGameType getGameType();

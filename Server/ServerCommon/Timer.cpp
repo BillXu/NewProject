@@ -83,13 +83,6 @@ void CTimer::Update(float fTimeElaps)
 		return ;
 	}
 
-	// invoke funcion ;
-	assert(m_lpFunc != nullptr && "timer func can not be null" ) ;
-	if ( m_lpFunc )
-	{
-		m_lpFunc(this,m_fInterval <= 0.00001 ? fTimeElaps : m_fInterval ) ;
-	}
-
 	if ( m_isAutoRepeat )
 	{
 		m_fIntervalKeeper -= m_fInterval ;
@@ -97,6 +90,13 @@ void CTimer::Update(float fTimeElaps)
 	else
 	{
 		canncel() ;
+	}
+
+	// invoke funcion ;
+	assert(m_lpFunc != nullptr && "timer func can not be null");
+	if (m_lpFunc)
+	{
+		m_lpFunc(this, m_fInterval <= 0.00001 ? fTimeElaps : m_fInterval);
 	}
 }
 

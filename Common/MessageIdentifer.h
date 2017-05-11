@@ -768,6 +768,34 @@ enum eMsgType
 	// client : { null }
 	// svr : { diamond : 23 }
 
+	// msg for qing er 
+	MSG_ROOM_WAIT_CHAO_ZHUANG, // inform player chao zhuang 
+	// svr : null
+
+	MSG_PLAYER_CHOSED_CHAO_ZHUANG,  // player chose zhuang ;
+	// client : { isChao : 0 ,dstRoomID : 123465 }
+	// svr: { ret : 0 }
+	// ret : 0 success , 1 not in this room , 2 already chosed 
+
+	MSG_ROOM_PLAYER_CHOSED_CHAO_ZHUANG, // tell all room players , someone maked decise
+	// svr : { idx : 0 , isChao : 23 }
+
+	MSG_ROOM_CHAO_ZHUANG_VIEW_LAST_CARD, // 超庄第三家会收到这个消息，告诉他最后一张牌是什么，如果是嘻嘻，要收入囊中，其他的展示即可
+	// svr: { card: 23 }
+
+	MSG_ROOM_WAIT_PLAYER_FLY_UP, // 等待玩家选择起飞的牌
+	//svr : null ;
+
+	MSG_PLAYER_FLY_UP,
+	// client : { dstRoomID : 123465 , flyCards : [ 23,23] }  
+	// svr: { ret : 0 }
+	// ret : 0  表示成功，1 你不在当前房间内， 2 表示没有轮到你操作, 3 参数错误, 4 指定的牌不能起飞
+	// 当起飞的牌是 大小王之类的牌，发任意一个就可以，此时只检测类型花
+
+	MSG_ROOM_PLAYER_FLY_UP,  // 房间内有人起飞
+	// svr :{ idx : 2 , flyCards : [23,32] }
+
+
 
 
 

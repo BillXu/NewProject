@@ -9,4 +9,6 @@ public:
 	virtual void pushCardToFron( uint8_t nCard ) = 0;
 	virtual uint8_t getLeftCardCount() = 0;
 	virtual uint8_t distributeOneCard() = 0;
+	virtual uint8_t getLastCard() = 0;
+	virtual uint8_t distributeOneCardFromBackEnd() = 0;
 };

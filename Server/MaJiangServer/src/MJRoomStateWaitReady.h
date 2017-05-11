@@ -14,7 +14,7 @@ public:
 		IMJRoomState::update(fDeta);
 		if (getRoom()->canStartGame())
 		{
-			getRoom()->goToState(eRoomState_StartGame);
+			onAllPlayerReady();
 		}
 	}
 
@@ -31,10 +31,15 @@ public:
 			getRoom()->onPlayerSetReady(pPlayer->getIdx());
 			if (getRoom()->canStartGame())
 			{
-				getRoom()->goToState(eRoomState_StartGame);
+				onAllPlayerReady();
 			}
 			return true;
 		}
 		return false;
+	}
+
+	virtual void onAllPlayerReady()
+	{
+		getRoom()->goToState(eRoomState_StartGame);
 	}
 };

@@ -59,6 +59,7 @@ enum eRoomType
 	eRoom_Golden,
 	eRoom_MJ_Blood_River,// 血流成河
 	eRoom_MJ_Blood_End, // 血战到底 
+	eRoom_MJ_QingEr = eRoom_MJ_Blood_End,
 	eRoom_MJ_NanJing, 
 	eRoom_MJ_SuZhou,
 	eRoom_Max ,
@@ -159,6 +160,10 @@ enum eRoomState
 	eRoomState_WaitPlayerRecharge = eRoomState_WaitSupplyCoin,  //  等待玩家充值
 	eRoomState_NJ_Auto_Buhua, // 南京麻将自动不花 
 	eRoomState_GameEnd, // 游戏结束
+
+	// state for qing er 
+	eRoomState_WaitChaoZhuang, // 等待玩家超庄
+	eRoomState_WaitPlayerFlyUp, // 执行玩家起飞状态
 	eRoomState_Max,
 };
 

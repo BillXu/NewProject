@@ -562,7 +562,6 @@ void IMJRoom::startGame()
 	// distribute card 
 	auto pPoker = getMJPoker();
 	//LOGFMTD("room id = %u start game shuffle card ",getRoomID());
-	pPoker->shuffle();
 	//LOGFMTD("room id = %u shuffle end", getRoomID());
 	Json::Value jsFrameArg, jsPlayers;
 	jsFrameArg["bankIdx"] = getBankerIdx();
@@ -663,6 +662,9 @@ void IMJRoom::willStartGame()
 	}
 
 	// add game replay
+	auto pPoker = getMJPoker();
+	//LOGFMTD("room id = %u start game shuffle card ",getRoomID());
+	pPoker->shuffle();
 	auto p = (MJGameReplayManager*)m_pRoomMgr->getSvrApp()->getModuleByType(CMJServerApp::eMod_ReplayMgr);
 	getGameReplay()->reset();
 	getGameReplay()->setReplayID(p->generateReplayID());

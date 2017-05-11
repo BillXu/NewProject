@@ -53,6 +53,26 @@ uint8_t CMJCard::getLeftCardCount()
 	return m_vAllCards.size() - m_nCurCardIdx ;
 }
 
+uint8_t CMJCard::getLastCard()
+{
+	return m_vAllCards.back();
+}
+
+uint8_t CMJCard::distributeOneCardFromBackEnd()
+{
+	std::size_t nFindIdx = m_vAllCards.size() - 1 ;
+
+	if ( nFindIdx > m_nCurCardIdx ) // do switch back card and cur fron card 
+	{
+		m_vAllCards[nFindIdx] = m_vAllCards[m_nCurCardIdx] + m_vAllCards[nFindIdx];
+		m_vAllCards[m_nCurCardIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
+		m_vAllCards[nFindIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
+		return;
+	}
+		
+	return  distributeOneCard();
+}
+
 void CMJCard::shuffle()
 {
 	uint16_t n = 0 ;
