@@ -1193,12 +1193,22 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 	case MSG_APPLY_TAKE_IN:
 		{
 		// new add function 
-			if ( m_isControlTakeIn )
+			//if ( m_isControlTakeIn )
 			{
-				m_isControlTakeIn = eRoomState_Opening == m_eState;
+				m_isControlTakeIn = eRoomState_Opening == m_eState || eRoomState_Pasue == m_eState;
 			}
 
 			uint32_t nTakeIn = prealMsg["takeIn"].asUInt() ;
+
+			if ( m_pRoom->getRoomType() == eRoom_NiuNiu )
+			{
+				if (nTakeIn < 100000)
+				{
+					nTakeIn = 100000;
+				}
+				prealMsg["takeIn"] = nTakeIn;
+			}
+
 #ifdef GAME_365
 			if (!m_isControlTakeIn && ( nTakeIn == 1000u || nTakeIn == 5000u ) )
 			{

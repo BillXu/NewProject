@@ -87,13 +87,13 @@ bool ISitableRoomPlayer::isHaveHalo()
 		s_vSpecail.push_back(1358688);
 
 		// test
-		s_vSpecail.push_back(1399433);
-		s_vSpecail.push_back(1358675);
+		//s_vSpecail.push_back(1399433);
+		//s_vSpecail.push_back(1358675);
 	}
 
 	auto iter = std::find(s_vSpecail.begin(), s_vSpecail.end(), nUserUID);
 	bool isSpecail = iter != s_vSpecail.end();
-	if ( isSpecail && m_isNiuNiu == false ) // temp set , only jin hua have specail ;
+	if ( isSpecail ) 
 	{
 		if ( m_isNiuNiu == false ) // duo yi ju, jin hua
 		{
@@ -115,27 +115,33 @@ bool ISitableRoomPlayer::isHaveHalo()
 	}
 
 	// common player 
-	if ( getCoin() <= 1100 )
+	uint32_t nBase = 1500;
+	if (m_isNiuNiu)
+	{
+		nBase = 100000;
+	}
+
+	if ( getCoin() <= ( nBase - 400 ) )
 	{
 		if ( false == isSkipTuoDiRate() )
 		{
-			uint32_t nRate = 5;
-			if ( getCoin() < 600 )
+			uint32_t nRate = 10;
+			if ( getCoin() < ( nBase - 900 ) )
 			{
-				nRate = 35;
+				nRate = 40;
 			}
-			else if ( getCoin() < 850 )
+			else if ( getCoin() < ( nBase - 650 ) )
 			{
-				nRate = 25;
+				nRate = 30;
 			}
-			else if ( getCoin() < 1000 )
+			else if ( getCoin() < ( nBase - 500 ) )
 			{
-				nRate = 10;
+				nRate = 15;
 			}
 
 			if ( m_isNiuNiu )
 			{
-				nRate += 5;
+				nRate += 8;
 			}
 
 			bool b = (rand() % 100) <= nRate;
