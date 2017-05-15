@@ -33,7 +33,7 @@ public:
 		{
 			if (pPlayer == nullptr)
 			{
-				LOGFMTE("you are not in this room how to chao zhuang ? session id = %u", nSessionID);
+				LOGFMTE("you are not in this room how to fly up ? session id = %u", nSessionID);
 				nRet = 1;
 				break;
 			}
@@ -41,7 +41,7 @@ public:
 			if ( m_nCurWaitIdx == pPlayer->getIdx() )
 			{
 				nRet = 2;
-				LOGFMTE("you are already maked chao zhuang ? session id = %u", nSessionID);
+				LOGFMTE("you are not cur wait fly up ? session id = %u", nSessionID);
 				break;
 			}
 

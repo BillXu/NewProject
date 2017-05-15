@@ -6,4 +6,5 @@ class JJQEPlayerCard
 {
 public:
 	void reset() override;
+	uint8_t getHuaCardToBuHua();
 };

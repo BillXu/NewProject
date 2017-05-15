@@ -71,6 +71,7 @@ enum eMJGameType
 	eMJ_BloodRiver = eRoom_MJ_Blood_River,
 	eMJ_BloodTheEnd,
 	eMJ_NanJing,
+	eMJ_JJQE,
 	eMJ_SuZhou,
 	eMJ_COMMON,
 	eMJ_Max,
