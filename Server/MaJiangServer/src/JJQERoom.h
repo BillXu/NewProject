@@ -37,4 +37,6 @@ protected:
 	uint16_t m_nTopLimit;
 	uint8_t m_nJianZhang;
 	uint8_t m_nChaoZhuangLevel;  // 0 means , not chao zhuang ;
+
+	uint8_t m_nLastHuIdx;
 };

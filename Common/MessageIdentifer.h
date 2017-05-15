@@ -795,6 +795,11 @@ enum eMsgType
 	MSG_ROOM_PLAYER_FLY_UP,  // 房间内有人起飞
 	// svr :{ idx : 2 , flyCards : [23,32] }
 
+	MSG_ROOM_JJQE_PLAYER_HU, //青儿胡牌
+	// svr : { idx : 2 , huCard : 23 , invokeIdx : 23 }
+
+	MSG_ROOM_JJQE_RESULT, // 青儿牌局结果
+	// svr : { isHu : 1 , huIdx : 0 , invokeIdx : 0 , huTypes : [], playerResult : [ {idx : 2 , huCnt : 23}, .... ]  }
 
 
 
