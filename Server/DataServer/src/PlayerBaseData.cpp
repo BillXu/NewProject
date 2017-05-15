@@ -913,6 +913,7 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 		m_stBaseData.tLastTakeCharityCoinTime = time(NULL);
 		uint32_t nGiveDiamond = 3;
 		AddMoney(nGiveDiamond, true);
+		m_bCommonLogicDataDirty = true;
 		recvValue["diamond"] = nGiveDiamond;
 		SendMsg(recvValue, nmsgType);
 	}

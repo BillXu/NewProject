@@ -128,6 +128,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 		}
 		m_nLeftCircle = m_nInitCircle = v[m_nGrade];
 	}
+	vJsValue["circle"] = m_nInitCircle;
 
 	LOGFMTD("create 1 private room");
 	((IMJRoom*)m_pRoom)->setDelegate(this);

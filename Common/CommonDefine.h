@@ -248,7 +248,7 @@ enum eTime
 	eTime_WaitPlayerAct = 10,  // 等待玩家操作的时间
 	eTime_WaitPlayerChoseAct = eTime_WaitPlayerAct,
 	eTime_DoPlayerMoPai = 0,  //  玩家摸牌时间
-	eTime_DoPlayerActChuPai = 1,  // 玩家出牌的时间
+	eTime_DoPlayerActChuPai = 0,  // 玩家出牌的时间
 	eTime_DoPlayerAct_Gang = 0, // 玩家杠牌时间
 	eTime_DoPlayerAct_Hu = 1,  // 玩家胡牌的时间
 	eTime_DoPlayerAct_Peng = 0, // 玩家碰牌时间
