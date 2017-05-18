@@ -793,13 +793,18 @@ enum eMsgType
 	// 当起飞的牌是 大小王之类的牌，发任意一个就可以，此时只检测类型花
 
 	MSG_ROOM_PLAYER_FLY_UP,  // 房间内有人起飞
-	// svr :{ idx : 2 , flyCards : [23,32] }
+	// svr :{ idx : 2 , flyCards : [23,32], newCards : [23,23] }
 
 	MSG_ROOM_JJQE_PLAYER_HU, //青儿胡牌
 	// svr : { idx : 2 , huCard : 23 , invokeIdx : 23 }
 
 	MSG_ROOM_JJQE_RESULT, // 青儿牌局结果
 	// svr : { isHu : 1 , huIdx : 0 , invokeIdx : 0 , huTypes : [], playerResult : [ {idx : 2 , huCnt : 23}, .... ]  }
+
+	MSG_ROOM_JJQE_AUTO_BU_HUA, // 青儿自动补花
+	// svr : { detail : [ { idx : 2 , hua : [2,23], card : [2,3] } , ... ] }
+	// detail :补花玩家的数组
+	// idx : 对应玩家索引，hua 补了的花，card ： 补花获得的牌
 
 
 

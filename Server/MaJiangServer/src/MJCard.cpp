@@ -163,6 +163,40 @@ void CMJCard::initAllCard( eMJGameType eType )
 		}
 	}
 
+	if (eMJ_JJQE == m_eMJGameType)
+	{
+		auto nCnt = 3;
+		while ( nCnt-- )  // hont tao j q k
+		{
+			for (uint8_t nValue = 1; nValue <= 3; ++nValue)
+			{
+				m_vAllCards.push_back(makeCardNumber(eCT_Jian, nValue));
+			}
+		}
+
+		// add cao hua j q k 
+		for (uint8_t nValue = 4; nValue <= 6; ++nValue)
+		{
+			m_vAllCards.push_back(makeCardNumber(eCT_Jian, nValue));
+		}
+
+		// add 2 zhang xiao king,
+		for (uint8_t nValue = 1; nValue <= 2; ++nValue)
+		{
+			m_vAllCards.push_back(makeCardNumber(eCT_Hua, 1));
+		}
+
+		// add 3 zhang da king,
+		for (uint8_t nValue = 1; nValue <= 3; ++nValue)
+		{
+			m_vAllCards.push_back(makeCardNumber(eCT_Hua, 2));
+		}
+
+		// add huang and hou
+		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 3));
+		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 4));
+	}
+
 	if (eMJ_NanJing == m_eMJGameType)
 	{
 		for (uint8_t nValue = 1; nValue <= 8; ++nValue)

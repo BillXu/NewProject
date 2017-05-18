@@ -52,9 +52,9 @@ public:
 				vFlyCards.push_back(jsCards[ncardidx].asUInt());
 			}
 
-			if ( vFlyCards.empty() )
+			if ( vFlyCards.empty() )  // do not fly up 
 			{
-				nRet = 3;
+				//nRet = 3;  not error 
 				break;
 			}
 

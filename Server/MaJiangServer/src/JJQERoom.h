@@ -31,6 +31,9 @@ public:
 	float getDoubleChaoZhuangRate();
 	uint16_t getQiHuNeed();
 	uint16_t getTopHuLimit();
+	void onGameDidEnd()override;
+	void onGameEnd()override;
+	void onPlayerAnGang(uint8_t nIdx, uint8_t nCard)override;
 protected:
 	CMJCard m_tPoker;
 	uint16_t m_nQiHuNeed;

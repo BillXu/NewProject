@@ -164,6 +164,24 @@ void JJQERoom::willStartGame()
 	IMJRoom::willStartGame();
 	m_nJianZhang = -1;
 	m_nLastHuIdx = -1;
+	if ((uint8_t)-1 == m_nBankerIdx)
+	{
+		m_nBankerIdx = 0;
+	}
+	else
+	{
+		m_nBankerIdx = (m_nBankerIdx + 1) % getSeatCnt();
+	}
+
+	// bind room ;
+	for (auto& pPlayer : m_vMJPlayers)
+	{
+		if (pPlayer)
+		{
+			auto pPlayerCard = (JJQEPlayerCard*)pPlayer->getPlayerCard();
+			pPlayerCard->bindRoom(this);
+		}
+	}
 }
 
 void JJQERoom::getSubRoomInfo(Json::Value& jsSubInfo)
@@ -314,7 +332,8 @@ bool JJQERoom::onPlayerDoFlyUp( uint8_t nIdx, std::vector<uint8_t>& vFlyUpCard )
 	}
 
 	auto pPlayerCard = (JJQEPlayerCard*)pPlayer->getPlayerCard();
-	if (!pPlayerCard->onFlyUp(vFlyUpCard))
+	std::vector<uint8_t> vNewCards;
+	if (!pPlayerCard->onFlyUp(vFlyUpCard, vNewCards))
 	{
 		LOGFMTE("card is invalid can not flyup room id = %u , idx = %u",getRoomID(),nIdx);
 		return false;
@@ -323,19 +342,150 @@ bool JJQERoom::onPlayerDoFlyUp( uint8_t nIdx, std::vector<uint8_t>& vFlyUpCard )
 	Json::Value jsMsg;
 	jsMsg["idx"] = nIdx;
 
-	Json::Value jsArrayCard;
+	Json::Value jsArrayCard, jsNewCards;
 	for (auto& ref : vFlyUpCard)
 	{
 		jsArrayCard[jsArrayCard.size()] = ref;
 	}
+
+	for (auto& ref : vNewCards)
+	{
+		jsNewCards[jsNewCards.size()] = ref;
+	}
 	jsMsg["flyCards"] = jsArrayCard;
+	jsMsg["newCards"] = jsNewCards;
 	sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_FLY_UP);
 	return true;
 }
 
 void JJQERoom::onDoAllPlayersAutoBuHua()
 {
+	Json::Value jsMsg;
+	Json::Value jsDetail;
+	for (auto& ref : m_vMJPlayers)
+	{
+		if (!ref)
+		{
+			continue;
+		}
+		auto pPlayerCard = (JJQEPlayerCard*)ref->getPlayerCard();
 
+		Json::Value jsHua;
+		Json::Value jsCard;
+		if ( !pPlayerCard->doAutoBuhua(jsHua, jsCard) )
+		{
+			continue;
+		}
+
+		Json::Value jsPlayerItem;
+		jsPlayerItem["idx"] = ref->getIdx();
+		jsPlayerItem["hua"] = jsHua;
+		jsPlayerItem["card"] = jsCard;
+		jsDetail[jsDetail.size()] = jsPlayerItem;
+	}
+	jsMsg["detail"] = jsDetail;
+	sendRoomMsg(jsMsg, MSG_ROOM_JJQE_AUTO_BU_HUA );
+}
+
+void JJQERoom::onGameDidEnd()
+{
+	IMJRoom::onGameDidEnd();
+	if (getDelegate())
+	{
+		getDelegate()->onDidGameOver(this);
+		return;
+	}
+}
+
+void JJQERoom::onGameEnd()
+{
+	// svr: { isLiuJu : 0 , detail : [ {idx : 0 , offset : 23 }, ...  ], realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] } 
+	Json::Value jsMsg;
+	Json::Value playerResult;
+
+	auto ptrSingleRecorder = getRoomRecorder()->createSingleRoundRecorder();
+	ptrSingleRecorder->init(getRoomRecorder()->getRoundRecorderCnt(), (uint32_t)time(nullptr), getGameReplay()->getReplayID());
+	getRoomRecorder()->addSingleRoundRecorder(ptrSingleRecorder);
+
+	// get hu info 
+	if ((uint8_t)-1 != m_nLastHuIdx) // have some one hu 
+	{
+		auto pPlayer = getMJPlayerByIdx(m_nLastHuIdx);
+		if ( pPlayer == nullptr)
+		{
+			LOGFMTE("room id = %u hu idx = %u is nullptr",getRoomID(),m_nLastHuIdx);
+		}
+		else
+		{
+			auto pPlayerCard = (JJQEPlayerCard*)pPlayer->getPlayerCard();
+			std::vector<uint8_t> vHuTypes;
+			uint8_t nInvokerIdx = -1 ;
+			pPlayerCard->getHuInfo(nInvokerIdx, vHuTypes);
+			jsMsg["huIdx"] = m_nLastHuIdx;
+			jsMsg["invokeIdx"] = nInvokerIdx;
+
+			Json::Value jsHuTypes;
+			for (auto& ref : vHuTypes)
+			{
+				jsHuTypes[jsHuTypes.size()] = ref;
+			}
+			jsMsg["huTypes"] = jsHuTypes;
+		}
+	}
+
+	jsMsg["isHu"] = (uint8_t)-1 != m_nLastHuIdx ? 1 : 0;
+
+	// get player huDetail ;
+	for (auto& ref : m_vMJPlayers)
+	{
+		if (!ref)
+		{
+			continue;
+		}
+		auto pPlayerCard = (JJQEPlayerCard*)ref->getPlayerCard();
+		auto nThisOffset = pPlayerCard->getAllHuCnt();
+		ref->addOffsetCoin(nThisOffset);
+		Json::Value jsPlayerItem;
+		jsPlayerItem["idx"] = ref->getIdx();
+		jsPlayerItem["huCnt"] = nThisOffset;
+		playerResult[playerResult.size()] = jsPlayerItem;
+	}
+	jsMsg["playerResult"] = playerResult;
+  
+	//for (auto& ref : m_vMJPlayers)
+	//{
+	//	Json::Value js;
+	//	if (ref)
+	//	{
+	//		js["idx"] = ref->getIdx();
+	//		js["offset"] = ref->getOffsetCoin();
+	//		js["final"] = ref->getCoin();
+	//		jsDetial[jsDetial.size()] = js;
+
+	//		auto pPlayerRecorderInfo = std::make_shared<NJMJPlayerRecorderInfo>();
+	//		pPlayerRecorderInfo->init(ref->getUID(), ref->getOffsetCoin(), ((NJMJPlayer*)ref)->getWaiBaoOffset());
+	//		ptrSingleRecorder->addPlayerRecorderInfo(pPlayerRecorderInfo);
+	//	}
+
+	//	if (ref && ref->haveState(eRoomPeer_AlreadyHu))
+	//	{
+	//		isAnyOneHu = true;
+	//		if (ref->getIdx() == (getBankerIdx() + 1) % getSeatCnt())
+	//		{
+	//			isBankerNextHu = true;
+	//		}
+	//		continue;
+	//	}
+	//}
+
+	//jsMsg["isLiuJu"] = isAnyOneHu ? 0 : 1;
+	//jsMsg["detail"] = jsDetial;
+
+
+
+	sendRoomMsg(jsMsg, MSG_ROOM_JJQE_RESULT);
+	// send msg to player ;
+	IMJRoom::onGameEnd();
 }
 
 void JJQERoom::onDoPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
@@ -365,7 +515,30 @@ void JJQERoom::onDoPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)
 
 bool JJQERoom::isCardJianPai(uint8_t nCheckCard)
 {
+	auto nType = card_Type(nCheckCard);
+	if (eCT_Jian == nType)
+	{
+		return true;
+	}
 
+	auto nValue = card_Value(nCheckCard);
+	if (1 == nValue || 9 == nValue)
+	{
+		return true;
+	}
+
+	auto nJianType = card_Type(m_nJianZhang);
+	if (eCT_Hua == nJianType)
+	{
+		return true;
+	}
+
+	auto nJianValue = card_Value(m_nJianZhang);
+	if ( (nJianValue % 3) == (nValue % 3) )
+	{
+		return true;
+	}
+	return false;
 }
 
 uint8_t JJQERoom::getJianZhang()
@@ -401,4 +574,37 @@ uint16_t JJQERoom::getQiHuNeed()
 uint16_t JJQERoom::getTopHuLimit()
 {
 	return m_nTopLimit;
+}
+
+void JJQERoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
+{
+	auto pPlayer = getMJPlayerByIdx(nIdx);
+	if (!pPlayer)
+	{
+		LOGFMTE("why this player is null idx = %u , can not an gang", nIdx);
+		return;
+	}
+	pPlayer->signGangFlag();
+	pPlayer->addAnGangCnt();
+	uint8_t nGangGetCard = 0;
+	if ( ((JJQEPlayerCard*)pPlayer->getPlayerCard())->onQEAnGang(nCard, nGangGetCard) == false)
+	{
+		LOGFMTE("nidx = %u an gang card = %u error,", nIdx, nCard);
+	}
+
+	// send msg ;
+	Json::Value msg;
+	msg["idx"] = nIdx;
+	msg["actType"] = eMJAct_AnGang;
+	msg["card"] = nCard;
+	msg["gangCard"] = nGangGetCard;
+	sendRoomMsg(msg, MSG_ROOM_ACT);
+
+	Json::Value jsFrameArg;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_AnGang, (uint32_t)time(nullptr));
+	jsFrameArg["idx"] = nIdx;
+	jsFrameArg["gang"] = nCard;
+	jsFrameArg["newCard"] = nGangGetCard;
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }

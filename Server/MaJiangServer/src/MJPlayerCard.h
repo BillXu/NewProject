@@ -40,10 +40,10 @@ public:
 	bool isHoldCardCanHu() override;
 
 	void onMoCard(uint8_t nMoCard) final;
-	bool onPeng(uint8_t nCard) final;
+	bool onPeng(uint8_t nCard) override;
 	bool onMingGang(uint8_t nCard, uint8_t nGangGetCard) override;
 	bool onAnGang(uint8_t nCard, uint8_t nGangGetCard) override;
-	bool onBuGang(uint8_t nCard, uint8_t nGangGetCard) final;
+	bool onBuGang(uint8_t nCard, uint8_t nGangGetCard) override;
 	bool onEat(uint8_t nCard, uint8_t nWithA, uint8_t withB) final;
 	bool onChuCard(uint8_t nChuCard)override;
 
