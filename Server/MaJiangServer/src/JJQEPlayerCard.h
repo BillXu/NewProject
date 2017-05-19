@@ -35,6 +35,7 @@ public:
 	bool onBuGang(uint8_t nCard, uint8_t nGangGetCard) override;
 protected:
 	bool isThisPlayerHu() { return m_vHuTypes.size() > 0; }
+	bool isZiMo() { return m_nInvokeHuIdx == m_nCurPlayerIdx; }
 	uint8_t getBlackJQKHuCnt();
 	uint16_t getPengHuCnt();
 	uint16_t getGangHuCnt();
@@ -52,5 +53,6 @@ protected:
 
 	// hu info 
 	uint8_t m_nInvokeHuIdx;
+	uint8_t m_nHuCard;
 	std::vector<uint8_t> m_vHuTypes;
 };

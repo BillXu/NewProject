@@ -16,6 +16,7 @@
 #include "SZMJRoom.h"
 #include "MJServer.h"
 #include "NJMJPlayer.h"
+#include "JJQERoom.h"
 #define TIME_WAIT_REPLY_DISMISS 90
 MJPrivateRoom::~MJPrivateRoom()
 {
@@ -31,7 +32,7 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	m_nGrade = -1;
 	m_isForFree = false;
 	m_isAA = false;
-	m_isCircleType = true;
+	m_isCircleType = false;
 	memset(&m_stConfig, 0, sizeof(m_stConfig));
 	m_stConfig.nConfigID = 0;
 	m_stConfig.nBaseBet = 1;//;vJsValue["baseBet"].asUInt();
@@ -64,17 +65,6 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 		LOGFMTD("create private room ownerUID is null ?");
 	}
 
-	if (vJsValue["isCircle"].isNull() == false)
-	{
-		m_isCircleType = vJsValue["isCircle"].asUInt() == 1;
-		LOGFMTD("create private room isCircle is = %u", (uint8_t)m_isCircleType);
-	}
-
-	if ( !m_isCircleType )
-	{
-		m_nInitCircle *= 4;
-		vJsValue["circle"] = vJsValue["circle"].asUInt() * 4;
-	}
 
 	if (vJsValue["isFree"].isNull() == false)
 	{
@@ -465,7 +455,6 @@ void MJPrivateRoom::sendRoomInfo(uint32_t nSessionID)
 	jsMsg["roomType"] = m_pRoom->getRoomType();
 	jsMsg["chatID"] = m_nChatID;
 	jsMsg["isAA"] = m_isAA ? 1 : 0;
-	jsMsg["isCircle"] = m_isCircleType ? 1 : 0;
 	// is waiting vote dismiss room ;
 	jsMsg["isWaitingDismiss"] = m_bWaitDismissReply ? 1 : 0;
 	int32_t nLeftSec = 0;
@@ -913,6 +902,11 @@ IMJRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
 	//	return new XZMJRoom();
 	//}
 	//break;
+	case eRoom_MJ_QingEr:
+	{
+		return new JJQERoom();
+	}
+	break;
 	case eRoom_MJ_NanJing:
 	{
 		return new NJMJRoom();

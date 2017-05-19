@@ -13,12 +13,31 @@ public:
 		IMJRoomState::enterState(pmjRoom, jsTranData);
 		m_isAutoBuHuaOrHuaGang = false;
 		m_nHuaCard = -1;
+		m_isMustGameOver = false;
 		setStateDuringTime(pmjRoom->isWaitPlayerActForever() ? 100000000 : eTime_WaitPlayerAct);
 		if (jsTranData["idx"].isNull() == false && jsTranData["idx"].isUInt())
 		{
 			m_nIdx = jsTranData["idx"].asUInt();
 			if (!checkPlayerBuHua())
 			{
+				auto pPlayer = getRoom()->getMJPlayerByIdx(m_nIdx);
+				if (!pPlayer)
+				{
+					LOGFMTE("why cur player idx = %u is null room id = %u",m_nIdx,getRoom()->getRoomID());
+					m_isMustGameOver = true;
+					setStateDuringTime(0.0001);
+					return;
+				}
+				auto pPeerCard = (JJQEPlayerCard*)pPlayer->getPlayerCard();
+				auto nNewCard = pPeerCard->getHuaCardToBuHua();
+				if (nNewCard != (uint8_t)-1) // can not go on mo pai , lead to can not bu hua , so direct game over 
+				{
+					LOGFMTE("final card is hua , but can not bu hua , so must game over room id = %u, idx = %u",getRoom()->getRoomID(),m_nIdx);
+					m_isMustGameOver = true;
+					setStateDuringTime(0.0001);
+					return;
+				}
+
 				m_isAutoBuHuaOrHuaGang = false;
 				setStateDuringTime(pmjRoom->isWaitPlayerActForever() ? 100000000 : eTime_WaitPlayerAct);
 				getRoom()->onWaitPlayerAct(m_nIdx, m_isCanPass); // normal ask do act 
@@ -56,6 +75,12 @@ public:
 
 	void onStateTimeUp()override
 	{
+		if ( m_isMustGameOver)
+		{
+			getRoom()->goToState(eRoomState_GameEnd);
+			return;
+		}
+
 		if ( m_isAutoBuHuaOrHuaGang )
 		{
 			if (!checkPlayerBuHua())
@@ -87,4 +112,5 @@ public:
 protected:
 	bool m_isAutoBuHuaOrHuaGang;
 	uint8_t m_nHuaCard;
+	bool m_isMustGameOver;
 };

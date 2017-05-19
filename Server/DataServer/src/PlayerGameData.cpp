@@ -413,7 +413,6 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			auto nCirle = recvValue["circle"].asUInt();
 			bool isFree = false;
 			bool isAA = false;
-			bool isCircleType = true;
 			uint8_t nGrade = -1;  
 			if (recvValue["gradeType"].isNull() == false)
 			{
@@ -425,11 +424,6 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				LOGFMTD("create private room isFree is null ?");
 			}
 
-			if (recvValue["isCircle"].isNull() == false)
-			{
-				isCircleType = recvValue["isCircle"].asUInt() == 1;
-				LOGFMTD("create private room isCircle is = %u", (uint8_t)isCircleType);
-			}
 			
 			if (recvValue["isFree"].isNull() == false)
 			{
@@ -463,23 +457,7 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 				break;
 			}
 
-			if (nCirle <= 0)
-			{
-				jsMsgBack["ret"] = 6;
-				SendMsg(jsMsgBack, nmsgType);
-				break;
-			}
-
-			uint8_t nDiamondNeed = 8;
-			if (1 == nCirle)
-			{
-				nDiamondNeed = 2;
-			}
-			else if (2 == nCirle)
-			{
-				nDiamondNeed = 4;
-			}
-
+			uint8_t nDiamondNeed = 0;
 			if ( isAA )
 			{
 				nDiamondNeed = 1;
@@ -491,31 +469,15 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 
 			if ((uint8_t)-1 != nGrade && nGrade < 3 )
 			{
-				if (isCircleType)
+				uint8_t vJu[] = { 3,5,8 };
+				uint8_t vJuAA[] = { 1,2,2 };
+				if (isAA)
 				{
-					uint8_t vQun[] = { 2,4,8 };
-					uint8_t vQuanAA[] = { 1,1,2 };
-					if (isAA)
-					{
-						nDiamondNeed = vQuanAA[nGrade];
-					}
-					else
-					{
-						nDiamondNeed = vQun[nGrade];
-					}
+					nDiamondNeed = vJuAA[nGrade];
 				}
 				else
 				{
-					uint8_t vJu[] = { 3,5,8 };
-					uint8_t vJuAA[] = { 1,2,2 };
-					if (isAA)
-					{
-						nDiamondNeed = vJuAA[nGrade];
-					}
-					else
-					{
-						nDiamondNeed = vJu[nGrade];
-					}
+					nDiamondNeed = vJu[nGrade];
 				}
 			}
 

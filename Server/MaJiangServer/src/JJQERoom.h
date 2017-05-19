@@ -34,12 +34,18 @@ public:
 	void onGameDidEnd()override;
 	void onGameEnd()override;
 	void onPlayerAnGang(uint8_t nIdx, uint8_t nCard)override;
+	IMJPoker* getMJPoker()override;
+	bool onPlayerApplyLeave(uint32_t nPlayerUID)override;
+	std::shared_ptr<IGameRoomRecorder> createRoomRecorder()override;
 protected:
 	CMJCard m_tPoker;
 	uint16_t m_nQiHuNeed;
 	uint16_t m_nTopLimit;
 	uint8_t m_nJianZhang;
 	uint8_t m_nChaoZhuangLevel;  // 0 means , not chao zhuang ;
+	uint16_t m_nQingErHuCnt;
+	bool m_isHave13Hu;
 
 	uint8_t m_nLastHuIdx;
+
 };

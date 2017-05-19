@@ -8,7 +8,7 @@ class JJQERoomStateFlyUp
 	:public IMJRoomState
 {
 public:
-	uint32_t getStateID()final { return eRoomState_WaitChaoZhuang; }
+	uint32_t getStateID()final { return eRoomState_WaitPlayerFlyUp; }
 
 	void enterState(IMJRoom* pmjRoom, Json::Value& jsTranData)override
 	{

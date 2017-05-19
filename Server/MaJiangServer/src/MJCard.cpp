@@ -67,7 +67,6 @@ uint8_t CMJCard::distributeOneCardFromBackEnd()
 		m_vAllCards[nFindIdx] = m_vAllCards[m_nCurCardIdx] + m_vAllCards[nFindIdx];
 		m_vAllCards[m_nCurCardIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
 		m_vAllCards[nFindIdx] = m_vAllCards[nFindIdx] - m_vAllCards[m_nCurCardIdx];
-		return;
 	}
 		
 	return  distributeOneCard();

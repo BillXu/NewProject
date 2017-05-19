@@ -14,15 +14,24 @@
 #include "JJQERoomStateStartGame.h"
 #include "MJReplayFrameType.h"
 #include <ctime>
+#include "NJMJPlayerRecorderInfo.h"
+#include "ServerMessageDefine.h"
+#include "IGameRoomManager.h"
+#include "RoomConfig.h"
 bool JJQERoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
+	((stSitableRoomConfig*)getRoomConfig())->nMaxSeat = 3;
 	m_tPoker.initAllCard(eMJ_JJQE);
 	m_nQiHuNeed = vJsValue["qiHuNeed"].asUInt();
 	m_nTopLimit = vJsValue["fengDing"].asUInt();
 	m_nJianZhang = 0;
 	m_nChaoZhuangLevel = vJsValue["chaoZhuangLevel"].asUInt();
+	m_nQingErHuCnt = vJsValue["qingErHu"].asUInt();
+	m_isHave13Hu = vJsValue["is13Hu"].asUInt() == 1;
 	m_nLastHuIdx = -1;
+	bool isHaveSun = vJsValue["haveSun"].asUInt() == 1;
+	bool isHaveMoon = vJsValue["haveMoon"].asUInt() == 1;
 
 	// create state and add state ;
 	IMJRoomState* vState[] = {
@@ -103,7 +112,6 @@ void JJQERoom::startGame()
 	{
 		if (!pPlayer)
 		{
-			LOGFMTE("why player is null jjqe  must all player is not null");
 			continue;
 		}
 
@@ -179,7 +187,7 @@ void JJQERoom::willStartGame()
 		if (pPlayer)
 		{
 			auto pPlayerCard = (JJQEPlayerCard*)pPlayer->getPlayerCard();
-			pPlayerCard->bindRoom(this);
+			pPlayerCard->bindRoom(this,pPlayer->getIdx());
 		}
 	}
 }
@@ -607,4 +615,57 @@ void JJQERoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 	jsFrameArg["newCard"] = nGangGetCard;
 	ptrReplay->setFrameArg(jsFrameArg);
 	getGameReplay()->addFrame(ptrReplay);
+}
+
+IMJPoker* JJQERoom::getMJPoker()
+{
+	return &m_tPoker;
+}
+
+bool JJQERoom::onPlayerApplyLeave(uint32_t nPlayerUID)
+{
+	auto pPlayer = getMJPlayerByUID(nPlayerUID);
+	if (!pPlayer)
+	{
+		LOGFMTE("you are not in room id = %u , how to leave this room ? uid = %u", getRoomID(), nPlayerUID);
+		return false;
+	}
+
+	Json::Value jsMsg;
+	jsMsg["idx"] = pPlayer->getIdx();
+	sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_LEAVE); // tell other player leave ;
+
+	auto curState = getCurRoomState()->getStateID();
+	if (eRoomSate_WaitReady == curState || eRoomState_GameEnd == curState)
+	{
+		// direct leave just stand up ;
+		//auto pXLPlayer = (XLMJPlayer*)pPlayer;
+		stMsgSvrDoLeaveRoom msgdoLeave;
+		msgdoLeave.nCoin = pPlayer->getCoin();
+		msgdoLeave.nGameType = getRoomType();
+		msgdoLeave.nRoomID = getRoomID();
+		msgdoLeave.nUserUID = pPlayer->getUID();
+		msgdoLeave.nGameOffset = pPlayer->getOffsetCoin();
+		getRoomMgr()->sendMsg(&msgdoLeave, sizeof(msgdoLeave), pPlayer->getSessionID());
+		LOGFMTD("player uid = %u , leave room id = %u", pPlayer->getUID(), getRoomID());
+
+		if (eRoomSate_WaitReady == curState || eRoomState_GameEnd == curState)  // when game over or not start , delte player in room data ;
+		{
+			// tell robot dispatch player leave 
+			auto ret = standup(nPlayerUID);
+			return ret;
+		}
+		else
+		{
+			LOGFMTE("decide player already sync data uid = %u room id = %u", pPlayer->getUID(), getRoomID());
+		}
+	}
+	pPlayer->doTempLeaveRoom();
+	onPlayerTrusteedStateChange(pPlayer->getIdx(), true);
+	return true;
+}
+
+std::shared_ptr<IGameRoomRecorder> JJQERoom::createRoomRecorder()
+{
+	return std::make_shared<NJMJRoomRecorder>();
 }
