@@ -934,6 +934,7 @@ uint16_t JJQEPlayerCard::getHuaHuCnt()
 		nHuCnt += 20;
 	}
 	
+	// sun and moon ;
 	auto nSun = std::count(m_vBuHuaCard.begin(), m_vBuHuaCard.end(), make_Card_Num(eCT_Hua, 5));
 	auto nMoon = std::count(vHuaCard.begin(), vHuaCard.end(), make_Card_Num(eCT_Hua, 6));
 	if (nSun > 1)

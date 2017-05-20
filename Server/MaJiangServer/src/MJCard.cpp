@@ -212,6 +212,19 @@ void CMJCard::initAllCard( eMJGameType eType )
 	}
 }
 
+void CMJCard::initQingErExt(bool isAddSun, bool isAddMoon)
+{
+	if (isAddSun || isAddMoon)
+	{
+		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 5));  // sun 
+	}
+
+	if (isAddMoon)
+	{
+		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 6));  // sun 
+	}
+}
+
 void CMJCard::initTwoBirdCard()
 {
 	m_vAllCards.clear() ;

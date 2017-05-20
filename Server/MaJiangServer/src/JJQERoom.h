@@ -37,6 +37,8 @@ public:
 	IMJPoker* getMJPoker()override;
 	bool onPlayerApplyLeave(uint32_t nPlayerUID)override;
 	std::shared_ptr<IGameRoomRecorder> createRoomRecorder()override;
+	bool isEnable13Hu() { return m_isHave13Hu;  }
+	uint16_t getQingErHuCnt() { return m_nQingErHuCnt; }
 protected:
 	CMJCard m_tPoker;
 	uint16_t m_nQiHuNeed;
@@ -45,6 +47,8 @@ protected:
 	uint8_t m_nChaoZhuangLevel;  // 0 means , not chao zhuang ;
 	uint16_t m_nQingErHuCnt;
 	bool m_isHave13Hu;
+	bool m_isHaveSun;
+	bool m_isHaveMoon;
 
 	uint8_t m_nLastHuIdx;
 
