@@ -73,7 +73,7 @@ void GameRecorderMgr::onConnectedSvr()
 		return;
 	}
 
-	readRoomRecorder( 0 );
+	//readRoomRecorder( 0 );
 }
 
 uint32_t GameRecorderMgr::getRoomRecorderCnt()

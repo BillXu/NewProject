@@ -72,6 +72,7 @@ void ISingleRoundRecorder::doSaveRoundRecorder( CAsyncRequestQuene* pSyncQuene ,
 
 void ISingleRoundRecorder::restoreRoundRecorder( CAsyncRequestQuene* pSyncQuene, uint32_t nSieralNum, uint16_t nRoundIdx)
 {
+	// temp return 
 	m_nRoundIdx = nRoundIdx;
 
 	Json::Value jssql;
