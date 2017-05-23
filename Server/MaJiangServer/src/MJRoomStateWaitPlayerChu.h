@@ -35,6 +35,30 @@ public:
 
 	bool onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)override
 	{
+		if (MSG_REQ_ACT_LIST == nMsgType)
+		{
+			auto pPlayer = getRoom()->getMJPlayerBySessionID(nSessionID);
+			if (pPlayer == nullptr)
+			{
+				LOGFMTE("you are not in room  why req act list");
+				prealMsg["ret"] = 3;
+				getRoom()->sendMsgToPlayer(prealMsg, nMsgType, nSessionID);
+				return false;
+			}
+
+			if (m_nIdx != pPlayer->getIdx())
+			{
+				LOGFMTD("you are not cur act player , so omit you message");
+				prealMsg["ret"] = 1;
+				getRoom()->sendMsgToPlayer(prealMsg, nMsgType, nSessionID);
+				return false;
+			}
+
+			prealMsg["ret"] = 0;
+			getRoom()->sendMsgToPlayer(prealMsg, nMsgType, nSessionID);
+			return true;
+		}
+
 		if (MSG_PLAYER_ACT != nMsgType)
 		{
 			return false;

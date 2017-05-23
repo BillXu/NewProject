@@ -229,6 +229,12 @@ enum eFanxingType
 	eFanxing_HaoHuaQiDui, // ºÀ»ªÆß¶Ô
 	eFanxing_DaDiaoChe, // ´óµõ³µ
 
+	eFanxing_QiongHen, // ÇîºÝ
+	eFanxing_QiongQiongHen, // ÇîÇîºÝ
+	eFanxing_QingEr, // Çà¶ù
+	eFanxing_13Hu, // 13 ºú
+	eFanxing_3Red, // 3 ºì
+
 	eFanxing_Max, // Ã»ÓÐºú
 };
 

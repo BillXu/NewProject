@@ -23,7 +23,7 @@ public:
 	uint32_t getAllHuCnt();
 	bool doAutoBuhua(Json::Value& jsHua, Json::Value& jsCard);
 	bool getHoldCardThatCanAnGang(VEC_CARD& vGangCards)override;
-
+	bool canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB) override { return false; }
 	// specail process , cao hua j q k , and xi xi qi fei 
 	bool canMingGangWithCard(uint8_t nCard) override;
 	bool canAnGangWithCard(uint8_t nCard)override;
@@ -43,6 +43,12 @@ protected:
 	uint16_t getHoldWenQianCnt();
 	uint16_t getFlyUpHuCnt();
 	uint16_t getHuaHuCnt();
+	bool checkQiongHen();
+	bool check3Red();
+	bool checkDuiDuiHu();
+	bool checkQingErHu();
+	bool check13Hu();
+	bool checkSoftHua();
 protected:
 	VEC_CARD m_vBuHuaCard;
 	VEC_CARD m_vFlyupCard;
