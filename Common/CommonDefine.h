@@ -234,6 +234,10 @@ enum eFanxingType
 	eFanxing_QingEr, // 青儿
 	eFanxing_13Hu, // 13 胡
 	eFanxing_3Red, // 3 红
+	eFanxing_BianZhi,  // 边只
+	eFanxing_KaZhang, // 卡张
+	eFanxing_DanDiao, // 单调
+	eFanxing_ZiMo, // 青儿自摸
 
 	eFanxing_Max, // 没有胡
 };

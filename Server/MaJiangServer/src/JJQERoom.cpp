@@ -77,7 +77,7 @@ void JJQERoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 		return;
 	}
 	auto pPlayerCard = (JJQEPlayerCard*)pPlayer->getPlayerCard();
-	if (!pPlayerCard->onDoHu(isZiMo, nCard))
+	if (!pPlayerCard->onDoHu(nCard, nInvokeIdx ))
 	{
 		LOGFMTE("can not hu room id = %u idx = %u",getRoomID(),nHuIdx );
 		return;
@@ -218,6 +218,7 @@ void JJQERoom::sendPlayersCardInfo(uint32_t nSessionID)
 		auto pCard = (JJQEPlayerCard*)pp->getPlayerCard();
 		Json::Value jsCardInfo;
 		jsCardInfo["idx"] = pp->getIdx();
+		jsCardInfo["curHuCnt"] = pCard->getMingPaiHuaCnt();
 		jsCardInfo["newMoCard"] = 0;
 		if (getCurRoomState()->getStateID() == eRoomState_WaitPlayerAct && getCurRoomState()->getCurIdx() == pp->getIdx())
 		{

@@ -97,7 +97,7 @@ public:
 			}
 
 			auto nType = card_Type(nCard);
-			bool isHua = (eCT_Jian == nType || eCT_Hua == nType);
+			bool isHua = (eCT_Hua == nType);
 			if (isHua)
 			{
 				nRet = 4;

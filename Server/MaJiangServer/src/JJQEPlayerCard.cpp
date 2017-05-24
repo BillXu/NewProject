@@ -13,6 +13,16 @@ void JJQEPlayerCard::bindRoom(JJQERoom* pRoom, uint8_t nPlayerIdx )
 void JJQEPlayerCard::reset()
 {
 	MJPlayerCard::reset();
+	m_vBuHuaCard.clear();
+	m_vFlyupCard.clear();
+	m_vJianPeng.clear();
+	m_vPengedOtherHeiJQK.clear();
+
+	// hu info 
+	m_isHu = false;
+	m_nInvokeHuIdx = -1 ;
+	m_nHuCard = 0;
+	m_vHuTypes.clear();
 }
 
 uint8_t JJQEPlayerCard::getHuaCardToBuHua()
@@ -182,9 +192,103 @@ void JJQEPlayerCard::onGetChaoZhuangHua(uint8_t nHua)
 	m_vBuHuaCard.push_back(nHua);
 }
 
-bool JJQEPlayerCard::onDoHu( bool isZiMo, uint8_t nCard )
+bool JJQEPlayerCard::onDoHu( uint8_t nCard, uint8_t nInvokerIdx )
 {
+	m_nInvokeHuIdx = nInvokerIdx;
+	m_vHuTypes.clear();
+	m_isHu = true;
+	m_nHuCard = nCard;
+	// if not zi mo , must add to fo check hu ;
+	if (!isZiMo() )
+	{
+		auto type = card_Type(nCard);
+		if (type >= eCT_Max)
+		{
+			LOGFMTE("invalid card type for card = %u", nCard);
+			return false;
+		}
+		addCardToVecAsc(m_vCards[type], nCard);
+	}
+ 
+
+	auto funRemoveAddToCard = [this](uint8_t nCard)
+	{
+		auto type = card_Type(nCard);
+		auto iter = std::find(m_vCards[type].begin(), m_vCards[type].end(), nCard);
+		if (iter == m_vCards[type].end())
+		{
+			LOGFMTE("hu this card should already addto hold card , but can not remove  whay card = %u", nCard);
+			return;
+		}
+		m_vCards[type].erase(iter);
+	};
+
+	 
+
+	if (MJPlayerCard::isHoldCardCanHu() == false)
+	{
+		debugCardInfo();
+		if (!isZiMo())
+		{
+			funRemoveAddToCard(nCard);
+		}
+		return false;
+	}
+
+	if ( checkDuiDuiHu() )
+	{
+		m_vHuTypes.push_back(eFanxing_DuiDuiHu);
+	}
+	else if ( checkQingErHu())
+	{
+		m_vHuTypes.push_back(eFanxing_QingEr);
+		m_vHuTypes.push_back(eFanxing_ZiMo);
+	}
+	else if (m_pRoom->isEnable13Hu() && check13Hu())
+	{
+		m_vHuTypes.push_back(eFanxing_13Hu);
+	}
+	else
+	{
+		m_vHuTypes.push_back(eFanxing_PingHu);
+	}
+
+	if (checkQiongQiongHen())
+	{
+		m_vHuTypes.push_back(eFanxing_QiongQiongHen);
+	}
+	else if (checkQiongHen())
+	{
+		m_vHuTypes.push_back(eFanxing_QiongHen);
+	}
+
+	if (check3Red(false))
+	{
+		m_vHuTypes.push_back(eFanxing_3Red);
+	}
+
+	if (!isZiMo())
+	{
+		if (checkBianZhi())
+		{
+			m_vHuTypes.push_back(eFanxing_BianZhi);
+		}
+		else if (checkDuDiao())
+		{
+			m_vHuTypes.push_back(eFanxing_DanDiao);
+		}
+		else if (checkKaZhang())
+		{
+			m_vHuTypes.push_back(eFanxing_KaZhang);
+		}
+	}
+
+	if (!isZiMo())
+	{
+		funRemoveAddToCard(nCard);
+	}
 	return true;
+
 }
 
 void JJQEPlayerCard::getHuInfo(uint8_t& nInvokeIdx, std::vector<uint8_t>& vHuTypes)
@@ -200,7 +304,53 @@ void JJQEPlayerCard::getHuInfo(uint8_t& nInvokeIdx, std::vector<uint8_t>& vHuTyp
 
 uint32_t JJQEPlayerCard::getAllHuCnt()
 {
-	return 0;
+	auto nAllCard = getMingPaiHuaCnt(false);
+	nAllCard += getHoldAnKeCnt();
+	nAllCard += getHoldWenQianCnt();
+	
+	if (!isZiMo() && (checkDuDiao() || checkKaZhang() || checkBianZhi()))
+	{
+		nAllCard += 10;
+	}
+
+	if (isThisPlayerHu())
+	{
+		nAllCard += 20;   // add base hu 20 ;
+	}
+	
+	if ( checkDuiDuiHu() )
+	{
+		nAllCard *= 2;
+	}
+	else if ( checkQingErHu() )
+	{
+		nAllCard += m_pRoom->getQingErHuCnt();
+		if ( isZiMo() )
+		{
+			nAllCard += 10;
+		}
+
+		nAllCard -= 20; // ignore base hu 
+	}
+	else if ( m_pRoom->isEnable13Hu() && check13Hu() )
+	{
+		nAllCard *= 2;
+	}
+
+	if (checkQiongQiongHen())
+	{
+		nAllCard *= 4;
+	}
+	else if (checkQiongHen())
+	{
+		nAllCard *= 2;
+	}
+
+	if ( check3Red(false) )
+	{
+		nAllCard *= 2;
+	}
+	return nAllCard;
 }
 
 bool JJQEPlayerCard::doAutoBuhua(Json::Value& jsHua, Json::Value& jsCard)
@@ -235,7 +385,7 @@ bool JJQEPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
 	bool isHuaJian = nJianType == eCT_Hua;
 	if (!isHuaJian)
 	{
-		auto Cnt = std::count(m_vCards[nJianType].begin(), m_vCards[nJianType].begin(), nJianZhang );
+		auto Cnt = std::count(m_vCards[nJianType].begin(), m_vCards[nJianType].end(), nJianZhang );
 		if ( Cnt == 3 )
 		{
 			vGangCards.push_back(nJianZhang);
@@ -243,7 +393,7 @@ bool JJQEPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
 	}
 	
 	// check wu xi qi fen 
-	auto nXiXiCnt = std::count_if(m_vCards[eCT_Hua].begin(), m_vCards[eCT_Hua].begin(), [](uint8_t& nCard) { auto nValue = card_Value(nCard); return nValue <= 2; });
+	auto nXiXiCnt = std::count_if(m_vCards[eCT_Hua].begin(), m_vCards[eCT_Hua].end(), [](uint8_t& nCard) { auto nValue = card_Value(nCard); return nValue <= 2; });
 	bool isJianXiXi = (eCT_Hua == nJianType && nJianValue <= 2);
 	if (nXiXiCnt == (isJianXiXi ? 4 : 5))
 	{
@@ -271,7 +421,7 @@ bool JJQEPlayerCard::canMingGangWithCard(uint8_t nCard)
 	auto nCardType = card_Type(nCard);
 	if (eCT_Jian == nCardType)
 	{
-		auto Cnt = std::count_if(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].begin(), [nCard](uint8_t nCheckCard) { int16_t nRet = abs((int16_t)nCheckCard - (int16_t)nCard); return (0 == nRet || 3 == nRet);  });
+		auto Cnt = std::count_if(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].end(), [nCard](uint8_t nCheckCard) { int16_t nRet = abs((int16_t)nCheckCard - (int16_t)nCard); return (0 == nRet || 3 == nRet);  });
 		return Cnt >= 3;
 	}
 	return MJPlayerCard::canMingGangWithCard(nCard);
@@ -294,7 +444,7 @@ bool JJQEPlayerCard::canAnGangWithCard(uint8_t nCard)
 		auto nJianType = card_Type(nJianZhang);
 		auto nJianValue = card_Value(nJianZhang);
 		bool isJianXiXi = (eCT_Hua == nJianType && nJianValue <= 2);
-		auto nXiXiCnt = std::count_if(m_vCards[eCT_Hua].begin(), m_vCards[eCT_Hua].begin(), [](uint8_t& nCard) { auto nValue = card_Value(nCard); return nValue <= 2; });
+		auto nXiXiCnt = std::count_if(m_vCards[eCT_Hua].begin(), m_vCards[eCT_Hua].end(), [](uint8_t& nCard) { auto nValue = card_Value(nCard); return nValue <= 2; });
 		return (nXiXiCnt == (isJianXiXi ? 4 : 5));
 	}
 	else if ( eCT_Jian == nCardType )
@@ -304,14 +454,14 @@ bool JJQEPlayerCard::canAnGangWithCard(uint8_t nCard)
 			return false;
 		}
 
-		auto Cnt = std::count_if(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].begin(), [nCard](uint8_t nCheckCard) { int16_t nRet = abs((int16_t)nCheckCard - (int16_t)nCard); return (0 == nRet || 3 == nRet);  });
+		auto Cnt = std::count_if(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].end(), [nCard](uint8_t nCheckCard) { int16_t nRet = abs((int16_t)nCheckCard - (int16_t)nCard); return (0 == nRet || 3 == nRet);  });
 		int16_t nRet = abs((int16_t)nJianZhang - (int16_t)nCard);
 		bool isJianJIanZhang = (0 == nRet || 3 == nRet);
 		return Cnt == (( isJianJIanZhang) ? 3 : 4 );
 	}
 	else if (nCard == nJianZhang && nCardType != eCT_Hua && eCT_Jian != nCardType)   // card is jiang zhang 
 	{
-		auto Cnt = std::count(m_vCards[nCardType].begin(), m_vCards[nCardType].begin(), nCard);
+		auto Cnt = std::count(m_vCards[nCardType].begin(), m_vCards[nCardType].end(), nCard);
 		return Cnt == 3;
 	}
 
@@ -323,7 +473,7 @@ bool JJQEPlayerCard::canPengWithCard(uint8_t nCard)
 	auto nCardType = card_Type(nCard);
 	if ( eCT_Jian == nCardType )
 	{
-		auto Cnt = std::count_if(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].begin(), [nCard](uint8_t nCheckCard) { int16_t nRet = abs((int16_t)nCheckCard - (int16_t)nCard); return (0 == nRet || 3 == nRet);  });
+		auto Cnt = std::count_if(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].end(), [nCard](uint8_t nCheckCard) { int16_t nRet = abs((int16_t)nCheckCard - (int16_t)nCard); return (0 == nRet || 3 == nRet);  });
 		return Cnt >= 2;
 	}
 	return MJPlayerCard::canPengWithCard(nCard);
@@ -334,7 +484,7 @@ bool JJQEPlayerCard::canBuGangWithCard(uint8_t nCard)
 	auto nCardType = card_Type(nCard);
 	if (eCT_Jian == nCardType)
 	{
-		auto Cnt = std::count_if(m_vJianPeng.begin(), m_vJianPeng.begin(), [nCard](uint8_t nCheckCard) { int16_t nRet = abs((int16_t)nCheckCard - (int16_t)nCard); return (0 == nRet || 3 == nRet);  });
+		auto Cnt = std::count_if(m_vJianPeng.begin(), m_vJianPeng.end(), [nCard](uint8_t nCheckCard) { int16_t nRet = abs((int16_t)nCheckCard - (int16_t)nCard); return (0 == nRet || 3 == nRet);  });
 		return Cnt >= 3;
 	}
 	return MJPlayerCard::canBuGangWithCard(nCard);
@@ -461,7 +611,7 @@ bool JJQEPlayerCard::onQEAnGang(uint8_t nCard, uint8_t& nGetNewCard)
 
 	if (nDeleteCnt < 3)
 	{
-		LOGFMTE("an gang delte cnt = %", nDeleteCnt);
+		LOGFMTE("an gang delte cnt = %u", nDeleteCnt);
 		return false;
 	}
 
@@ -503,7 +653,7 @@ bool JJQEPlayerCard::onBuGang(uint8_t nCard, uint8_t nGangGetCard)
 	return MJPlayerCard::onBuGang(nCard, nGangGetCard);
 }
 
-uint8_t JJQEPlayerCard::getBlackJQKHuCnt()
+uint8_t JJQEPlayerCard::getBlackJQKHuCnt( bool bSkipHold )
 {
 	// seacher peng 
 	uint8_t nQJKCnt = 0;
@@ -517,6 +667,16 @@ uint8_t JJQEPlayerCard::getBlackJQKHuCnt()
 		if ( iter != m_vJianPeng.end())
 		{
 			isFind = true;
+		}
+
+		// secher chu 
+		if ( !isFind && m_vChuedCard.size() > 0 )
+		{
+			auto iter = std::find(m_vChuedCard.begin(), m_vChuedCard.end(), nCheck + nCnt);
+			if (iter != m_vChuedCard.end())
+			{
+				isFind = true;
+			}
 		}
 
 		if (!isFind && m_vAnGanged.size() > 0 )
@@ -548,7 +708,7 @@ uint8_t JJQEPlayerCard::getBlackJQKHuCnt()
 			}
 		}
 
-		if (!isFind && m_vCards[eCT_Jian].size() > 0 )
+		if (!isFind && !bSkipHold && m_vCards[eCT_Jian].size() > 0 )
 		{
 			// secher hold card 
 			auto iterHold = std::find(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].end(), nCheck + nCnt);
@@ -683,7 +843,7 @@ uint16_t JJQEPlayerCard::getHoldAnKeCnt()
 	uint8_t nJianZhang = m_pRoom->getJianZhang();
 	if (card_Type(nJianZhang) == eCT_Jian && card_Value(nJianZhang) > 3)
 	{
-		nJianZhang - 3;
+		nJianZhang -= 3;
 	}
 
 	auto nHuCard = 0;
@@ -692,7 +852,7 @@ uint16_t JJQEPlayerCard::getHoldAnKeCnt()
 		nHuCard = m_nHuCard;
 		if (card_Type(nHuCard) == eCT_Jian && card_Value(nHuCard) > 3)
 		{
-			nHuCard - 3;
+			nHuCard -= 3;
 		}
 	}
 
@@ -951,7 +1111,7 @@ uint16_t JJQEPlayerCard::getHuaHuCnt()
 	
 	if (nSun + nMoon == 2)
 	{
-		nHuCnt + 50;
+		nHuCnt += 50;
 	}
 	
 	if ( card_Type(m_pRoom->getJianZhang()) == eCT_Hua )
@@ -971,7 +1131,7 @@ bool JJQEPlayerCard::checkQiongHen()
 		return false;
 	}
 
-	if (getBlackJQKHuCnt() > 0)  // have balc j q k 
+	if (getBlackJQKHuCnt(false) > 0)  // have balc j q k 
 	{
 		return false;
 	}
@@ -1003,20 +1163,23 @@ bool JJQEPlayerCard::checkQiongHen()
 	{
 		return false;
 	}
-
-	auto nJiangType = card_Type(m_pRoom->getJianZhang());
-	if (eCT_Hua == nJiangType)
-	{
-		m_vHuTypes.push_back(eFanxing_QiongQiongHen);
-	}
-	else
-	{
-		m_vHuTypes.push_back(eFanxing_QiongHen);
-	}
 	return true;
 }
 
-bool JJQEPlayerCard::check3Red()
+bool JJQEPlayerCard::checkQiongQiongHen()
+{
+	if (checkQiongHen())
+	{
+		auto nJiangType = card_Type(m_pRoom->getJianZhang());
+		if (eCT_Hua == nJiangType)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool JJQEPlayerCard::check3Red( bool bSkipHold )
 {
 	uint8_t vJqkCnt[3] = { 0 };
 	for (uint8_t nValue = 1; nValue <= 3; ++nValue)
@@ -1036,39 +1199,43 @@ bool JJQEPlayerCard::check3Red()
 			return false;
 		};
 		// check peng 
-		auto iterP = std::find(m_vJianPeng.begin(),m_vJianPeng.end(),pfnJian);
+		auto iterP = std::find_if(m_vJianPeng.begin(),m_vJianPeng.end(),pfnJian);
 		if ( iterP != m_vJianPeng.end())
 		{
 			vJqkCnt[nValue - 1] = 3;
 			continue;
 		}
 		// check ming gang ,
-		auto iterM = std::find(m_vGanged.begin(), m_vGanged.end(), pfnJian);
+		auto iterM = std::find_if(m_vGanged.begin(), m_vGanged.end(), pfnJian);
 		if (iterM != m_vGanged.end())
 		{
 			vJqkCnt[nValue - 1] = 3;
 			continue;
 		}
 		// check an gang ;
-		auto iterA = std::find(m_vAnGanged.begin(), m_vAnGanged.end(), pfnJian);
+		auto iterA = std::find_if(m_vAnGanged.begin(), m_vAnGanged.end(), pfnJian);
 		if (iterA != m_vAnGanged.end())
 		{
 			vJqkCnt[nValue - 1] = 3;
 			continue;
 		}
 		// check flyup 
-		auto iterF = std::find(m_vFlyupCard.begin(), m_vFlyupCard.end(), pfnJian);
+		auto iterF = std::find_if(m_vFlyupCard.begin(), m_vFlyupCard.end(), pfnJian);
 		if (iterF != m_vFlyupCard.end())
 		{
 			vJqkCnt[nValue - 1] = 3;
 			continue;
 		}
 		// check hold card ;
-		vJqkCnt[nValue - 1] = std::count_if(m_vCards[eCT_Jian].begin(),m_vCards[eCT_Jian].end(),pfnJian);
-		if ( vJqkCnt[nValue - 1] < 2 ) 
+		if ( bSkipHold == false )
 		{
-			return false;
+			vJqkCnt[nValue - 1] = std::count_if(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].end(), pfnJian);
+			if (vJqkCnt[nValue - 1] < 2)
+			{
+				return false;
+			}
 		}
+
 
 		if ( vJqkCnt[nValue - 1] < 3 && ( false == isThisPlayerHu()))  // if you not hu , j q k must have 3 ;
 		{
@@ -1093,8 +1260,6 @@ bool JJQEPlayerCard::check3Red()
 			return false;
 		}
 	}
-
-	m_vHuTypes.push_back(eFanxing_3Red);
 	return true;
 }
 
@@ -1103,9 +1268,9 @@ bool JJQEPlayerCard::checkDuiDuiHu()
 	VEC_CARD vAllCard;
 	getHoldCard(vAllCard);
 	// erse wen qian , 
-	auto nACnt = std::count_if(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong,1)) % 3;
-	auto n2Cnt = std::count_if(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong, 2)) % 3 ;
-	auto n3Cnt = std::count_if(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong, 3)) % 3;
+	auto nACnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong,1)) % 3;
+	auto n2Cnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong, 2)) % 3 ;
+	auto n3Cnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong, 3)) % 3;
 	int8_t nSmall = (int8_t)nACnt;
 	if ( n2Cnt < nSmall)
 	{
@@ -1160,24 +1325,280 @@ bool JJQEPlayerCard::checkDuiDuiHu()
 		return false;
 	}
 
-	m_vHuTypes.push_back(eFanxing_DuiDuiHu);
 	return true;
 }
 
 bool JJQEPlayerCard::checkQingErHu()
 {
-
+	if (m_vPenged.size() > 0 )
+	{
+		return false;
+	}
+	return check13Hu();
 }
 
 bool JJQEPlayerCard::check13Hu()
 {
-
-}
-
-bool JJQEPlayerCard::checkSoftHua()
-{
-	if ( isZiMo() )
+	if ( m_vCards[eCT_Jian].empty() == false && m_vCards[eCT_Jian].size() != 2 )
 	{
 		return false;
 	}
+
+	if ( m_vPenged.size() > 1 || m_vAnGanged.size() > 0 || m_vGanged.size() > 0)
+	{
+		return false;
+	}
+
+	if ( 1 == m_vPenged.size() && m_pRoom->isCardJianPai(m_vPenged.front()))
+	{
+		return false;
+	}
+
+	auto iter = std::find_if(m_vFlyupCard.begin(), m_vFlyupCard.end(), [](uint8_t nCheckCard) { return card_Type(nCheckCard) != eCT_Hua; });
+	if (iter != m_vFlyupCard.end())
+	{
+		return false;
+	}
+
+	// hold can not have ke zi 
+	for (auto& vCards : m_vCards)
+	{
+		if ( vCards.size() < 3 )
+		{
+			continue;
+		}
+
+		auto nCardType = card_Type(vCards.front());
+		if (nCardType == eCT_Jian)
+		{
+			continue;
+		}
+		
+		VEC_CARD vCheck = vCards;
+		if ( nCardType == card_Type(m_nJIang) ) // remove jiang 
+		{
+			uint8_t nCnt = 2;
+			while (nCnt--)
+			{
+				auto iter = std::find(vCheck.begin(),vCheck.end(),m_nJIang);
+				if (iter == vCheck.end())
+				{
+					LOGFMTE("to do as jiang , but you don't have two card = %u room id = %u , idx = %u",m_nJIang,m_pRoom->getRoomID(),m_nCurPlayerIdx);
+					continue;
+				}
+				vCheck.erase(iter);
+			}
+		}
+
+		if ( vCheck.empty() )
+		{
+			continue;
+		}
+
+		if (vCheck.size() % 3 != 0)
+		{
+			LOGFMTE("check qinger you must all shun zi = %u, type = %u",vCheck.size(),nCardType );
+			return false;
+		}
+
+		while ( vCheck.empty() == false )
+		{
+			uint8_t vShunZi[3] = { 0 };
+			vShunZi[0] = vCheck.front();
+			vShunZi[1] = vShunZi[0] + 1;
+			vShunZi[2] = vShunZi[1] + 1;
+			for (auto& ref : vShunZi)
+			{
+				auto iter = std::find(vCheck.begin(), vCheck.end(), ref);
+				if (iter != vCheck.end())
+				{
+					(*iter) = 0;
+					continue;
+				}
+				return false;
+			}
+
+			while (true)
+			{
+				auto iter = std::find(vCheck.begin(), vCheck.end(), 0);
+				if (iter != vCheck.end())
+				{
+					vCheck.erase(iter);
+					continue;
+				}
+				break;
+			}
+		}
+	}
+	return true;
+}
+
+uint16_t JJQEPlayerCard::getMingPaiHuaCnt( bool bSkipHold )
+{
+	auto nHuaCnt = 0;
+	nHuaCnt += getBlackJQKHuCnt(bSkipHold);
+	nHuaCnt += getFlyUpHuCnt();
+	nHuaCnt += getHuaHuCnt();
+	nHuaCnt += getPengHuCnt();
+	nHuaCnt += getGangHuCnt();
+	if ( bSkipHold && check3Red(bSkipHold) ) // do this for client ;  bSkipHold = true , means for client ;
+	{
+		nHuaCnt *= 2;
+	}
+	return nHuaCnt;
+}
+
+bool JJQEPlayerCard::isHoldCardCanHu()
+{
+	VEC_CARD vBanckUpJian = m_vCards[eCT_Jian];
+	for ( auto& ref : m_vCards[eCT_Jian] )
+	{
+		if (card_Value(ref) > 3)
+		{
+			ref -= 3;
+		}
+	}
+
+	auto b = MJPlayerCard::isHoldCardCanHu();
+	m_vCards[eCT_Jian] = vBanckUpJian;
+	if (!b)
+	{
+		return false;
+	}
+
+	m_nHuCard = getNewestFetchedCard();
+	m_nInvokeHuIdx = m_nCurPlayerIdx;
+	m_isHu = true;
+	auto nHuCnt = getAllHuCnt();
+	m_isHu = false;
+	m_nHuCard = 0;
+	m_nInvokeHuIdx = 1;
+	return nHuCnt >= m_pRoom->getQiHuNeed();
+}
+
+bool JJQEPlayerCard::canHuWitCard(uint8_t nCard)
+{
+	auto eType = card_Type(nCard);
+	if (eType >= eCT_Max)
+	{
+		LOGFMTE("parse card type error ,canHuWitCard have this card = %u", nCard);
+		return false;
+	}
+
+	addCardToVecAsc(m_vCards[eType], nCard);
+
+	// reset jian pai 
+	VEC_CARD vBanckUpJian = m_vCards[eCT_Jian];
+	for (auto& ref : m_vCards[eCT_Jian])
+	{
+		if (card_Value(ref) > 3)
+		{
+			ref -= 3;
+		}
+	}
+
+	auto bSelfHu = MJPlayerCard::isHoldCardCanHu();
+	m_vCards[eCT_Jian] = vBanckUpJian;  // restore jian pai 
+
+	auto iter = std::find(m_vCards[eType].begin(), m_vCards[eType].end(), nCard);
+	m_vCards[eType].erase(iter);
+	if (bSelfHu == false)
+	{
+		return false;
+	}
+	
+	m_nHuCard = nCard;
+	m_nInvokeHuIdx = (m_nCurPlayerIdx + 1) % 3; // can not self ;
+	m_isHu = true;
+	auto nCnt = getAllHuCnt();
+	m_isHu = false;
+	m_nHuCard = 0;
+	m_nInvokeHuIdx = -1;
+	return nCnt >= m_pRoom->getQiHuNeed() ;
+}
+
+bool JJQEPlayerCard::checkBianZhi()
+{
+	if (isThisPlayerHu() == false)
+	{
+		return false;
+	}
+
+	if (card_Type(m_nHuCard) == eCT_Jian)
+	{
+		return false;
+	}
+
+	// bian zhi 
+	auto nValue = card_Value(m_nHuCard);
+	if (nValue != 7 && 3 != nValue)
+	{
+		return false;
+	}
+
+	auto nPre = m_nHuCard;
+	auto nNext = m_nHuCard;
+	if (nValue == 7)
+	{
+		nPre = m_nHuCard + 1;
+		nNext = m_nHuCard + 2;
+	}
+	else if (3 == nValue)
+	{
+		nPre = m_nHuCard - 1;
+		nNext = m_nHuCard - 2;
+	}
+	else
+	{
+		return false;
+	}
+
+	if (isHaveCard(nPre) == false || false == isHaveCard(nNext))
+	{
+		return false;
+	}
+	//then is bian zhi 
+	return true;
+}
+
+bool JJQEPlayerCard::checkDuDiao()
+{
+	if (isThisPlayerHu() == false)
+	{
+		return false;
+	}
+
+	if ( m_nHuCard == m_nJIang )
+	{
+		return true;
+	}
+
+	if ( card_Type(m_nHuCard) == eCT_Jian && eCT_Jian == card_Type(m_nJIang) )
+	{
+		auto nOffset = abs(int8_t(card_Value(m_nHuCard)) - int8_t(card_Value(m_nJIang)));
+		if (nOffset == 0 || 3 == nOffset)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool JJQEPlayerCard::checkKaZhang()
+{
+	if (isThisPlayerHu() == false)
+	{
+		return false;
+	}
+
+	if (card_Type(m_nHuCard) == eCT_Jian)
+	{
+		return false;
+	}
+	// ka zhang ,
+	if (isHaveCard(m_nHuCard - 1) && isHaveCard(m_nHuCard + 1))
+	{
+		return true;
+	}
+	return false;
 }

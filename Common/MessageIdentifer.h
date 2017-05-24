@@ -806,6 +806,10 @@ enum eMsgType
 	// detail :补花玩家的数组
 	// idx : 对应玩家索引，hua 补了的花，card ： 补花获得的牌
 
+	MSG_REQUEST_CUR_HU_CNT, 
+	// client : null 
+	// svr : { idx: 2 , huCnt: 23 }
+
 
 
 
