@@ -625,7 +625,6 @@ void IMJRoom::packStartGameMsg(Json::Value& msg)
 	{
 		if (!pPlayer)
 		{
-			LOGFMTE("why player is null hz mj must all player is not null");
 			continue;
 		}
 		auto pPlayerCard = pPlayer->getPlayerCard();

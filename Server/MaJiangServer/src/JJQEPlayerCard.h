@@ -37,6 +37,7 @@ public:
 	bool canHuWitCard(uint8_t nCard) override;
 	uint16_t getMingPaiHuaCnt( bool bSkipHold = true );
 protected:
+	void updateHuCntToClient();
 	bool isThisPlayerHu() { return m_isHu; }
 	bool isZiMo() { return m_isHu && (m_nInvokeHuIdx == m_nCurPlayerIdx); }
 	uint8_t getBlackJQKHuCnt( bool bSkipHold );

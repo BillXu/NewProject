@@ -449,19 +449,44 @@ void JJQERoom::onGameEnd()
 	jsMsg["isHu"] = (uint8_t)-1 != m_nLastHuIdx ? 1 : 0;
 
 	// get player huDetail ;
-	for (auto& ref : m_vMJPlayers)
+	for (uint8_t nIdx = 0; nIdx < getSeatCnt(); ++nIdx)
 	{
-		if (!ref)
+		auto pCurPlayer = (JJQEPlayer*)getMJPlayerByIdx(nIdx);
+		if (pCurPlayer == nullptr)
 		{
+			LOGFMTE("why seat player is null idx = %u",nIdx);
 			continue;
 		}
-		auto pPlayerCard = (JJQEPlayerCard*)ref->getPlayerCard();
-		auto nThisOffset = pPlayerCard->getAllHuCnt();
-		ref->addOffsetCoin(nThisOffset);
+		auto pPlayerCard = (JJQEPlayerCard*)pCurPlayer->getPlayerCard();
+		int16_t nThisHuCnt = pPlayerCard->getAllHuCnt();
+		int16_t nMyOffset = 0;
+		for (uint8_t nCheckIdx = 0; nCheckIdx < getSeatCnt(); ++nCheckIdx )
+		{
+			if (nCheckIdx == nIdx)
+			{
+				continue;
+			}
+
+			auto pCheckPlayer = (JJQEPlayer*)getMJPlayerByIdx(nCheckIdx);
+			if ( pCheckPlayer == nullptr)
+			{
+				LOGFMTE("why seat check player is null idx = %u", nIdx);
+				continue;
+			}
+			auto pCheckPlayerCard = (JJQEPlayerCard*)pCheckPlayer->getPlayerCard();
+			int16_t nCheckHuCnt = pCheckPlayerCard->getAllHuCnt();
+			nMyOffset += (nMyOffset - nCheckHuCnt) * getChaoZhuangRate(pCurPlayer->isChaoZhuang(),pCheckPlayer->isChaoZhuang());
+		}
+		
+		// do caculate offset 
+		pCurPlayer->addOffsetCoin(nMyOffset);
+
 		Json::Value jsPlayerItem;
-		jsPlayerItem["idx"] = ref->getIdx();
-		jsPlayerItem["huCnt"] = nThisOffset;
+		jsPlayerItem["idx"] = nIdx;
+		jsPlayerItem["huCnt"] = nThisHuCnt;
+		jsPlayerItem["offset"] = nMyOffset;
 		playerResult[playerResult.size()] = jsPlayerItem;
+
 	}
 	jsMsg["playerResult"] = playerResult;
   
@@ -673,4 +698,53 @@ bool JJQERoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 std::shared_ptr<IGameRoomRecorder> JJQERoom::createRoomRecorder()
 {
 	return std::make_shared<NJMJRoomRecorder>();
+}
+
+bool JJQERoom::isGameOver()
+{
+	if (IMJRoom::isGameOver())
+	{
+		return true;
+	}
+	for (auto& ref : m_vMJPlayers)
+	{
+		if (ref && ref->haveState(eRoomPeer_AlreadyHu))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+int8_t JJQERoom::getChaoZhuangRate(bool isAChao, bool isBChao)
+{
+	if (0 == m_nChaoZhuangLevel)  // not enable chao zhuang ;
+	{
+		return 1;
+	}
+
+	uint8_t nRate = 0;
+	if (isAChao && isBChao)
+	{
+		nRate = 2;
+	}
+	else if (isAChao || isBChao)
+	{
+		nRate = 1;
+	}
+
+	int8_t vRate[] = { 1,1,1 };
+	if (m_nChaoZhuangLevel == 1)
+	{
+		vRate[0] = 1;
+		vRate[1] = 2;
+		vRate[3] = 3;
+	}
+	else if (2 == m_nChaoZhuangLevel)
+	{
+		vRate[0] = 2;
+		vRate[1] = 3;
+		vRate[3] = 4;
+	}
+	return vRate[nRate];
 }

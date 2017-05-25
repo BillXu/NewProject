@@ -39,6 +39,9 @@ public:
 	std::shared_ptr<IGameRoomRecorder> createRoomRecorder()override;
 	bool isEnable13Hu() { return m_isHave13Hu;  }
 	uint16_t getQingErHuCnt() { return m_nQingErHuCnt; }
+	bool isGameOver()override;
+protected:
+	int8_t getChaoZhuangRate( bool isAChao , bool isBChao );
 protected:
 	CMJCard m_tPoker;
 	uint16_t m_nQiHuNeed;

@@ -161,6 +161,7 @@ bool JJQEPlayerCard::onFlyUp(std::vector<uint8_t>& vFlyUpCard, std::vector<uint8
 	// avoid double caculate hu cnts ;
 	m_vAnGanged.clear();
 	m_vFlyupCard = vFlyUpCard;
+	updateHuCntToClient();
 	return true;
 }
 
@@ -179,6 +180,7 @@ void JJQEPlayerCard::onBuHua(uint8_t nHuaCard, uint8_t nNewCard)
 
 	onMoCard(nNewCard);
 	m_vBuHuaCard.push_back(nHuaCard);
+	updateHuCntToClient();
 }
 
 void JJQEPlayerCard::onGetChaoZhuangHua(uint8_t nHua)
@@ -366,7 +368,12 @@ bool JJQEPlayerCard::doAutoBuhua(Json::Value& jsHua, Json::Value& jsCard)
 		nHua = getHuaCardToBuHua();
 	}
 
-	return jsHua.size() > 0;
+	auto nRet = jsHua.size() > 0;
+	if (nRet)
+	{
+		updateHuCntToClient();
+	}
+	return nRet;
 }
 
 bool JJQEPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
@@ -494,7 +501,9 @@ bool JJQEPlayerCard::onPeng( uint8_t nCard )
 {
 	if ( card_Type(nCard) != eCT_Jian )
 	{
-		return MJPlayerCard::onPeng(nCard);
+		auto nRet = MJPlayerCard::onPeng(nCard);
+		updateHuCntToClient();
+		return nRet;
 	}
 
 	auto nValue = card_Value(nCard);
@@ -553,6 +562,7 @@ bool JJQEPlayerCard::onPeng( uint8_t nCard )
 			}
 		}
 	}
+	updateHuCntToClient();
 	return true;
 }
 
@@ -578,9 +588,12 @@ bool JJQEPlayerCard::onMingGang(uint8_t nCard, uint8_t nGangGetCard)
 		} while (1);
 		m_vGanged.push_back(nCard);
 		onMoCard(nGangGetCard);
+		updateHuCntToClient();
 		return true;
 	}
-	return MJPlayerCard::onMingGang(nCard,nGangGetCard);
+	auto isRet = MJPlayerCard::onMingGang(nCard, nGangGetCard);
+	updateHuCntToClient();
+	return isRet;
 }
 
 bool JJQEPlayerCard::onQEAnGang(uint8_t nCard, uint8_t& nGetNewCard)
@@ -626,6 +639,7 @@ bool JJQEPlayerCard::onQEAnGang(uint8_t nCard, uint8_t& nGetNewCard)
 		LOGFMTD("jian zhang an gang %u",nCard);
 	}
 	// other means jian zhang an gang , so need not mo pai 
+	updateHuCntToClient();
 	return true;
 }
 
@@ -648,9 +662,12 @@ bool JJQEPlayerCard::onBuGang(uint8_t nCard, uint8_t nGangGetCard)
 		// do bu gang 
 		m_vGanged.push_back(nCard);
 		onMoCard(nGangGetCard);
+		updateHuCntToClient();
 		return true;
 	}
-	return MJPlayerCard::onBuGang(nCard, nGangGetCard);
+	auto bRet = MJPlayerCard::onBuGang(nCard, nGangGetCard);
+	updateHuCntToClient();
+	return bRet;
 }
 
 uint8_t JJQEPlayerCard::getBlackJQKHuCnt( bool bSkipHold )
@@ -735,7 +752,7 @@ uint8_t JJQEPlayerCard::getBlackJQKHuCnt( bool bSkipHold )
 		if (isFind)
 		{
 			nHuCnt += 10;
-			if (m_nCurPlayerIdx == nCnt)
+			if ( m_nCurPlayerIdx == ( nCnt + m_pRoom->getBankerIdx() ) % m_pRoom->getSeatCnt() )
 			{
 				nHuCnt += 10;
 			}
@@ -748,7 +765,7 @@ uint8_t JJQEPlayerCard::getBlackJQKHuCnt( bool bSkipHold )
 		nHuCnt += 10;
 	}
 	LOGFMTD( "room id = %u idx = %u jqk cnt = %u",m_pRoom->getRoomID(),m_nCurPlayerIdx,nQJKCnt );
-	return nQJKCnt;
+	return nHuCnt;
 }
 
 uint16_t JJQEPlayerCard::getPengHuCnt()
@@ -1099,12 +1116,12 @@ uint16_t JJQEPlayerCard::getHuaHuCnt()
 	// sun and moon ;
 	auto nSun = std::count(m_vBuHuaCard.begin(), m_vBuHuaCard.end(), make_Card_Num(eCT_Hua, 5));
 	auto nMoon = std::count(vHuaCard.begin(), vHuaCard.end(), make_Card_Num(eCT_Hua, 6));
-	if (nSun > 1)
+	if (nSun >= 1)
 	{
 		nHuCnt += 50;
 	}
 
-	if ( nMoon > 1 )
+	if ( nMoon >= 1 )
 	{
 		nHuCnt += 100;
 	}
@@ -1339,6 +1356,11 @@ bool JJQEPlayerCard::checkQingErHu()
 
 bool JJQEPlayerCard::check13Hu()
 {
+	if (m_isHu == false)
+	{
+		return false;
+	}
+
 	if ( m_vCards[eCT_Jian].empty() == false && m_vCards[eCT_Jian].size() != 2 )
 	{
 		return false;
@@ -1601,4 +1623,12 @@ bool JJQEPlayerCard::checkKaZhang()
 		return true;
 	}
 	return false;
+}
+
+void JJQEPlayerCard::updateHuCntToClient()
+{
+	Json::Value jsMsg;
+	jsMsg["idx"] = m_nCurPlayerIdx;
+	jsMsg["huCnt"] = getMingPaiHuaCnt();
+	m_pRoom->sendRoomMsg(jsMsg, MSG_REQUEST_CUR_HU_CNT);
 }
