@@ -799,7 +799,7 @@ enum eMsgType
 	// svr : { idx : 2 , huCard : 23 , invokeIdx : 23 }
 
 	MSG_ROOM_JJQE_RESULT, // 青儿牌局结果
-	// svr : { isHu : 1 , huIdx : 0 , invokeIdx : 0 , huTypes : [], playerResult : [ {idx : 2 , huCnt : 23}, .... ]  }
+	// svr : { isHu : 1 , huIdx : 0 , invokeIdx : 0 , huTypes : [], foldCards : [12,34,13], playerResult : [ {idx : 2 , huCnt : 23}, .... ]  }
 
 	MSG_ROOM_JJQE_AUTO_BU_HUA, // 青儿自动补花
 	// svr : { detail : [ { idx : 2 , hua : [2,23], card : [2,3] } , ... ] }

@@ -14,7 +14,7 @@
 #include "JJQERoomStateStartGame.h"
 #include "MJReplayFrameType.h"
 #include <ctime>
-#include "NJMJPlayerRecorderInfo.h"
+#include "JJQEPlayerRecorderInfo.h"
 #include "ServerMessageDefine.h"
 #include "IGameRoomManager.h"
 #include "RoomConfig.h"
@@ -219,6 +219,7 @@ void JJQERoom::sendPlayersCardInfo(uint32_t nSessionID)
 		Json::Value jsCardInfo;
 		jsCardInfo["idx"] = pp->getIdx();
 		jsCardInfo["curHuCnt"] = pCard->getMingPaiHuaCnt();
+		jsCardInfo["isChaoZhuang"] = ((JJQEPlayer*)pp)->isChaoZhuang() ? 1 : 0 ;
 		jsCardInfo["newMoCard"] = 0;
 		if (getCurRoomState()->getStateID() == eRoomState_WaitPlayerAct && getCurRoomState()->getCurIdx() == pp->getIdx())
 		{
@@ -403,6 +404,7 @@ void JJQERoom::onDoAllPlayersAutoBuHua()
 void JJQERoom::onGameDidEnd()
 {
 	IMJRoom::onGameDidEnd();
+	m_nJianZhang = -1;
 	if (getDelegate())
 	{
 		getDelegate()->onDidGameOver(this);
@@ -475,7 +477,7 @@ void JJQERoom::onGameEnd()
 			}
 			auto pCheckPlayerCard = (JJQEPlayerCard*)pCheckPlayer->getPlayerCard();
 			int16_t nCheckHuCnt = pCheckPlayerCard->getAllHuCnt();
-			nMyOffset += (nMyOffset - nCheckHuCnt) * getChaoZhuangRate(pCurPlayer->isChaoZhuang(),pCheckPlayer->isChaoZhuang());
+			nMyOffset += ( nThisHuCnt - nCheckHuCnt) * getChaoZhuangRate(pCurPlayer->isChaoZhuang(),pCheckPlayer->isChaoZhuang());
 		}
 		
 		// do caculate offset 
@@ -487,8 +489,19 @@ void JJQERoom::onGameEnd()
 		jsPlayerItem["offset"] = nMyOffset;
 		playerResult[playerResult.size()] = jsPlayerItem;
 
+		// do add recorder 
+		auto pPlayerRecorderInfo = std::make_shared<JJQEPlayerRecorderInfo>();
+		pPlayerRecorderInfo->init(pCurPlayer->getUID(), pCurPlayer->getOffsetCoin());
+		ptrSingleRecorder->addPlayerRecorderInfo(pPlayerRecorderInfo);
 	}
 	jsMsg["playerResult"] = playerResult;
+
+	Json::Value jsFoldCards;
+	while (getMJPoker()->getLeftCardCount() > 0)
+	{
+		jsFoldCards[jsFoldCards.size()] = getMJPoker()->distributeOneCard();
+	}
+	jsMsg["foldCards"] = jsFoldCards;
   
 	//for (auto& ref : m_vMJPlayers)
 	//{
@@ -697,7 +710,7 @@ bool JJQERoom::onPlayerApplyLeave(uint32_t nPlayerUID)
 
 std::shared_ptr<IGameRoomRecorder> JJQERoom::createRoomRecorder()
 {
-	return std::make_shared<NJMJRoomRecorder>();
+	return std::make_shared<JJQERoomRecorder>();
 }
 
 bool JJQERoom::isGameOver()
@@ -747,4 +760,36 @@ int8_t JJQERoom::getChaoZhuangRate(bool isAChao, bool isBChao)
 		vRate[3] = 4;
 	}
 	return vRate[nRate];
+}
+
+void JJQERoom::onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
+{
+	IMJRoom::onPlayerPeng(nIdx, nCard, nInvokeIdx);
+	if (card_Type(nCard) == eCT_Jian && card_Value(nCard) > 3)
+	{
+		auto pInvoker = getMJPlayerByIdx(nInvokeIdx);
+		if (!pInvoker)
+		{
+			LOGFMTE("why invoker is null ?");
+			return;
+		}
+		pInvoker->getPlayerCard()->onMoCard(nCard);
+		pInvoker->getPlayerCard()->onChuCard(nCard);
+	}
+}
+
+void JJQERoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
+{
+	IMJRoom::onPlayerMingGang(nIdx, nCard, nInvokeIdx);
+	if (card_Type(nCard) == eCT_Jian && card_Value(nCard) > 3)
+	{
+		auto pInvoker = getMJPlayerByIdx(nInvokeIdx);
+		if (!pInvoker)
+		{
+			LOGFMTE("why invoker is null ?");
+			return;
+		}
+		pInvoker->getPlayerCard()->onMoCard(nCard);
+		pInvoker->getPlayerCard()->onChuCard(nCard);
+	}
 }

@@ -225,6 +225,9 @@
     <ClInclude Include="src\JJQERoomStateWaitPlayerAct.h">
       <Filter>src\QEJJ\QEState</Filter>
     </ClInclude>
+    <ClInclude Include="src\JJQEPlayerRecorderInfo.h">
+      <Filter>src\QEJJ</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MJCard.cpp">

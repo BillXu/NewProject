@@ -96,6 +96,7 @@
     <ClInclude Include="src\IMJRoomState.h" />
     <ClInclude Include="src\JJQEPlayer.h" />
     <ClInclude Include="src\JJQEPlayerCard.h" />
+    <ClInclude Include="src\JJQEPlayerRecorderInfo.h" />
     <ClInclude Include="src\JJQERoom.h" />
     <ClInclude Include="src\JJQERoomStateAutoBuHua.h" />
     <ClInclude Include="src\JJQERoomStateFlyUp.h" />

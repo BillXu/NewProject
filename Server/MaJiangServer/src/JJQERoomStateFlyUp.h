@@ -21,6 +21,17 @@ public:
 
 	bool onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)override
 	{
+		if (MSG_REQ_ACT_LIST == nMsgType)
+		{
+			auto pPlayer = getRoom()->getMJPlayerBySessionID(nSessionID);
+			if ( pPlayer && m_nCurWaitIdx == pPlayer->getIdx() )
+			{
+				auto pRoom = (JJQERoom*)getRoom();
+				pRoom->informPlayerFlyUp(m_nCurWaitIdx);
+			}
+			return true;
+		}
+
 		if ( MSG_PLAYER_FLY_UP != nMsgType)
 		{
 			return false;
@@ -38,7 +49,7 @@ public:
 				break;
 			}
 
-			if ( m_nCurWaitIdx == pPlayer->getIdx() )
+			if ( m_nCurWaitIdx != pPlayer->getIdx() )
 			{
 				nRet = 2;
 				LOGFMTE("you are not cur wait fly up ? session id = %u", nSessionID);

@@ -28,6 +28,21 @@ public:
 
 	bool onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID)override
 	{
+		if (MSG_REQ_ACT_LIST == nMsgType)
+		{
+			auto pPlayer = getRoom()->getMJPlayerBySessionID(nSessionID);
+			if ( pPlayer )
+			{
+				auto iter = std::find(m_vWaitChoseQiaoZhuangIdx.begin(), m_vWaitChoseQiaoZhuangIdx.end(), pPlayer->getIdx());
+				if ( iter != m_vWaitChoseQiaoZhuangIdx.end() )
+				{
+					Json::Value js;
+					getRoom()->sendMsgToPlayer(js, MSG_ROOM_WAIT_CHAO_ZHUANG, nSessionID);
+				}
+			}
+			return true;
+		}
+
 		if ( MSG_PLAYER_CHOSED_CHAO_ZHUANG != nMsgType)
 		{
 			return false;

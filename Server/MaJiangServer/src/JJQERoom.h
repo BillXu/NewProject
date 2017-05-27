@@ -40,6 +40,8 @@ public:
 	bool isEnable13Hu() { return m_isHave13Hu;  }
 	uint16_t getQingErHuCnt() { return m_nQingErHuCnt; }
 	bool isGameOver()override;
+	void onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
+	void onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
 protected:
 	int8_t getChaoZhuangRate( bool isAChao , bool isBChao );
 protected:

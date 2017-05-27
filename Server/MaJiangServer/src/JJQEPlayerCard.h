@@ -36,6 +36,7 @@ public:
 	bool isHoldCardCanHu() override;
 	bool canHuWitCard(uint8_t nCard) override;
 	uint16_t getMingPaiHuaCnt( bool bSkipHold = true );
+	bool onChuCard(uint8_t nChuCard)override;
 protected:
 	void updateHuCntToClient();
 	bool isThisPlayerHu() { return m_isHu; }
@@ -61,7 +62,6 @@ protected:
 	VEC_CARD m_vBuHuaCard;
 	VEC_CARD m_vFlyupCard;
 	VEC_CARD m_vJianPeng;
-	VEC_CARD m_vPengedOtherHeiJQK;
 	JJQERoom* m_pRoom;
 	uint8_t m_nCurPlayerIdx;
 
