@@ -219,7 +219,6 @@ void JJQERoom::sendPlayersCardInfo(uint32_t nSessionID)
 		Json::Value jsCardInfo;
 		jsCardInfo["idx"] = pp->getIdx();
 		jsCardInfo["curHuCnt"] = pCard->getMingPaiHuaCnt();
-		jsCardInfo["isChaoZhuang"] = ((JJQEPlayer*)pp)->isChaoZhuang() ? 1 : 0 ;
 		jsCardInfo["newMoCard"] = 0;
 		if (getCurRoomState()->getStateID() == eRoomState_WaitPlayerAct && getCurRoomState()->getCurIdx() == pp->getIdx())
 		{
@@ -751,13 +750,13 @@ int8_t JJQERoom::getChaoZhuangRate(bool isAChao, bool isBChao)
 	{
 		vRate[0] = 1;
 		vRate[1] = 2;
-		vRate[3] = 3;
+		vRate[2] = 3;
 	}
 	else if (2 == m_nChaoZhuangLevel)
 	{
 		vRate[0] = 2;
 		vRate[1] = 3;
-		vRate[3] = 4;
+		vRate[2] = 4;
 	}
 	return vRate[nRate];
 }
@@ -792,4 +791,10 @@ void JJQERoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 		pInvoker->getPlayerCard()->onMoCard(nCard);
 		pInvoker->getPlayerCard()->onChuCard(nCard);
 	}
+}
+
+void JJQERoom::visitPlayerInfoForRoomInfo(IMJPlayer* pPlayer, Json::Value& jsPlayerInfo)
+{
+	IMJRoom::visitPlayerInfoForRoomInfo(pPlayer,jsPlayerInfo);
+	jsPlayerInfo["isChaoZhuang"] = ((JJQEPlayer*)pPlayer)->isChaoZhuang() ? 1 : 0;
 }

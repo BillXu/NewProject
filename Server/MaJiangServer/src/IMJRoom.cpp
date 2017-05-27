@@ -137,11 +137,7 @@ void IMJRoom::sendRoomInfo(uint32_t nSessionID)
 			continue;
 		}
 		Json::Value jsPlayer;
-		jsPlayer["idx"] = pPlayer->getIdx();
-		jsPlayer["uid"] = pPlayer->getUID();
-		jsPlayer["coin"] = pPlayer->getCoin();
-		jsPlayer["state"] = pPlayer->getState();
-		jsPlayer["isOnline"] = pPlayer->isOnline() ? 1 : 0;
+		visitPlayerInfoForRoomInfo(pPlayer, jsPlayer);
 		arrPlayers[pPlayer->getIdx()] = jsPlayer;
 	}
 
@@ -170,6 +166,15 @@ void IMJRoom::sendRoomInfo(uint32_t nSessionID)
 		return;
 	}
 	sendPlayersCardInfo(nSessionID);
+}
+
+void IMJRoom::visitPlayerInfoForRoomInfo(IMJPlayer* pPlayer, Json::Value& jsPlayer)
+{
+	jsPlayer["idx"] = pPlayer->getIdx();
+	jsPlayer["uid"] = pPlayer->getUID();
+	jsPlayer["coin"] = pPlayer->getCoin();
+	jsPlayer["state"] = pPlayer->getState();
+	jsPlayer["isOnline"] = pPlayer->isOnline() ? 1 : 0;
 }
 
 void IMJRoom::sendPlayersCardInfo(uint32_t nSessionID)

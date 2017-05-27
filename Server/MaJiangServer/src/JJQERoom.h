@@ -42,6 +42,7 @@ public:
 	bool isGameOver()override;
 	void onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
 	void onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
+	void visitPlayerInfoForRoomInfo(IMJPlayer* pPlayer, Json::Value& jsPlayerInfo)override;
 protected:
 	int8_t getChaoZhuangRate( bool isAChao , bool isBChao );
 protected:

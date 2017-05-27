@@ -873,7 +873,7 @@ uint16_t JJQEPlayerCard::getHoldAnKeCnt()
 	bool isThisHu = isThisPlayerHu();
 	uint16_t nHoldHuCnt = 0;
 	uint8_t nJianZhang = m_pRoom->getJianZhang();
-	if (card_Type(nJianZhang) == eCT_Jian && card_Value(nJianZhang) > 3)
+	if ( 0 != nJianZhang && card_Type(nJianZhang) == eCT_Jian && card_Value(nJianZhang) > 3)
 	{
 		nJianZhang -= 3;
 	}

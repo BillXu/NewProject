@@ -29,6 +29,7 @@ public:
 	bool onPlayerEnter(stEnterRoomData* pEnterRoomPlayer)override;
 	bool isRoomFull()override;
 	void sendRoomInfo( uint32_t nSessionID )override;
+	virtual void visitPlayerInfoForRoomInfo(IMJPlayer* pPlayer , Json::Value& jsPlayerInfo );
 	void setDelegate(IMJRoomDelegate* pDelegate){ m_pDelegate = pDelegate; }
 	IMJRoomDelegate* getDelegate(){ return m_pDelegate; }
 	bool isWaitPlayerActForever(){ return getDelegate() != nullptr; }

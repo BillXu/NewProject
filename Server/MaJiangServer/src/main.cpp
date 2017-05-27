@@ -2,6 +2,7 @@
 #include "MJCard.h"
 #include "XLMJPlayerCard.h"
 #include "NJMJPlayerCard.h"
+#include "JJQEPlayerCard.h"
 void tempTest()
 {
 	//CMJHuPaiInfo tInfo ;
@@ -50,7 +51,7 @@ void tempTest()
 	//		printf("real hu \n") ;
 	//	}
 
-		NJMJPlayerCard tPeer ;
+	JJQEPlayerCard tPeer ;
 		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Feng, 1));
 		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Feng, 1));
 
