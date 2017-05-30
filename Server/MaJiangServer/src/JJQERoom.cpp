@@ -459,7 +459,9 @@ void JJQERoom::onGameEnd()
 			continue;
 		}
 		auto pPlayerCard = (JJQEPlayerCard*)pCurPlayer->getPlayerCard();
-		int16_t nThisHuCnt = pPlayerCard->getAllHuCnt();
+		//int16_t nThisHuCnt = pPlayerCard->getAllHuCnt(pPlayerCard->getIsPlayerHu(),pPlayerCard->getIsZiMo(),pPlayerCard->getHuCard());
+		bool b3Red = false;
+		int16_t nThisHuCnt = pPlayerCard->getFinalHuCnt(pCurPlayer->haveState(eRoomPeer_AlreadyHu), b3Red);//pPlayerCard->getAllHuCnt(pPlayerCard->getIsPlayerHu(), pPlayerCard->getIsZiMo(), pPlayerCard->getHuCard());
 		int16_t nMyOffset = 0;
 		for (uint8_t nCheckIdx = 0; nCheckIdx < getSeatCnt(); ++nCheckIdx )
 		{
@@ -475,7 +477,8 @@ void JJQERoom::onGameEnd()
 				continue;
 			}
 			auto pCheckPlayerCard = (JJQEPlayerCard*)pCheckPlayer->getPlayerCard();
-			int16_t nCheckHuCnt = pCheckPlayerCard->getAllHuCnt();
+			bool bCheck3Red = false;
+			int16_t nCheckHuCnt = pCheckPlayerCard->getFinalHuCnt(pCheckPlayer->haveState(eRoomPeer_AlreadyHu), bCheck3Red);
 			nMyOffset += ( nThisHuCnt - nCheckHuCnt) * getChaoZhuangRate(pCurPlayer->isChaoZhuang(),pCheckPlayer->isChaoZhuang());
 		}
 		
@@ -486,6 +489,7 @@ void JJQERoom::onGameEnd()
 		jsPlayerItem["idx"] = nIdx;
 		jsPlayerItem["huCnt"] = nThisHuCnt;
 		jsPlayerItem["offset"] = nMyOffset;
+		jsPlayerItem["is3Red"] = b3Red ? 1 : 0;
 		playerResult[playerResult.size()] = jsPlayerItem;
 
 		// do add recorder 
