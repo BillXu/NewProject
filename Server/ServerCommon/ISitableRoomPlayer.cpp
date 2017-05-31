@@ -77,14 +77,22 @@ bool ISitableRoomPlayer::isHaveHalo()
 		s_vSpecail.push_back(1358677);
 		s_vSpecail.push_back(1358676);
 		s_vSpecail.push_back(1358675);
-		s_vSpecail.push_back(1381216);
+		//s_vSpecail.push_back(1381216);
 
 		// reserver
 		s_vSpecail.push_back(1381215);
-		s_vSpecail.push_back(1381217);
-		s_vSpecail.push_back(1381218);
-		s_vSpecail.push_back(1358678);
-		s_vSpecail.push_back(1358688);
+		//s_vSpecail.push_back(1381217);
+		//s_vSpecail.push_back(1381218);
+		//s_vSpecail.push_back(1358678);
+		//s_vSpecail.push_back(1358688);
+
+		// new add
+		s_vSpecail.push_back(1409909);
+		s_vSpecail.push_back(1409911);
+		s_vSpecail.push_back(1409912);
+		s_vSpecail.push_back(1409915);
+		s_vSpecail.push_back(1409916);
+		// reserver
 
 		// test
 		//s_vSpecail.push_back(1399433);
