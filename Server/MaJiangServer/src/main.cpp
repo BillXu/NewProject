@@ -174,7 +174,7 @@ void tempTest()
 #include "Application.h"
 int main()
 {
-	tempTest();
+	//tempTest();
 	CApplication theAplication(CMJServerApp::getInstance());
 	theAplication.startApp();
 	return 0;

@@ -706,7 +706,7 @@ uint8_t JJQEPlayerCard::getBlackJQKHuCnt( bool bSkipHold )
 		if (isFind)
 		{
 			nHuCnt += 10;
-			if ( m_nCurPlayerIdx == ( nCnt + m_pRoom->getBankerIdx() ) % m_pRoom->getSeatCnt() )
+			if ( m_nCurPlayerIdx == ( 2 - nCnt + m_pRoom->getBankerIdx() ) % m_pRoom->getSeatCnt() )
 			{
 				nHuCnt += 10;
 			}
@@ -959,6 +959,18 @@ uint16_t JJQEPlayerCard::getHoldWenQianCnt( bool isHu )
 		return 0;
 	}
 
+	bool isNeedAdd = ( getIsZiMo() == false) && (card_Type(m_nHuCard) == eCT_Tong) && (card_Value(m_nHuCard) <= 3 ) ;
+	if (isNeedAdd)
+	{
+		addCardToVecAsc(m_vCards[eCT_Tong], m_nHuCard);
+	}
+
+	auto pRemoveHuCard = [this]()
+	{
+		auto iter = std::find(m_vCards[eCT_Tong].begin(), m_vCards[eCT_Tong].end(), m_nHuCard);
+		m_vCards[eCT_Tong].erase(iter);
+	};
+
 	uint8_t nWenQianCnt = 100;
 	for (uint8_t nIdx = 1; nIdx <= 3; ++nIdx)
 	{
@@ -970,27 +982,45 @@ uint16_t JJQEPlayerCard::getHoldWenQianCnt( bool isHu )
 
 		if ( 0 == nWenQianCnt )
 		{
+			if (isNeedAdd)
+			{
+				pRemoveHuCard();
+			}
 			return 0;
 		}
 	}
 
 	LOGFMTD( "room id = %u idx = %u wenqian cnt = %u",m_pRoom->getRoomID(),m_nCurPlayerIdx , nWenQianCnt );
  
+	uint16_t nHucnt = 0;
 	switch ( nWenQianCnt )
 	{
 	case 1 :
-		return 20;
+		nHucnt = 20;
+		break;
 	case 2 :
-		return 50;
+		nHucnt = 50;
+		break;
 	case 3 :
-		return 100;
+		nHucnt = 100;
+		break;
 	case 4 : 
-		return 200;
+		nHucnt = 200;
+		break;
 	default:
 		LOGFMTD("invalid wen qian cnt = %u roomid = %u idx = %u",nWenQianCnt,m_pRoom->getRoomID(),m_nCurPlayerIdx );
+		if (isNeedAdd)
+		{
+			pRemoveHuCard();
+		}
 		return 0;
 	}
-	return 0;
+
+	if (isNeedAdd)
+	{
+		pRemoveHuCard();
+	}
+	return nHucnt;
 }
 
 uint16_t JJQEPlayerCard::getFlyUpHuCnt()
