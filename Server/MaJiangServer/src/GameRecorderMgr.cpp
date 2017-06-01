@@ -4,6 +4,7 @@
 #include "AsyncRequestQuene.h"
 #include "NJMJPlayerRecorderInfo.h"
 #include "SZMJPlayerRecorderInfo.h"
+#include "JJQEPlayerRecorderInfo.h"
 // game recorder mgr ;
 void GameRecorderMgr::addRoomRecorder(std::shared_ptr<IGameRoomRecorder> pRoomRecorder, bool isSaveToDB)
 {
@@ -139,6 +140,8 @@ std::shared_ptr<IGameRoomRecorder> GameRecorderMgr::createRoomRecorder(eRoomType
 		return std::make_shared<SZMJRoomRecorder>();
 	}
 	break;
+	case eRoom_MJ_QingEr:
+		return std::make_shared<JJQERoomRecorder>();
 	default:
 		LOGFMTE("unknown room type = %u",nRoomType );
 	}

@@ -413,6 +413,12 @@ void JJQERoom::onGameDidEnd()
 
 void JJQERoom::onGameEnd()
 {
+	if (m_nJianZhang == 0 || (uint8_t)-1 == m_nJianZhang)
+	{
+		IMJRoom::onGameEnd();
+		LOGFMTE("not distribute card so skip");
+		return;
+	}
 	// svr: { isLiuJu : 0 , detail : [ {idx : 0 , offset : 23 }, ...  ], realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] } 
 	Json::Value jsMsg;
 	Json::Value playerResult;

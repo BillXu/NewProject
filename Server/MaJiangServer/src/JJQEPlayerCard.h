@@ -23,6 +23,7 @@ public:
 	uint32_t getAllHuCnt( bool isHu , bool isZiMo , uint8_t nHuCard );
 	bool doAutoBuhua(Json::Value& jsHua, Json::Value& jsCard);
 	bool getHoldCardThatCanAnGang(VEC_CARD& vGangCards)override;
+	bool getHoldCardThatCanBuGang(VEC_CARD& vGangCards)override;
 	bool canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB) override { return false; }
 	// specail process , cao hua j q k , and xi xi qi fei 
 	bool canMingGangWithCard(uint8_t nCard) override;

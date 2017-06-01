@@ -110,15 +110,15 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 		std::vector<uint8_t> v;
 		if (m_isCircleType)
 		{
-			v = { 1,2,4};
+			v = { 3,6,12};
 		}
 		else
 		{
-			v = { 8,12,16 };
+			v = { 3,6,12 };
 		}
 		m_nLeftCircle = m_nInitCircle = v[m_nGrade];
 	}
-
+	vJsValue["circle"] = m_nInitCircle;
 	LOGFMTD("create 1 private room");
 	((IMJRoom*)m_pRoom)->setDelegate(this);
 	auto bRet = m_pRoom->init(pRoomMgr, &m_stConfig, nSeialNum, nRoomID, vJsValue);
@@ -673,35 +673,13 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 	}
 
 	uint16_t nCardCnt = 2;//m_nInitCircle * ROOM_CARD_CNT_PER_CIRLE_NJMJ; // { 2, 3, 6}
-	if (1 == m_nInitCircle || ( 4 == m_nInitCircle && !m_isCircleType ) )
-	{
-		nCardCnt = 2;
-	}
-	else if (2 == m_nInitCircle || (8 == m_nInitCircle && !m_isCircleType) )
-	{
-		nCardCnt = 4;
-	}
-	else // 4 quan
-	{
-		nCardCnt = 8;
-	}
-
-	if ( m_isAA )
-	{
-		nCardCnt = 1;
-		if ( 4 == m_nInitCircle || ( 16 == m_nInitCircle && !m_isCircleType))
-		{
-			nCardCnt = 2;
-		}
-	}
-
 	// if have grade type
 	if ((uint8_t)-1 != m_nGrade && m_nGrade < 3)
 	{
 		if (m_isCircleType)
 		{
-			uint8_t vQun[] = { 2,4,8 };
-			uint8_t vQuanAA[] = { 1,1,2 };
+			uint8_t vQun[] = { 1,2,4 };
+			uint8_t vQuanAA[] = { 1,2,4 };
 			if (m_isAA)
 			{
 				nCardCnt = vQuanAA[m_nGrade];
@@ -713,8 +691,8 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 		}
 		else
 		{
-			uint8_t vJu[] = { 3,5,8 };
-			uint8_t vJuAA[] = { 1,2,2 };
+			uint8_t vJu[] = { 1,2,4 };
+			uint8_t vJuAA[] = { 1,2,4 };
 			if (m_isAA)
 			{
 				nCardCnt = vJuAA[m_nGrade];
@@ -738,8 +716,8 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 	}
 	// all player leave and update coin 
 	auto pRoom = (IMJRoom*)m_pRoom;
-	bool bCanncelBill = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady);
-	if ( m_bDoDismissRoom && ( pRoom->getCurRoomState()->getStateID() != eRoomSate_WaitReady ) )
+	bool bCanncelBill = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady || pRoom->getCurRoomState()->getStateID() == eRoomState_WaitChaoZhuang );
+	if ( m_bDoDismissRoom && ( pRoom->getCurRoomState()->getStateID() != eRoomSate_WaitReady && pRoom->getCurRoomState()->getStateID() != eRoomState_WaitChaoZhuang ) )
 	{
 		pRoom->onGameEnd();
 	}

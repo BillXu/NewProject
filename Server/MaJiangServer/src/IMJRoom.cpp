@@ -47,7 +47,7 @@ bool IMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32
 	setBankIdx(-1);
 	m_ptrGameRecorder = createRoomRecorder();
 	m_ptrGameRecorder->init(nSeialNum, vJsValue["circle"].asUInt(),nRoomID, getRoomType(),vJsValue["createUID"].asUInt() );
-
+	m_ptrGameRecorder->setRoomOpts(vJsValue);
 	m_ptrGameReplay = std::make_shared<MJReplayGame>();
 	return true;
 }

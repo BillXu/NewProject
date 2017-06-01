@@ -47,6 +47,7 @@ public:
 	void restoreGameRoomRecorder( CAsyncRequestQuene* pSyncQuene, Json::Value& jsRoomInfo );
 	virtual std::shared_ptr<ISingleRoundRecorder> createSingleRoundRecorder() = 0 ;
 	virtual void buildZhanJiMsg(Json::Value& jsMsg);
+	virtual void setRoomOpts(Json::Value& jsRoomOpts) {};
 protected:
 	void restoreRoundRecorders(CAsyncRequestQuene* pSyncQuene, uint8_t nRoundCnt);
 	virtual void getRoomInfoOptsForSave(Json::Value& jsRoomOpts) = 0;
