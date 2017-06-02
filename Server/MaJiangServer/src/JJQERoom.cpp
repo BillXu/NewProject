@@ -200,7 +200,7 @@ void JJQERoom::getSubRoomInfo(Json::Value& jsSubInfo)
 	jsSubInfo["jianZhang"] = getJianZhang();
 	jsSubInfo["is13Hu"] = isEnable13Hu() ? 1 : 0;
 	jsSubInfo["haveSun"] = m_isHaveSun ? 1 : 0;
-	jsSubInfo["haveMoon"] = m_isHaveSun ? 1 : 0;
+	jsSubInfo["haveMoon"] = m_isHaveMoon ? 1 : 0;
 	jsSubInfo["qingErHu"] = m_nQingErHuCnt;
 }
 

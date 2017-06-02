@@ -1548,9 +1548,17 @@ uint16_t JJQEPlayerCard::getMingPaiHuaCnt()
 	nHuaCnt += getHuaHuCnt();
 	nHuaCnt += getPengHuCnt();
 	nHuaCnt += getGangHuCnt();
+	nHuaCnt += 9;
+	nHuaCnt /= 10;
+	nHuaCnt *= 10;
 	if ( check3Red(true,false) ) // do this for client ;  bSkipHold = true , means for client ;
 	{
 		nHuaCnt *= 2;
+	}
+
+	if ( nHuaCnt > m_pRoom->getTopHuLimit() )
+	{
+		nHuaCnt = m_pRoom->getTopHuLimit();
 	}
 	return nHuaCnt;
 }
@@ -1889,6 +1897,9 @@ uint16_t JJQEPlayerCard::getFinalHuCnt( bool isHu, bool& is3Red )
 	}
 
 	nAllCard += getHoldAnKeCnt(isHu, isHuZiMo);
+	nAllCard += 9;
+	nAllCard /= 10;
+	nAllCard *= 10;
 	if (isHu)
 	{
 		nAllCard += getHoldWenQianCnt(isHu); // check wen qian ;
@@ -1950,5 +1961,9 @@ uint16_t JJQEPlayerCard::getFinalHuCnt( bool isHu, bool& is3Red )
 		is3Red = true;
 	}
 
+	if ( nAllCard > m_pRoom->getTopHuLimit())
+	{
+		nAllCard = m_pRoom->getTopHuLimit();
+	}
 	return nAllCard;
 }
