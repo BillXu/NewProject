@@ -16,7 +16,7 @@
 #include "SZMJRoom.h"
 #include "MJServer.h"
 #include "NJMJPlayer.h"
-#define TIME_WAIT_REPLY_DISMISS 90
+#define TIME_WAIT_REPLY_DISMISS 300
 MJPrivateRoom::~MJPrivateRoom()
 {
 	delete m_pRoom;
@@ -552,7 +552,7 @@ void MJPrivateRoom::onCheckDismissReply(bool bTimerOut)
 	}
 
 	//process result
-	if (nAgreeCnt * 2 > nSeatCnt || bTimerOut )
+	if (nAgreeCnt == nSeatCnt || bTimerOut )
 	{
 		LOGFMTD("most player want dismiss room");
 		onRoomGameOver(true);
@@ -782,9 +782,9 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		{
 			iter->second.nWaiBaoCoin = ((NJMJPlayer*)pp)->getWaiBaoCoin();
 
-			if ( m_nInitCoin == 95 )
+			if ( m_nInitCoin < 100 )
 			{
-				iter->second.nRoomCoin -= 5;
+				iter->second.nRoomCoin -= ( 100 - m_nInitCoin );
 			}
 		}
 		iter->second.nMingGangCnt = pp->getMingGangCnt();

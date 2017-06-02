@@ -90,13 +90,17 @@ public:
 		m_isHuaZa = false;
 		m_isCircleType = true;
 		m_isJieZhuangBi = false;
+		m_isEnableShuangGang = false;
+		m_isEnableYiZhanDaoDi = false;
 	}
 
-	void setJingYuanZi(bool isJingYuanZi, uint32_t nYuanZiCoin, bool isWaiBao )
+	void setJingYuanZi(bool isJingYuanZi, uint32_t nYuanZiCoin, bool isWaiBao , bool isShuangGAng , bool isYiDuiDaoDi )
 	{
 		m_isJinYuanZi = isJingYuanZi;
 		m_nJinYuanZiCoin = nYuanZiCoin;
 		m_isWaiBao = isWaiBao;
+		m_isEnableShuangGang = isShuangGAng;
+		m_isEnableYiZhanDaoDi = isYiDuiDaoDi;
 	}
 
 	void setKuaiChong(bool isKuaiChong, uint32_t nKuaiChongPool)
@@ -140,6 +144,8 @@ public:
 		jsRoomOpts["isCircle"] = m_isCircleType ? 1 : 0;
 
 		jsRoomOpts["isJieZhuangBi"] = m_isJieZhuangBi ? 1 : 0;
+		jsRoomOpts["isShuangGang"] = m_isEnableShuangGang ? 1 : 0;
+		jsRoomOpts["isYiDuiDaoDi"] = m_isEnableYiZhanDaoDi ? 1 : 0;
 
 		jsMsg["roomOpts"] = jsRoomOpts;
 	}
@@ -162,6 +168,9 @@ protected:
 		jsRoomOpts["isSiLianFeng"] = m_isSiLianFeng;
 
 		jsRoomOpts["isJieZhuangBi"] = m_isJieZhuangBi;
+
+		jsRoomOpts["isShuangGang"] = m_isEnableShuangGang;
+		jsRoomOpts["isYiDuiDaoDi"] = m_isEnableYiZhanDaoDi;
 	};
 
     void restoreRoomInfoOpts(Json::Value& jsRoomOpts) override 
@@ -194,6 +203,17 @@ protected:
 			m_isJieZhuangBi = jsRoomOpts["isCircle"].asBool();
 		}
 
+		// new
+		if (jsRoomOpts["isShuangGang"].isNull() == false)
+		{
+			m_isEnableShuangGang = jsRoomOpts["isShuangGang"].asBool();
+		}
+
+		if (jsRoomOpts["isYiDuiDaoDi"].isNull() == false)
+		{
+			m_isEnableYiZhanDaoDi = jsRoomOpts["isYiDuiDaoDi"].asBool();
+		}
+
 	};
 protected:
 	bool m_isJinYuanZi;
@@ -208,4 +228,6 @@ protected:
 	bool m_isSiLianFeng;
 	bool m_isCircleType;
 	bool m_isJieZhuangBi;
+	bool m_isEnableShuangGang;
+	bool m_isEnableYiZhanDaoDi;
 };

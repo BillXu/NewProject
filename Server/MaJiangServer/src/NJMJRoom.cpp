@@ -45,7 +45,10 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_isLianZhuang = false;
 	m_isJieZhuangBi = false;
 	m_isCirleType = true;
+	m_isEnableYiDuiDaoDi = false;
+	m_isEnableShuangGang = false;
 	m_isJieZhuangInvoked = false;
+	m_nMingGangCnt = 0;
 	m_tChuedCards.clear();
 	if ( vJsValue["initCoin"].isNull() == false)
 	{
@@ -123,6 +126,27 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 		}
 	}
 
+	if ( isJingYuanZi() == false)
+	{
+		if (vJsValue["isShuangGang"].isNull() || vJsValue["isShuangGang"].isUInt() == false)
+		{
+			LOGFMTE("argument is not proper room id = %u , isShuangGang  ? ", getRoomID());
+		}
+		else
+		{
+			m_isEnableShuangGang = vJsValue["isShuangGang"].asUInt() == 0 ? false : true;
+		}
+
+		if (vJsValue["isYiDuiDaoDi"].isNull() || vJsValue["isYiDuiDaoDi"].isUInt() == false)
+		{
+			LOGFMTE("argument is not proper room id = %u , isYiDuiDaoDi  ? ", getRoomID());
+		}
+		else
+		{
+			m_isEnableYiDuiDaoDi = vJsValue["isYiDuiDaoDi"].asUInt() == 0 ? false : true;
+		}
+	}
+
 	m_tPoker.initAllCard(eMJ_NanJing);
 	// create state and add state ;
 	IMJRoomState* vState[] = {
@@ -140,7 +164,7 @@ bool NJMJRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 
 	// init room recorder info 
 	auto pRoomRecorder = (NJMJRoomRecorder*)getRoomRecorder().get();
-	pRoomRecorder->setJingYuanZi(m_isJingYuanZiMode, m_nInitCoin, m_isEnableWaiBao );
+	pRoomRecorder->setJingYuanZi(m_isJingYuanZiMode, m_nInitCoin, m_isEnableWaiBao,m_isEnableShuangGang,m_isEnableYiDuiDaoDi );
 	pRoomRecorder->setKuaiChong( m_isKuaiChong,m_nInitKuaiChongPool);
 	pRoomRecorder->setHuaZaBiXiaHu(m_isEnableHuaZa,m_isEnableBixiaHu,m_isEnableSiLianFeng,m_isCirleType, m_isJieZhuangBi );
 	return true;
@@ -154,6 +178,7 @@ void NJMJRoom::willStartGame()
 	m_isWillProcessChuPaiFaQian = false;
 	m_isJieZhuangInvoked = false;
 	m_nChuedCard = 0;
+	m_nMingGangCnt = 0;
 	m_nChuPaiPlayerIdx = -1;
 
 	if ((uint8_t)-1 == m_nBankerIdx )
@@ -244,6 +269,8 @@ void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
 	jsSubInfo["isKuaiChong"] = isKuaiChong() ? 1 : 0;
 	jsSubInfo["isSiLianFeng"] = isEnableSiLianFeng() ? 1 : 0;
 	jsSubInfo["isJieZhuangBi"] = m_isJieZhuangBi ? 1 : 0;
+	jsSubInfo["isShuangGang"] = m_isEnableShuangGang ? 1 : 0;
+	jsSubInfo["isYiDuiDaoDi"] = m_isEnableYiDuiDaoDi ? 1 : 0;
 	if (isKuaiChong())
 	{
 		jsSubInfo["kuaiChongCoin"] = m_nInitKuaiChongPool;
@@ -543,6 +570,12 @@ void NJMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	pActPlayer->addOffsetCoin(nLose);
 	st.addWin(nIdx,nLose);
 	addSettle(st);
+
+	++m_nMingGangCnt;
+	if ( isEnableShuangGang() && m_nMingGangCnt >= 2 )
+	{
+		m_isWillBiXiaHu = true;
+	}
 }
 
 void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
@@ -597,6 +630,12 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 	st.addWin(nIdx, nWin);
 	addSettle(st);
 	pActCard->addActSign(nCard, nIdx, eMJAct_AnGang );
+
+	// shuang gang 
+	if ( isEnableShuangGang() )
+	{
+		m_isWillBiXiaHu = true;
+	}
 }
 
 void NJMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
@@ -652,6 +691,12 @@ void NJMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 	if (pActCard->getSongGangIdx() == (uint8_t)-1)
 	{
 		pActCard->setSongGangIdx(nInvokeIdx);
+	}
+
+	++m_nMingGangCnt;
+	if (isEnableShuangGang() && m_nMingGangCnt >= 2)
+	{
+		m_isWillBiXiaHu = true;
 	}
 }
 
@@ -1563,6 +1608,24 @@ void NJMJRoom::doProcessChuPaiFanQian()
 	}
 
 	addSettle(st);
+}
+
+bool NJMJRoom::isEnableShuangGang()
+{
+	if (isJingYuanZi())
+	{
+		return false;
+	}
+	return m_isEnableShuangGang;
+}
+
+bool NJMJRoom::isEnableYiDuiDaoDi()
+{
+	if (isJingYuanZi())
+	{
+		return false;
+	}
+	return m_isEnableYiDuiDaoDi;
 }
 
 bool NJMJRoom::isCardByPenged(uint8_t nCard)

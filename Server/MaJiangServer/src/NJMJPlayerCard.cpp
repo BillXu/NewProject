@@ -265,6 +265,13 @@ bool NJMJPlayerCard::canHuWitCard(uint8_t nCard)
 			break;
 		}
 
+		if ( m_pCurRoom->isEnableYiDuiDaoDi() && m_vPenged.size() > 0 )
+		{
+			auto iter = std::find_if(vType.begin(), vType.end(), [](uint8_t nT) { return (eFanxing_DuiDuiHu == nT || eFanxing_QingYiSe == nT || eFanxing_HunYiSe == nT); });
+			bRet = iter != vType.end();
+			break;
+		}
+
 	} while (0);
 	return bRet;
 }
@@ -1013,6 +1020,14 @@ bool NJMJPlayerCard::isHoldCardCanHu()
 		{
 			return false;
 		}
+	}
+
+	// check yi dui dao di 
+	if (m_pCurRoom->isEnableYiDuiDaoDi() && m_vPenged.size() > 0 )
+	{
+		auto iter = std::find_if(vType.begin(), vType.end(), [](uint8_t nT) { return (eFanxing_DuiDuiHu == nT || eFanxing_QingYiSe == nT || eFanxing_HunYiSe == nT); });
+		bRet = iter != vType.end();
+		return bRet;
 	}
 	
 	return true;

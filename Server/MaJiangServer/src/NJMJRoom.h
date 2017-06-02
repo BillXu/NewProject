@@ -95,6 +95,8 @@ public:
 	bool isEnableSiLianFeng() { return m_isEnableSiLianFeng; }
 	bool isLastRoundLastBankLianZhuang();
 	void doProcessChuPaiFanQian();
+	bool isEnableShuangGang();
+	bool isEnableYiDuiDaoDi();
 protected:
 	void checkLouHuState(uint8_t nInvokeIdx, uint8_t nCard);
 	bool isLianZhuang();
@@ -126,6 +128,9 @@ protected:
 	bool m_isJieZhuangBi;
 	bool m_isCirleType;
 	bool m_isJieZhuangInvoked;
+	bool m_isEnableShuangGang;
+	bool m_isEnableYiDuiDaoDi;
+	uint8_t m_nMingGangCnt;
 
 	CMJCard m_tPoker;
 
