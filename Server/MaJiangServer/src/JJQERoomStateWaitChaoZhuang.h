@@ -86,7 +86,8 @@ public:
 		getRoom()->sendRoomMsg(prealMsg, MSG_ROOM_PLAYER_CHOSED_CHAO_ZHUANG);
 
 		// check current player is last player , means qie pai player 
-		if (pPlayer->getIdx() == (getRoom()->getBankerIdx() + 2) % getRoom()->getSeatCnt())
+		m_isLookCardAniFinished = true;  // qie pai , player can not get the xixi card , we skip the step 
+		if ( 0 && pPlayer->getIdx() == (getRoom()->getBankerIdx() + 2) % getRoom()->getSeatCnt() )
 		{
 			if (isChaoZhuang == false)
 			{
@@ -121,6 +122,7 @@ public:
 		{
 			isHuaCard = true;
 			fAniTime = 0.3;
+			pPoker->distributeOneCardFromBackEnd();
 		}
 		auto pRoom = (JJQERoom*)getRoom();
 		pRoom->onLastChaoZhuangPlayerViewCard(nCard, isHuaCard);

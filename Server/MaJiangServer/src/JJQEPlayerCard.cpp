@@ -1172,7 +1172,7 @@ uint16_t JJQEPlayerCard::getHuaHuCnt()
 
 	if ( nMoon >= 1 )
 	{
-		nHuCnt += 100;
+		nHuCnt += 50;
 	}
 	
 	if (nSun + nMoon == 2)
