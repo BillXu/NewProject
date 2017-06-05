@@ -1515,18 +1515,21 @@ uint16_t NJMJPlayerCard::getAllHuaCnt(uint8_t nHuCard,bool isQiDui )
 	if (checkYaDang(nHuCard))
 	{
 		++nHuaCnt;
+		return nHuaCnt;
 	}
 
 	// check du zhan 
 	if (checkDuZhan(nHuCard))
 	{
 		++nHuaCnt;
+		return nHuaCnt;
 	}
 
 	// check bian zhi 
 	if (checkBianZhi(nHuCard))
 	{
 		++nHuaCnt;
+		return nHuaCnt;
 	}
 
 	return nHuaCnt;
