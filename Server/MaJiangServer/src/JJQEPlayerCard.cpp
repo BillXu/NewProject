@@ -1548,9 +1548,6 @@ uint16_t JJQEPlayerCard::getMingPaiHuaCnt()
 	nHuaCnt += getHuaHuCnt();
 	nHuaCnt += getPengHuCnt();
 	nHuaCnt += getGangHuCnt();
-	nHuaCnt += 9;
-	nHuaCnt /= 10;
-	nHuaCnt *= 10;
 	if ( check3Red(true,false) ) // do this for client ;  bSkipHold = true , means for client ;
 	{
 		nHuaCnt *= 2;
@@ -1838,7 +1835,7 @@ bool JJQEPlayerCard::getHuFanxingTypes( uint8_t nHuCard, bool isZiMo, std::vecto
 		vHuTypes.push_back(eFanxing_QiongHen);
 	}
 
-	if (!isZiMo)
+	//if (!isZiMo)
 	{
 		if (checkBianZhi())
 		{
