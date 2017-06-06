@@ -18,6 +18,7 @@
 #include "ServerMessageDefine.h"
 #include "IGameRoomManager.h"
 #include "RoomConfig.h"
+#include "JJQERoomStateWaitQiPai.h"
 bool JJQERoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
@@ -37,6 +38,7 @@ bool JJQERoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	IMJRoomState* vState[] = {
 		new JJQERoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new JJQERoomStateWaitPlayerAct(), new JJQERoomStateStartGame(), new JJQERoomStateAutoBuHua()
 		, new MJRoomStateGameEnd(), new MJRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(),new JJQERoomStateFlyUp(),new JJQERoomStateWaitChaoZhuang()
+		, new JJQERoomStateWaitQiPai()
 	};
 	for (uint8_t nIdx = 0; nIdx < sizeof(vState) / sizeof(IMJRoomState*); ++nIdx)
 	{
@@ -329,6 +331,21 @@ bool JJQERoom::informPlayerFlyUp(uint8_t nPlayerIdx)
 	return true;
 }
 
+bool JJQERoom::informPlayerQiPai(uint8_t nPlayerIdx)
+{
+	auto pPlayer = getMJPlayerByIdx(nPlayerIdx);
+	if (nullptr == pPlayer)
+	{
+		LOGFMTE("room id = %u player idx = %u player is null , can not fly up", getRoomID(), nPlayerIdx);
+		return false;
+	}
+
+	Json::Value jsMsg;
+	jsMsg["idx"] = pPlayer->getIdx();
+	sendRoomMsg(jsMsg, MSG_WAIT_PALYER_QI_PAI);
+	return true;
+}
+
 bool JJQERoom::onPlayerDoFlyUp( uint8_t nIdx, std::vector<uint8_t>& vFlyUpCard )
 {
 	if (vFlyUpCard.empty())
@@ -546,6 +563,13 @@ void JJQERoom::onGameEnd()
 	sendRoomMsg(jsMsg, MSG_ROOM_JJQE_RESULT);
 	// send msg to player ;
 	IMJRoom::onGameEnd();
+}
+
+void JJQERoom::onAllNotQiPai()
+{
+	IMJRoom::onGameEnd();
+	IMJRoom::onGameDidEnd();
+	m_nJianZhang = -1;
 }
 
 void JJQERoom::onDoPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)

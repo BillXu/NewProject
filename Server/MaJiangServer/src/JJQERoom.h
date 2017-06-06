@@ -22,6 +22,7 @@ public:
 	bool isAnyPlayerFlyUp();
 	bool isAnyPlayerAutoBuHua();
 	bool informPlayerFlyUp( uint8_t nPlayerIdx );
+	bool informPlayerQiPai(uint8_t nPlayerIdx);
 	bool onPlayerDoFlyUp( uint8_t nIdx , std::vector<uint8_t>& vFlyUpCard );
 	void onDoAllPlayersAutoBuHua();
 	void onDoPlayerBuHua(uint8_t nIdx , uint8_t nHuaCard );
@@ -43,6 +44,7 @@ public:
 	void onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
 	void onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
 	void visitPlayerInfoForRoomInfo(IMJPlayer* pPlayer, Json::Value& jsPlayerInfo)override;
+	void onAllNotQiPai();
 protected:
 	int8_t getChaoZhuangRate( bool isAChao , bool isBChao );
 protected:

@@ -9,11 +9,11 @@ class JJQERoomStateFlyUp
 {
 public:
 	uint32_t getStateID()final { return eRoomState_WaitPlayerFlyUp; }
-
+	uint8_t getCurIdx()override { return m_nCurWaitIdx; };
 	void enterState(IMJRoom* pmjRoom, Json::Value& jsTranData)override
 	{
 		IMJRoomState::enterState(pmjRoom, jsTranData);
-		setStateDuringTime(9999999999);
+		setStateDuringTime(99999999);
 		m_vAlreadyCheckedPlayerFlyUpIdxs.clear();
 		m_nCurWaitIdx = -1;
 		doInformPlayerFlyUp();
@@ -63,9 +63,9 @@ public:
 				vFlyCards.push_back(jsCards[ncardidx].asUInt());
 			}
 
-			if ( vFlyCards.empty() )  // do not fly up 
+			if ( vFlyCards.empty() )  // do not fly up , give up flyup
 			{
-				//nRet = 3;  not error 
+				//nRet = 3;  //not error 
 				break;
 			}
 
@@ -79,12 +79,17 @@ public:
 			}
 		} while (0);
 
-		if (nRet)  // can not do this act ;
+		//if (nRet)  // can not do this act ;
 		{
 			prealMsg["ret"] = nRet;
 			getRoom()->sendMsgToPlayer(prealMsg, nMsgType, nSessionID);
-			return true;
+			//return true;
 		}
+
+		//if ( nRet ) // go on wait
+		//{
+		//	return;
+		//}
 
 		// inform next 
 		doInformPlayerFlyUp();

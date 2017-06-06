@@ -1826,15 +1826,6 @@ bool JJQEPlayerCard::getHuFanxingTypes( uint8_t nHuCard, bool isZiMo, std::vecto
 		vHuTypes.push_back(eFanxing_PingHu);
 	}
 
-	if ( checkQiongQiongHen(true))
-	{
-		vHuTypes.push_back(eFanxing_QiongQiongHen);
-	}
-	else if ( checkQiongHen(true))
-	{
-		vHuTypes.push_back(eFanxing_QiongHen);
-	}
-
 	//if (!isZiMo)
 	{
 		if (checkBianZhi())
@@ -1853,6 +1844,16 @@ bool JJQEPlayerCard::getHuFanxingTypes( uint8_t nHuCard, bool isZiMo, std::vecto
 
 	// restore ;
 	m_vCards[eCT_Jian] = vBanckUpJian;
+
+	if (checkQiongQiongHen(true))
+	{
+		vHuTypes.push_back(eFanxing_QiongQiongHen);
+	}
+	else if (checkQiongHen(true))
+	{
+		vHuTypes.push_back(eFanxing_QiongHen);
+	}
+
 	m_nHuCard = nHuCardBack;
 	if (!isZiMo)
 	{

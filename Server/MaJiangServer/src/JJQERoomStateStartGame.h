@@ -19,7 +19,9 @@ public:
 
 	void onStateTimeUp()
 	{
-		auto pRoom = (JJQERoom*)getRoom();
+		getRoom()->goToState(eRoomState_WaitPlayerQiPai);
+		
+		/*auto pRoom = (JJQERoom*)getRoom();
 		if ( pRoom->isAnyPlayerFlyUp() )
 		{
 			getRoom()->goToState(eRoomState_WaitPlayerFlyUp);
@@ -33,7 +35,7 @@ public:
 			Json::Value jsValue;
 			jsValue["idx"] = getRoom()->getBankerIdx();
 			getRoom()->goToState(eRoomState_WaitPlayerAct, &jsValue);
-		}
+		}*/
 
 	}
 };

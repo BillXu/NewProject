@@ -716,8 +716,8 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 	}
 	// all player leave and update coin 
 	auto pRoom = (IMJRoom*)m_pRoom;
-	bool bCanncelBill = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady || pRoom->getCurRoomState()->getStateID() == eRoomState_WaitChaoZhuang );
-	if ( m_bDoDismissRoom && ( pRoom->getCurRoomState()->getStateID() != eRoomSate_WaitReady && pRoom->getCurRoomState()->getStateID() != eRoomState_WaitChaoZhuang ) )
+	bool bCanncelBill = (m_bComsumedRoomCards == false) && (pRoom->getCurRoomState()->getStateID() == eRoomSate_WaitReady || pRoom->getCurRoomState()->getStateID() == eRoomState_WaitChaoZhuang || pRoom->getCurRoomState()->getStateID() == eRoomState_WaitPlayerQiPai );
+	if ( m_bDoDismissRoom && ( pRoom->getCurRoomState()->getStateID() != eRoomSate_WaitReady && pRoom->getCurRoomState()->getStateID() != eRoomState_WaitChaoZhuang && pRoom->getCurRoomState()->getStateID() != eRoomState_WaitPlayerQiPai ) )
 	{
 		pRoom->onGameEnd();
 	}

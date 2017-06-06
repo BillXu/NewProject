@@ -165,6 +165,7 @@ enum eRoomState
 	// state for qing er 
 	eRoomState_WaitChaoZhuang, // 等待玩家超庄
 	eRoomState_WaitPlayerFlyUp, // 执行玩家起飞状态
+	eRoomState_WaitPlayerQiPai, // 等待玩家起牌
 	eRoomState_Max,
 };
 

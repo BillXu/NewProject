@@ -12,7 +12,7 @@ class JJQERoomStateWaitChaoZhuang
 {
 public:
 	uint32_t getStateID()final { return eRoomState_WaitChaoZhuang; }
-
+	
 	void enterState(IMJRoom* pmjRoom, Json::Value& jsTranData)
 	{
 		IMJRoomState::enterState(pmjRoom,jsTranData);

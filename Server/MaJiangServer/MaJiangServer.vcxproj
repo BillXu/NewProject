@@ -103,6 +103,7 @@
     <ClInclude Include="src\JJQERoomStateStartGame.h" />
     <ClInclude Include="src\JJQERoomStateWaitChaoZhuang.h" />
     <ClInclude Include="src\JJQERoomStateWaitPlayerAct.h" />
+    <ClInclude Include="src\JJQERoomStateWaitQiPai.h" />
     <ClInclude Include="src\JJQERoomStateWaitReady.h" />
     <ClInclude Include="src\MJCard.h" />
     <ClInclude Include="src\MJDefine.h" />

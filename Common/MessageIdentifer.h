@@ -810,6 +810,17 @@ enum eMsgType
 	// client : null 
 	// svr : { idx: 2 , huCnt: 23 }
 
+	MSG_WAIT_PALYER_QI_PAI,  // µÈ´ýÍæ¼ÒÆðÅÆ
+	// svr : nullptr  
+
+	MSG_PLAYER_QI_PAI,
+	// client : { isQiPia : 1 }
+	// svr : { ret : 0 }  
+	// ret : 0 , success , 1 you not in room , 2 you are not current act idx 
+
+	MSG_ROOM_QI_PAI,
+	// svr : { idx : 2 , isQiPai : 1 } 
+
 
 
 
