@@ -410,7 +410,7 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			}
 			uint32_t nClubID = recvValue["clubID"].asUInt() ;
 			eRoomType eroomType = (eRoomType)recvValue["roomType"].asUInt() ;
-			auto nCirle = recvValue["circle"].asUInt();
+			//auto nCirle = recvValue["circle"].asUInt();
 			bool isFree = false;
 			bool isAA = false;
 			uint8_t nGrade = -1;  
@@ -460,8 +460,8 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			uint8_t nDiamondNeed = 0;
 			if ((uint8_t)-1 != nGrade && nGrade < 3 )
 			{
-				uint8_t vJu[] = { 1,2,4 };
-				uint8_t vJuAA[] = { 1,2,4 };
+				uint8_t vJu[] = { 2,3,6 };
+				uint8_t vJuAA[] = { 1,1,2 };
 				if (isAA)
 				{
 					nDiamondNeed = vJuAA[nGrade];

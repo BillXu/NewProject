@@ -176,7 +176,7 @@ void JJQERoom::willStartGame()
 	m_nLastHuIdx = -1;
 	if ((uint8_t)-1 == m_nBankerIdx)
 	{
-		m_nBankerIdx = 0;
+		m_nBankerIdx = rand() % getSeatCnt();;
 	}
 	else
 	{
@@ -518,6 +518,7 @@ void JJQERoom::onGameEnd()
 		// do add recorder 
 		auto pPlayerRecorderInfo = std::make_shared<JJQEPlayerRecorderInfo>();
 		pPlayerRecorderInfo->init(pCurPlayer->getUID(), pCurPlayer->getOffsetCoin());
+		pPlayerRecorderInfo->setHuCnts(nThisHuCnt);
 		ptrSingleRecorder->addPlayerRecorderInfo(pPlayerRecorderInfo);
 	}
 	jsMsg["playerResult"] = playerResult;

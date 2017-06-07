@@ -8,6 +8,7 @@ public:
 	void init(uint32_t nUserUID, int32_t nOffset)
 	{
 		setInfo(nUserUID, nOffset);
+		m_nHuCnts = 0;
 	}
 
 	void setInfo(uint32_t nUserUID, int32_t nOffset)override
@@ -16,14 +17,22 @@ public:
 		m_nOffset = nOffset;
 	}
 
+	void setHuCnts(uint16_t nHuCnts)
+	{
+		m_nHuCnts = nHuCnts;
+	}
+
 	void getUserDetailForSave(Json::Value& jsUserDetail)
 	{
-
+		jsUserDetail["huCnt"] = m_nHuCnts;
 	}
 
 	void restoreUserDetail(Json::Value& jsUserDetail)
 	{
-
+		if (jsUserDetail["huCnt"].isNull() == false)
+		{
+			m_nHuCnts = jsUserDetail["huCnt"].asUInt();
+		}
 	}
 
 	uint32_t getUserUID()override
@@ -40,11 +49,13 @@ public:
 	{
 		jsUserInfo["uid"] = m_nUserUID;
 		jsUserInfo["offset"] = m_nOffset;
+		jsUserInfo["huCnt"] = m_nHuCnts;
 	}
 
 protected:
 	uint32_t m_nUserUID;
 	int32_t m_nOffset;
+	uint16_t m_nHuCnts;
 };
 
 // single recorder 
