@@ -19,6 +19,7 @@ void ISitableRoomPlayer::reset(IRoom::stStandPlayer* pPlayer)
 	m_nCurRound = 0;
 	m_vRoomIDSplits.clear();
 	resetNoneActTimes();
+	setState(eRoomPeer_WaitNextGame);
 }
 
 void ISitableRoomPlayer::onGameEnd()

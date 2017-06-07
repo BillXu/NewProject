@@ -110,6 +110,7 @@ void CNiuNiuPeerCard::reset()
 	m_nPoint = 0 ;
 	m_nGroupIdx = 10 ;
 	m_nWeight = 0 ;
+	
 }
 
 CNiuNiuPeerCard::NiuNiuType CNiuNiuPeerCard::getType()
