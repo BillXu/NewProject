@@ -189,7 +189,7 @@ void NJMJRoom::willStartGame()
 	{
 		if ( !m_isLianZhuang )
 		{
-			m_nBankerIdx = (m_nBankerIdx + 1) % MAX_SEAT_CNT;
+			m_nBankerIdx = (m_nBankerIdx + 1) % getSeatCnt();
 		}
 	}
 
@@ -349,7 +349,7 @@ void NJMJRoom::onGameEnd()
 	bool isNextBiXiaWhu = m_isEnableBixiaHu && m_isWillBiXiaHu ;
 	jsMsg["isNextBiXiaHu"] = isNextBiXiaWhu ? 1 : 0;
 	m_isLianZhuang = isLianZhuang();
-	jsMsg["nNextBankIdx"] = m_isLianZhuang ? m_nBankerIdx : ((m_nBankerIdx + 1) % MAX_SEAT_CNT);
+	jsMsg["nNextBankIdx"] = m_isLianZhuang ? m_nBankerIdx : ((m_nBankerIdx + 1) % getSeatCnt());
 
 	sendRoomMsg(jsMsg, MSG_ROOM_NJ_GAME_OVER);
 	// send msg to player ;
@@ -470,7 +470,7 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 	st.eSettleReason = eMJAct_HuaGang;
 	uint16_t nWin = 0;
 	uint16_t nLosePerPlayer = HU_GANG_COIN_BASE * (isBiXiaHu() ? 2 : 1);
-	for (uint8_t nCheckIdx = 0; nCheckIdx < 4; ++nCheckIdx)
+	for (uint8_t nCheckIdx = 0; nCheckIdx < getSeatCnt(); ++nCheckIdx)
 	{
 		if (nIdx == nCheckIdx)
 		{
@@ -589,7 +589,7 @@ void NJMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 	st.eSettleReason = eMJAct_AnGang;
 	uint16_t nWin = 0;
 	uint16_t nLosePerPlayer = AN_GANG_COIN_BASE * (isBiXiaHu() ? 2 : 1 );
-	for (uint8_t nCheckIdx = 0; nCheckIdx < 4; ++nCheckIdx)
+	for (uint8_t nCheckIdx = 0; nCheckIdx < getSeatCnt(); ++nCheckIdx)
 	{
 		if (nIdx == nCheckIdx)
 		{
@@ -783,10 +783,10 @@ void NJMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 	std::vector<uint8_t> vOrderHu;
 	if (vHuIdx.size() > 1)
 	{
-		for (uint8_t offset = 1; offset <= 3; ++offset)
+		for (uint8_t offset = 1; offset <= ( getSeatCnt() - 1 )  ; ++offset)
 		{
 			auto nCheckIdx = nInvokeIdx + offset;
-			nCheckIdx = nCheckIdx % 4;
+			nCheckIdx = nCheckIdx % getSeatCnt();
 			auto iter = std::find(vHuIdx.begin(), vHuIdx.end(), nCheckIdx);
 			if (iter != vHuIdx.end())
 			{
@@ -1478,7 +1478,7 @@ void NJMJRoom::doProcessChuPaiFanQian()
 			st.eSettleReason = eMJAct_4Feng;
 			uint16_t nWin = 0;
 			uint16_t nLosePerPlayer = AN_GANG_COIN_BASE * (isBiXiaHu() ? 2 : 1);
-			for (uint8_t nCheckIdx = 0; nCheckIdx < 4; ++nCheckIdx)
+			for (uint8_t nCheckIdx = 0; nCheckIdx < getSeatCnt(); ++nCheckIdx)
 			{
 				if (nIdx == nCheckIdx)
 				{
@@ -1486,6 +1486,11 @@ void NJMJRoom::doProcessChuPaiFanQian()
 				}
 
 				auto pPlayer = getMJPlayerByIdx(nCheckIdx);
+				if (nullptr == pPlayer)
+				{
+					continue;
+				}
+
 				uint16_t nLose = nLosePerPlayer;
 
 				if (isKuaiChong())
@@ -1588,9 +1593,10 @@ void NJMJRoom::doProcessChuPaiFanQian()
 	st.eSettleReason = (eMJActType)nSettleType;
 	st.addLose(nFanQianTarget, nNeedAllCoin);
 	// give winner 
-	for (uint8_t nIdx = 0; nIdx < 4; ++nIdx)
+	auto nSeatCnt = getSeatCnt();
+	for (uint8_t nIdx = 0; nIdx < nSeatCnt; ++nIdx)
 	{
-		uint8_t nRIdx = (nFanQianTarget + nIdx) % 4;
+		uint8_t nRIdx = (nFanQianTarget + nIdx) % nSeatCnt;
 		if (nRIdx == nFanQianTarget)
 		{
 			continue;

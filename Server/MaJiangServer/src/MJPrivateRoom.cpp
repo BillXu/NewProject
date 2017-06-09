@@ -36,6 +36,11 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 	m_stConfig.nConfigID = 0;
 	m_stConfig.nBaseBet = 1;//;vJsValue["baseBet"].asUInt();
 	m_stConfig.nMaxSeat = 4;///vJsValue["seatCnt"].asUInt();
+	if ( vJsValue["seatCnt"].isNull() == false)
+	{
+		m_stConfig.nMaxSeat = vJsValue["seatCnt"].asUInt();
+	}
+
 	m_stConfig.nGameType = vJsValue["roomType"].asUInt();
 	if (m_stConfig.nMaxSeat == 0 || m_stConfig.nBaseBet == 0)
 	{
