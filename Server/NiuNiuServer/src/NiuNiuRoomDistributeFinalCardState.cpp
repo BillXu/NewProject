@@ -13,7 +13,7 @@ void CNiuNiuRoomDistributeFinalCardState::enterState(IRoom* pRoom)
 
 	setStateDuringTime(1 * TIME_NIUNIU_DISTRIBUTE_FINAL_CARD_PER_PLAYER );
 	m_pRoom->onDistributeCard(5);
-	LOGFMTD("room id = %d , distribute 5 card,m_pRoom->getRoomID()");
+	LOGFMTD("room id = %d , distribute 5 card", m_pRoom->getRoomID());
 }
 
 void CNiuNiuRoomDistributeFinalCardState::onStateDuringTimeUp()
