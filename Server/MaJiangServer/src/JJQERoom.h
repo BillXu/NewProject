@@ -45,6 +45,8 @@ public:
 	void onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)override;
 	void visitPlayerInfoForRoomInfo(IMJPlayer* pPlayer, Json::Value& jsPlayerInfo)override;
 	void onAllNotQiPai();
+	void onPlayerChaoZhuang(uint8_t nPlayerIdx , bool isChaoZhaung );
+	void onPlayerQiPai( uint8_t nPlayerIdx , bool isQiPai );
 protected:
 	int8_t getChaoZhuangRate( bool isAChao , bool isBChao );
 protected:

@@ -165,7 +165,10 @@ void JJQERoom::startGame()
 	jsReplayInfo["fengDing"] = m_nTopLimit;
 	jsReplayInfo["chaoZhuangLevel"] = m_nChaoZhuangLevel;
 	jsReplayInfo["jianZhang"] = getJianZhang();
- 
+	jsReplayInfo["is13Hu"] = isEnable13Hu() ? 1 : 0;
+	jsReplayInfo["haveSun"] = m_isHaveSun ? 1 : 0;
+	jsReplayInfo["haveMoon"] = m_isHaveMoon ? 1 : 0;
+	jsReplayInfo["qingErHu"] = m_nQingErHuCnt;
 	getGameReplay()->setReplayRoomInfo(jsReplayInfo);
 }
 
@@ -328,6 +331,13 @@ bool JJQERoom::informPlayerFlyUp(uint8_t nPlayerIdx)
 
 	Json::Value jsMsg;
 	sendMsgToPlayer(jsMsg, MSG_ROOM_WAIT_PLAYER_FLY_UP, pPlayer->getSessionID());
+
+	// add frame js 
+	Json::Value jsFrameArg;
+	jsFrameArg["idx"] = nPlayerIdx;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Wait_FlyUp, (uint32_t)time(nullptr));
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 	return true;
 }
 
@@ -343,6 +353,13 @@ bool JJQERoom::informPlayerQiPai(uint8_t nPlayerIdx)
 	Json::Value jsMsg;
 	jsMsg["idx"] = pPlayer->getIdx();
 	sendRoomMsg(jsMsg, MSG_WAIT_PALYER_QI_PAI);
+
+	// add frame js 
+	Json::Value jsFrameArg;
+	jsFrameArg["idx"] = pPlayer->getIdx();
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Wait_Qi_Pai, (uint32_t)time(nullptr));
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 	return true;
 }
 
@@ -385,6 +402,15 @@ bool JJQERoom::onPlayerDoFlyUp( uint8_t nIdx, std::vector<uint8_t>& vFlyUpCard )
 	jsMsg["flyCards"] = jsArrayCard;
 	jsMsg["newCards"] = jsNewCards;
 	sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_FLY_UP);
+
+	// add frame 
+	Json::Value jsFrameArg;
+	jsFrameArg["idx"] = pPlayer->getIdx();
+	jsFrameArg["flyCards"] = jsArrayCard;
+	jsFrameArg["newCards"] = jsNewCards;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Player_FlyUp, (uint32_t)time(nullptr));
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 	return true;
 }
 
@@ -415,6 +441,13 @@ void JJQERoom::onDoAllPlayersAutoBuHua()
 	}
 	jsMsg["detail"] = jsDetail;
 	sendRoomMsg(jsMsg, MSG_ROOM_JJQE_AUTO_BU_HUA );
+
+	// add frame js 
+	Json::Value jsFrameArg;
+	jsFrameArg["detail"] = jsDetail;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Player_AutoBuHua, (uint32_t)time(nullptr));
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void JJQERoom::onGameDidEnd()
@@ -571,6 +604,37 @@ void JJQERoom::onAllNotQiPai()
 	IMJRoom::onGameEnd();
 	IMJRoom::onGameDidEnd();
 	m_nJianZhang = -1;
+}
+
+void JJQERoom::onPlayerChaoZhuang(uint8_t nPlayerIdx, bool isChaoZhaung)
+{
+	auto pPlayer = (JJQEPlayer*)getMJPlayerByIdx(nPlayerIdx);
+	pPlayer->setIsChaoZhuang(isChaoZhaung);
+
+	// tell other the result ;
+	Json::Value jsMsg;
+	jsMsg["idx"] = pPlayer->getIdx();
+	jsMsg["isChao"] = isChaoZhaung ? 1 : 0;
+	sendRoomMsg(jsMsg, MSG_ROOM_PLAYER_CHOSED_CHAO_ZHUANG);
+
+	// add frame js 
+	Json::Value jsFrameArg;
+	jsFrameArg["idx"] = pPlayer->getIdx();
+	jsFrameArg["isChao"] = isChaoZhaung ? 1 : 0;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Player_ChaoZhuang, (uint32_t)time(nullptr));
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
+}
+
+void JJQERoom::onPlayerQiPai(uint8_t nPlayerIdx, bool isQiPai)
+{
+	// add frame js 
+	Json::Value jsFrameArg;
+	jsFrameArg["idx"] = nPlayerIdx;
+	jsFrameArg["isQiPai"] = isQiPai ? 1 : 0;
+	auto ptrReplay = getGameReplay()->createFrame(eMJFrame_Player_Qi_Pai, (uint32_t)time(nullptr));
+	ptrReplay->setFrameArg(jsFrameArg);
+	getGameReplay()->addFrame(ptrReplay);
 }
 
 void JJQERoom::onDoPlayerBuHua(uint8_t nIdx, uint8_t nHuaCard)

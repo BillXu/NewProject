@@ -19,4 +19,12 @@ enum eMJFrameType
 	eMJFrame_Decl_BuGang,// { idx : 2 }
 	eMJFrame_HuaGang, // { idx: 2 , hua : 2 , newCard : 23 }
 	eMJFrame_Player_Ting, // { idx : 2 }
+
+	eMJFrame_Wait_ChaoZhuang, 
+	eMJFrame_Player_ChaoZhuang, // { idx : 0 , isChao : 1 }
+	eMJFrame_Wait_Qi_Pai, // { idx : 0 }  
+	eMJFrame_Player_Qi_Pai, // { idx : 0 , isQiPai: 1 }
+	eMJFrame_Wait_FlyUp, // { idx : 0 }
+	eMJFrame_Player_FlyUp, // { idx : 2 , flyCards : [23,32], newCards : [23,23] }
+	eMJFrame_Player_AutoBuHua, // { detail : [ { idx : 2 , hua : [2,23], card : [2,3] } , ... ] }
 };

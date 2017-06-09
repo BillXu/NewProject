@@ -79,12 +79,7 @@ public:
 		}
 
 		bool isChaoZhuang = prealMsg["isChao"].asUInt() == 1;
-		pPlayer->setIsChaoZhuang(isChaoZhuang);
-
-		// tell other the result ;
-		prealMsg["idx"] = pPlayer->getIdx();
-		getRoom()->sendRoomMsg(prealMsg, MSG_ROOM_PLAYER_CHOSED_CHAO_ZHUANG);
-
+		((JJQERoom*)getRoom())->onPlayerChaoZhuang(pPlayer->getIdx(), isChaoZhuang);
 		// check current player is last player , means qie pai player 
 		m_isLookCardAniFinished = true;  // qie pai , player can not get the xixi card , we skip the step 
 		if ( 0 && pPlayer->getIdx() == (getRoom()->getBankerIdx() + 2) % getRoom()->getSeatCnt() )

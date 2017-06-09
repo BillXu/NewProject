@@ -75,6 +75,7 @@ public:
 
 		prealMsg["idx"] = pPlayer->getIdx();
 		getRoom()->sendRoomMsg(prealMsg, MSG_ROOM_QI_PAI);
+		((JJQERoom*)getRoom())->onPlayerQiPai(pPlayer->getIdx(), nQipPai == 1);
 		if ( nQipPai == 1 ) // qi pai 
 		{
 			onDoQiPai(); // go on play game 
