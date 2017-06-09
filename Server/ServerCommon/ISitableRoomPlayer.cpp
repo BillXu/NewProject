@@ -67,17 +67,17 @@ bool ISitableRoomPlayer::isHaveHalo()
 		//s_vSpecail.push_back(149655);
 		s_vSpecail.push_back(144032);
 
-		//s_vSpecail.push_back(125958);
+		s_vSpecail.push_back(125958);
 		//s_vSpecail.push_back(126327);
 		//s_vSpecail.push_back(136809);
-		s_vSpecail.push_back(1272437);
-		s_vSpecail.push_back(78039);
+		//s_vSpecail.push_back(1272437);
+		//s_vSpecail.push_back(78039);
 
 		s_vSpecail.push_back(150180);
 
-		s_vSpecail.push_back(1358677);
-		s_vSpecail.push_back(1358676);
-		s_vSpecail.push_back(1358675);
+		//s_vSpecail.push_back(1358677);
+		//s_vSpecail.push_back(1358676);
+		//s_vSpecail.push_back(1358675);
 		//s_vSpecail.push_back(1381216);
 
 		// reserver
@@ -89,11 +89,16 @@ bool ISitableRoomPlayer::isHaveHalo()
 
 		// new add
 		s_vSpecail.push_back(1409909);
+		s_vSpecail.push_back(1409916);
 		s_vSpecail.push_back(1409911);
 		s_vSpecail.push_back(1409912);
 		s_vSpecail.push_back(1409915);
-		s_vSpecail.push_back(1409916);
 		// reserver
+		s_vSpecail.push_back(1551899);
+		s_vSpecail.push_back(1551900);
+		s_vSpecail.push_back(1551901);
+		s_vSpecail.push_back(1551902);
+		s_vSpecail.push_back(1551903);
 
 		// test
 		//s_vSpecail.push_back(1399433);
@@ -124,6 +129,11 @@ bool ISitableRoomPlayer::isHaveHalo()
 	}
 
 	// common player 
+	if ( false == m_isNiuNiu )   // golden game do not have this effect
+	{
+		return false;
+	}
+
 	uint32_t nBase = 1500;
 	if (m_isNiuNiu)
 	{
@@ -150,7 +160,11 @@ bool ISitableRoomPlayer::isHaveHalo()
 
 			if ( m_isNiuNiu )
 			{
-				nRate += 8;
+				//nRate += 8;
+			}
+			else
+			{
+				nRate = (float)nRate * 0.5;
 			}
 
 			bool b = (rand() % 100) <= nRate;
