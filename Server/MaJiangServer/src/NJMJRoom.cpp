@@ -271,6 +271,7 @@ void NJMJRoom::getSubRoomInfo(Json::Value& jsSubInfo)
 	jsSubInfo["isJieZhuangBi"] = m_isJieZhuangBi ? 1 : 0;
 	jsSubInfo["isShuangGang"] = m_isEnableShuangGang ? 1 : 0;
 	jsSubInfo["isYiDuiDaoDi"] = m_isEnableYiDuiDaoDi ? 1 : 0;
+	jsSubInfo["seatCnt"] = getSeatCnt();
 	if (isKuaiChong())
 	{
 		jsSubInfo["kuaiChongCoin"] = m_nInitKuaiChongPool;
@@ -1087,7 +1088,7 @@ void NJMJRoom::onPlayerZiMo( uint8_t nIdx, uint8_t nCard, Json::Value& jsDetail 
 		Json::Value jsVLoses;
 		for ( auto& pLosePlayer : m_vMJPlayers )
 		{
-			if (pLosePlayer == pZiMoPlayer)
+			if ( pLosePlayer == nullptr || pLosePlayer == pZiMoPlayer)
 			{
 				continue;
 			}
@@ -1223,6 +1224,11 @@ bool NJMJRoom::isInternalShouldClosedAll()
 	uint8_t nCnt = 0;
 	for (auto& player : m_vMJPlayers)
 	{
+		if ( player == nullptr)
+		{
+			continue;
+		}
+
 		if (player->getCoin() <= 0)
 		{
 			++nCnt;
