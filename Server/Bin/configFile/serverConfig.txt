@@ -1,5 +1,5 @@
 svrType	svrTips	svrIP	svrPort	password	account
-0	gate	127.0.0.1	50006	123456	0
+0	gate	127.0.0.1	50003	123456	0
 1	login	127.0.0.1	0	0	0
 2	db	127.0.0.1	6000	0	0
 3	game	127.0.0.1	0	0	0

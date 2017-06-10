@@ -156,6 +156,7 @@ void IMJRoom::sendRoomInfo(uint32_t nSessionID)
 	jsMsg["bankerIdx"] = getBankerIdx();
 	jsMsg["curActIdex"] = getCurRoomState()->getCurIdx();
 	jsMsg["leftCardCnt"] = getMJPoker()->getLeftCardCount();
+	jsMsg["stateDuring"] = getCurRoomState()->getAlreadyRunSeconds();
 
 	Json::Value jsSubInfo;
 	getSubRoomInfo(jsSubInfo);

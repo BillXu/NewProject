@@ -1533,7 +1533,7 @@ void NJMJRoom::doProcessChuPaiFanQian()
 	auto pcard = (NJMJPlayerCard*)pActPlayer->getPlayerCard();
 	pcard->setSongGangIdx(-1);
 
-	if (m_tChuedCards.isInvokerFanQian(nFanQianTarget))
+	if ( getSeatCnt() >= MAX_SEAT_CNT && m_tChuedCards.isInvokerFanQian(nFanQianTarget) )
 	{
 		nSettleType = eMJAct_Followed;
 		LOGFMTD("room id = %u gen feng fa qian , card = %u , idx = %u", getRoomID(), nCard, nIdx);

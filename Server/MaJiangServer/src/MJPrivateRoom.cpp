@@ -16,7 +16,7 @@
 #include "SZMJRoom.h"
 #include "MJServer.h"
 #include "NJMJPlayer.h"
-#define TIME_WAIT_REPLY_DISMISS 300
+#define TIME_WAIT_REPLY_DISMISS 60
 MJPrivateRoom::~MJPrivateRoom()
 {
 	delete m_pRoom;
@@ -575,6 +575,7 @@ void MJPrivateRoom::onCheckDismissReply(bool bTimerOut)
 	m_mapRecievedReply.clear();
 	m_bWaitDismissReply = false;
 	m_tWaitRepklyTimer.canncel();
+	m_nInvokerDismissUID = 0;
 	return;
 
 	//if (bTimerOut)
@@ -812,6 +813,10 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 		Json::Value jsMsg;
 		jsMsg["ret"] = isDismissed ? 1 : 0;
 		jsMsg["initCoin"] = m_nInitCoin;
+		if (isDismissed)
+		{
+			jsMsg["dissmissUID"] = m_nInvokerDismissUID;
+		}
 
 		// sys bill id to data svr 
 		stMsgSyncPrivateRoomResult msgResult;
@@ -838,6 +843,10 @@ void MJPrivateRoom::onRoomGameOver(bool isDismissed)
 			jsPlayer["mingGangCnt"] = ref.second.nMingGangCnt;
 			jsPlayer["AnGangCnt"] = ref.second.nAnGangCnt;
 			jsPlayer["waiBaoCoin"] = ref.second.nWaiBaoCoin;
+			if ( isDismissed && ref.second.nUID == m_nInvokerDismissUID )
+			{
+				jsPlayer["isDisser"] = 1;
+			}
 
 			jsVBills[jsVBills.size()] = jsPlayer;
 

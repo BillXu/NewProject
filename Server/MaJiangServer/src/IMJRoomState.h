@@ -6,11 +6,12 @@ class IMJRoom;
 class IMJRoomState
 {
 public:
-	IMJRoomState(){ m_fStateDuring = 99999; m_pRoom = nullptr; };
+	IMJRoomState() { m_fStateDuring = 99999; m_pRoom = nullptr; m_fStateAlreadyRunSeconds = 0; };
 	virtual ~IMJRoomState(){}
 	virtual void enterState(IMJRoom* pmjRoom, Json::Value& jsTranData)
 	{
 		m_pRoom = pmjRoom;
+		m_fStateAlreadyRunSeconds = 0;
 	}
 	virtual uint32_t getStateID() = 0;
 	virtual bool onMsg(Json::Value& prealMsg, uint16_t nMsgType, eMsgPort eSenderPort, uint32_t nSessionID){ return false; }
@@ -18,8 +19,10 @@ public:
 	virtual void onStateTimeUp(){}
 	virtual void leaveState(){}
 	virtual uint8_t getCurIdx(){ return 0; };
+	float getAlreadyRunSeconds() { return m_fStateAlreadyRunSeconds; }
 	virtual void update(float fDeta)
 	{
+		m_fStateAlreadyRunSeconds += fDeta;
 		if (m_fStateDuring >= 0.0f)
 		{
 			m_fStateDuring -= fDeta;
@@ -35,4 +38,5 @@ public:
 private:
 	float m_fStateDuring;
 	IMJRoom* m_pRoom;
+	float m_fStateAlreadyRunSeconds;
 };
