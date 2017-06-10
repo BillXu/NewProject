@@ -1568,7 +1568,7 @@ void NJMJRoom::doProcessChuPaiFanQian()
 	// do fanqian logic
 	auto pLosePlayer = getMJPlayerByIdx(nFanQianTarget);
 	uint8_t nPerPlayer = PUNISH_COIN_BASE * (isBiXiaHu() ? 2 : 1);
-	uint8_t nNeedAllCoin = nPerPlayer * 3;
+	uint8_t nNeedAllCoin = nPerPlayer * ( getSeatCnt() - 1 );
 	uint8_t nLingTou = 0;
 	if (isKuaiChong())
 	{
