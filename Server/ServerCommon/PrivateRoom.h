@@ -915,6 +915,16 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			stPrivateRoomPlayerItem* pPrivatePlayer = iter->second ;
 			if ( pPrivatePlayer->isPayedDeskFee() || stStandPlayer->nCoin < m_pRoom->coinNeededToSitDown() || m_pRoom->getPlayerByIdx(pRet->nIdx) )
 			{
+				// not enough to sit down ,just try apply again ;
+				if ( eRoom_Golden == m_pRoom->getRoomType() && stStandPlayer->nCoin > 0 && stStandPlayer->nCoin < m_pRoom->coinNeededToSitDown() )
+				{
+					// send self apply take in message 
+					Json::Value jsMsg;
+					jsMsg["takeIn"] = 1500;
+					onMessage(jsMsg, MSG_APPLY_TAKE_IN, ID_MSG_PORT_CLIENT, nPlayerSessionID );
+					return true;
+				}
+
 				if ( m_pRoom )
 				{
 					return m_pRoom->onMessage(prealMsg,eSenderPort,nPlayerSessionID) ;
@@ -1192,6 +1202,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 		break;
 	case MSG_APPLY_TAKE_IN:
 		{
+
 		// new add function 
 			//if ( m_isControlTakeIn )
 			{

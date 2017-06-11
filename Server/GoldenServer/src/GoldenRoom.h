@@ -32,7 +32,7 @@ public:
 	bool onPlayerPK(ISitableRoomPlayer* pActPlayer , ISitableRoomPlayer* pTargetPlayer );
 	void sendResultToPlayerWhenDuringResultState(uint32_t nSessionID)override;
 	bool isReachedMenCnt();
-	uint32_t getMaxTakeIn()override{ return 1500; };
+	uint32_t getMaxTakeIn()override{ return 1600; };
 protected:
 	ISitableRoomPlayer* doCreateSitableRoomPlayer() override;
 protected:
