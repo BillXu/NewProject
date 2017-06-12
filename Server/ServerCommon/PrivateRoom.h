@@ -539,6 +539,17 @@ void CPrivateRoom<T>::onPlayerEnterRoom(stEnterRoomData* pEnterRoomPlayer,int8_t
 	stEnterRoomData refEnterData ;
 	memcpy_s(&refEnterData,sizeof(stEnterRoomData),pEnterRoomPlayer,sizeof(stEnterRoomData));
 	refEnterData.nCoin = pPlayerItem->nCoinInRoom ;
+	auto pStand = m_pRoom->getPlayerByUserUID(pPlayerItem->nUserUID);
+	if (pStand)
+	{
+		refEnterData.nCoin = pStand->nCoin;
+	}
+
+	auto pSit = m_pRoom->getSitdownPlayerByUID(pPlayerItem->nUserUID);
+	if (pSit)
+	{
+		refEnterData.nCoin = pSit->getCoin();
+	}
 	m_pRoom->onPlayerEnterRoom(&refEnterData,nSubIdx) ;
 	sendRoomInfo(pEnterRoomPlayer->nUserSessionID);
 	LOGFMTD("uid = %u , enter room id = %u , subIdx = %u inRoom coin = %u , total coin = %u",pEnterRoomPlayer->nUserUID, getRoomID(),0,pPlayerItem->nCoinInRoom,pPlayerItem->nToTalCoin) ;
@@ -759,7 +770,7 @@ void CPrivateRoom<T>::update(float fDelta)
 #endif
 	m_fTicketForAutoClosedRoom += fDelta;
 #ifdef _DEBUG
-	if (m_fLeftTimeSec <= 0 || m_fTicketForAutoClosedRoom >= 4 * 60 )  // 3 hours not play will auto close ;
+	if (m_fLeftTimeSec <= 0 || m_fTicketForAutoClosedRoom >= 6 * 60 )  // 3 hours not play will auto close ;
 #else
 	if (m_fLeftTimeSec <= 0 || m_fTicketForAutoClosedRoom >= 10800)  // 3 hours not play will auto close ;
 #endif
@@ -1680,7 +1691,12 @@ void CPrivateRoom<T>::sendRoomInfo(uint32_t nSessionID )
 	}
 	auto iter = m_mapPrivateRoomPlayers.find(iPlayer->nUserUID) ;
 	assert(iter != m_mapPrivateRoomPlayers.end() && "why this is null ?" );
-	jsMsgRoomInfo["selfCoin"] = iter->second->nCoinInRoom ;
+	ISitableRoomPlayer* stiDownPlayer = m_pRoom->getSitdownPlayerByUID(iPlayer->nUserUID);
+	jsMsgRoomInfo["selfCoin"] = iPlayer->nCoin;
+	if (stiDownPlayer)
+	{
+		jsMsgRoomInfo["selfCoin"] = stiDownPlayer->getCoin();
+	}
 	jsMsgRoomInfo["baseTakeIn"] = m_nBaseTakeIn;
 	jsMsgRoomInfo["isCtrlTakeIn"] = (uint32_t)this->m_isControlTakeIn ;
 	jsMsgRoomInfo["sieralNum"] = m_nSerialNum;
