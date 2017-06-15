@@ -85,6 +85,24 @@ public:
 		{
 			if (!checkPlayerBuHua())
 			{
+				auto pPlayer = getRoom()->getMJPlayerByIdx(m_nIdx);
+				if (!pPlayer)
+				{
+					LOGFMTE("why cur player idx = %u is null room id = %u", m_nIdx, getRoom()->getRoomID());
+					m_isMustGameOver = true;
+					setStateDuringTime(0.0001);
+					return;
+				}
+				auto pPeerCard = (JJQEPlayerCard*)pPlayer->getPlayerCard();
+				auto nNewCard = pPeerCard->getHuaCardToBuHua();
+				if (nNewCard != (uint8_t)-1) // can not go on mo pai , lead to can not bu hua , so direct game over 
+				{
+					LOGFMTE("final card is hua , but can not bu hua , so must game over room id = %u, idx = %u", getRoom()->getRoomID(), m_nIdx);
+					m_isMustGameOver = true;
+					setStateDuringTime(0.0001);
+					return;
+				}
+
 				m_isAutoBuHuaOrHuaGang = false;
 				setStateDuringTime(100000000 );
 				getRoom()->onWaitPlayerAct(m_nIdx, m_isCanPass); // normal ask do act 
