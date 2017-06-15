@@ -182,7 +182,7 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 	{
 		// di hu ;
 		vHuTypes.push_back( eFanxing_DiHu );
-		nHuHuaCnt += 20;
+		nHuHuaCnt += 100;
 	}
 	// check fanxing and bei shu 
 	auto bHunYise = checkHunYiSe(vHuTypes, nHuHuaCnt);
