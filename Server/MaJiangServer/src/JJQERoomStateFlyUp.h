@@ -92,7 +92,10 @@ public:
 		//}
 
 		// inform next 
-		doInformPlayerFlyUp();
+		if ( nRet == 0 )
+		{
+			doInformPlayerFlyUp();
+		}
 		return true;
 	}
 
