@@ -91,6 +91,7 @@ class JJQERoomRecorder
 		m_jsRoomOpts["fengDing"] = jsRoomOpts["fengDing"] ;
 
 		m_jsRoomOpts["qiHuNeed"] = jsRoomOpts["qiHuNeed"] ;
+		m_jsRoomOpts["haveGuangGao"] = jsRoomOpts["haveGuangGao"];
 	}
 
 	std::shared_ptr<ISingleRoundRecorder> createSingleRoundRecorder()override

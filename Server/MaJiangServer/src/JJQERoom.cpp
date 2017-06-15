@@ -33,7 +33,8 @@ bool JJQERoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_nLastHuIdx = -1;
 	m_isHaveSun = vJsValue["haveSun"].asUInt() == 1;
 	m_isHaveMoon = vJsValue["haveMoon"].asUInt() == 1;
-	m_tPoker.initQingErExt( m_isHaveSun, m_isHaveMoon);
+	m_isHaveAd = vJsValue["haveGuangGao"].asUInt() == 1;
+	m_tPoker.initQingErExt( m_isHaveSun, m_isHaveMoon, m_isHaveAd );
 	// create state and add state ;
 	IMJRoomState* vState[] = {
 		new JJQERoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new JJQERoomStateWaitPlayerAct(), new JJQERoomStateStartGame(), new JJQERoomStateAutoBuHua()
@@ -168,6 +169,7 @@ void JJQERoom::startGame()
 	jsReplayInfo["is13Hu"] = isEnable13Hu() ? 1 : 0;
 	jsReplayInfo["haveSun"] = m_isHaveSun ? 1 : 0;
 	jsReplayInfo["haveMoon"] = m_isHaveMoon ? 1 : 0;
+	jsReplayInfo["haveGuangGao"] = m_isHaveAd ? 1 : 0;
 	jsReplayInfo["qingErHu"] = m_nQingErHuCnt;
 	getGameReplay()->setReplayRoomInfo(jsReplayInfo);
 }
@@ -205,7 +207,8 @@ void JJQERoom::getSubRoomInfo(Json::Value& jsSubInfo)
 	jsSubInfo["jianZhang"] = getJianZhang();
 	jsSubInfo["is13Hu"] = isEnable13Hu() ? 1 : 0;
 	jsSubInfo["haveSun"] = m_isHaveSun ? 1 : 0;
-	jsSubInfo["haveMoon"] = m_isHaveMoon ? 1 : 0;
+	jsSubInfo["haveGuangGao"] = m_isHaveAd ? 1 : 0;
+	jsSubInfo["haveMoon"] = m_isHaveMoon ? 1 : 0; 
 	jsSubInfo["qingErHu"] = m_nQingErHuCnt;
 }
 

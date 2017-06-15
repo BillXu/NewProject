@@ -190,10 +190,6 @@ void CMJCard::initAllCard( eMJGameType eType )
 		{
 			m_vAllCards.push_back(makeCardNumber(eCT_Hua, 2));
 		}
-
-		// add huang and hou
-		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 3));
-		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 4));
 	}
 
 	if (eMJ_NanJing == m_eMJGameType)
@@ -212,7 +208,7 @@ void CMJCard::initAllCard( eMJGameType eType )
 	}
 }
 
-void CMJCard::initQingErExt(bool isAddSun, bool isAddMoon)
+void CMJCard::initQingErExt(bool isAddSun, bool isAddMoon, bool isHaveAd )
 {
 	if (isAddSun || isAddMoon)
 	{
@@ -222,6 +218,13 @@ void CMJCard::initQingErExt(bool isAddSun, bool isAddMoon)
 	if (isAddMoon)
 	{
 		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 6));  // sun 
+	}
+
+	if ( isHaveAd )
+	{
+		// add huang and hou
+		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 3));
+		m_vAllCards.push_back(makeCardNumber(eCT_Hua, 4));
 	}
 }
 

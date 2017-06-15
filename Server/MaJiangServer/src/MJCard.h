@@ -20,7 +20,7 @@ public:
 	uint8_t distributeOneCardFromBackEnd()override;
 	void debugCardInfo();
 	void initAllCard( eMJGameType eType );
-	void initQingErExt( bool isAddSun , bool isAddMoon );
+	void initQingErExt( bool isAddSun , bool isAddMoon, bool isHaveAd );
 	eMJGameType getGameType();
 	bool isEmpty();
 	void debugPokerInfo();

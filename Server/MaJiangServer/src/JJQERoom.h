@@ -59,6 +59,7 @@ protected:
 	bool m_isHave13Hu;
 	bool m_isHaveSun;
 	bool m_isHaveMoon;
+	bool m_isHaveAd = true;
 
 	uint8_t m_nLastHuIdx;
 
