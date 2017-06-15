@@ -784,7 +784,7 @@ enum eMsgType
 	// svr: { card: 23 }
 
 	MSG_ROOM_WAIT_PLAYER_FLY_UP, // 等待玩家选择起飞的牌
-	//svr : null ;
+	//svr : { idx : 0 } ;
 
 	MSG_PLAYER_FLY_UP,
 	// client : { dstRoomID : 123465 , flyCards : [ 23,23] }  
@@ -821,6 +821,8 @@ enum eMsgType
 	MSG_ROOM_QI_PAI,
 	// svr : { idx : 2 , isQiPai : 1 } 
 
+	MSG_ROOM_ENTER_SATE, // 房间进入新的状态
+	// svr : { curState : 0 , newState : 1 } 
 
 
 

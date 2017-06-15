@@ -330,7 +330,8 @@ bool JJQERoom::informPlayerFlyUp(uint8_t nPlayerIdx)
 	}
 
 	Json::Value jsMsg;
-	sendMsgToPlayer(jsMsg, MSG_ROOM_WAIT_PLAYER_FLY_UP, pPlayer->getSessionID());
+	jsMsg["idx"] = nPlayerIdx;
+	sendRoomMsg(jsMsg, MSG_ROOM_WAIT_PLAYER_FLY_UP);
 
 	// add frame js 
 	Json::Value jsFrameArg;
