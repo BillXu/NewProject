@@ -786,6 +786,171 @@ void MJPlayerCard::addCardToVecAsc(VEC_CARD& vec, uint8_t nCard)
 	vec.push_back(nCard);
 }
 
+bool MJPlayerCard::canAllShunZi( VEC_CARD vCardCheck, bool isMustKeZi )
+{
+	// remove zero ;
+	do
+	{
+		auto iter = std::find(vCardCheck.begin(),vCardCheck.end(),0 );
+		if (iter == vCardCheck.end())
+		{
+			break;
+		}
+		vCardCheck.erase(iter);
+	} while (1);
+
+	if (vCardCheck.size() % 3 != 0)
+	{
+		return false;
+	}
+
+	if ( vCardCheck.empty() )
+	{
+		return true;
+	}
+
+	// check shun zi ;
+	for (uint8_t nIdx = 0; nIdx < vCardCheck.size(); ++nIdx )
+	{
+		if (vCardCheck[nIdx] == 0)
+		{
+			continue;
+		}
+
+		uint8_t nCurCheckCard = vCardCheck[nIdx];
+		bool isKeZi = std::count(vCardCheck.begin(), vCardCheck.end(), nCurCheckCard ) >= 3;
+		auto iter = std::find(vCardCheck.begin(),vCardCheck.end(), nCurCheckCard + 1 );
+		auto iter2 = std::find(iter, vCardCheck.end(), nCurCheckCard +2 );
+		auto isShunZi = (isMustKeZi == false) && (iter != vCardCheck.end() && iter2 != vCardCheck.end());
+		if (isKeZi == false && false == isShunZi)
+		{
+			return false;
+		}
+
+		if ( isKeZi && isShunZi )
+		{
+			VEC_CARD vKeZi = vCardCheck;
+			vCardCheck[nIdx] = 0;
+			*iter = 0; *iter2 = 0;
+			if ( canAllShunZi(vCardCheck, isMustKeZi) )
+			{
+				return true;
+			}
+
+			uint8_t nRCnt = 0;
+			for ( uint8_t nRIdx = nIdx; nRIdx < vKeZi.size(); ++nRIdx)
+			{
+				if (vKeZi[nRIdx] == nCurCheckCard )
+				{
+					++nRCnt;
+					vKeZi[nRIdx] = 0;
+				}
+
+				if (nRCnt == 3)
+				{
+					break;
+				}
+			}
+
+			return canAllShunZi(vKeZi, isMustKeZi);
+		}
+
+		if (isShunZi)
+		{
+			vCardCheck[nIdx] = 0;
+			*iter = 0; *iter2 = 0;
+		}
+		else if ( isKeZi )
+		{
+			uint8_t nCnt = 0;
+			do 
+			{
+				auto iter = std::find(vCardCheck.begin(), vCardCheck.end(), nCurCheckCard);
+				if (iter == vCardCheck.end())
+				{
+					LOGFMTE("last cnt say have 3 , but can not find ? why ");
+					break;
+				}
+				*iter = 0;
+				++nCnt;
+				if (nCnt == 3)
+				{
+					break;
+				}
+
+			} while (1);
+		}
+
+	}
+
+	return true;
+}
+
+bool MJPlayerCard::isHoldCardCanHuNew()
+{
+	uint8_t eCTJiang = eCT_None;
+	for (uint8_t nCnt = eCT_None; nCnt < eCT_Max; ++nCnt)
+	{
+		if (m_vCards[nCnt].empty())
+		{
+			continue;
+		}
+
+		if ( m_vCards[nCnt].size() % 3 == 1 )
+		{
+			return false;
+		}
+
+		if ( m_vCards[nCnt].size() % 3 == 0 )
+		{
+			if ( false == canAllShunZi(m_vCards[nCnt], nCnt == eCT_Feng || nCnt == eCT_Jian) )
+			{
+				return false;
+			}
+		}
+
+		if ( m_vCards[nCnt].size() % 3 == 2 )
+		{
+			if ( eCT_None != eCTJiang )  // can not have two  jiang type 
+			{
+				return false;
+			}
+			eCTJiang = nCnt;
+		}
+	}
+
+	for ( uint8_t nIdx = 0; nIdx < m_vCards[eCTJiang].size(); )
+	{
+		auto& vCard = m_vCards[eCTJiang];
+		if ( vCard[nIdx] == vCard[nIdx + 1] )
+		{
+			auto vCheckCard = vCard;
+			vCheckCard[nIdx] = vCheckCard[nIdx + 1] = 0;
+			if (canAllShunZi(vCheckCard, eCTJiang == eCT_Feng || eCTJiang == eCT_Jian))
+			{
+				return true;
+			}
+
+			if ( vCard[nIdx] == vCard[nIdx + 3] )
+			{
+				nIdx += 4;
+			}
+			else if (vCard[nIdx] == vCard[nIdx + 2])
+			{
+				nIdx += 3;
+			}
+			else
+			{
+				nIdx += 2;
+			}
+			continue;
+		}
+		++nIdx;
+	}
+
+	return false;
+}
+
 bool MJPlayerCard::getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMustKeZiShun )
 {
 	/// temp unsed ;

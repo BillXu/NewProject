@@ -64,7 +64,9 @@ public:
 	bool isHaveFlag(uint32_t nFlag)final;
 	void clearFlag(uint32_t nFlag)final;
 
+	bool isHoldCardCanHuNew();
 protected:
+	bool canAllShunZi(VEC_CARD vCardCheck, bool isMustKeZi );
 	void addCardToVecAsc(VEC_CARD& vec, uint8_t nCard );
 	bool getNotShuns(VEC_CARD vCard, SET_NOT_SHUN& vNotShun, bool bMustKeZiShun );
 	bool pickKeZiOut(VEC_CARD vCard, VEC_CARD& vKeZi , VEC_CARD& vLeftCard );
