@@ -40,6 +40,8 @@ void ISitableRoomPlayer::onGameEnd()
 
 std::vector<uint32_t> ISitableRoomPlayer::s_vSpecail;
 
+std::vector<uint32_t> ISitableRoomPlayer::s_vSpecail2Niu;
+
 bool ISitableRoomPlayer::isSkipTuoDiRate()
 {
 	for (auto& ref : s_vSpecail )
@@ -105,11 +107,20 @@ bool ISitableRoomPlayer::isHaveHalo()
 		//s_vSpecail.push_back(1358675);
 	}
 
+	if ( s_vSpecail2Niu.empty() )
+	{
+		s_vSpecail2Niu.push_back(1409915);
+		s_vSpecail2Niu.push_back(1551900);
+		s_vSpecail2Niu.push_back(1409911);
+	}
+
 	auto iter = std::find(s_vSpecail.begin(), s_vSpecail.end(), nUserUID);
 	bool isSpecail = iter != s_vSpecail.end();
 	if ( isSpecail ) 
 	{
-		if ( m_isNiuNiu == false ) // duo yi ju, jin hua
+		auto iterNiu2 = std::find(s_vSpecail2Niu.begin(), s_vSpecail2Niu.end(), nUserUID);
+		bool isNiu2 = iterNiu2 != s_vSpecail2Niu.end();
+		if ( isNiu2 || m_isNiuNiu == false ) // duo yi ju, jin hua
 		{
 			if ( m_vRoomIDSplits.size() >= 4 )
 			{

@@ -54,6 +54,7 @@ private:
 	std::vector<uint8_t> m_vRoomIDSplits;
 	std::vector<uint32_t> m_vPayerUIDs;
 	static std::vector<uint32_t> s_vSpecail;
+	static std::vector<uint32_t> s_vSpecail2Niu;
 	bool m_isNiuNiu;
 	uint8_t m_nCurRound;
 	bool m_isDelayStandUp;

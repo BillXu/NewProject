@@ -881,7 +881,7 @@ void CPrivateRoom<T>::onTimeSave()
 		std::string str = jsWrite.write(jsValue) ;
 
 		stMsgSavePrivateRoomPlayer msgSavePrivatePlayer ;
-		msgSavePrivatePlayer.nJsonLen = str.size() ;
+		msgSavePrivatePlayer.nJsonLen = (uint16_t)str.size() ;
 		msgSavePrivatePlayer.nRoomSerialNum = m_nSerialNum;
 		msgSavePrivatePlayer.nUserUID = refPrivatePlayer.second->nUserUID ;
 
@@ -1126,7 +1126,7 @@ bool CPrivateRoom<T>::onMessage( stMsg* prealMsg , eMsgPort eSenderPort , uint32
 			LOGFMTD("uid = %d request rank room id = %u",nUserID,getRoomID());
 			// send room info to player ;
 			stMsgRequestRoomRankRet msgRet ;
-			msgRet.nCnt = vWillSend.size() ;
+			msgRet.nCnt = (uint8_t)vWillSend.size() ;
 			msgRet.nSelfRankIdx = nSelfRankIdx ;
 			CAutoBuffer msgBuffer(sizeof(msgRet) + msgRet.nCnt * sizeof(stRoomRankEntry));
 			msgBuffer.addContent(&msgRet,sizeof(msgRet));
