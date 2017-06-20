@@ -649,7 +649,7 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 				}
 				else
 				{
-					m_nDanDiaoKuaiZhaoState = eDanDiao_GiveUp;
+					//m_nDanDiaoKuaiZhaoState = eDanDiao_GiveUp;
 					LOGFMTE("hold card contion not meet , can not set this type card");
 					//return true;
 				}
