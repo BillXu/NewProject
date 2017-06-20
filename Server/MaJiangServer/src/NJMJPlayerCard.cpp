@@ -159,6 +159,12 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 		{
 			funRemoveAddToCard(nCard);
 		}
+
+		auto iterHaveQingYiSe = std::find(vHuTypes.begin(), vHuTypes.end(), eFanxing_QingYiSe );
+		if ( iterHaveQingYiSe != vHuTypes.end() && checkQueYi(nCard) && nHardAndSoftHua > 0 )
+		{
+			--nHardAndSoftHua;
+		}
 		return true;
 	}
 
@@ -1405,6 +1411,11 @@ bool NJMJPlayerCard::checkYaJue(uint8_t nCard, bool isBePenged, std::vector<uint
 		return false;
 	}
 
+	if ( m_vBuHuaCard.size() < 4)
+	{
+		return false;
+	}
+
 	if (!checkYaDang(nCard) && !checkBianZhi(nCard) )
 	{
 		return false;
@@ -1582,6 +1593,13 @@ bool NJMJPlayerCard::checkYaDang(uint8_t nCard)
 bool NJMJPlayerCard::checkDuZhan(uint8_t nCard)
 {
 	if ( nCard != m_nJIang )
+	{
+		return false;
+	}
+
+	VEC_CARD vHold;
+	getHoldCard(vHold);
+	if ( vHold.size() < 3 )
 	{
 		return false;
 	}
