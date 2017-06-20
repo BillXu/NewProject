@@ -88,6 +88,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\GameRecorderMgr.h" />
+    <ClInclude Include="src\GG23Player.h" />
+    <ClInclude Include="src\GG23PlayerCard.h" />
+    <ClInclude Include="src\GG23PlayerRecorderInfo.h" />
+    <ClInclude Include="src\GG23Room.h" />
+    <ClInclude Include="src\GG23RoomStateFlyUp.h" />
+    <ClInclude Include="src\GG23RoomStateStartGame.h" />
     <ClInclude Include="src\IGameRecorder.h" />
     <ClInclude Include="src\IGameRoom.h" />
     <ClInclude Include="src\IMJPlayer.h" />
@@ -150,6 +156,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GameRecorderMgr.cpp" />
+    <ClCompile Include="src\GG23Player.cpp" />
+    <ClCompile Include="src\GG23PlayerCard.cpp" />
+    <ClCompile Include="src\GG23Room.cpp" />
     <ClCompile Include="src\IGameRecorder.cpp" />
     <ClCompile Include="src\IMJRoom.cpp" />
     <ClCompile Include="src\JJQEPlayer.cpp" />

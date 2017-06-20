@@ -49,6 +49,12 @@
     <Filter Include="src\QEJJ\QEState">
       <UniqueIdentifier>{c776eec2-f5bd-4ff5-96bf-ebd040aff94f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\GG23">
+      <UniqueIdentifier>{77b30eb5-e7c7-4dbd-8fa0-7983a607ccd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\GG23\GGState">
+      <UniqueIdentifier>{ca15070b-f5fa-4867-aa50-5a6855320b35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IMJPoker.h">
@@ -231,6 +237,24 @@
     <ClInclude Include="src\JJQERoomStateWaitQiPai.h">
       <Filter>src\QEJJ\QEState</Filter>
     </ClInclude>
+    <ClInclude Include="src\GG23Room.h">
+      <Filter>src\GG23</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GG23PlayerCard.h">
+      <Filter>src\GG23</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GG23Player.h">
+      <Filter>src\GG23</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GG23PlayerRecorderInfo.h">
+      <Filter>src\GG23</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GG23RoomStateStartGame.h">
+      <Filter>src\GG23\GGState</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GG23RoomStateFlyUp.h">
+      <Filter>src\GG23\GGState</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MJCard.cpp">
@@ -304,6 +328,15 @@
     </ClCompile>
     <ClCompile Include="src\JJQERoom.cpp">
       <Filter>src\QEJJ</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GG23Room.cpp">
+      <Filter>src\GG23</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GG23PlayerCard.cpp">
+      <Filter>src\GG23</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GG23Player.cpp">
+      <Filter>src\GG23</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

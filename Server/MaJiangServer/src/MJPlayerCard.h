@@ -83,7 +83,7 @@ protected:
 	VEC_CARD m_vCards[eCT_Max];
 	VEC_CARD m_vChuedCard;
 	VEC_CARD m_vPenged;
-	VEC_CARD m_vGanged;
+	VEC_CARD m_vGanged;  // ming gang and bu gang ;
 	VEC_CARD m_vAnGanged;
 	VEC_CARD m_vEated;
 	uint8_t m_nNesetFetchedCard;

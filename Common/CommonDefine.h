@@ -57,6 +57,7 @@ enum eRoomType
 	eRoom_TexasPoker = eRoom_None,
 	eRoom_NiuNiu,
 	eRoom_Golden,
+	eRoom_GG23 = eRoom_Golden,
 	eRoom_MJ_Blood_River,// 血流成河
 	eRoom_MJ_Blood_End, // 血战到底 
 	eRoom_MJ_QingEr = eRoom_MJ_Blood_End,
