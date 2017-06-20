@@ -21,7 +21,28 @@ void GG23PlayerCard::bindRoom(GG23Room* pRoom, uint8_t nPlayerIdx)
 
 bool GG23PlayerCard::getCardInfo(Json::Value& jsPeerCards)
 {
+	// svr: { idx : 2 , nDanDiaoKuaiZhao : 23 ,anPai : [2,3,4,34] , huaPai : [23,23,12] ,chuPai: [2,34,4] , anGangPai : [23,24],buGang : [23,45] ,pengGangInfo : [ { targetIdx : 23 , actType : 23 , card : 23 } , .... ]  }
+	IMJPlayerCard::VEC_CARD vAnPai, vChuPai, vAnGangedCard;
+	Json::Value jsAnPai, jsChuPai, jsAngangedPai, jsBuGang, jsHuaPai, jsFlyUp, jsJianPeng, jsPeng;
 
+	getHoldCard(vAnPai);
+	getChuedCard(vChuPai);
+	getAnGangedCard(vAnGangedCard);
+
+	auto toJs = [](IMJPlayerCard::VEC_CARD& vCards, Json::Value& js)
+	{
+		for (auto& c : vCards)
+		{
+			js[js.size()] = c;
+		}
+	};
+
+	toJs(vAnPai, jsAnPai); toJs(vChuPai, jsChuPai); toJs(vAnGangedCard, jsAngangedPai); toJs(m_vGanged, jsBuGang); toJs(m_vFlyupCard, jsFlyUp);
+    toJs(m_vPenged, jsPeng);
+	jsPeerCards["anPai"] = jsAnPai; jsPeerCards["chuPai"] = jsChuPai; jsPeerCards["anGangPai"] = jsAngangedPai; jsPeerCards["buGang"] = jsBuGang; jsPeerCards["huaPai"] = jsHuaPai;
+	jsPeerCards["flyUp"] = jsFlyUp;
+	jsPeerCards["peng"] = jsPeng;
+	return true;
 }
 
 bool GG23PlayerCard::onFlyUp(std::vector<uint8_t>& vFlyUpCard, std::vector<uint8_t>& vNewCard )
@@ -71,12 +92,16 @@ bool GG23PlayerCard::onFlyUp(std::vector<uint8_t>& vFlyUpCard, std::vector<uint8
 
 bool GG23PlayerCard::onDoHu(uint8_t nCard, uint8_t nInvokerIdx)
 {
-
+	m_nHuCard = nCard;
+	m_nInvokeHuIdx = nInvokerIdx;
+	addCardToVecAsc(m_vCards[card_Type(nCard)],nCard );
+	return true;
 }
 
 void GG23PlayerCard::getHuInfo(uint8_t& nInvokeIdx, std::vector<uint8_t>& vHuTypes)
 {
-	
+	nInvokeIdx = m_nInvokeHuIdx;
+
 }
 
 uint32_t GG23PlayerCard::getAllHuCnt(bool isHu, bool isZiMo, uint8_t nHuCard)
@@ -533,40 +558,57 @@ uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu )
 		return 0;
 	}
 
-	uint8_t nWenQianCnt = 100;
+	uint8_t nMayBeWenQianCnt = 100;
 	for (uint8_t nIdx = 1; nIdx <= 3; ++nIdx)
 	{
 		auto nRedACnt = std::count(m_vCards[eCT_Wan].begin(), m_vCards[eCT_Wan].end(), make_Card_Num(eCT_Wan, nIdx));
-		if ( nRedACnt < nWenQianCnt)
+		if ( nRedACnt < nMayBeWenQianCnt)
 		{
-			nWenQianCnt = nRedACnt ;
+			nMayBeWenQianCnt = nRedACnt ;
 		}
 
-		if (0 == nWenQianCnt)
+		if ( 0 == nMayBeWenQianCnt)
 		{
 			return 0;
 		}
 	}
 
 	uint8_t nRemovedWen = 0;
-	uint8_t nWenQian = 0;
-	while ( nWenQianCnt > 0 )
+	uint8_t nRealWenQian = 0;
+	while ( nMayBeWenQianCnt-- > 0 )
 	{
 		for ( uint8_t nIdx = 1; nIdx <= 3; ++nIdx )
 		{
 			auto nRedIter = std::find(m_vCards[eCT_Wan].begin(), m_vCards[eCT_Wan].end(), make_Card_Num(eCT_Wan, nIdx));
+			if ( nRedIter == m_vCards[eCT_Wan].end() )
+			{
+				LOGFMTE("why this have removed more than we need");
+				break;
+			}
 			m_vCards[eCT_Wan].erase(nRedIter);
 		}
 
+		++nRemovedWen;
 		if ( isHoldCardCanHuNew() )
 		{
-			++nWenQian;
+			++nRealWenQian;
 		}
 		else
 		{
 			break;
 		}
 	}
+
+	// add back wenqian card
+	while ( nRemovedWen-- > 0 )
+	{
+		for ( uint8_t nIdx = 1; nIdx <= 3; ++nIdx )
+		{
+			addCardToVecAsc(m_vCards[eCT_Wan], make_Card_Num(eCT_Wan, nIdx));
+		}
+	}
+
+	return (nRealWenQian * 10);
 }
 
 uint16_t GG23PlayerCard::getFlyUpHuCnt()
