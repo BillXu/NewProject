@@ -19,6 +19,7 @@ void NJMJPlayerCard::reset()
 	m_nDanDiaoKuaiZhaoState = eDanDiao_Not_Set;  // 0 not seted , 1 seted , 2 gived up ;
 	m_nDanDiaoHoldCard = 0 ;
 	m_nDanDiaoChuedCard = 0 ;
+	m_isLiang = false;
 }
 
 bool NJMJPlayerCard::canEatCard(uint8_t nCard, uint8_t& nWithA, uint8_t& withB)
@@ -633,7 +634,7 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 			m_nDanDiaoKuaiZhaoState = eDanDiao_Do_Set;
 			m_nDanDiaoHoldCard = vHold.front();
 			m_nDanDiaoChuedCard = nChuCard;
-
+			m_isLiang = true;
 			// check hold is in range 
 			{
 				uint8_t nLeft = 1;
@@ -649,7 +650,7 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 				}
 				else
 				{
-					//m_nDanDiaoKuaiZhaoState = eDanDiao_GiveUp;
+					m_nDanDiaoKuaiZhaoState = eDanDiao_GiveUp;
 					LOGFMTE("hold card contion not meet , can not set this type card");
 					//return true;
 				}
@@ -671,7 +672,7 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 		if (vHold.front() != m_nDanDiaoHoldCard)
 		{
 			m_nDanDiaoKuaiZhaoState = eDanDiao_GiveUp;
-
+			m_isLiang = false;
 			Json::Value jsMsg;
 			jsMsg["idx"] = m_nThisPlayerIdx;
 			jsMsg["card"] = 0;
@@ -1124,7 +1125,7 @@ bool NJMJPlayerCard::getCardInfo(Json::Value& jsPeerCards)
 
 	jsPeerCards["pengGangInfo"] = jsPengGangInfo;
 
-	if ( m_nDanDiaoKuaiZhaoState == eDanDiao_Do_Set )
+	if ( m_isLiang && m_nDanDiaoChuedCard > 0 )
 	{
 		jsPeerCards["nDanDiaoKuaiZhao"] = m_nDanDiaoChuedCard;
 	}

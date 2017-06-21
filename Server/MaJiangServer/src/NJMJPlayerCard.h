@@ -92,4 +92,5 @@ protected:
 	uint8_t m_nDanDiaoKuaiZhaoState;  // 0 not seted , 1 seted , 2 gived up ;
 	uint8_t m_nDanDiaoHoldCard;
 	uint8_t m_nDanDiaoChuedCard;
+	bool m_isLiang = false;
 };
