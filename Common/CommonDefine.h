@@ -69,6 +69,7 @@ enum eRoomType
 enum eMJGameType
 {
 	eMJ_None,
+	eMJ_GG23 = 2,
 	eMJ_BloodRiver = eRoom_MJ_Blood_River,
 	eMJ_BloodTheEnd,
 	eMJ_JJQE = eMJ_BloodTheEnd,

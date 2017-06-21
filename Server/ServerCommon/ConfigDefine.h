@@ -47,14 +47,14 @@
 #define Gotype_DevID "8276e6d3-5e96-44e2-9243-97a40f019bb3"
 #define Gotype_ProdID "4f466e4d-ece6-4139-986a-2ad79e3ab74f"
 //#define Wechat_notifyUrl "http://abc.paiyouquan.com:5016/vxpay.php"  // online editon 
-#define Wechat_notifyUrl "http://qegame.paiyouquan.com:7006/vxpay.php"  // mj test online edtion 
+#define Wechat_notifyUrl "http://gg23game.paiyouquan.com:7006/vxpay.php"  // mj test online edtion 
 //#define Wechat_MchID "1385365702"
 //#define Wechat_appID "wxae3a38cb9960bc84"
 //#define Wechat_MchKey "NUN5DKS5MJW4UBVJIL1G2XUQ66LU2ENU"
 #define Wechat_MchID "1401856702"
 #define Wechat_appID "wxdaff45ff145c0350"
 #define Wechat_MchKey "NUN5DKS5MJW4UBVJIL1G2XUQ66LU2ENA"
-#define Game_DB_Name "jjqe"
+#define Game_DB_Name "gg23zhang"
 #define Log_DB_Name "niuniulog"
 #else
 

@@ -162,6 +162,29 @@ void CMJCard::initAllCard( eMJGameType eType )
 		}
 	}
 
+	if ( eMJ_GG23 == m_eMJGameType)
+	{
+		auto nCnt = 4;
+		while (nCnt--)
+		{
+			for (uint8_t nValue = 1; nValue <= 3; ++nValue)
+			{
+				m_vAllCards.push_back(makeCardNumber(eCT_Jian, nValue));
+			}
+		}
+
+		// 10 , king
+
+		nCnt = 5;
+		while (nCnt--)
+		{
+			for (uint8_t nValue = 1; nValue <= 2; ++nValue)
+			{
+				m_vAllCards.push_back(makeCardNumber(eCT_Feng, nValue));
+			}
+		}
+	}
+
 	if (eMJ_JJQE == m_eMJGameType)
 	{
 		auto nCnt = 3;

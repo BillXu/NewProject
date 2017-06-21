@@ -6,9 +6,35 @@
 #include "IMJRoomState.h"
 #include "ServerMessageDefine.h"
 #include "IGameRoomManager.h"
+#include "GG23PlayerRecorderInfo.h"
+#include "MJRoomStateWaitPlayerChu.h"
+#include "MJRoomStateAskForPengOrHu.h"
+#include "MJRoomStateDoPlayerAct.h"
+#include "MJRoomStateGameEnd.h"
+#include "RoomConfig.h"
+#include "MJRoomStateWaitReady.h"
+#include "MJRoomStateWaitPlayerAct.h"
+#include "MJRoomStateStartGame.h"
+#include "GG23RoomStateFlyUp.h"
+#include "MJRoomStateAskForRobotGang.h"
 bool GG23Room::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
-
+	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
+	((stSitableRoomConfig*)getRoomConfig())->nMaxSeat = 3;
+	m_tPoker.initAllCard(eMJ_GG23);
+	m_nQiHuNeed = vJsValue["qiHuNeed"].asUInt();
+	m_nLastHuIdx = -1;
+	// create state and add state ;
+	IMJRoomState* vState[] = {
+		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new MJRoomStateWaitPlayerAct(), new MJRoomStateStartGame()
+		, new MJRoomStateGameEnd(), new MJRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(),new GG23RoomStateFlyUp(),new MJRoomStateAskForRobotGang()
+	};
+	for (uint8_t nIdx = 0; nIdx < sizeof(vState) / sizeof(IMJRoomState*); ++nIdx)
+	{
+		addRoomState(vState[nIdx]);
+	}
+	setInitState(vState[0]);
+	return true;
 }
 
 IMJPlayer* GG23Room::doCreateMJPlayer()
@@ -110,7 +136,43 @@ void GG23Room::willStartGame()
 
 void GG23Room::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t nInvokeIdx)
 {
+	bool isZiMo = vHuIdx.size() == 1 && vHuIdx.front() == nInvokeIdx;
+	auto nHuIdx = vHuIdx.front();
+	if (!isZiMo && vHuIdx.size() > 1)
+	{
+		for (uint8_t nIdxOffset = 1; nIdxOffset < getSeatCnt(); ++nIdxOffset)
+		{
+			auto nCheckIdx = nInvokeIdx + nIdxOffset;
+			nCheckIdx = nCheckIdx % getSeatCnt();
+			auto iter = std::find(vHuIdx.begin(), vHuIdx.end(), nCheckIdx);
+			if (iter != vHuIdx.end())
+			{
+				nHuIdx = nCheckIdx;
+				break;
+			}
+		}
+	}
 
+	auto pPlayer = getMJPlayerByIdx(nHuIdx);
+	if (!pPlayer)
+	{
+		LOGFMTE("room id = %u playeridx = %u is null can not hu ", getRoomID(), nHuIdx);
+		return;
+	}
+	auto pPlayerCard = (GG23PlayerCard*)pPlayer->getPlayerCard();
+	if (!pPlayerCard->onDoHu(nCard, nInvokeIdx))
+	{
+		LOGFMTE("can not hu room id = %u idx = %u", getRoomID(), nHuIdx);
+		return;
+	}
+	pPlayer->setState(eRoomPeer_AlreadyHu);
+	m_nLastHuIdx = pPlayer->getIdx();
+
+	Json::Value jsMsg;
+	jsMsg["idx"] = nHuIdx;
+	jsMsg["huCard"] = nCard;
+	jsMsg["invokeIdx"] = nInvokeIdx;
+	sendRoomMsg(jsMsg, MSG_ROOM_JJQE_PLAYER_HU);
 }
 
 void GG23Room::getSubRoomInfo(Json::Value& jsSubInfo)
@@ -286,12 +348,6 @@ void GG23Room::onGameDidEnd()
 
 void GG23Room::onGameEnd()
 {
-	if (m_nJianZhang == 0 || (uint8_t)-1 == m_nJianZhang)
-	{
-		IMJRoom::onGameEnd();
-		LOGFMTE("not distribute card so skip");
-		return;
-	}
 	// svr: { isLiuJu : 0 , detail : [ {idx : 0 , offset : 23 }, ...  ], realTimeCal : [ { actType : 23, detial : [ {idx : 2, offset : -23 } ]  } , ... ] } 
 	Json::Value jsMsg;
 	Json::Value playerResult;
@@ -310,7 +366,7 @@ void GG23Room::onGameEnd()
 		}
 		else
 		{
-			auto pPlayerCard = (JJQEPlayerCard*)pPlayer->getPlayerCard();
+			auto pPlayerCard = (GG23PlayerCard*)pPlayer->getPlayerCard();
 			std::vector<uint8_t> vHuTypes;
 			uint8_t nInvokerIdx = -1;
 			pPlayerCard->getHuInfo(nInvokerIdx, vHuTypes);
@@ -331,16 +387,16 @@ void GG23Room::onGameEnd()
 	// get player huDetail ;
 	for (uint8_t nIdx = 0; nIdx < getSeatCnt(); ++nIdx)
 	{
-		auto pCurPlayer = (JJQEPlayer*)getMJPlayerByIdx(nIdx);
+		auto pCurPlayer = (GG23Player*)getMJPlayerByIdx(nIdx);
 		if (pCurPlayer == nullptr)
 		{
 			LOGFMTE("why seat player is null idx = %u", nIdx);
 			continue;
 		}
-		auto pPlayerCard = (JJQEPlayerCard*)pCurPlayer->getPlayerCard();
+		auto pPlayerCard = (GG23PlayerCard*)pCurPlayer->getPlayerCard();
 		//int16_t nThisHuCnt = pPlayerCard->getAllHuCnt(pPlayerCard->getIsPlayerHu(),pPlayerCard->getIsZiMo(),pPlayerCard->getHuCard());
 		bool b3Red = false;
-		int16_t nThisHuCnt = pPlayerCard->getFinalHuCnt(pCurPlayer->haveState(eRoomPeer_AlreadyHu), b3Red);//pPlayerCard->getAllHuCnt(pPlayerCard->getIsPlayerHu(), pPlayerCard->getIsZiMo(), pPlayerCard->getHuCard());
+		int16_t nThisHuCnt = pPlayerCard->getFinalHuCnt(pCurPlayer->haveState(eRoomPeer_AlreadyHu));//pPlayerCard->getAllHuCnt(pPlayerCard->getIsPlayerHu(), pPlayerCard->getIsZiMo(), pPlayerCard->getHuCard());
 		int16_t nMyOffset = 0;
 		for (uint8_t nCheckIdx = 0; nCheckIdx < getSeatCnt(); ++nCheckIdx)
 		{
@@ -349,16 +405,16 @@ void GG23Room::onGameEnd()
 				continue;
 			}
 
-			auto pCheckPlayer = (JJQEPlayer*)getMJPlayerByIdx(nCheckIdx);
+			auto pCheckPlayer = (GG23Player*)getMJPlayerByIdx(nCheckIdx);
 			if (pCheckPlayer == nullptr)
 			{
 				LOGFMTE("why seat check player is null idx = %u", nIdx);
 				continue;
 			}
-			auto pCheckPlayerCard = (JJQEPlayerCard*)pCheckPlayer->getPlayerCard();
+			auto pCheckPlayerCard = (GG23PlayerCard*)pCheckPlayer->getPlayerCard();
 			bool bCheck3Red = false;
-			int16_t nCheckHuCnt = pCheckPlayerCard->getFinalHuCnt(pCheckPlayer->haveState(eRoomPeer_AlreadyHu), bCheck3Red);
-			nMyOffset += (nThisHuCnt - nCheckHuCnt) * getChaoZhuangRate(pCurPlayer->isChaoZhuang(), pCheckPlayer->isChaoZhuang());
+			int16_t nCheckHuCnt = pCheckPlayerCard->getFinalHuCnt(pCheckPlayer->haveState(eRoomPeer_AlreadyHu));
+			nMyOffset += (nThisHuCnt - nCheckHuCnt);
 		}
 
 		// do caculate offset 
@@ -368,11 +424,10 @@ void GG23Room::onGameEnd()
 		jsPlayerItem["idx"] = nIdx;
 		jsPlayerItem["huCnt"] = nThisHuCnt;
 		jsPlayerItem["offset"] = nMyOffset;
-		jsPlayerItem["is3Red"] = b3Red ? 1 : 0;
 		playerResult[playerResult.size()] = jsPlayerItem;
 
 		// do add recorder 
-		auto pPlayerRecorderInfo = std::make_shared<JJQEPlayerRecorderInfo>();
+		auto pPlayerRecorderInfo = std::make_shared<GG23PlayerRecorderInfo>();
 		pPlayerRecorderInfo->init(pCurPlayer->getUID(), pCurPlayer->getOffsetCoin());
 		pPlayerRecorderInfo->setHuCnts(nThisHuCnt);
 		ptrSingleRecorder->addPlayerRecorderInfo(pPlayerRecorderInfo);
@@ -441,7 +496,7 @@ bool GG23Room::onPlayerApplyLeave(uint32_t nPlayerUID)
 
 std::shared_ptr<IGameRoomRecorder> GG23Room::createRoomRecorder()
 {
-
+	return std::make_shared<GG23RoomRecorder>();
 }
 
 bool GG23Room::isGameOver()

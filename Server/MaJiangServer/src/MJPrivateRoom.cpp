@@ -17,6 +17,7 @@
 #include "MJServer.h"
 #include "NJMJPlayer.h"
 #include "JJQERoom.h"
+#include "GG23Room.h"
 #define TIME_WAIT_REPLY_DISMISS 90
 MJPrivateRoom::~MJPrivateRoom()
 {
@@ -880,6 +881,11 @@ IMJRoom* MJPrivateRoom::doCreateMJRoom(eRoomType eMJType)
 	//	return new XZMJRoom();
 	//}
 	//break;
+	case eRoom_GG23:
+	{
+		return new GG23Room();
+	}
+	break;
 	case eRoom_MJ_QingEr:
 	{
 		return new JJQERoom();
