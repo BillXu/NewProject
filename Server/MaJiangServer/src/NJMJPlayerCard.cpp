@@ -665,7 +665,7 @@ bool NJMJPlayerCard::onChuCard(uint8_t nChuCard)
 			return true;
 		}
 	}
-	else if ( m_nDanDiaoKuaiZhaoState == eDanDiao_Do_Set )
+	else if ( m_nDanDiaoKuaiZhaoState == eDanDiao_Do_Set || m_isLiang )
 	{
 		VEC_CARD vHold;
 		getHoldCard(vHold);
@@ -1412,7 +1412,7 @@ bool NJMJPlayerCard::checkYaJue(uint8_t nCard, bool isBePenged, std::vector<uint
 		return false;
 	}
 
-	if ( m_vBuHuaCard.size() < 4)
+	if ( m_vBuHuaCard.size() < 4 && vHuTypes.empty() )  // xiao hu , must 4 hard hua ;
 	{
 		return false;
 	}
