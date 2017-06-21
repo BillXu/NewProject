@@ -928,6 +928,7 @@ bool MJPlayerCard::isHoldCardCanHuNew()
 			vCheckCard[nIdx] = vCheckCard[nIdx + 1] = 0;
 			if (canAllShunZi(vCheckCard, eCTJiang == eCT_Feng || eCTJiang == eCT_Jian))
 			{
+				m_nJIang = vCard[nIdx];
 				return true;
 			}
 

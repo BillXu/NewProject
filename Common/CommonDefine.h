@@ -240,6 +240,7 @@ enum eFanxingType
 	eFanxing_KaZhang, // 卡张
 	eFanxing_DanDiao, // 单调
 	eFanxing_ZiMo, // 青儿自摸
+	eFanxing_23_PiaoHu, // 23张飘胡牌
 
 	eFanxing_Max, // 没有胡
 };

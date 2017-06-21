@@ -18,7 +18,6 @@ public:
 	bool onFlyUp(std::vector<uint8_t>& vFlyUpCard, std::vector<uint8_t>& vNewCard);
 	bool onDoHu(uint8_t nCard, uint8_t nInvokerIdx);
 	void getHuInfo(uint8_t& nInvokeIdx, std::vector<uint8_t>& vHuTypes);
-	uint32_t getAllHuCnt(bool isHu, bool isZiMo, uint8_t nHuCard);
 	bool getHoldCardThatCanAnGang(VEC_CARD& vGangCards)override;
 	bool getHoldCardThatCanBuGang(VEC_CARD& vGangCards)override;
 	// specail process , cao hua j q k , and xi xi qi fei 
@@ -33,7 +32,7 @@ public:
 	uint16_t getMingPaiHuaCnt();
 	bool getIsZiMo() { return (m_nInvokeHuIdx == m_nCurPlayerIdx); }
 	uint8_t getHuCard() { return m_nHuCard; }
-	uint16_t getFinalHuCnt(bool isHu, bool& is3Red);
+	uint16_t getFinalHuCnt( bool isHu );
 protected:
 	void updateHuCntToClient();
 	//bool isZiMo() { return m_isHu && (m_nInvokeHuIdx == m_nCurPlayerIdx); }
@@ -42,9 +41,10 @@ protected:
 	uint16_t getHoldAnKeCnt(bool isHu, bool isZiMo);
 	uint16_t getHoldWenQianCnt(bool isHu);
 	uint16_t getFlyUpHuCnt();
-	// check hu 
-	bool checkDuiDuiHu();
-	bool checkQingErHu();
+	// check hu , shaizi , quan hun , qing su , piao hu 
+	bool checkQuanHun();
+	bool checkQingSu();
+	bool checkPiaoHu( bool isZiMo );
 
 	bool getHuFanxingTypes(uint8_t nHuCard, bool isZiMo, std::vector<uint8_t>& vHuTypes);
 protected:

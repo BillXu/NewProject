@@ -101,12 +101,7 @@ bool GG23PlayerCard::onDoHu(uint8_t nCard, uint8_t nInvokerIdx)
 void GG23PlayerCard::getHuInfo(uint8_t& nInvokeIdx, std::vector<uint8_t>& vHuTypes)
 {
 	nInvokeIdx = m_nInvokeHuIdx;
-
-}
-
-uint32_t GG23PlayerCard::getAllHuCnt(bool isHu, bool isZiMo, uint8_t nHuCard)
-{
-
+	getHuFanxingTypes(m_nHuCard, getIsZiMo(), vHuTypes);
 }
 
 bool GG23PlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
@@ -392,9 +387,51 @@ uint16_t GG23PlayerCard::getMingPaiHuaCnt()
 	return nCnt;
 }
 
-uint16_t GG23PlayerCard::getFinalHuCnt(bool isHu, bool& is3Red)
+uint16_t GG23PlayerCard::getFinalHuCnt( bool isHu )
 {
+	auto nHuCnt = getMingPaiHuaCnt();
+	nHuCnt += getHoldWenQianCnt(isHu);
+	nHuCnt += getHoldAnKeCnt(isHu, getIsZiMo());
+	if (isHu)
+	{
+		nHuCnt += 20;
+	}
+	else
+	{
+		return nHuCnt;
+	}
 
+	// consider hu types 
+	std::vector<uint8_t> vHuTypes;
+	getHuFanxingTypes(m_nHuCard, getIsZiMo(), vHuTypes);
+	if (vHuTypes.empty())
+	{
+		LOGFMTE("hu pai ? but hutypes is empty ? ");
+		return nHuCnt;
+	}
+	// check qing su 
+	switch ( vHuTypes.front() )
+	{
+	case eFanxing_23_PiaoHu:
+	{
+		nHuCnt *= 4;
+	}
+	break;
+	case eFanxing_QingEr:
+	{
+		nHuCnt += 30;
+	}
+	break;
+	case eFanxing_DuiDuiHu:
+	{
+		nHuCnt *= 2;
+	}
+	break;
+	default:
+		break;
+	}
+	 
+	return nHuCnt;
 }
 
 void GG23PlayerCard::updateHuCntToClient()
@@ -632,17 +669,168 @@ uint16_t GG23PlayerCard::getFlyUpHuCnt()
 }
 
 // check hu 
-bool GG23PlayerCard::checkDuiDuiHu()
+bool GG23PlayerCard::checkQuanHun()  // dui dui hu 
 {
+	bool bFindJiang = false;
+	VEC_CARD vAllCard;
+	getHoldCard(vAllCard);
+ 
+	// erase wen qian ;
+	int8_t nSmall = getHoldWenQianCnt(true) / 10;
+	while (nSmall--)
+	{
+		for (uint8_t nValue = 1; nValue <= 3; ++nValue)
+		{
+			auto iter = std::find(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Wan, nValue));
+			if (iter == vAllCard.end())
+			{
+				LOGFMTE("why do not have this card ?");
+				continue;
+			}
+			vAllCard.erase(iter);
+		}
+	}
+	
+	// do sort 
+	std::sort(vAllCard.begin(), vAllCard.end());
+	for (uint8_t nIdx = 0; (nIdx + 1) < vAllCard.size(); )
+	{
+		auto nThirdIdx = nIdx + 2;
+		if (nThirdIdx < vAllCard.size() && vAllCard[nIdx] == vAllCard[nThirdIdx])
+		{
+			nIdx += 3;
+			continue;
+		}
 
+		if (false == bFindJiang && vAllCard[nIdx] == vAllCard[nIdx + 1])
+		{
+			nIdx += 2;
+			bFindJiang = true;
+			continue;
+		}
+		return false;
+	}
+
+	return true;
 }
 
-bool GG23PlayerCard::checkQingErHu()
+bool GG23PlayerCard::checkQingSu()
 {
+	if ( m_vCards[eCT_Jian].size() > 2 || m_vCards[eCT_Feng].size() > 2 )
+	{
+		return false;
+	}
 
+	if ( m_vPenged.size() > 0 || m_vFlyupCard.size() > 0 || m_vAnGanged.size() > 0 || m_vGanged.size() > 0 || m_v5FlyUp.size() > 0 )
+	{
+		return false;
+	}
+	
+	if ( false == isHoldCardCanHuNew() )  // most for cacualte jiang ;
+	{
+		LOGFMTE("can not hu how to check qing su ?");
+		return false;
+	}
+	// hold can not have ke zi 
+	for ( auto& vCards : m_vCards )
+	{
+		if (vCards.size() < 3)
+		{
+			continue;
+		}
+
+		auto nCardType = card_Type(vCards.front());
+
+		VEC_CARD vCheck = vCards;
+		// remove jiang 
+		if (card_Type(m_nJIang) == nCardType)
+		{
+			auto iter = std::find(vCheck.begin(),vCheck.end(),m_nJIang);
+			vCheck.erase(iter);
+
+			iter = std::find(vCheck.begin(), vCheck.end(), m_nJIang);
+			vCheck.erase(iter);
+		}
+
+		if (vCheck.size() % 3 != 0)
+		{
+			LOGFMTE("check qinger you must all shun zi = %u, type = %u", vCheck.size(), nCardType);
+			return false;
+		}
+
+		while (vCheck.empty() == false)
+		{
+			uint8_t vShunZi[3] = { 0 };
+			vShunZi[0] = vCheck.front();
+			vShunZi[1] = vShunZi[0] + 1;
+			vShunZi[2] = vShunZi[1] + 1;
+			for (auto& ref : vShunZi)
+			{
+				auto iter = std::find(vCheck.begin(), vCheck.end(), ref);
+				if (iter != vCheck.end())
+				{
+					(*iter) = 0;
+					continue;
+				}
+				return false;
+			}
+
+			while (true)
+			{
+				auto iter = std::find(vCheck.begin(), vCheck.end(), 0);
+				if (iter != vCheck.end())
+				{
+					vCheck.erase(iter);
+					continue;
+				}
+				break;
+			}
+		}
+	}
+	return true;
+}
+
+bool GG23PlayerCard::checkPiaoHu( bool isZiMo )
+{
+	if ( m_vFlyupCard.empty() == false || m_vAnGanged.empty() == false || m_vGanged.empty() == false || m_v5FlyUp.empty() == false )
+	{
+		return false;
+	}
+
+	VEC_CARD vHold;
+	getHoldCard(vHold);
+
+	if ( isZiMo )
+	{
+		return vHold.size() == 2;
+	}
+
+	if ( vHold.size() > 5 )
+	{
+		return false;
+	}
+
+	return checkQuanHun();
 }
 
 bool GG23PlayerCard::getHuFanxingTypes(uint8_t nHuCard, bool isZiMo, std::vector<uint8_t>& vHuTypes)
 {
-
+	// if not zi mo , must add to fo check hu 
+	if (checkPiaoHu(isZiMo))
+	{
+		vHuTypes.push_back(eFanxing_23_PiaoHu);
+	}
+	else if ( checkQuanHun() )
+	{
+		vHuTypes.push_back(eFanxing_DuiDuiHu);
+	}
+	else if ( checkQingSu() )
+	{
+		vHuTypes.push_back(eFanxing_QingEr);
+	}
+	else
+	{
+		vHuTypes.push_back(eFanxing_PingHu);
+	}
+	return true;
 }
