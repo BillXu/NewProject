@@ -23,7 +23,7 @@ bool GG23PlayerCard::getCardInfo(Json::Value& jsPeerCards)
 {
 	// svr: { idx : 2 , nDanDiaoKuaiZhao : 23 ,anPai : [2,3,4,34] , huaPai : [23,23,12] ,chuPai: [2,34,4] , anGangPai : [23,24],buGang : [23,45] ,pengGangInfo : [ { targetIdx : 23 , actType : 23 , card : 23 } , .... ]  }
 	IMJPlayerCard::VEC_CARD vAnPai, vChuPai, vAnGangedCard;
-	Json::Value jsAnPai, jsChuPai, jsAngangedPai, jsBuGang, jsHuaPai, jsFlyUp, jsJianPeng, jsPeng;
+	Json::Value jsAnPai, jsChuPai, jsAngangedPai, jsBuGang, jsFlyUp, jsPeng, js5FlyUp, js5BuGang, js5AnGang, js5MingGang;
 
 	getHoldCard(vAnPai);
 	getChuedCard(vChuPai);
@@ -38,10 +38,10 @@ bool GG23PlayerCard::getCardInfo(Json::Value& jsPeerCards)
 	};
 
 	toJs(vAnPai, jsAnPai); toJs(vChuPai, jsChuPai); toJs(vAnGangedCard, jsAngangedPai); toJs(m_vGanged, jsBuGang); toJs(m_vFlyupCard, jsFlyUp);
-    toJs(m_vPenged, jsPeng);
-	jsPeerCards["anPai"] = jsAnPai; jsPeerCards["chuPai"] = jsChuPai; jsPeerCards["anGangPai"] = jsAngangedPai; jsPeerCards["buGang"] = jsBuGang; jsPeerCards["huaPai"] = jsHuaPai;
-	jsPeerCards["flyUp"] = jsFlyUp;
-	jsPeerCards["peng"] = jsPeng;
+	toJs(m_vPenged, jsPeng); toJs(m_v5FlyUp,js5FlyUp); toJs(m_v5BuGang, js5BuGang); toJs(m_v5AnGang, js5AnGang); toJs(m_v5MingGang, js5MingGang);
+	jsPeerCards["anPai"] = jsAnPai; jsPeerCards["chuPai"] = jsChuPai; jsPeerCards["anGangPai"] = jsAngangedPai; jsPeerCards["buGang"] = jsBuGang; 
+	jsPeerCards["flyUp"] = jsFlyUp; jsPeerCards["5flyUp"] = js5FlyUp; jsPeerCards["5buGang"] = js5BuGang; jsPeerCards["5anGang"] = js5AnGang;
+	jsPeerCards["peng"] = jsPeng; jsPeerCards["5mingGang"] = js5MingGang;
 	return true;
 }
 
