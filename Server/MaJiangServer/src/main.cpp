@@ -51,37 +51,43 @@ void tempTest()
 	//	}
 
 		NJMJPlayerCard tPeer ;
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Feng, 1));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Feng, 1));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 5));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 5));
 
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Feng, 2));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Feng, 2));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 2));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 2));
 
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Feng, 3));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Feng, 3));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 3));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 3));
 
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Wan, 9));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Wan, 8));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 6));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 6));
+
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 7));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 7));
 
 		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 4));
 		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 4));
+
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 8));
 		
-		tPeer.onPeng(CMJCard::makeCardNumber(eCT_Feng, 1));
-		tPeer.onPeng(CMJCard::makeCardNumber(eCT_Feng, 2));
-		tPeer.onPeng(CMJCard::makeCardNumber(eCT_Feng, 3));
+		//tPeer.onPeng(CMJCard::makeCardNumber(eCT_Feng, 1));
+		//tPeer.onPeng(CMJCard::makeCardNumber(eCT_Feng, 2));
+		//tPeer.onPeng(CMJCard::makeCardNumber(eCT_Feng, 3));
 		//tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Wan, 4));
 		//tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Wan, 2));
 		//tPeer.addHoldCard(CMJCard::makeCardNumber(eCT_Wan, 8));
 		//tPeer.onChuCard(CMJCard::makeCardNumber(eCT_Wan, 9));
 		//tPeer.addHoldCard(CMJCard::makeCardNumber(eCT_Wan, 1));
-		std::vector<uint16_t> vHus;
+		std::set<uint8_t> vHus;
+		tPeer.getCanHuCards(vHus);
 		uint16_t nHu = 0,hard = 0;
-		bool isSpecail = false;
+		/*bool isSpecail = false;
 		auto isHu = tPeer.onDoHu(false, CMJCard::makeCardNumber(eCT_Wan,7), false, vHus, nHu, hard, isSpecail);
 		if ( isHu )
 		{
 			printf("right") ;
-		}
+		}*/
 
 	//	// test new chard ;
 	XLMJPlayerCard* pPlayerCard = new XLMJPlayerCard();

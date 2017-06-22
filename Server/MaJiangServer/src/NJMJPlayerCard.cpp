@@ -698,6 +698,7 @@ bool NJMJPlayerCard::onAnGang(uint8_t nCard, uint8_t nGangGetCard)
 
 bool NJMJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
 {
+	vCanHuCards.clear();
 	if (is7PairTing())
 	{
 		// when 7 pair ting , then must dan diao ;
@@ -707,13 +708,12 @@ bool NJMJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
 			return false;
 		}
 		vCanHuCards.insert(m_nDanDiao);
-		return true;
+		//return true;
 	}
 
-	if (isTingPai() == false)
+	if ( isTingPai() == false )
 	{
-		vCanHuCards.clear();
-		return false;
+		return vCanHuCards.size() > 0;
 	}
 
 	// copy card for use ;
@@ -733,7 +733,7 @@ bool NJMJPlayerCard::getCanHuCards(std::set<uint8_t>& vCanHuCards)
 	if (vNotEmptyShunIdx.size() > 2 || vNotEmptyShunIdx.empty())
 	{
 		LOGFMTE("already ting pai ,why no que card = %u", vNotEmptyShunIdx.size());
-		return false;
+		return vCanHuCards.size() > 0;
 	}
 
 	// already 
