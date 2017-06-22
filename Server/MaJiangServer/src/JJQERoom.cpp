@@ -19,6 +19,7 @@
 #include "IGameRoomManager.h"
 #include "RoomConfig.h"
 #include "JJQERoomStateWaitQiPai.h"
+#include "MJRoomStateAskForRobotGang.h"
 bool JJQERoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
@@ -37,7 +38,7 @@ bool JJQERoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_tPoker.initQingErExt( m_isHaveSun, m_isHaveMoon, m_isHaveAd );
 	// create state and add state ;
 	IMJRoomState* vState[] = {
-		new JJQERoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new JJQERoomStateWaitPlayerAct(), new JJQERoomStateStartGame(), new JJQERoomStateAutoBuHua()
+		new JJQERoomStateWaitReady(),new MJRoomStateAskForRobotGang(), new MJRoomStateWaitPlayerChu(), new JJQERoomStateWaitPlayerAct(), new JJQERoomStateStartGame(), new JJQERoomStateAutoBuHua()
 		, new MJRoomStateGameEnd(), new MJRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(),new JJQERoomStateFlyUp(),new JJQERoomStateWaitChaoZhuang()
 		, new JJQERoomStateWaitQiPai()
 	};

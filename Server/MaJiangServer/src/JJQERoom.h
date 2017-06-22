@@ -9,7 +9,6 @@ public:
 	bool init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue) override;
 	uint8_t getRoomType()override { return eRoom_MJ_QingEr; }
 	bool isHaveLouHu()override { return false; };
-	bool isAnyPlayerRobotGang(uint8_t nInvokeIdx, uint8_t nCard)override { return false; }
 	IMJPlayer* doCreateMJPlayer()override;
 	void startGame()override;
 	void willStartGame()override;
