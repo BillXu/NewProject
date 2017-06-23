@@ -183,13 +183,20 @@ bool NJMJPlayerCard::onDoHu(bool isZiMo, uint8_t nCard, bool isBePenged, std::ve
 	{
 		// do tian hu ;
 		vHuTypes.push_back( eFanxing_TianHu );
-		nHuHuaCnt += 500;
+		nHuHuaCnt += 300;
 	}
 	else if ( isHaveFlag(ePlayerFlag_TianTing) )
 	{
 		// di hu ;
 		vHuTypes.push_back( eFanxing_DiHu );
-		nHuHuaCnt += 100;
+		if (m_pCurRoom->isJingYuanZi())
+		{
+			nHuHuaCnt += 20;
+		}
+		else
+		{
+			nHuHuaCnt += 100;
+		}
 	}
 	// check fanxing and bei shu 
 	auto bHunYise = checkHunYiSe(vHuTypes, nHuHuaCnt);
