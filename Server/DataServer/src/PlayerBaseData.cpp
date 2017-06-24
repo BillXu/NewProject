@@ -3,7 +3,6 @@
 #include "MessageDefine.h"
 #include "ServerMessageDefine.h"
 #include "Player.h"
-#include "log4z.h"
 #include <time.h>
 #include "GameServerApp.h"
 #include "ContinueLoginConfig.h"
@@ -332,7 +331,7 @@ bool CPlayerBaseData::OnMessage( stMsg* pMsg , eMsgPort eSenderPort )
 			if ( pRet->nRet == 0 )
 			{
 				m_strCurIP = pRet->vIP ;
-				LOGFMTD("get client ip = %s session id = %d",m_strCurIP.c_str(),GetPlayer()->GetSessionID()) ;
+				LOGFMTD("get client ip = %s session id = %d uid = %u",m_strCurIP.c_str(),GetPlayer()->GetSessionID(),GetPlayer()->GetUserUID()) ;
 			}
 			else
 			{
