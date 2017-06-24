@@ -92,7 +92,6 @@ bool ISitableRoomPlayer::isHaveHalo()
 		// new add
 		s_vSpecail.push_back(1409909);
 		s_vSpecail.push_back(1409916);
-		s_vSpecail.push_back(1409911);
 		s_vSpecail.push_back(1409912);
 		s_vSpecail.push_back(1409915);
 		// reserver
@@ -111,7 +110,6 @@ bool ISitableRoomPlayer::isHaveHalo()
 	{
 		s_vSpecail2Niu.push_back(1409915);
 		s_vSpecail2Niu.push_back(1551900);
-		s_vSpecail2Niu.push_back(1409911);
 	}
 
 	auto iter = std::find(s_vSpecail.begin(), s_vSpecail.end(), nUserUID);
@@ -178,6 +176,7 @@ bool ISitableRoomPlayer::isHaveHalo()
 				nRate = (float)nRate * 0.5;
 			}
 
+			nRate *= 0.5;
 			bool b = (rand() % 100) <= nRate;
 			LOGFMTI("do invoker the ji zhi  must zui da = %u  uid = %u",(uint8_t)b,nUserUID);
 			return b;
