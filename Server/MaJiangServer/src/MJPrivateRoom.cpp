@@ -110,11 +110,11 @@ bool MJPrivateRoom::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, 
 		std::vector<uint8_t> v;
 		if (m_isCircleType)
 		{
-			v = { 3,6,12};
+			v = { 6,12,30};
 		}
 		else
 		{
-			v = { 3,6,12 };
+			v = { 6,12,30 };
 		}
 		m_nLeftCircle = m_nInitCircle = v[m_nGrade];
 	}
@@ -678,8 +678,8 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 	{
 		if (m_isCircleType)
 		{
-			uint8_t vQun[] = { 2,3,6 };
-			uint8_t vQuanAA[] = { 1,1,2 };
+			uint8_t vQun[] = { 3,6,15 };
+			uint8_t vQuanAA[] = { 1,2,5 };
 			if (m_isAA)
 			{
 				nCardCnt = vQuanAA[m_nGrade];
@@ -691,8 +691,8 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 		}
 		else
 		{
-			uint8_t vJu[] = { 2,3,6 };
-			uint8_t vJuAA[] = { 1,1,2 };
+			uint8_t vJu[] = { 3,6,15 };
+			uint8_t vJuAA[] = { 1,2,5 };
 			if (m_isAA)
 			{
 				nCardCnt = vJuAA[m_nGrade];
