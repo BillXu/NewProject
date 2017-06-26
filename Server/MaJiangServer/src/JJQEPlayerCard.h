@@ -59,6 +59,7 @@ protected:
 	bool checkDuiDuiHu();
 	bool checkQingErHu();
 	bool check13Hu();
+	bool checkOld13Hu();
 
 	bool checkBianZhi();
 	bool checkDuDiao();

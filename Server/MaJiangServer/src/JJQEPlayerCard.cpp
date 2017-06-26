@@ -750,7 +750,7 @@ uint8_t JJQEPlayerCard::getBlackJQKHuCnt( bool bSkipHold )
 			auto iterFlyAn = std::find(m_vFlyupCard.begin(), m_vFlyupCard.end(), nCheck + nCnt - 3);
 			if (iterFlyBig != m_vFlyupCard.end() || iterFlyAn != m_vFlyupCard.end())
 			{
-				if (m_pRoom->getJianZhang() != (nCheck + (3 - nCnt)))
+				if (m_pRoom->getJianZhang() != (nCheck + nCnt))
 				{
 					isFind = true;
 				}
@@ -1429,10 +1429,10 @@ bool JJQEPlayerCard::checkQingErHu()
 	{
 		return false;
 	}
-	return check13Hu();
+	return checkOld13Hu();
 }
 
-bool JJQEPlayerCard::check13Hu()
+bool JJQEPlayerCard::checkOld13Hu()
 {
 	if ( m_vCards[eCT_Jian].empty() == false && m_vCards[eCT_Jian].size() != 2 )
 	{
@@ -1526,6 +1526,43 @@ bool JJQEPlayerCard::check13Hu()
 		}
 	}
 	return true;
+}
+
+bool JJQEPlayerCard::check13Hu()
+{
+	if (m_vCards[eCT_Jian].empty() == false && m_vCards[eCT_Jian].size() != 2)
+	{
+		return false;
+	}
+
+	if (m_vPenged.size() > 1 || m_vJianPeng.size() > 0 || m_vAnGanged.size() > 0 || m_vGanged.size() > 0)
+	{
+		return false;
+	}
+
+	if (1 == m_vPenged.size() && m_pRoom->isCardJianPai(m_vPenged.front()))
+	{
+		return false;
+	}
+
+	auto iter = std::find_if(m_vFlyupCard.begin(), m_vFlyupCard.end(), [](uint8_t nCheckCard) { return card_Type(nCheckCard) != eCT_Hua; });
+	if (iter != m_vFlyupCard.end())
+	{
+		return false;
+	}
+
+	VEC_CARD vHold;
+	getHoldCard(vHold);
+	std::sort(vHold.begin(), vHold.end());
+	for ( uint8_t nIdx = 0; ( nIdx + 2 ) < vHold.size(); ++nIdx )
+	{
+		if (vHold[nIdx] == vHold[nIdx + 2])
+		{
+			return false;
+		}
+	}
+
+	return checkOld13Hu();
 }
 
 uint16_t JJQEPlayerCard::getMingPaiHuaCnt()
