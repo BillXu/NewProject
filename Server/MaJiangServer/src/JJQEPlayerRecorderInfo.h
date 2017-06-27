@@ -132,7 +132,7 @@ protected:
 		//jsRoomOpts["haveSun"] = m_isHaveSun  ;
 
 		//jsRoomOpts["haveMoon"] = m_isHaveMoon  ;
-		m_jsRoomOpts = jsRoomOpts;
+		jsRoomOpts = m_jsRoomOpts;
 	};
 
 	void restoreRoomInfoOpts(Json::Value& jsRoomOpts) override
@@ -153,7 +153,7 @@ protected:
 		//m_nTopLimit = jsRoomOpts["fengDing"].asUInt();
 
 		//m_nQiHuNeed = jsRoomOpts["qiHuNeed"].asUInt();
-		jsRoomOpts = m_jsRoomOpts;
+		m_jsRoomOpts = jsRoomOpts;
 	};
 protected:
 	//uint16_t m_nQiHuNeed;
