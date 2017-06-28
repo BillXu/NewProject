@@ -718,8 +718,8 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 	{
 		if (m_isCircleType)
 		{
-			uint8_t vQun[] = { 2,4,8 };
-			uint8_t vQuanAA[] = { 1,1,2 };
+			uint8_t vQun[] = { 3,5,8 };
+			uint8_t vQuanAA[] = { 1,2,3 };
 			if (m_isAA)
 			{
 				nCardCnt = vQuanAA[m_nGrade];
@@ -732,7 +732,7 @@ uint8_t MJPrivateRoom::getDiamondNeed()
 		else
 		{
 			uint8_t vJu[] = { 3,5,8 };
-			uint8_t vJuAA[] = { 1,2,2 };
+			uint8_t vJuAA[] = { 1,2,3 };
 			if (m_isAA)
 			{
 				nCardCnt = vJuAA[m_nGrade];
