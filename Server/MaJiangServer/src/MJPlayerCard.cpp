@@ -208,7 +208,7 @@ bool MJPlayerCard::canMingGangWithCard(uint8_t nCard)
 	}
 	auto& vCard = m_vCards[eType];
 	auto nCnt = std::count(vCard.begin(), vCard.end(), nCard);
-	return nCnt == 3;
+	return nCnt >= 3;
 }
 
 bool MJPlayerCard::canPengWithCard(uint8_t nCard)
@@ -922,7 +922,7 @@ bool MJPlayerCard::isHoldCardCanHuNew()
 	for ( uint8_t nIdx = 0; nIdx < m_vCards[eCTJiang].size(); )
 	{
 		auto& vCard = m_vCards[eCTJiang];
-		if ( vCard[nIdx] == vCard[nIdx + 1] )
+		if ( (nIdx + 1) < vCard.size() && vCard[nIdx] == vCard[nIdx + 1] )
 		{
 			auto vCheckCard = vCard;
 			vCheckCard[nIdx] = vCheckCard[nIdx + 1] = 0;
@@ -932,11 +932,11 @@ bool MJPlayerCard::isHoldCardCanHuNew()
 				return true;
 			}
 
-			if ( vCard[nIdx] == vCard[nIdx + 3] )
+			if ((nIdx + 3) < vCard.size() &&  vCard[nIdx] == vCard[nIdx + 3] )
 			{
 				nIdx += 4;
 			}
-			else if (vCard[nIdx] == vCard[nIdx + 2])
+			else if ((nIdx + 2) < vCard.size() &&  vCard[nIdx] == vCard[nIdx + 2])
 			{
 				nIdx += 3;
 			}

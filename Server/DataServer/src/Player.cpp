@@ -686,7 +686,6 @@ uint8_t CPlayer::getMsgPortByRoomType(uint8_t nType )
 	case eRoom_TexasPoker:
 		return ID_MSG_PORT_TAXAS ;
 	case eRoom_Golden:
-		return ID_MSG_PORT_GOLDEN;
 	case eRoom_MJ_Blood_River:
 	case eRoom_MJ_Blood_End:
 	case eRoom_MJ_NanJing:

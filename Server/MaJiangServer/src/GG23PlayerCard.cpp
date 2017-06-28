@@ -10,7 +10,7 @@ void GG23PlayerCard::reset()
 	m_v5AnGang.clear();
 	m_v5MingGang.clear();
 	m_nInvokeHuIdx = -1;
-	m_nHuCard = 0;;
+	m_nHuCard = 0;
 }
 
 void GG23PlayerCard::bindRoom(GG23Room* pRoom, uint8_t nPlayerIdx)
@@ -40,8 +40,8 @@ bool GG23PlayerCard::getCardInfo(Json::Value& jsPeerCards)
 	toJs(vAnPai, jsAnPai); toJs(vChuPai, jsChuPai); toJs(vAnGangedCard, jsAngangedPai); toJs(m_vGanged, jsBuGang); toJs(m_vFlyupCard, jsFlyUp);
 	toJs(m_vPenged, jsPeng); toJs(m_v5FlyUp,js5FlyUp); toJs(m_v5BuGang, js5BuGang); toJs(m_v5AnGang, js5AnGang); toJs(m_v5MingGang, js5MingGang);
 	jsPeerCards["anPai"] = jsAnPai; jsPeerCards["chuPai"] = jsChuPai; jsPeerCards["anGangPai"] = jsAngangedPai; jsPeerCards["buGang"] = jsBuGang; 
-	jsPeerCards["flyUp"] = jsFlyUp; jsPeerCards["5flyUp"] = js5FlyUp; jsPeerCards["5buGang"] = js5BuGang; jsPeerCards["5anGang"] = js5AnGang;
-	jsPeerCards["peng"] = jsPeng; jsPeerCards["5mingGang"] = js5MingGang;
+	jsPeerCards["flyUp"] = jsFlyUp; jsPeerCards["flyUp5"] = js5FlyUp; jsPeerCards["buGang5"] = js5BuGang; jsPeerCards["anGang5"] = js5AnGang;
+	jsPeerCards["peng"] = jsPeng; jsPeerCards["mingGang5"] = js5MingGang;
 	return true;
 }
 
@@ -242,8 +242,33 @@ bool GG23PlayerCard::onMingGang(uint8_t nCard, uint8_t nGangGetCard)
 		return false;
 	}
 
+	//auto& vCard = m_vCards[eCT_Feng];
+	//auto nEraseCnt = std::count(vCard.begin(), vCard.end(), nCard);
+	//if (nEraseCnt == 4)
+	//{
+	//	while (nEraseCnt-- > 0)
+	//	{
+	//		auto iter = std::find(vCard.begin(), vCard.end(), nCard);
+	//		vCard.erase(iter);
+	//	}
+	//}
+
 	m_v5MingGang.push_back(nCard);
 	onMoCard(nGangGetCard);
+
+	auto iter = std::find(m_v5FlyUp.begin(), m_v5FlyUp.end(), nCard);
+	if (iter != m_v5FlyUp.end())
+	{
+		m_v5FlyUp.erase(iter);
+	}
+	else
+	{
+		iter = std::find(m_vAnGanged.begin(), m_vAnGanged.end(), nCard);
+		if (iter != m_vAnGanged.end())
+		{
+			m_vAnGanged.erase(iter);
+		}
+	}
 	return true;
 }
 
@@ -376,7 +401,7 @@ bool GG23PlayerCard::canHuWitCard(uint8_t nCard)
 	auto iter = std::find(m_vCards[card_Type(nCard)].begin(), m_vCards[card_Type(nCard)].end(), nCard);
 	m_vCards[card_Type(nCard)].erase(iter);
 
-	return nTotalCnt >= m_pRoom->getQiHuNeed();
+	return (nRet && nTotalCnt >= m_pRoom->getQiHuNeed());
 }
 
 uint16_t GG23PlayerCard::getMingPaiHuaCnt()
@@ -510,7 +535,7 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 			continue;
 		}
 
-		for ( uint8_t nIdx = 0; nIdx < vCards.size(); )
+		for ( uint8_t nIdx = 0; ( nIdx + 2 ) < vCards.size(); )
 		{
 			if ( vCards[nIdx] == vCards[nIdx + 2])
 			{
