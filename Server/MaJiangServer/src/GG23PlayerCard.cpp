@@ -112,6 +112,11 @@ bool GG23PlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
 	uint8_t nV[] = { make_Card_Num(eCT_Feng,1),make_Card_Num(eCT_Feng,2) };
 	for ( auto& ref : nV )
 	{
+		if (std::count(vGangCards.begin(), vGangCards.end(), ref) > 0)
+		{
+			continue;
+		}
+
 		if (canAnGangWithCard(ref))
 		{
 			vGangCards.push_back(ref);
@@ -130,6 +135,11 @@ bool GG23PlayerCard::getHoldCardThatCanBuGang(VEC_CARD& vGangCards)
 	uint8_t nV[] = { make_Card_Num(eCT_Feng,1),make_Card_Num(eCT_Feng,2) };
 	for (auto& ref : nV)
 	{
+		if (std::count(vGangCards.begin(), vGangCards.end(), ref) > 0)
+		{
+			continue;
+		}
+
 		if (canBuGangWithCard(ref))
 		{
 			vGangCards.push_back(ref);
@@ -558,11 +568,11 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 		{
 			if ( m_pRoom->isCardJianPai(ref) )
 			{
-				nHoldHuCnt += 2;
+				nHoldHuCnt += 4;
 			}
 			else
 			{
-				++nHoldHuCnt;
+				nHoldHuCnt += 2;
 			}
 		}
 		return nHoldHuCnt;

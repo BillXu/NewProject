@@ -460,8 +460,8 @@ bool CPlayerGameData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 			uint8_t nDiamondNeed = 0;
 			if ((uint8_t)-1 != nGrade && nGrade < 3 )
 			{
-				uint8_t vJu[] = { 2,3,6 };
-				uint8_t vJuAA[] = { 1,1,2 };
+				uint8_t vJu[] = { 3,6,15 };
+				uint8_t vJuAA[] = { 1,2,5 };
 				if (isAA)
 				{
 					nDiamondNeed = vJuAA[nGrade];
