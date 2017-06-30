@@ -34,6 +34,7 @@ public:
 	uint8_t getHuCard() { return m_nHuCard; }
 	uint16_t getFinalHuCnt( bool isHu );
 	bool onPeng(uint8_t nCard)override;
+	uint16_t getWenQianCnt( bool isHu );
 protected:
 	void updateHuCntToClient();
 	//bool isZiMo() { return m_isHu && (m_nInvokeHuIdx == m_nCurPlayerIdx); }

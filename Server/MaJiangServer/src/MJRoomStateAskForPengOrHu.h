@@ -270,7 +270,10 @@ public:
 		if (iterPeng != m_vWaitPengGangIdx.end())
 		{
 			m_vWaitPengGangIdx.erase(iterPeng);
-
+			if ( pPlayer->getIdx() == (m_nInvokeIdx + 1) % getRoom()->getSeatCnt() )
+			{
+				m_vWaitPengGangIdx.clear();
+			}
 			// inform lou peng 
 			if (eMJAct_Pass == actType)
 			{
@@ -328,9 +331,21 @@ public:
 		}
 		else if (!m_vDoPengGangIdx.empty())
 		{
+			uint8_t nDoIdx = m_vDoPengGangIdx.front();
+			if ( m_vDoPengGangIdx.size() > 1)
+			{
+				for ( uint8_t nIdx = (m_nInvokeIdx + 1) % getRoom()->getSeatCnt(); nIdx < getRoom()->getSeatCnt() * 2; ++nIdx)
+				{
+					if (std::find(m_vDoPengGangIdx.begin(), m_vDoPengGangIdx.end(), nIdx) != m_vDoPengGangIdx.end())
+					{
+						nDoIdx = nIdx;
+						break;
+					}
+				}
+			}
 			// gang or peng ;
 			Json::Value jsTran;
-			jsTran["idx"] = m_vDoPengGangIdx.front();
+			jsTran["idx"] = nDoIdx;
 			jsTran["act"] = m_ePengGangAct;
 			jsTran["card"] = m_nCard;
 			jsTran["invokeIdx"] = m_nInvokeIdx;

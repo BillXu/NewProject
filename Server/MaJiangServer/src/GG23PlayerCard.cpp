@@ -655,9 +655,9 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 	return nHoldHuCnt;
 }
 
-uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu )
+uint16_t GG23PlayerCard::getWenQianCnt(bool isHu)
 {
-	if ( isHu == false )
+	if (isHu == false)
 	{
 		return 0;
 	}
@@ -666,12 +666,12 @@ uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu )
 	for (uint8_t nIdx = 1; nIdx <= 3; ++nIdx)
 	{
 		auto nRedACnt = std::count(m_vCards[eCT_Wan].begin(), m_vCards[eCT_Wan].end(), make_Card_Num(eCT_Wan, nIdx));
-		if ( nRedACnt < nMayBeWenQianCnt)
+		if (nRedACnt < nMayBeWenQianCnt)
 		{
-			nMayBeWenQianCnt = nRedACnt ;
+			nMayBeWenQianCnt = nRedACnt;
 		}
 
-		if ( 0 == nMayBeWenQianCnt)
+		if (0 == nMayBeWenQianCnt)
 		{
 			return 0;
 		}
@@ -679,12 +679,12 @@ uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu )
 
 	uint8_t nRemovedWen = 0;
 	uint8_t nRealWenQian = 0;
-	while ( nMayBeWenQianCnt-- > 0 )
+	while (nMayBeWenQianCnt-- > 0)
 	{
-		for ( uint8_t nIdx = 1; nIdx <= 3; ++nIdx )
+		for (uint8_t nIdx = 1; nIdx <= 3; ++nIdx)
 		{
 			auto nRedIter = std::find(m_vCards[eCT_Wan].begin(), m_vCards[eCT_Wan].end(), make_Card_Num(eCT_Wan, nIdx));
-			if ( nRedIter == m_vCards[eCT_Wan].end() )
+			if (nRedIter == m_vCards[eCT_Wan].end())
 			{
 				LOGFMTE("why this have removed more than we need");
 				break;
@@ -693,7 +693,7 @@ uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu )
 		}
 
 		++nRemovedWen;
-		if ( isHoldCardCanHuNew() )
+		if (isHoldCardCanHuNew())
 		{
 			++nRealWenQian;
 		}
@@ -704,15 +704,20 @@ uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu )
 	}
 
 	// add back wenqian card
-	while ( nRemovedWen-- > 0 )
+	while (nRemovedWen-- > 0)
 	{
-		for ( uint8_t nIdx = 1; nIdx <= 3; ++nIdx )
+		for (uint8_t nIdx = 1; nIdx <= 3; ++nIdx)
 		{
 			addCardToVecAsc(m_vCards[eCT_Wan], make_Card_Num(eCT_Wan, nIdx));
 		}
 	}
 
-	return (nRealWenQian * 10);
+	return nRealWenQian;
+}
+
+uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu )
+{
+	return (getWenQianCnt(isHu) * 10);
 }
 
 uint16_t GG23PlayerCard::getFlyUpHuCnt()

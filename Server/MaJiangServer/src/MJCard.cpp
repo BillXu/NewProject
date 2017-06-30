@@ -87,16 +87,33 @@ void CMJCard::shuffle()
 #ifdef _DEBUG
 	//VEC_UINT8 vHoldCard;
 	//vHoldCard.push_back(make_Card_Num(eCT_Wan,1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 2));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 3));
+
 	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 1));
-	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 9));
-	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 9));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 2));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 3));
+
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 2));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 3));
+
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 2));
+	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 3));
+
+	//vHoldCard.push_back(make_Card_Num(eCT_Tiao, 1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Tiao, 1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Tiao, 1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Tiao, 1));
+
 
 	//for ( uint8_t nIdx = 1; nIdx <= 9; ++nIdx )
 	//{
 	//	vHoldCard.push_back(make_Card_Num(eCT_Wan, nIdx ) );
 	//}
 
-	//// set new card erase old
+	// set new card erase old
 	//for ( auto& ref : vHoldCard )
 	//{
 	//	auto iter = std::find(m_vAllCards.begin(),m_vAllCards.end(),ref);

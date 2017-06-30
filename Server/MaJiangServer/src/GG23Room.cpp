@@ -382,6 +382,7 @@ void GG23Room::onGameEnd()
 				jsHuTypes[jsHuTypes.size()] = ref;
 			}
 			jsMsg["huTypes"] = jsHuTypes;
+			jsMsg["wenCnt"] = pPlayerCard->getWenQianCnt(true);
 		}
 	}
 
