@@ -1,7 +1,7 @@
 #pragma once
 #include "MJRoomStateStartGame.h"
 #include "GG23Room.h"
-class JJQERoomStateStartGame
+class GG23RoomStateStartGame
 	:public MJRoomStateStartGame
 {
 public:

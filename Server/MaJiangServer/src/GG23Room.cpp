@@ -17,16 +17,18 @@
 #include "MJRoomStateStartGame.h"
 #include "GG23RoomStateFlyUp.h"
 #include "MJRoomStateAskForRobotGang.h"
+#include "GG23RoomStateStartGame.h"
 bool GG23Room::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint32_t nSeialNum, uint32_t nRoomID, Json::Value& vJsValue)
 {
 	IMJRoom::init(pRoomMgr, pConfig, nSeialNum, nRoomID, vJsValue);
 	((stSitableRoomConfig*)getRoomConfig())->nMaxSeat = 3;
 	m_tPoker.initAllCard(eMJ_GG23);
 	m_nQiHuNeed = vJsValue["qiHuNeed"].asUInt();
+	m_nLiangPai = vJsValue["liangPai"].asUInt();
 	m_nLastHuIdx = -1;
 	// create state and add state ;
 	IMJRoomState* vState[] = {
-		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new MJRoomStateWaitPlayerAct(), new MJRoomStateStartGame()
+		new CMJRoomStateWaitReady(), new MJRoomStateWaitPlayerChu(), new MJRoomStateWaitPlayerAct(), new GG23RoomStateStartGame()
 		, new MJRoomStateGameEnd(), new MJRoomStateDoPlayerAct(), new MJRoomStateAskForPengOrHu(),new GG23RoomStateFlyUp(),new MJRoomStateAskForRobotGang()
 	};
 	for (uint8_t nIdx = 0; nIdx < sizeof(vState) / sizeof(IMJRoomState*); ++nIdx)
@@ -178,6 +180,7 @@ void GG23Room::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t n
 void GG23Room::getSubRoomInfo(Json::Value& jsSubInfo)
 {
 	jsSubInfo["qiHuNeed"] = m_nQiHuNeed;
+	jsSubInfo["liangPai"] = m_nLiangPai;
 }
 
 void GG23Room::sendPlayersCardInfo(uint32_t nSessionID)

@@ -29,6 +29,7 @@ public:
 protected:
 	CMJCard m_tPoker;
 	uint16_t m_nQiHuNeed;
+	uint8_t m_nLiangPai;
 
 	uint8_t m_nLastHuIdx;
 

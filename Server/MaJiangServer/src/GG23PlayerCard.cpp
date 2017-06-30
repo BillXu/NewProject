@@ -87,6 +87,7 @@ bool GG23PlayerCard::onFlyUp(std::vector<uint8_t>& vFlyUpCard, std::vector<uint8
 		}
 		m_vFlyupCard.push_back(ref);
 	}
+	updateHuCntToClient();
 	return true;
 }
 
@@ -94,7 +95,10 @@ bool GG23PlayerCard::onDoHu(uint8_t nCard, uint8_t nInvokerIdx)
 {
 	m_nHuCard = nCard;
 	m_nInvokeHuIdx = nInvokerIdx;
-	addCardToVecAsc(m_vCards[card_Type(nCard)],nCard );
+	if (getIsZiMo() == false)
+	{
+		addCardToVecAsc(m_vCards[card_Type(nCard)], nCard);
+	}
 	return true;
 }
 
@@ -241,6 +245,7 @@ bool GG23PlayerCard::onMingGang(uint8_t nCard, uint8_t nGangGetCard)
 	{
 		if ( MJPlayerCard::onMingGang(nCard, nGangGetCard) )  // pu tong ming gang ;
 		{
+			updateHuCntToClient();
 			return true;
 		}
 	}
@@ -279,6 +284,7 @@ bool GG23PlayerCard::onMingGang(uint8_t nCard, uint8_t nGangGetCard)
 			m_vAnGanged.erase(iter);
 		}
 	}
+	updateHuCntToClient();
 	return true;
 }
 
@@ -288,6 +294,7 @@ bool GG23PlayerCard::onBuGang(uint8_t nCard, uint8_t nGangGetCard)
 	{
 		if (MJPlayerCard::onBuGang(nCard, nGangGetCard))  // pu tong bu gang ;
 		{
+			updateHuCntToClient();
 			return true;
 		}
 	}
@@ -309,6 +316,7 @@ bool GG23PlayerCard::onBuGang(uint8_t nCard, uint8_t nGangGetCard)
 
 	m_v5BuGang.push_back(nCard);
 	onMoCard(nGangGetCard);
+	updateHuCntToClient();
 	return true;
 }
 
@@ -318,6 +326,7 @@ bool GG23PlayerCard::onAnGang(uint8_t nCard, uint8_t nGangGetCard)
 	{
 		if (MJPlayerCard::onAnGang(nCard, nGangGetCard))  // pu tong bu gang ;
 		{
+			updateHuCntToClient();
 			return true;
 		}
 	}
@@ -339,6 +348,7 @@ bool GG23PlayerCard::onAnGang(uint8_t nCard, uint8_t nGangGetCard)
 
 	m_v5AnGang.push_back(nCard);
 	onMoCard(nGangGetCard);
+	updateHuCntToClient();
 	return true;
 }
 
@@ -425,8 +435,8 @@ uint16_t GG23PlayerCard::getMingPaiHuaCnt()
 uint16_t GG23PlayerCard::getFinalHuCnt( bool isHu )
 {
 	auto nHuCnt = getMingPaiHuaCnt();
-	nHuCnt += getHoldWenQianCnt(isHu);
 	nHuCnt += getHoldAnKeCnt(isHu, getIsZiMo());
+	nHuCnt += getHoldWenQianCnt(isHu);
 	if (isHu)
 	{
 		nHuCnt += 20;
@@ -465,8 +475,15 @@ uint16_t GG23PlayerCard::getFinalHuCnt( bool isHu )
 	default:
 		break;
 	}
-	 
+	LOGFMTW( "getHuFanxingTypes = %u", nHuCnt);
 	return nHuCnt;
+}
+
+bool GG23PlayerCard::onPeng(uint8_t nCard)
+{
+	MJPlayerCard::onPeng(nCard);
+	updateHuCntToClient();
+	return true;
 }
 
 void GG23PlayerCard::updateHuCntToClient()
@@ -577,6 +594,21 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 		}
 		return nHoldHuCnt;
 	}
+
+	// check 3 wen qian ke zi , omit ke zi 
+	if ( getHoldWenQianCnt(isHu) >= 30 )  // remove ke zi 
+	{
+		uint8_t nV[] = { make_Card_Num(eCT_Wan,1) ,make_Card_Num(eCT_Wan,2),make_Card_Num(eCT_Wan,3) };
+		for (auto n : nV)
+		{
+			auto iter = std::find(vKeZi.begin(), vKeZi.end(), n);
+			if (iter != vKeZi.end())
+			{
+				vKeZi.erase(iter);
+			}
+		}
+	}
+
 	// check valid ke zi ;
 	for (auto& ref : vKeZi)
 	{
@@ -592,7 +624,7 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 			{
 				break;
 			}
-		} while (0);
+		} while (1);
 
 		bool isRealKeZi = isHoldCardCanHuNew();
 		if ( isRealKeZi )
@@ -618,7 +650,7 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 			{
 				break;
 			}
-		} while (0);
+		} while (1);
 	}
 	return nHoldHuCnt;
 }

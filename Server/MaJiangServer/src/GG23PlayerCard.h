@@ -33,6 +33,7 @@ public:
 	bool getIsZiMo() { return (m_nInvokeHuIdx == m_nCurPlayerIdx); }
 	uint8_t getHuCard() { return m_nHuCard; }
 	uint16_t getFinalHuCnt( bool isHu );
+	bool onPeng(uint8_t nCard)override;
 protected:
 	void updateHuCntToClient();
 	//bool isZiMo() { return m_isHu && (m_nInvokeHuIdx == m_nCurPlayerIdx); }

@@ -82,17 +82,8 @@ class GG23RoomRecorder
 
 	void setRoomOpts(Json::Value& jsRoomOpts)override
 	{
-		m_jsRoomOpts["is13Hu"] = jsRoomOpts["is13Hu"];
-		m_jsRoomOpts["haveSun"] = jsRoomOpts["haveSun"];
-		m_jsRoomOpts["haveMoon"] = jsRoomOpts["haveMoon"];
-
-		m_jsRoomOpts["qingErHu"] = jsRoomOpts["qingErHu"];
-
-		m_jsRoomOpts["chaoZhuangLevel"] = jsRoomOpts["chaoZhuangLevel"];
-		m_jsRoomOpts["fengDing"] = jsRoomOpts["fengDing"];
-
 		m_jsRoomOpts["qiHuNeed"] = jsRoomOpts["qiHuNeed"];
-		m_jsRoomOpts["haveGuangGao"] = jsRoomOpts["haveGuangGao"];
+		m_jsRoomOpts["liangPai"] = jsRoomOpts["liangPai"];
 	}
 
 	std::shared_ptr<ISingleRoundRecorder> createSingleRoundRecorder()override
@@ -133,7 +124,7 @@ protected:
 		//jsRoomOpts["haveSun"] = m_isHaveSun  ;
 
 		//jsRoomOpts["haveMoon"] = m_isHaveMoon  ;
-		m_jsRoomOpts = jsRoomOpts;
+		 jsRoomOpts = m_jsRoomOpts;
 	};
 
 	void restoreRoomInfoOpts(Json::Value& jsRoomOpts) override
@@ -154,7 +145,7 @@ protected:
 		//m_nTopLimit = jsRoomOpts["fengDing"].asUInt();
 
 		//m_nQiHuNeed = jsRoomOpts["qiHuNeed"].asUInt();
-		jsRoomOpts = m_jsRoomOpts;
+		 m_jsRoomOpts = jsRoomOpts;
 	};
 protected:
 	//uint16_t m_nQiHuNeed;
