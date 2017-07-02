@@ -498,6 +498,7 @@ void JJQERoom::onGameEnd()
 			pPlayerCard->getHuInfo(nInvokerIdx, vHuTypes);
 			jsMsg["huIdx"] = m_nLastHuIdx;
 			jsMsg["invokeIdx"] = nInvokerIdx;
+			jsMsg["wenCnt"] = pPlayerCard->getHoldWenQianCnt(true);
 
 			Json::Value jsHuTypes;
 			for (auto& ref : vHuTypes)

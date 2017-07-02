@@ -41,6 +41,7 @@ public:
 	bool getIsZiMo(){ return (m_nInvokeHuIdx == m_nCurPlayerIdx);}
 	uint8_t getHuCard() { return m_nHuCard; }
 	uint16_t getFinalHuCnt( bool isHu, bool& is3Red );
+	uint16_t getHoldWenQianCnt(bool isHu, bool AlreadyAdd = false );
 protected:
 	void updateHuCntToClient();
 	//bool isZiMo() { return m_isHu && (m_nInvokeHuIdx == m_nCurPlayerIdx); }
@@ -48,7 +49,7 @@ protected:
 	uint16_t getPengHuCnt();
 	uint16_t getGangHuCnt();
 	uint16_t getHoldAnKeCnt( bool isHu , bool isZiMo );
-	uint16_t getHoldWenQianCnt( bool isHu );
+	uint16_t getHoldWenQianHuCnt(bool isHu);
 	uint16_t getFlyUpHuCnt();
 	uint16_t getHuaHuCnt();
 	// check hu 
