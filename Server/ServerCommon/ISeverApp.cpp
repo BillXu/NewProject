@@ -1,4 +1,4 @@
-#include <windows.h>
+//#include <windows.h>
 #include "ISeverApp.h"
 #include "log4z.h"
 #include "MessageDefine.h"
