@@ -54,24 +54,26 @@ void tempTest()
 		tPeer.bindRoom(nullptr, 0);
 		//tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 9));
 		//tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 9));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 1));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 2));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 3));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 4));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 5));
+		//tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 3));
 
 
 		//tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Jian, 1));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 4));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tiao, 4));
-		tPeer.onPeng(CMJCard::makeCardNumber(eCT_Tiao, 4));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 7));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 8));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 9));
+		//tPeer.onPeng(CMJCard::makeCardNumber(eCT_Tong, 9));
 
 		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 1));
 		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 1));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 1));
 		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 2));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 2));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 2));
+
 		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 3));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 4));
-
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 1));
-		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 2));
+		tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Tong, 3));
 		//tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Wan, 3));
 		//tPeer.addDistributeCard(CMJCard::makeCardNumber(eCT_Wan, 8));
 
@@ -89,7 +91,7 @@ void tempTest()
 		tPeer.onPeng(CMJCard::makeCardNumber(eCT_Jian, 2));*/
 
  
-		auto isHu = tPeer.onDoHu(CMJCard::makeCardNumber(eCT_Tong, 3), 1);
+		auto isHu = tPeer.onDoHu(CMJCard::makeCardNumber(eCT_Tong, 6), 1);
 		bool is3Red = false;
 		auto nCnt = tPeer.getFinalHuCnt(true, is3Red);
 		if ( isHu )

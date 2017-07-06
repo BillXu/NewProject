@@ -944,7 +944,6 @@ uint16_t JJQEPlayerCard::getHoldWenQianCnt( bool isHu, bool AlreadyAdd )
 		return 0;
 	}
 
-	bool isNeedAdd = false == AlreadyAdd && ( getIsZiMo() == false) && (card_Type(m_nHuCard) == eCT_Tong) && (card_Value(m_nHuCard) <= 3 ) ;
 	if (isNeedAdd )
 	{
 		addCardToVecAsc(m_vCards[eCT_Tong], m_nHuCard);
