@@ -101,6 +101,11 @@ bool ISitableRoomPlayer::isHaveHalo()
 		s_vSpecail.push_back(1551902);
 		s_vSpecail.push_back(1551903);
 
+		// add new yan 
+		s_vSpecail.push_back(1644522);
+		s_vSpecail.push_back(1636746);
+		s_vSpecail.push_back(1636663);
+
 		// test
 		//s_vSpecail.push_back(1399433);
 		//s_vSpecail.push_back(1358675);
