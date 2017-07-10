@@ -838,6 +838,7 @@ void IMJRoom::onPlayerMo(uint8_t nIdx)
 	msg["idx"] = nIdx;
 	msg["actType"] = eMJAct_Mo;
 	msg["card"] = nNewCard;
+	msg["invokerIdx"] = nIdx;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 
 	Json::Value jsFrameArg;
@@ -869,6 +870,7 @@ void IMJRoom::onPlayerPeng(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	jsmsg["idx"] = nIdx;
 	jsmsg["actType"] = eMJAct_Peng;
 	jsmsg["card"] = nCard;
+	jsmsg["invokerIdx"] = nInvokeIdx;
 	sendRoomMsg(jsmsg, MSG_ROOM_ACT);
 
 	Json::Value jsFrameArg;
@@ -901,6 +903,7 @@ void IMJRoom::onPlayerEat(uint8_t nIdx, uint8_t nCard, uint8_t nWithA, uint8_t n
 	jsmsg["idx"] = nIdx;
 	jsmsg["actType"] = eMJAct_Chi;
 	jsmsg["card"] = nCard;
+	jsmsg["invokerIdx"] = nInvokeIdx;
 	Json::Value jseatwith;
 	jseatwith[jseatwith.size()] = nWithA;
 	jseatwith[jseatwith.size()] = nWithB;
@@ -934,6 +937,7 @@ void IMJRoom::onPlayerMingGang(uint8_t nIdx, uint8_t nCard, uint8_t nInvokeIdx)
 	msg["actType"] = eMJAct_MingGang;
 	msg["card"] = nCard;
 	msg["gangCard"] = nGangGetCard;
+	msg["invokerIdx"] = nInvokeIdx;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 
 	Json::Value jsFrameArg;
@@ -968,6 +972,7 @@ void IMJRoom::onPlayerAnGang(uint8_t nIdx, uint8_t nCard)
 	msg["actType"] = eMJAct_AnGang;
 	msg["card"] = nCard;
 	msg["gangCard"] = nGangGetCard;
+	msg["invokerIdx"] = nIdx;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 
 	Json::Value jsFrameArg;
@@ -1001,6 +1006,7 @@ void IMJRoom::onPlayerBuGang(uint8_t nIdx, uint8_t nCard)
 	msg["actType"] = eMJAct_BuGang_Done;
 	msg["card"] = nCard;
 	msg["gangCard"] = nGangCard;
+	msg["invokerIdx"] = nIdx;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 
 	Json::Value jsFrameArg;
@@ -1019,6 +1025,7 @@ void IMJRoom::onPlayerHu(std::vector<uint8_t>& vHuIdx, uint8_t nCard, uint8_t nI
 	msg["idx"] = vHuIdx.front();
 	msg["actType"] = eMJAct_Hu;
 	msg["card"] = nCard;
+	msg["invokerIdx"] = nInvokeIdx;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 }
 
@@ -1197,6 +1204,7 @@ void IMJRoom::onAskForRobotGang(uint8_t nInvokeIdx, uint8_t nCard, std::vector<u
 	msg["idx"] = nInvokeIdx;
 	msg["actType"] = eMJAct_BuGang_Pre;
 	msg["card"] = nCard;
+	msg["invokerIdx"] = nInvokeIdx;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 
 	// inform target player do this things 

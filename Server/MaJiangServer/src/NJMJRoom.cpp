@@ -462,6 +462,7 @@ void NJMJRoom::onPlayerHuaGang(uint8_t nIdx, uint8_t nGangCard )
 	msg["actType"] = eMJAct_HuaGang;
 	msg["card"] = nGangCard;
 	msg["gangCard"] = nNewCard;
+	msg["invokerIdx"] = nIdx;
 	sendRoomMsg(msg, MSG_ROOM_ACT);
 
 	m_isWillBiXiaHu = true;
