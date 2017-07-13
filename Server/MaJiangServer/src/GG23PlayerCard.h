@@ -41,7 +41,7 @@ protected:
 	uint16_t getPengHuCnt();
 	uint16_t getGangHuCnt();
 	uint16_t getHoldAnKeCnt(bool isHu, bool isZiMo);
-	uint16_t getHoldWenQianCnt(bool isHu);
+	uint16_t getHoldWenQianCnt(bool isHu, bool isPingHu );
 	uint16_t getFlyUpHuCnt();
 	// check hu , shaizi , quan hun , qing su , piao hu 
 	bool checkQuanHun();

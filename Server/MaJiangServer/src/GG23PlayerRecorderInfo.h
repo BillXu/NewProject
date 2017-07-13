@@ -60,7 +60,7 @@ protected:
 };
 
 // single recorder 
-class JJQESingleRoundRecorder
+class GG23SingleRoundRecorder
 	:public ISingleRoundRecorder
 {
 public:
@@ -88,7 +88,7 @@ class GG23RoomRecorder
 
 	std::shared_ptr<ISingleRoundRecorder> createSingleRoundRecorder()override
 	{
-		return std::make_shared<JJQESingleRoundRecorder>();
+		return std::make_shared<GG23SingleRoundRecorder>();
 	}
 
 	void buildZhanJiMsg(Json::Value& jsMsg)override

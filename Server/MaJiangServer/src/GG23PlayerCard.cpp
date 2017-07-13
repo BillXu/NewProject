@@ -373,7 +373,16 @@ bool GG23PlayerCard::isHoldCardCanHu()
 	m_nInvokeHuIdx = m_nCurPlayerIdx;
 
 	nTotalCnt += getHoldAnKeCnt(true, true);
-	nTotalCnt += getHoldWenQianCnt(true);
+
+	std::vector<uint8_t> vHuTypes;
+	getHuFanxingTypes(m_nHuCard, getIsZiMo(), vHuTypes);
+	bool isPingHu = vHuTypes.empty() == false && vHuTypes.front() == eFanxing_PingHu;
+	nTotalCnt += getHoldWenQianCnt(true, isPingHu);
+
+	if (vHuTypes.empty() == false && vHuTypes.front() == eFanxing_QingEr)
+	{
+		nTotalCnt = m_pRoom->getQiHuNeed() + 1;  // when is qing er , just skip the qi hu restrict ;
+	}
 
 	//restore member 
 	m_nHuCard = nBackHu;
@@ -405,12 +414,19 @@ bool GG23PlayerCard::canHuWitCard(uint8_t nCard)
 		// back up member 
 		auto nBackHu = m_nHuCard;
 		auto nInvokerIdx = m_nInvokeHuIdx;
-		m_nHuCard = getNewestFetchedCard();
-		m_nInvokeHuIdx = m_nCurPlayerIdx;
-
+		m_nHuCard = nCard;
+		m_nInvokeHuIdx = (m_nCurPlayerIdx + 1 ) % m_pRoom->getSeatCnt();
 		nTotalCnt += getHoldAnKeCnt(true, false);
-		nTotalCnt += getHoldWenQianCnt(true);
 
+		std::vector<uint8_t> vHuTypes;
+		getHuFanxingTypes(m_nHuCard, getIsZiMo(), vHuTypes);
+		bool isPingHu = vHuTypes.empty() == false && vHuTypes.front() == eFanxing_PingHu;
+		nTotalCnt += getHoldWenQianCnt(true, isPingHu );
+
+		if ( vHuTypes.empty() == false && vHuTypes.front() == eFanxing_QingEr)
+		{
+			nTotalCnt = m_pRoom->getQiHuNeed() + 1;  // when is qing er , just skip the qi hu restrict ;
+		}
 		//restore member 
 		m_nHuCard = nBackHu;
 		m_nInvokeHuIdx = nInvokerIdx;
@@ -436,7 +452,14 @@ uint16_t GG23PlayerCard::getFinalHuCnt( bool isHu )
 {
 	auto nHuCnt = getMingPaiHuaCnt();
 	nHuCnt += getHoldAnKeCnt(isHu, getIsZiMo());
-	nHuCnt += getHoldWenQianCnt(isHu);
+
+	std::vector<uint8_t> vHuTypes;
+	if (isHu)
+	{
+		getHuFanxingTypes(m_nHuCard, getIsZiMo(), vHuTypes);
+		nHuCnt += getHoldWenQianCnt(isHu, vHuTypes.empty() == false && vHuTypes.front() == eFanxing_PingHu );
+	}
+	
 	if (isHu)
 	{
 		nHuCnt += 20;
@@ -447,8 +470,6 @@ uint16_t GG23PlayerCard::getFinalHuCnt( bool isHu )
 	}
 
 	// consider hu types 
-	std::vector<uint8_t> vHuTypes;
-	getHuFanxingTypes(m_nHuCard, getIsZiMo(), vHuTypes);
 	if (vHuTypes.empty())
 	{
 		LOGFMTE("hu pai ? but hutypes is empty ? ");
@@ -596,7 +617,7 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 	}
 
 	// check 3 wen qian ke zi , omit ke zi 
-	if ( getHoldWenQianCnt(isHu) >= 30 )  // remove ke zi 
+	if (  getWenQianCnt(isHu) >= 3 )  // remove ke zi 
 	{
 		uint8_t nV[] = { make_Card_Num(eCT_Wan,1) ,make_Card_Num(eCT_Wan,2),make_Card_Num(eCT_Wan,3) };
 		for (auto n : nV)
@@ -655,7 +676,7 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 	return nHoldHuCnt;
 }
 
-uint16_t GG23PlayerCard::getWenQianCnt(bool isHu)
+uint16_t GG23PlayerCard::getWenQianCnt(bool isHu )
 {
 	if (isHu == false)
 	{
@@ -715,9 +736,14 @@ uint16_t GG23PlayerCard::getWenQianCnt(bool isHu)
 	return nRealWenQian;
 }
 
-uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu )
+uint16_t GG23PlayerCard::getHoldWenQianCnt( bool isHu, bool isPingHu )
 {
-	return (getWenQianCnt(isHu) * 10);
+	auto nCnt = getWenQianCnt(isHu);
+	if (isPingHu)
+	{
+		return nCnt;
+	}
+	return (nCnt * 10);
 }
 
 uint16_t GG23PlayerCard::getFlyUpHuCnt()
@@ -748,7 +774,7 @@ bool GG23PlayerCard::checkQuanHun()  // dui dui hu
 	getHoldCard(vAllCard);
  
 	// erase wen qian ;
-	int8_t nSmall = getHoldWenQianCnt(true) / 10;
+	int8_t nSmall = getWenQianCnt(true);
 	while (nSmall--)
 	{
 		for (uint8_t nValue = 1; nValue <= 3; ++nValue)
