@@ -566,8 +566,9 @@ uint16_t GG23PlayerCard::getGangHuCnt()
 	}
 
 	// check five gang ;
-	nCnt += (m_v5AnGang.size() * 12);
-	nCnt += ( (m_v5MingGang.size() + m_v5BuGang.size() ) * 4 );
+	nCnt += (m_v5AnGang.size() * 24);
+	nCnt += m_v5MingGang.size() * 16;
+	nCnt += m_v5BuGang.size() * 12;
 	return nCnt;
 }
 
