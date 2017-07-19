@@ -51,6 +51,8 @@ protected:
 	bool getHuFanxingTypes(uint8_t nHuCard, bool isZiMo, std::vector<uint8_t>& vHuTypes);
 protected:
 	VEC_CARD m_vFlyupCard;
+	VEC_CARD m_vFlyupBe5MingGanged;
+	VEC_CARD m_vFlyupBe5AnGanged;
 	GG23Room* m_pRoom;
 	uint8_t m_nCurPlayerIdx;
 

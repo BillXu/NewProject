@@ -299,7 +299,7 @@ bool MJPlayerCard::canAnGangWithCard(uint8_t nCard)
 	}
 	auto& vCard = m_vCards[eType];
 	auto nCnt = std::count(vCard.begin(), vCard.end(), nCard);
-	return nCnt == 4;
+	return nCnt >= 4;
 }
 
 bool MJPlayerCard::canBuGangWithCard(uint8_t nCard)

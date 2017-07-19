@@ -9,8 +9,10 @@ void GG23PlayerCard::reset()
 	m_v5BuGang.clear();
 	m_v5AnGang.clear();
 	m_v5MingGang.clear();
+	m_vFlyupBe5AnGanged.clear();
 	m_nInvokeHuIdx = -1;
 	m_nHuCard = 0;
+	m_vFlyupBe5MingGanged.clear();
 }
 
 void GG23PlayerCard::bindRoom(GG23Room* pRoom, uint8_t nPlayerIdx)
@@ -271,10 +273,11 @@ bool GG23PlayerCard::onMingGang(uint8_t nCard, uint8_t nGangGetCard)
 	m_v5MingGang.push_back(nCard);
 	onMoCard(nGangGetCard);
 
-	auto iter = std::find(m_v5FlyUp.begin(), m_v5FlyUp.end(), nCard);
-	if (iter != m_v5FlyUp.end())
+	auto iter = std::find(m_vFlyupCard.begin(), m_vFlyupCard.end(), nCard);
+	if (iter != m_vFlyupCard.end())
 	{
-		m_v5FlyUp.erase(iter);
+		m_vFlyupCard.erase(iter);
+		m_vFlyupBe5MingGanged.push_back(nCard);
 	}
 	else
 	{
@@ -338,13 +341,28 @@ bool GG23PlayerCard::onAnGang(uint8_t nCard, uint8_t nGangGetCard)
 		return false;
 	}
 
-	auto iter = std::find(m_vCards[eCT_Feng].begin(), m_vCards[eCT_Feng].end(), nCard);
-	if (iter == m_vCards[eCT_Feng].end())
+	auto iterS = std::find(m_vCards[eCT_Feng].begin(), m_vCards[eCT_Feng].end(), nCard);
+	if (iterS == m_vCards[eCT_Feng].end())
 	{
 		LOGFMTE("do have have this card , how to  bu gang ? card = %u", nCard);
 		return false;
 	}
-	m_vCards[eCT_Feng].erase(iter);
+	m_vCards[eCT_Feng].erase(iterS);
+
+	auto iter = std::find(m_vFlyupCard.begin(), m_vFlyupCard.end(), nCard);
+	if (iter != m_vFlyupCard.end())
+	{
+		m_vFlyupCard.erase(iter);
+		m_vFlyupBe5AnGanged.push_back(nCard);
+	}
+	else
+	{
+		iter = std::find(m_vAnGanged.begin(), m_vAnGanged.end(), nCard);
+		if (iter != m_vAnGanged.end())
+		{
+			m_vAnGanged.erase(iter);
+		}
+	}
 
 	m_v5AnGang.push_back(nCard);
 	onMoCard(nGangGetCard);
@@ -423,7 +441,7 @@ bool GG23PlayerCard::canHuWitCard(uint8_t nCard)
 		bool isPingHu = vHuTypes.empty() == false && vHuTypes.front() == eFanxing_PingHu;
 		nTotalCnt += getHoldWenQianCnt(true, isPingHu );
 
-		if ( vHuTypes.empty() == false && vHuTypes.front() == eFanxing_QingEr)
+		if ( false == isPingHu )
 		{
 			nTotalCnt = m_pRoom->getQiHuNeed() + 1;  // when is qing er , just skip the qi hu restrict ;
 		}
@@ -567,7 +585,22 @@ uint16_t GG23PlayerCard::getGangHuCnt()
 
 	// check five gang ;
 	nCnt += (m_v5AnGang.size() * 24);
+	for (auto& ref : m_v5AnGang)
+	{
+		if (std::count(m_vFlyupBe5AnGanged.begin(), m_vFlyupBe5AnGanged.end(), ref) > 0)
+		{
+			nCnt += 4;
+		}
+	}
+
 	nCnt += m_v5MingGang.size() * 16;
+	for (auto& ref : m_v5MingGang )
+	{
+		if (std::count(m_vFlyupBe5MingGanged.begin(),m_vFlyupBe5MingGanged.end(),ref) > 0)
+		{
+			nCnt += 4;
+		}
+	}
 	nCnt += m_v5BuGang.size() * 12;
 	return nCnt;
 }
@@ -907,6 +940,15 @@ bool GG23PlayerCard::checkPiaoHu( bool isZiMo )
 	if ( vHold.size() > 5 )
 	{
 		return false;
+	}
+
+	if (vHold.size() == 5)
+	{
+		auto nCnt = std::count(vHold.begin(),vHold.end(),getHuCard() );
+		if ( nCnt == 2 )
+		{
+			return false;
+		}
 	}
 
 	return checkQuanHun();
