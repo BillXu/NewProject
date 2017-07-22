@@ -990,13 +990,19 @@ uint16_t JJQEPlayerCard::getHoldWenQianCnt( bool isHu, bool AlreadyAdd )
 
 			SET_NOT_SHUN vNotShun;
 			getNotShuns(vTong, vNotShun, false);
-			if ( vNotShun.size() != 1 )
+
+			bool isOk = false;
+			auto iter = vNotShun.begin();
+			for (; iter != vNotShun.end(); ++iter)
 			{
-				break;
+				if ((*iter).vCards.size() == 2 && (*iter).vCards[0] == (*iter).vCards[1])
+				{
+					isOk = true;
+					break;
+				}
 			}
 
-			auto iter = vNotShun.begin();
-			if ((*iter).vCards.size() != 2 || (*iter).vCards[0] != (*iter).vCards[1])
+			if (isOk == false)
 			{
 				break;
 			}
@@ -1521,6 +1527,14 @@ bool JJQEPlayerCard::check13Hu()
 	for ( uint8_t nIdx = 0; ( nIdx + 2 ) < vHold.size(); ++nIdx )
 	{
 		if (vHold[nIdx] == vHold[nIdx + 2])
+		{
+			return false;
+		}
+	}
+
+	if (m_vPenged.size() == 1)
+	{
+		if ( std::count(vHold.begin(), vHold.end(), m_vPenged[0]) > 0 )
 		{
 			return false;
 		}
