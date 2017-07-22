@@ -70,8 +70,6 @@ bool GG23PlayerCard::onFlyUp(std::vector<uint8_t>& vFlyUpCard, std::vector<uint8
 		onAnGang(ref, nNewCard);
 		vNewCard.push_back(nNewCard);
 	}
-	m_vAnGanged.clear(); // in fact not an gang ;
-
 	// sign flyUpCard ;
 	for ( auto& ref : vFlyUpCard )
 	{
@@ -89,6 +87,7 @@ bool GG23PlayerCard::onFlyUp(std::vector<uint8_t>& vFlyUpCard, std::vector<uint8
 		}
 		m_vFlyupCard.push_back(ref);
 	}
+	m_vAnGanged.clear(); // in fact not an gang ;
 	updateHuCntToClient();
 	return true;
 }

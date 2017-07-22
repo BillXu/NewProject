@@ -11,6 +11,7 @@
 #include "ApnsTask.h"
 #include "AnyLoginTask.h"
 #include "AsyncRequestQuene.h"
+#include "ChargeNotifyAgentSys.h"
 void CTaskPoolModule::init( IServerApp* svrApp )
 {
 	IGlobalModule::init(svrApp) ;
@@ -142,6 +143,10 @@ ITask::ITaskPrt CTaskPoolModule::createTask( uint32_t nTaskID )
 		{
 			std::shared_ptr<AnyLoginTask> pTask(new AnyLoginTask(nTaskID));
 			return pTask;
+		}
+		break;
+	case eTask_ChargeNotifyAgent:
+		{
 		}
 		break;
 	default:
@@ -339,6 +344,31 @@ void CTaskPoolModule::sendVerifyResult(std::shared_ptr<stVerifyRequest> & pResul
 		sprintf(pBuffer, "insert into wxrecharge ( userUID,fee,time,tradeOrder ) values ('%u','%u',now(),'%s');", msg.nBuyerPlayerUserUID, pResult->nTotalFee,pResult->pBufferVerifyID );
 		jssql["sql"] = pBuffer;
 		getSvrApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Add, jssql);
+	
+		// tell agent svr 
+		auto pNotify = getPool().getReuseTaskObjByID(eTask_ChargeNotifyAgent);
+		auto pNotifyTask = (ChargeNotifyAgentTask*)pNotify.get();
+		pNotifyTask->setNotifyContent(msg.nBuyerPlayerUserUID,pResult->nTotalFee * 100,pResult->pBufferVerifyID);
+
+		auto nUID = msg.nBuyerPlayerUserUID;
+		auto nFee = pResult->nTotalFee * 100;
+		std::string strTradeNo = pResult->pBufferVerifyID;
+		pNotify->setCallBack([this, nUID,nFee,strTradeNo](ITask::ITaskPrt ptr)
+		{ 
+			auto pAready = (ChargeNotifyAgentTask*)ptr.get(); 
+			auto jsResut = pAready->getResultJson();
+			if ( jsResut.isNull() ) // no result try again ;
+			{
+				LOGFMTE("agent svr do not respone msg, uid = %u , fee = %u , no: %s",nUID,nFee,strTradeNo.c_str() );
+				return;
+			}
+
+			if (jsResut["status"].asString() == "fail" )
+			{
+				LOGFMTE("agent svr tell failed , msg = %s  uid = %u , fee = %u , no: %s ",jsResut["message"].asCString(), nUID, nFee, strTradeNo.c_str() );
+			}
+		});
+		getPool().postTask(pNotify);
 	}
 }
 

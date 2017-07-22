@@ -145,6 +145,9 @@
     <ClCompile Include="src\AnyLoginTask.cpp">
       <Filter>Verify\Task</Filter>
     </ClCompile>
+    <ClCompile Include="src\ChargeNotifyAgentSys.cpp">
+      <Filter>Verify\Task</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\VerifyApp.h">
@@ -262,6 +265,9 @@
       <Filter>httpModule</Filter>
     </ClInclude>
     <ClInclude Include="src\AnyLoginTask.h">
+      <Filter>Verify\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ChargeNotifyAgentSys.h">
       <Filter>Verify\Task</Filter>
     </ClInclude>
   </ItemGroup>

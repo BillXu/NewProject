@@ -16,6 +16,7 @@ public:
 		eTask_DBVerify,
 		eTask_Apns,
 		eTask_AnyLogin,
+		eTask_ChargeNotifyAgent,
 		eTask_Max,
 	};
 public:

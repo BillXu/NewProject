@@ -89,8 +89,8 @@ void CMJCard::shuffle()
 	vHoldCard.push_back(make_Card_Num(eCT_Feng,1));
 	vHoldCard.push_back(make_Card_Num(eCT_Feng, 1));
 	vHoldCard.push_back(make_Card_Num(eCT_Feng, 1));
-
 	vHoldCard.push_back(make_Card_Num(eCT_Feng, 1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Feng, 1));
 	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 2));
 	//vHoldCard.push_back(make_Card_Num(eCT_Wan, 3));
 

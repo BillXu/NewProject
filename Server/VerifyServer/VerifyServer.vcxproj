@@ -104,6 +104,7 @@
     <ClCompile Include="src\AnyLoginTask.cpp" />
     <ClCompile Include="src\ApnsTask.cpp" />
     <ClCompile Include="src\AppleVerifyTask.cpp" />
+    <ClCompile Include="src\ChargeNotifyAgentSys.cpp" />
     <ClCompile Include="src\DBVerifyTask.cpp" />
     <ClCompile Include="src\HttpModule.cpp" />
     <ClCompile Include="src\httpServer\connection.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="src\AnyLoginTask.h" />
     <ClInclude Include="src\ApnsTask.h" />
     <ClInclude Include="src\AppleVerifyTask.h" />
+    <ClInclude Include="src\ChargeNotifyAgentSys.h" />
     <ClInclude Include="src\DBVerifyTask.h" />
     <ClInclude Include="src\HttpModule.h" />
     <ClInclude Include="src\httpServer\connection.hpp" />
