@@ -17,6 +17,7 @@ ChargeNotifyAgentTask::ChargeNotifyAgentTask(uint32_t nTaskID)
 void ChargeNotifyAgentTask::setNotifyContent(uint32_t nPlayerUID, uint32_t nFee, const char* trade_no )
 {
 	std::ostringstream ss;
+	ss << "ct=notify&ac=pay&player_uid=" << nPlayerUID << "&amount=" << nFee << "&trade_no=" << trade_no ;
 	m_strTransferString = ss.str();
 }
 

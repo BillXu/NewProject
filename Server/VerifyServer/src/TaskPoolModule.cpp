@@ -147,6 +147,7 @@ ITask::ITaskPrt CTaskPoolModule::createTask( uint32_t nTaskID )
 		break;
 	case eTask_ChargeNotifyAgent:
 		{
+			return std::make_shared<ChargeNotifyAgentTask>(nTaskID);
 		}
 		break;
 	default:
