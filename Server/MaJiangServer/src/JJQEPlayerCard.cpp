@@ -275,7 +275,7 @@ bool JJQEPlayerCard::getHoldCardThatCanAnGang(VEC_CARD& vGangCards)
 	bool isJianXiXi = (eCT_Hua == nJianType && nJianValue <= 2);
 	if (nXiXiCnt == (isJianXiXi ? 4 : 5))
 	{
-		vGangCards.push_back(nJianZhang);
+		vGangCards.push_back(m_vCards[eCT_Hua].front());
 	}
 
 	// check jian 
