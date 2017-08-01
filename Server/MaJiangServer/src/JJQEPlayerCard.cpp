@@ -101,6 +101,11 @@ bool JJQEPlayerCard::onFlyUp(std::vector<uint8_t>& vFlyUpCard, std::vector<uint8
 
 		auto ref = std::find_if(vCanQiFei.begin(), vCanQiFei.end(), [nCheckCard](uint8_t nCanFlyCard)
 		{
+			if ( card_Type(nCanFlyCard) == eCT_Jian && card_Value(nCanFlyCard) > 3 )
+			{
+				nCanFlyCard -= 3;
+			}
+
 			if ( nCanFlyCard == nCheckCard)
 			{
 				return true;
