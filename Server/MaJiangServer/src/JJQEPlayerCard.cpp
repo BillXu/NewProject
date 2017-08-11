@@ -713,7 +713,7 @@ uint16_t JJQEPlayerCard::getPengHuCnt()
 			auto iter = std::find(m_vJianPeng.begin(), m_vJianPeng.end(), nCheck);
 			if (iter != m_vJianPeng.end())
 			{
-				if ( nCheck == m_pRoom->getJianZhang())
+				if ( nCheck == m_pRoom->getJianZhang() || ( nCheck + 3 ) == m_pRoom->getJianZhang() )
 				{
 					nJianHuCnt += 16;
 					LOGFMTD(" jian peng room id = %u jianzha peng as ming gang npeng = %u idx = %u", m_pRoom->getRoomID(), nCheck, m_nCurPlayerIdx);
