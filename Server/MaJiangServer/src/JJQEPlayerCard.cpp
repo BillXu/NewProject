@@ -1518,6 +1518,7 @@ bool JJQEPlayerCard::checkOld13Hu()
 				return true;
 			}
 		}
+		return false;
 	}
 	return true;
 }
