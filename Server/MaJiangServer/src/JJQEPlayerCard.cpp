@@ -1445,47 +1445,48 @@ bool JJQEPlayerCard::checkOld13Hu()
 		}
 		
 		VEC_CARD vCheck = vCards;
-		if ( nCardType == card_Type(m_nJIang) ) // remove jiang 
-		{
-			uint8_t nCnt = 2;
-			while (nCnt--)
-			{
-				auto iter = std::find(vCheck.begin(),vCheck.end(),m_nJIang);
-				if (iter == vCheck.end())
-				{
-					LOGFMTE("to do as jiang , but you don't have two card = %u room id = %u , idx = %u",m_nJIang,m_pRoom->getRoomID(),m_nCurPlayerIdx);
-					continue;
-				}
-				vCheck.erase(iter);
-			}
-		}
-
+	
 		if ( vCheck.empty() )
 		{
 			continue;
 		}
 
-		if (vCheck.size() % 3 != 0)
+		bool isJiangType = nCardType == card_Type(m_nJIang);
+		if (vCheck.size() % 3 != 0 && isJiangType == false)
 		{
-			LOGFMTE("check qinger you must all shun zi = %u, type = %u",vCheck.size(),nCardType );
+			LOGFMTE("xiang gang ?");
 			return false;
 		}
-
+		
+		bool isFindJiang = false;
 		while ( vCheck.empty() == false )
 		{
-			uint8_t vShunZi[3] = { 0 };
-			vShunZi[0] = vCheck.front();
-			vShunZi[1] = vShunZi[0] + 1;
-			vShunZi[2] = vShunZi[1] + 1;
-			for (auto& ref : vShunZi)
+			auto nCurValue = vCheck.front();
+			auto iterA = vCheck.begin();
+			auto iterB = std::find(vCheck.begin(), vCheck.end(), nCurValue + 1 );
+			auto iterC = std::find(vCheck.begin(), vCheck.end(), nCurValue + 2 );
+			if ( iterA != vCheck.end() && iterB != vCheck.end() && iterC != vCheck.end())
 			{
-				auto iter = std::find(vCheck.begin(), vCheck.end(), ref);
-				if (iter != vCheck.end())
-				{
-					(*iter) = 0;
-					continue;
-				}
+				*iterA = *iterB = *iterC = 0;
+			}
+			else if ( isJiangType == false || isFindJiang )
+			{
 				return false;
+			}
+			else
+			{
+				// current card as jiang ;
+				auto nCnt = std::count(vCheck.begin(),vCheck.end(),nCurValue);
+				if (nCnt < 2)
+				{
+					//LOGFMTE( "you should not hu " );
+					return false;
+				}
+				auto iterJ = std::find(vCheck.begin(), vCheck.end(), nCurValue );
+				*iterJ = 0;
+				iterJ = std::find(vCheck.begin(), vCheck.end(), nCurValue);
+				*iterJ = 0;
+				isFindJiang = true;
 			}
 
 			while (true)

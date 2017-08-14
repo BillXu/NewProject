@@ -915,6 +915,7 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 		AddMoney(nGiveDiamond, true);
 		recvValue["diamond"] = nGiveDiamond;
 		SendMsg(recvValue, nmsgType);
+		m_bCommonLogicDataDirty = true;
 	}
 	break;
 	default:
