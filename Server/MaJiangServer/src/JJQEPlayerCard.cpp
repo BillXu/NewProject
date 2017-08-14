@@ -1431,62 +1431,21 @@ bool JJQEPlayerCard::checkOld13Hu()
 	}
 
 	// hold can not have ke zi 
-	for (auto& vCards : m_vCards)
+	auto pfCheckShun = [](VEC_CARD& vCheck)
 	{
-		if ( vCards.size() < 3 )
-		{
-			continue;
-		}
-
-		auto nCardType = card_Type(vCards.front());
-		if (nCardType == eCT_Jian)
-		{
-			continue;
-		}
-		
-		VEC_CARD vCheck = vCards;
-	
-		if ( vCheck.empty() )
-		{
-			continue;
-		}
-
-		bool isJiangType = nCardType == card_Type(m_nJIang);
-		if (vCheck.size() % 3 != 0 && isJiangType == false)
-		{
-			LOGFMTE("xiang gang ?");
-			return false;
-		}
-		
-		bool isFindJiang = false;
-		while ( vCheck.empty() == false )
+		while (vCheck.empty() == false)
 		{
 			auto nCurValue = vCheck.front();
 			auto iterA = vCheck.begin();
-			auto iterB = std::find(vCheck.begin(), vCheck.end(), nCurValue + 1 );
-			auto iterC = std::find(vCheck.begin(), vCheck.end(), nCurValue + 2 );
-			if ( iterA != vCheck.end() && iterB != vCheck.end() && iterC != vCheck.end())
+			auto iterB = std::find(vCheck.begin(), vCheck.end(), nCurValue + 1);
+			auto iterC = std::find(vCheck.begin(), vCheck.end(), nCurValue + 2);
+			if (iterA != vCheck.end() && iterB != vCheck.end() && iterC != vCheck.end())
 			{
 				*iterA = *iterB = *iterC = 0;
 			}
-			else if ( isJiangType == false || isFindJiang )
-			{
-				return false;
-			}
 			else
 			{
-				// current card as jiang ;
-				auto nCnt = std::count(vCheck.begin(),vCheck.end(),nCurValue);
-				if (nCnt < 2)
-				{
-					//LOGFMTE( "you should not hu " );
-					return false;
-				}
-				auto iterJ = std::find(vCheck.begin(), vCheck.end(), nCurValue );
-				*iterJ = 0;
-				iterJ = std::find(vCheck.begin(), vCheck.end(), nCurValue);
-				*iterJ = 0;
-				isFindJiang = true;
+				return false;
 			}
 
 			while (true)
@@ -1498,6 +1457,65 @@ bool JJQEPlayerCard::checkOld13Hu()
 					continue;
 				}
 				break;
+			}
+		}
+		return true;
+	};
+
+	uint8_t nJiangType = eCT_Max;
+	for (auto& vCards : m_vCards)
+	{
+		if ( vCards.empty() )
+		{
+			continue;
+		}
+
+		auto nCardType = card_Type(vCards.front());
+		if ( nCardType == eCT_Jian )
+		{
+			continue;
+		}
+
+		if ( (vCards.size() % 3 == 2 ) )
+		{
+			nJiangType = nCardType;
+			continue;
+		}
+		
+		VEC_CARD vCheck = vCards;
+		if (!pfCheckShun(vCheck))
+		{
+			return false;
+		}
+ 
+	}
+
+	if ( eCT_Max != nJiangType && eCT_Jian != nJiangType )
+	{
+		// find may be jiang ;
+		auto vCard = m_vCards[nJiangType];
+		std::set<uint8_t> vJiang;
+		for ( uint8_t nIdx = 0; (nIdx + 1) < vCard.size();  )
+		{
+			if ( vCard[nIdx] == vCard[nIdx + 1] )
+			{
+				vJiang.insert(vCard[nIdx]);
+				nIdx += 2;
+				continue;
+			}
+			++nIdx;
+		}
+
+		for ( auto& ref : vJiang )
+		{
+			auto vCheck = vCard;
+			auto iter = std::find(vCheck.begin(),vCheck.end(),ref);
+			vCheck.erase(iter);
+			iter = std::find(vCheck.begin(), vCheck.end(), ref);
+			vCheck.erase(iter);
+			if (pfCheckShun(vCheck))
+			{
+				return true;
 			}
 		}
 	}
