@@ -822,7 +822,7 @@ uint16_t JJQEPlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo)
 	std::sort(m_vCards[eCT_Jian].begin(), m_vCards[eCT_Jian].end());
 	// back up tong 
 	VEC_CARD vTong = m_vCards[eCT_Tong];
-	auto nWenQianCnt = getHoldWenQianCnt(isHu, isNeedAdd );
+	auto nWenQianCnt = 0; //getHoldWenQianCnt(isHu, isNeedAdd );
 	while (nWenQianCnt--)
 	{
 		m_vCards[eCT_Tong].erase(std::find(m_vCards[eCT_Tong].begin(), m_vCards[eCT_Tong].end(), make_Card_Num(eCT_Tong, 1)));
