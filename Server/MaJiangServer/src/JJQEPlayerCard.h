@@ -42,6 +42,8 @@ public:
 	uint8_t getHuCard() { return m_nHuCard; }
 	uint16_t getFinalHuCnt( bool isHu, bool& is3Red );
 	uint16_t getHoldWenQianCnt(bool isHu, bool AlreadyAdd = false );
+	bool canHoldCard7PairHu()override { return false; }
+	bool is7PairTing()override { return false; }
 protected:
 	void updateHuCntToClient();
 	//bool isZiMo() { return m_isHu && (m_nInvokeHuIdx == m_nCurPlayerIdx); }
