@@ -23,6 +23,7 @@ struct stPrivateRoomPlayerItem
 	bool isApplyIng ;
 	bool isDirty ;
 	uint8_t nPayDeskFeeState ;  // 0 not pay , 1 paying , 2  paied 
+	uint32_t nApplyTime; // used to reset isApplying value for time out ;
 
 	stPrivateRoomPlayerItem(uint32_t nPlayerUID, uint32_t nAllCoin )
 	{
@@ -35,6 +36,7 @@ struct stPrivateRoomPlayerItem
 		isApplyIng = false ;
 		nCheckedCoin = 0 ;
 		nPayDeskFeeState = 0 ;
+		nApplyTime = 0;
 	}
 
 	bool isPayingDeskFee(){ return nPayDeskFeeState == 1 ;}
@@ -1270,10 +1272,18 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 
 			if ( pPrivatePlayer->isApplyIng )
 			{
-				jsMsgBack["ret"] = 4 ;
-				m_pRoom->sendMsgToPlayer(nSessionID,jsMsgBack,nMsgType) ;
-				//LOGFMTE("temp let double applying take in");
-				break ; //(uint32_t)(float(nCoin) * 1.1 )
+				if ( ( (uint32_t)time(nullptr) - pPrivatePlayer->nApplyTime ) > 60 )
+				{
+					pPrivatePlayer->isApplyIng = false;
+					pPrivatePlayer->nApplyTime = 0;
+				}
+				else
+				{
+					jsMsgBack["ret"] = 4;
+					m_pRoom->sendMsgToPlayer(nSessionID, jsMsgBack, nMsgType);
+					//LOGFMTE("temp let double applying take in");
+					break; //(uint32_t)(float(nCoin) * 1.1 )
+				}
 			}
 
 #ifdef GAME_365
@@ -1354,6 +1364,7 @@ bool CPrivateRoom<T>::onMessage( Json::Value& prealMsg ,uint16_t nMsgType, eMsgP
 
 			// send notice ; do apply ;
 			pPrivatePlayer->isApplyIng = true ;
+			pPrivatePlayer->nApplyTime = (uint32_t)time(nullptr);
 
 			Json::Value jsReqContent ;
 			jsReqContent["dlgType"] = eNoticeType::eNotice_ApplyTakeIn ;
