@@ -19,6 +19,7 @@ public:
 	bool informPlayerFlyUp(uint8_t nPlayerIdx);
 	bool onPlayerDoFlyUp(uint8_t nIdx, std::vector<uint8_t>& vFlyUpCard);
 	bool isCardJianPai(uint8_t nCheckCard);
+	uint8_t getTenJQKkingRate( uint8_t nCheckCard );
 	uint16_t getQiHuNeed();
 	void onGameDidEnd()override;
 	void onGameEnd()override;

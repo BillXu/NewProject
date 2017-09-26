@@ -396,7 +396,7 @@ bool GG23PlayerCard::isHoldCardCanHu()
 	bool isPingHu = vHuTypes.empty() == false && vHuTypes.front() == eFanxing_PingHu;
 	nTotalCnt += getHoldWenQianCnt(true, isPingHu);
 
-	if (vHuTypes.empty() == false && vHuTypes.front() == eFanxing_QingEr)
+	if ( false == isPingHu )
 	{
 		nTotalCnt = m_pRoom->getQiHuNeed() + 1;  // when is qing er , just skip the qi hu restrict ;
 	}
@@ -513,6 +513,12 @@ uint16_t GG23PlayerCard::getFinalHuCnt( bool isHu )
 	default:
 		break;
 	}
+
+	auto iter = std::find(vHuTypes.begin(),vHuTypes.end(),eFanxing_MengQing);
+	if ( iter != vHuTypes.end() )
+	{
+		nHuCnt *= 2;
+	}
 	LOGFMTW( "getHuFanxingTypes = %u", nHuCnt);
 	return nHuCnt;
 }
@@ -542,7 +548,7 @@ uint16_t GG23PlayerCard::getPengHuCnt()
 	{
 		if (m_pRoom->isCardJianPai(ref))
 		{
-			nCnt += 2;
+			nCnt += 2 * ( m_pRoom->getTenJQKkingRate(ref)) ;
 		}
 		else
 		{
@@ -561,7 +567,7 @@ uint16_t GG23PlayerCard::getGangHuCnt()
 	{
 		if (m_pRoom->isCardJianPai(ref))
 		{
-			nCnt += 8;
+			nCnt += 8 * (m_pRoom->getTenJQKkingRate(ref));
 		}
 		else
 		{
@@ -574,7 +580,7 @@ uint16_t GG23PlayerCard::getGangHuCnt()
 	{
 		if (m_pRoom->isCardJianPai(ref))
 		{
-			nCnt += 12;
+			nCnt += 12 * (m_pRoom->getTenJQKkingRate(ref));
 		}
 		else
 		{
@@ -583,24 +589,24 @@ uint16_t GG23PlayerCard::getGangHuCnt()
 	}
 
 	// check five gang ;
-	nCnt += (m_v5AnGang.size() * 24);
+	nCnt += (m_v5AnGang.size() * 24) * (m_pRoom->getQiHuNeed() == 15 ? 2 : 1);
 	for (auto& ref : m_v5AnGang)
 	{
 		if (std::count(m_vFlyupBe5AnGanged.begin(), m_vFlyupBe5AnGanged.end(), ref) > 0)
 		{
-			nCnt += 4;
+			nCnt += 4 * (m_pRoom->getTenJQKkingRate(ref));
 		}
 	}
 
-	nCnt += m_v5MingGang.size() * 16;
+	nCnt += m_v5MingGang.size() * 16 * (m_pRoom->getQiHuNeed() == 15 ? 2 : 1);
 	for (auto& ref : m_v5MingGang )
 	{
 		if (std::count(m_vFlyupBe5MingGanged.begin(),m_vFlyupBe5MingGanged.end(),ref) > 0)
 		{
-			nCnt += 4;
+			nCnt += 4 * (m_pRoom->getTenJQKkingRate(ref));
 		}
 	}
-	nCnt += m_v5BuGang.size() * 12;
+	nCnt += m_v5BuGang.size() * 12 * (m_pRoom->getQiHuNeed() == 15 ? 2 : 1);
 	return nCnt;
 }
 
@@ -639,7 +645,7 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 		{
 			if ( m_pRoom->isCardJianPai(ref) )
 			{
-				nHoldHuCnt += 4;
+				nHoldHuCnt += 4 * (m_pRoom->getTenJQKkingRate(ref));
 			}
 			else
 			{
@@ -686,7 +692,7 @@ uint16_t GG23PlayerCard::getHoldAnKeCnt( bool isHu, bool isHuZiMo )
 			uint8_t ntemp = 1;
 			if (m_pRoom->isCardJianPai(ref))
 			{
-				ntemp = 2;
+				ntemp = 2 * (m_pRoom->getTenJQKkingRate(ref));
 			}
 
 			if ( isHuZiMo || m_nHuCard != ref )
@@ -786,7 +792,7 @@ uint16_t GG23PlayerCard::getFlyUpHuCnt()
 	{
 		if (m_pRoom->isCardJianPai(ref))
 		{
-			nFlyHuCnt += 16;
+			nFlyHuCnt += 16 * (m_pRoom->getTenJQKkingRate(ref)) ;
 		}
 		else
 		{
@@ -794,7 +800,7 @@ uint16_t GG23PlayerCard::getFlyUpHuCnt()
 		}
 	}
 
-	nFlyHuCnt += (m_v5FlyUp.size() * 32);
+	nFlyHuCnt += (m_v5FlyUp.size() * 32) * ( m_pRoom->getQiHuNeed() == 15 ? 2 : 1 );
 	LOGFMTD("room id = %u idx = %u flyhu cnt = %u", m_pRoom->getRoomID(), m_nCurPlayerIdx, nFlyHuCnt);
 	return nFlyHuCnt;
 }
@@ -955,6 +961,7 @@ bool GG23PlayerCard::checkPiaoHu( bool isZiMo )
 
 bool GG23PlayerCard::getHuFanxingTypes(uint8_t nHuCard, bool isZiMo, std::vector<uint8_t>& vHuTypes)
 {
+	bool isMengQing = !(m_vPenged.size() > 0 || m_vFlyupCard.size() > 0 || m_vAnGanged.size() > 0 || m_vGanged.size() > 0 || m_v5FlyUp.size() > 0);
 	// if not zi mo , must add to fo check hu 
 	if (checkPiaoHu(isZiMo))
 	{
@@ -967,10 +974,19 @@ bool GG23PlayerCard::getHuFanxingTypes(uint8_t nHuCard, bool isZiMo, std::vector
 	else if ( checkQingSu() )
 	{
 		vHuTypes.push_back(eFanxing_QingEr);
+		isMengQing = false;
 	}
 	else
 	{
-		vHuTypes.push_back(eFanxing_PingHu);
+		if ( isMengQing == false)
+		{
+			vHuTypes.push_back(eFanxing_PingHu);
+		}
+	}
+
+	if ( isMengQing )
+	{
+		vHuTypes.push_back(eFanxing_MengQing);
 	}
 	return true;
 }

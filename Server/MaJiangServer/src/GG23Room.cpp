@@ -334,6 +334,17 @@ bool GG23Room::isCardJianPai(uint8_t nCheckCard)
 	return false;
 }
 
+uint8_t GG23Room::getTenJQKkingRate( uint8_t nCheckCard )
+{
+	if (getQiHuNeed() != 15)
+	{
+		return 1;
+	}
+
+	auto nType = card_Type(nCheckCard);
+	return nType == eCT_Jian || eCT_Feng == nType;
+}
+
 uint16_t GG23Room::getQiHuNeed()
 {
 	return m_nQiHuNeed;
