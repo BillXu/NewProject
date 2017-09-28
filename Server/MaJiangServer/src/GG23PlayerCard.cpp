@@ -984,7 +984,7 @@ bool GG23PlayerCard::getHuFanxingTypes(uint8_t nHuCard, bool isZiMo, std::vector
 		}
 	}
 
-	if ( isMengQing )
+	if ( isMengQing && m_pRoom->isEnableMengQing() )
 	{
 		vHuTypes.push_back(eFanxing_MengQing);
 	}

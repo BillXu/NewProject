@@ -25,6 +25,10 @@ bool GG23Room::init(IGameRoomManager* pRoomMgr, stBaseRoomConfig* pConfig, uint3
 	m_tPoker.initAllCard(eMJ_GG23);
 	m_nQiHuNeed = vJsValue["qiHuNeed"].asUInt();
 	m_nLiangPai = vJsValue["liangPai"].asUInt();
+	if (vJsValue["isMenQing"].isNull() == false && vJsValue["isMenQing"].isUInt())
+	{
+		m_isEnableMengQing = vJsValue["isMenQing"].asUInt() == 1 ? 1 : 0;
+	}
 	m_nLastHuIdx = -1;
 	// create state and add state ;
 	IMJRoomState* vState[] = {
@@ -97,7 +101,7 @@ void GG23Room::startGame()
 	auto pFrame = getGameReplay()->createFrame(eMJFrame_StartGame, 0);
 	pFrame->setFrameArg(jsFrameArg);
 	getGameReplay()->addFrame(pFrame);
-	LOGFMTI("room id = %u start game !", getRoomID());
+	LOGFMTI("room id = %u start game mengqing = %u !", getRoomID(),(uint8_t)isEnableMengQing() );
 
 	// prepare info for replay
 	Json::Value jsMsg;
@@ -109,6 +113,7 @@ void GG23Room::startGame()
 	jsReplayInfo["roomID"] = getRoomID();
 	jsReplayInfo["time"] = (uint32_t)time(nullptr);
 	jsReplayInfo["qiHuNeed"] = m_nQiHuNeed;
+	jsReplayInfo["isMenQing"] = isEnableMengQing() ? 1 : 0;
 	getGameReplay()->setReplayRoomInfo(jsReplayInfo);
 }
 
@@ -181,6 +186,7 @@ void GG23Room::getSubRoomInfo(Json::Value& jsSubInfo)
 {
 	jsSubInfo["qiHuNeed"] = m_nQiHuNeed;
 	jsSubInfo["liangPai"] = m_nLiangPai;
+	jsSubInfo["isMenQing"] = isEnableMengQing() ? 1 : 0;
 }
 
 void GG23Room::sendPlayersCardInfo(uint32_t nSessionID)
@@ -342,7 +348,7 @@ uint8_t GG23Room::getTenJQKkingRate( uint8_t nCheckCard )
 	}
 
 	auto nType = card_Type(nCheckCard);
-	return nType == eCT_Jian || eCT_Feng == nType;
+	return (nType == eCT_Jian || eCT_Feng == nType) ? 2 : 1 ;
 }
 
 uint16_t GG23Room::getQiHuNeed()

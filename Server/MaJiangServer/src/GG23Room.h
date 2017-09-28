@@ -27,11 +27,13 @@ public:
 	bool onPlayerApplyLeave(uint32_t nPlayerUID)override;
 	std::shared_ptr<IGameRoomRecorder> createRoomRecorder()override;
 	bool isGameOver()override;
+	bool isEnableMengQing() { return m_isEnableMengQing; }
 protected:
 	CMJCard m_tPoker;
 	uint16_t m_nQiHuNeed;
 	uint8_t m_nLiangPai;
 
 	uint8_t m_nLastHuIdx;
+	bool m_isEnableMengQing;
 
 };
