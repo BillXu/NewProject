@@ -1336,22 +1336,23 @@ bool JJQEPlayerCard::checkDuiDuiHu()
 	bool bFindJiang = false;
 	VEC_CARD vAllCard;
 	getHoldCard(vAllCard);
-	// erse wen qian , 
-	auto nACnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong,1)) ;
-	auto n2Cnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong, 2)) ;
-	auto n3Cnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong, 3));
-	std::vector<int32_t> vMayWenCnt = { nACnt, n2Cnt , n3Cnt };
-	std::sort(vMayWenCnt.begin(), vMayWenCnt.end());
-	int8_t nSmall = 0;
-	if (vMayWenCnt[0] == vMayWenCnt[2])
-	{
-		nSmall = vMayWenCnt[0];
-	}
-	else if (vMayWenCnt[0] == 1 || vMayWenCnt[2] == 4)
-	{
-		nSmall = 1;
-	}
+	//// erse wen qian , 
+	//auto nACnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong,1)) ;
+	//auto n2Cnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong, 2)) ;
+	//auto n3Cnt = std::count(vAllCard.begin(), vAllCard.end(), make_Card_Num(eCT_Tong, 3));
+	//std::vector<int32_t> vMayWenCnt = { nACnt, n2Cnt , n3Cnt };
+	//std::sort(vMayWenCnt.begin(), vMayWenCnt.end());
+	//int8_t nSmall = 0;
+	//if (vMayWenCnt[0] == vMayWenCnt[2])
+	//{
+	//	nSmall = vMayWenCnt[0];
+	//}
+	//else if (vMayWenCnt[0] == 1 || vMayWenCnt[2] == 4)
+	//{
+	//	nSmall = 1;
+	//}
  
+	auto nSmall = getHoldWenQianCnt(true, true);
 	while ( nSmall-- )
 	{
 		for (uint8_t nValue = 1; nValue <= 3; ++nValue)
