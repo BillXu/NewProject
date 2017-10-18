@@ -614,6 +614,7 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 			Json::Value jsConsumed;
 			jsConsumed["cardCnt"] = nCardCnt;
 			jsConsumed["uid"] = m_nOwnerUID;
+			jsConsumed["sieralNum"] = getSeiralNum();
 			m_pRoomMgr->sendMsg(jsConsumed, MSG_CONSUM_VIP_ROOM_CARDS, 0, ID_MSG_PORT_DATA);
 
 			// if aa kou ka  , kou every one
@@ -636,6 +637,7 @@ void MJPrivateRoom::onDidGameOver(IMJRoom* pRoom)
 					Json::Value jsConsumed;
 					jsConsumed["cardCnt"] = nCardCnt;
 					jsConsumed["uid"] = pPlayer->getUID();
+					jsConsumed["sieralNum"] = getSeiralNum();
 					m_pRoomMgr->sendMsg(jsConsumed, MSG_CONSUM_VIP_ROOM_CARDS, 0, ID_MSG_PORT_DATA);
 				}
 			}

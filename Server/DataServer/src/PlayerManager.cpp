@@ -682,11 +682,13 @@ bool CPlayerManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& j
 				auto str = jsWrite.write(jsContent);
 				CPlayerMailComponent::PostMailToPlayer(eMailType::eMail_AddRoomCard, str.c_str(), str.size(), nUID);
 				LOGFMTE("uid = %u not online can not give back diamond = %u, via agent add card mail ",nUID,nDiamond);
+				CPlayerBaseData::addDiamondOffsetRecorder(nUID, nDiamond, 2, 0);
 			}
 			else
 			{
 				pPlayer->GetBaseData()->AddMoney(nDiamond,true);
 				LOGFMTD("give back diamond uid = %u , cnt = %u",nUID,nDiamond);
+				CPlayerBaseData::addDiamondOffsetRecorder(nUID, nDiamond, 2, pPlayer->GetBaseData()->GetAllDiamoned());
 			}
 		}
 		break ;
@@ -713,6 +715,7 @@ bool CPlayerManager::onAsyncRequest(uint16_t nRequestType , const Json::Value& j
 		}
 
 		jsResult = jsReqContent;
+		CPlayerBaseData::addDiamondOffsetRecorder(nUserUID, nAddCnt, 0, 0);
 	}
 	break;
 	case eAsync_AgentGetPlayerInfo:

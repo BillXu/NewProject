@@ -23,6 +23,7 @@
 #include "ServerStringTable.h"
 #include "encryptNumber.h"
 #include "Group.h"
+#include "AsyncRequestQuene.h"
 #pragma warning( disable : 4996 )
 #define ONLINE_BOX_RESET_TIME 60*60*3   // offline 3 hour , will reset the online box ;
 #define COIN_BE_INVITED 588
@@ -875,8 +876,10 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 	{
 		m_bMoneyDataDirty = true;
 		uint8_t nConsued = recvValue["cardCnt"].asUInt();
+		uint32_t nSieal = recvValue["sieralNum"].asUInt();
 		decressMoney(nConsued, true);
 		LOGFMTD("consumed vip room card = %u , uid = %u", nConsued, GetPlayer()->GetUserUID());
+		CPlayerBaseData::addDiamondOffsetRecorder(GetPlayer()->GetUserUID(), -1 * ((int32_t)nConsued), nSieal, GetAllDiamoned());
 	}
 	break;
 	case MSG_SET_JING_WEI:
@@ -916,6 +919,7 @@ bool CPlayerBaseData::OnMessage( Json::Value& recvValue , uint16_t nmsgType, eMs
 		recvValue["diamond"] = nGiveDiamond;
 		SendMsg(recvValue, nmsgType);
 		m_bCommonLogicDataDirty = true;
+		addDiamondOffsetRecorder( GetPlayer()->GetUserUID(), nGiveDiamond, 1, GetAllDiamoned());
 	}
 	break;
 	default:
@@ -1195,6 +1199,7 @@ void CPlayerBaseData::TimerSave()
 		msgLogicData.tOfflineTime = m_stBaseData.tOfflineTime ;
 		memcpy(msgLogicData.vJoinedClubID,m_stBaseData.vJoinedClubID,sizeof(msgLogicData.vJoinedClubID));
 		SendMsg((stMsgSavePlayerMoney*)&msgLogicData,sizeof(msgLogicData)) ;
+		LOGFMTD( "uid = %u save commonLogicData TakeCharityCoinTime = %u",GetPlayer()->GetUserUID(),m_stBaseData.tLastTakeCharityCoinTime );
 	}
 
 	if ( m_bPlayerInfoDataDirty )
@@ -1548,6 +1553,15 @@ uint16_t CPlayerBaseData::getMaxCanCreateClubCount()
 	}
 
 	return 1 ;
+}
+
+void CPlayerBaseData::addDiamondOffsetRecorder(uint32_t nUserUID, int32_t nOffset, uint32_t nSiealNum, uint32_t nFianlDiamond)
+{
+	Json::Value jssql;
+	char pBuffer[1024] = { 0 };
+	sprintf(pBuffer, "insert into playerdiamondrecorder ( serialNum,userUID,offset,final,time ) values ( %u,%u,%d,%u,now());", nSiealNum, nUserUID, nOffset, nFianlDiamond);
+	jssql["sql"] = pBuffer;
+	CGameServerApp::SharedGameServerApp()->getAsynReqQueue()->pushAsyncRequest(ID_MSG_PORT_DB, eAsync_DB_Add, jssql);
 }
 
 

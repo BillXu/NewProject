@@ -65,6 +65,7 @@ public:
 		SendMsg(&msgReq, sizeof(msgReq));
 		LOGFMTD("reconected request ip uid = %u", m_stBaseData.nUserUID);
 	}
+	static void addDiamondOffsetRecorder(uint32_t nUserUID, int32_t nOffset, uint32_t nSiealNum, uint32_t nFianlDiamond);
 protected:
 	bool onPlayerRequestMoney( uint64_t& nWantMoney,uint64_t nAtLeast, bool bDiamoned = false);
 	void onBeInviteBy(uint32_t nInviteUID );
