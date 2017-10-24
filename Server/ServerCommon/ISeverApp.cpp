@@ -203,19 +203,39 @@ bool IServerApp::OnConnectStateChanged( eConnectState eSate, Packet* pMsg)
 	return false ;
 }
 
+uint64_t getCurTimeByMilliSec()
+{
+	time_t clock;
+	struct tm tm;
+	SYSTEMTIME wtm;
+	GetLocalTime(&wtm);
+	tm.tm_year = wtm.wYear - 1900;
+	tm.tm_mon = wtm.wMonth - 1;
+	tm.tm_mday = wtm.wDay;
+	tm.tm_hour = wtm.wHour;
+	tm.tm_min = wtm.wMinute;
+	tm.tm_sec = wtm.wSecond;
+	tm.tm_isdst = -1;
+	clock = mktime(&tm);
+
+	uint64_t nMilli = clock * 1000 + wtm.wMilliseconds;
+	return nMilli;
+}
+
 bool IServerApp::run()
 {
-	clock_t t = clock();
-	while ( m_bRunning )
+	auto nLastMilliSec = getCurTimeByMilliSec();
+	while (m_bRunning)
 	{
-		if ( m_pNetWork )
+		if (m_pNetWork)
 		{
 			m_pNetWork->ReciveMessage();
 		}
 
-		clock_t tNow = clock();
-		float fDelta = float(tNow - t ) / CLOCKS_PER_SEC ;
-		t = tNow ;
+		auto tNow = getCurTimeByMilliSec();
+		float fDelta = float(tNow - nLastMilliSec) / 1000;
+		nLastMilliSec = tNow;
+
 		m_pTimerMgr->Update(fDelta);
 		update(fDelta*m_pTimerMgr->GetTimeScale());
 		Sleep(10);
@@ -225,8 +245,9 @@ bool IServerApp::run()
 	LOGFMTI("sleep 4k mili seconds");
 	Sleep(4000);
 	shutDown();
-	return true ;
+	return true;
 }
+
 
 void IServerApp::shutDown()
 {
