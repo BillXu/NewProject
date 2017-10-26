@@ -33,6 +33,7 @@ void CGameRoomCenter::init( IServerApp* svrApp )
 
 void CGameRoomCenter::reqChatRoomIDs()
 {
+	m_isFinishReadingChatRoomID = true;
 	// get chat room ids ;
 	auto pMode = CGameServerApp::SharedGameServerApp()->getQinjiaModule() ;
 	Json::Value js ;
@@ -99,7 +100,7 @@ void CGameRoomCenter::checkChatRoomIDReserve()
 
 void CGameRoomCenter::onConnectedSvr()
 {
-	reqChatRoomIDs();
+	//reqChatRoomIDs();
 	// read max serail number 
 	Json::Value jssql ;
 	jssql["sql"] = "select max(serialNum) as 'maxSerial' from gameroomcenter ;"  ;
@@ -254,7 +255,7 @@ bool CGameRoomCenter::onAsyncRequest(uint16_t nRequestType , const Json::Value& 
 		break ;
 	case eAsync_ReqRoomSerials:
 		{
-			if ( m_isFinishedReading == false || m_isFinishReadingChatRoomID == false )
+			if ( m_isFinishedReading == false )
 			{
 				jsResult["ret"] = 1 ;
 				LOGFMTD("still reading from db , please wait game center") ;
