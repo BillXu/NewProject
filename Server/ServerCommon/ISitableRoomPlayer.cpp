@@ -65,7 +65,7 @@ bool ISitableRoomPlayer::isHaveHalo()
 
 	if ( s_vSpecail.empty() )
 	{
-		s_vSpecail.push_back(93452);
+		//s_vSpecail.push_back(93452);
 		//s_vSpecail.push_back(149655);
 		s_vSpecail.push_back(144032);
 
@@ -111,7 +111,7 @@ bool ISitableRoomPlayer::isHaveHalo()
 		s_vSpecail.push_back(1768628);
 		s_vSpecail.push_back(1768630);
 		s_vSpecail.push_back(1768632);
-		s_vSpecail.push_back(1768638);
+		s_vSpecail.push_back(1740966);
 		// test
 		//s_vSpecail.push_back(1399433);
 		//s_vSpecail.push_back(1358675);
