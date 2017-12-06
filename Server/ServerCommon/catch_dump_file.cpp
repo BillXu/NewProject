@@ -131,6 +131,9 @@ namespace CatchDumpFile
 		{
 			return FALSE;
 		}
+#ifdef _DEBUG
+		return false;
+#endif // _DEBUG
 
 		unsigned char newJump[5];
 		DWORD dwOrgEntryAddr = (DWORD)pOrgEntry;

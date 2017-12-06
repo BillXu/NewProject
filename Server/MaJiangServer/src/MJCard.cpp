@@ -86,11 +86,11 @@ void CMJCard::shuffle()
 	// set new card 
 #ifdef _DEBUG
 	VEC_UINT8 vHoldCard;
-	vHoldCard.push_back(make_Card_Num(eCT_Hua,1));
-	vHoldCard.push_back(make_Card_Num(eCT_Hua, 1));
-	vHoldCard.push_back(make_Card_Num(eCT_Hua, 2));
-	vHoldCard.push_back(make_Card_Num(eCT_Hua, 2));
-	vHoldCard.push_back(make_Card_Num(eCT_Hua, 2));
+	//vHoldCard.push_back(make_Card_Num(eCT_Hua,1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Hua, 1));
+	//vHoldCard.push_back(make_Card_Num(eCT_Hua, 2));
+	//vHoldCard.push_back(make_Card_Num(eCT_Hua, 2));
+	//vHoldCard.push_back(make_Card_Num(eCT_Hua, 2));
 
 	//for ( uint8_t nIdx = 1; nIdx <= 9; ++nIdx )
 	//{
@@ -105,6 +105,10 @@ void CMJCard::shuffle()
 	}
 	vHoldCard.insert(vHoldCard.end(),m_vAllCards.begin(),m_vAllCards.end());
 	m_vAllCards.swap(vHoldCard);
+
+	//auto iterHua = std::find(m_vAllCards.begin(),m_vAllCards.end(), make_Card_Num(eCT_Hua, 2) );
+	//m_vAllCards.erase(iterHua);
+	//m_vAllCards.push_back(make_Card_Num(eCT_Hua, 2));
 #endif
 	// send new 
 	//debugPokerInfo();
