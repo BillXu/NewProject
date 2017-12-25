@@ -115,7 +115,7 @@ void GameRecorderMgr::readRoomRecorder(uint32_t nAlreadyReadCnt)
 		}
 
 		auto nNewOffset = getRoomRecorderCnt();
-		if (nNewOffset > 80 || nAft < 10)  // only read recent 80 items ;
+		if (nNewOffset > 11 || nAft < 10)  // only read recent 11 items ;
 		{
 			return;
 		}

@@ -290,7 +290,7 @@ void CPlayer::PostPlayerEvent(stPlayerEvetArg* pEventArg )
 void CPlayer::SendMsgToClient(const char* pBuffer, unsigned short nLen,bool bBrocat )
 {
 	stMsg* pmsg = (stMsg*)pBuffer ;
-	if ( IsState(ePlayerState_Offline) == false )
+	if ( 1 || IsState(ePlayerState_Offline) == false )
 	{
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),pBuffer,nLen,bBrocat) ;
 		return ;
@@ -300,7 +300,7 @@ void CPlayer::SendMsgToClient(const char* pBuffer, unsigned short nLen,bool bBro
 
 void CPlayer::SendMsgToClient(Json::Value& jsMsg, uint16_t nMsgType ,bool bBrocat )
 {
-	if ( IsState(ePlayerState_Offline) == false  )
+	if ( 1 || IsState(ePlayerState_Offline) == false  )
 	{
 		CGameServerApp::SharedGameServerApp()->sendMsg(GetSessionID(),jsMsg,nMsgType,ID_MSG_PORT_CLIENT,bBrocat) ;
 		return ;
